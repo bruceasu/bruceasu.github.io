@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>Java5泛型的用法，T.class的获取和为擦拭法站台</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">Java5泛型的用法，T.class的获取和为擦拭法站台</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#java"><div class="category">java</div></a> </div>
+<div class="char-counter">2017-03-01</div>
+        <div id="content">
+<nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#org1188d09">胡乱总结泛型的四点作用：</a></li>
+<li><a href="#orgd437959">擦拭法避免了Java的流血分裂 ：</a></li>
+<li><a href="#org0d7f474">通过反射获得 T.class：</a></li>
+</ul>
+</div>
+</nav>
+<p>
+Java 5的泛型语法已经有太多书讲了，这里不再打字贴书。GP一定有用，不然Java和C#不会
+约好了似的同时开始支持GP。但大家也清楚，GP和Ruby式的动态OO语言属于不同的意识形态，
+如果是一人一票，我想大部分的平民程序员更热衷动态OO语言的平白自然。但如果不准备跳
+槽到支持JSR223的动态语言，那还是看看GP吧。
+</p>
+
+<div id="outline-container-org1188d09" class="outline-2">
+<h2 id="org1188d09">胡乱总结泛型的四点作用：</h2>
+<div class="outline-text-2" id="text-org1188d09">
+<ol class="org-ol">
+<li>第一是泛化，可以拿个T代表任意类型。 但GP是被C++严苛的静态性逼出来的，落到Java、
+C#这样的花语平原里----所有对象除几个原始类型外都派生于Object，再加上Java的反
+射功能，Java的Collection库没有范型一样过得好好的。</li>
+
+<li>第二是泛型 + 反射，原本因为Java的泛型拿不到T.class而觉得泛型没用，最近才刚刚
+学到通过反射的API来获取T的Class，后述。</li>
+
+<li>第三是收敛，就是增加了类型安全，减少了强制类型转换的代码。这点倒是Java
+Collection历来的弱项。</li>
+
+<li>第四是可以在编译期搞很多东西，比如MetaProgramming。但除非能完全封闭于框架内部，
+框架的使用者和扩展者都不用学习这些东西的用法，否则那就是自绝于人民的票房毒药。
+C++的MetaProgramming好厉害吧，但对比一下Python拿Meta Programming生造一个Class
+出来的简便语法，就明白什么才是真正的叫好又叫座。</li>
+</ol>
+
+<p>
+所以，作为一个架构设计师，应该使用上述的第2，3项用法，在框架类里配合使用反射和泛
+型，使得框架的能力更强； 同时采用收敛特性，本着对人民负责的精神，用泛型使框架更
+加类型安全，更少强制类型转换。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgd437959" class="outline-2">
+<h2 id="orgd437959">擦拭法避免了Java的流血分裂 ：</h2>
+<div class="outline-text-2" id="text-orgd437959">
+<p>
+大家经常骂Java GP的擦拭法实现，但我觉得多亏于它的中庸特性---如果你用就是范型，不
+用就是普通Object，避免了Java阵营又要经历一场to be or not to be的分裂。
+</p>
+
+<p>
+最大的例子莫过 Java 5 的 Collection 框架， 比如有些同学坚持认为自己不会白痴到类
+型出错，而且难以忍受每个定义的地方都要带一个泛型定义List〈Book〉，不用强制类型转
+换所省下的代码还不够N处定义花的(对了，java里面还没有tyepdef.....)，因此对范型十
+分不感冒，这时就要齐齐感谢这个搽拭法让你依然可以对一个泛型框架保持非泛型的用法了...
+</p>
+</div>
+</div>
+
+<div id="outline-container-org0d7f474" class="outline-2">
+<h2 id="org0d7f474">通过反射获得 T.class：</h2>
+<div class="outline-text-2" id="text-org0d7f474">
+<p>
+不知为何书上不怎么讲这个，是差沙告诉我才知道的，最经典的应用见Hibernate wiki的
+Generic Data Access Objects， 代码如下：
+</p>
+
+<div class="org-src-container">
+<pre class="src src-java"><span style="font-weight: bold;">abstract</span> <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">class</span> <span style="font-weight: bold; text-decoration: underline;">BaseHibernateEntityDao</span>&lt;<span style="font-weight: bold; text-decoration: underline;">T</span>&gt; <span style="font-weight: bold;">extends</span> <span style="font-weight: bold; text-decoration: underline;">HibernateDaoSupport</span> {
+  <span style="font-weight: bold;">private</span> <span style="font-weight: bold; text-decoration: underline;">Class</span>&lt;<span style="font-weight: bold; text-decoration: underline;">T</span>&gt; <span style="font-weight: bold; font-style: italic;">entityClass</span>;
+  <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">BaseHibernateEntityDao</span>() {
+        entityClass =(<span style="font-weight: bold; text-decoration: underline;">Class</span>&lt;<span style="font-weight: bold; text-decoration: underline;">T</span>&gt;) ((<span style="font-weight: bold; text-decoration: underline;">ParameterizedType</span>) getClass()
+                                .getGenericSuperclass()).getActualTypeArguments()[0];
+  }
+  <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">T</span> <span style="font-weight: bold;">get</span>(<span style="font-weight: bold; text-decoration: underline;">Serializable</span> <span style="font-weight: bold; font-style: italic;">id</span>) {
+        <span style="font-weight: bold; text-decoration: underline;">T</span> <span style="font-weight: bold; font-style: italic;">o</span> = (<span style="font-weight: bold; text-decoration: underline;">T</span>) getHibernateTemplate().get(entityClass, id);
+  }
+}
+
+</pre>
+</div>
+
+<p>
+精华就是这句了：
+</p>
+
+<p>
+<code>Class&lt;T&gt; entityClass = (Class&lt;T&gt;) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];</code>
+</p>
+
+<p>
+泛型之后，所有 BaseHibernateEntityDao 的子类只要定义了泛型，就无需再重载
+getEnttityClass()，get() 函数和 find() 函数，销益挺明显的，所以 SpringSide 的
+Dao 基类毫不犹豫就泛型了。
+</p>
+
+<p>
+不过擦拭法的大棒仍在，所以子类的泛型语法可不能乱写，最正确的用法只有：
+<code>public class BookDao extends BaseHibernateEntityDao&lt;Book&gt;</code>
+</p>
+</div>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

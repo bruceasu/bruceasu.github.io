@@ -1,0 +1,37 @@
+# -*- coding: utf-8-unix; -*-
+#+TITLE:       windows 下查端口占用进程，并KILL
+#+AUTHOR:      Bruce Asu
+#+EMAIL:       bruceasu@163.com
+#+DATE:        <2017-04-05 20:00>
+#+filetags:    windows
+
+#+LANGUAGE:    en
+#+OPTIONS:     H:7 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:nil
+
+#+BEGIN_EXAMPLE
+C:\Users\link>netstat -ano | findstr "8080"
+  TCP    0.0.0.0:8080           0.0.0.0:0              LISTENING       5116
+  TCP    127.0.0.1:8080         127.0.0.1:55177        TIME_WAIT       0
+  TCP    127.0.0.1:8080         127.0.0.1:55179        TIME_WAIT       0
+  TCP    127.0.0.1:8080         127.0.0.1:55180        TIME_WAIT       0
+  TCP    127.0.0.1:8080         127.0.0.1:55183        TIME_WAIT       0
+  TCP    127.0.0.1:8080         127.0.0.1:55193        TIME_WAIT       0
+  TCP    127.0.0.1:8080         127.0.0.1:55267        TIME_WAIT       0
+  TCP    127.0.0.1:8080         127.0.0.1:55566        ESTABLISHED     5116
+  TCP    127.0.0.1:8080         127.0.0.1:55567        ESTABLISHED     5116
+  TCP    127.0.0.1:55213        127.0.0.1:8080         TIME_WAIT       0
+  TCP    127.0.0.1:55215        127.0.0.1:8080         TIME_WAIT       0
+  TCP    127.0.0.1:55566        127.0.0.1:8080         ESTABLISHED     900
+  TCP    127.0.0.1:55567        127.0.0.1:8080         ESTABLISHED     900
+
+C:\Users\link>tasklist | find "8080"
+
+C:\Users\link>tasklist | find "5116"
+Tencentdl.exe                 5116 Console                    1     23,240 K
+
+C:\Users\link>taskkill /f /t /im Tencentdl.exe
+成功: 已终止 PID 5116 (属于 PID 720 子进程)的进程。
+
+taskkill /f /t /pid 5116
+
+#+END_EXAMPLE

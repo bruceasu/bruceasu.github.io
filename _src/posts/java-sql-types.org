@@ -1,0 +1,348 @@
+# -*- coding: utf-8-unix; -*-
+#+TITLE:       Java 数据类型与各数据库类型映射一览表
+#+AUTHOR:      Bruce Asu
+#+EMAIL:       bruceasu@163.com
+#+DATE:        <2016-07-12 20:00>
+#+filetags:        java
+#+DESCRIPTION: 下表说明用来当作从产生资源的模型的java.sql.Type值之间的关系，其对应的Java对象类型，以及在受支援的JDBC平台上每一个这些类型的实作(若有的话)。
+
+#+LANGUAGE:    en
+#+OPTIONS:     H:7 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:nil
+
+
+
+from:
+<http://hi.baidu.com/chinagenius/blog/item/3817d6f394359fcc0b46e045.html>
+
+下表说明用来当作从产生资源的模型的java.sql.Type值之间的关系，其对应的Java物件类
+型，以及在受支援的JDBC平台上每一个这些类型的实作(若有的话)。
+
+表格也会指出标准Portal Content Publishing范本所支援的类型。其他类型可透过使用自
+订的范本加以支援。
+
+下列类型会受双位元组语言的限制影响： CHAR和GRAPHIC自动对映到编写模式的CHAR。
+LONG VARCHAR和LONG VARGRAPHIC自动对映到LONG VARCHAR。 VARCHAR和VARGRAPHIC自动对
+映到VARCHAR。 CLOB和DBCLOB自动对映到CLOB。
+
+如果您要使用其他类型，请手动在您的编写资料库中建立自订表格。
+
+使用者应该注意IBM DB2会自动为CHAR FOR BIT DATA类型填补空格(x'20')。因此，虽然可
+以使用CHAR FOR BIT DATA来储存BINARY资讯，但是VARCHAR FOR BIT DATA (VARBINARY)通
+常较适合用来储存非ACSII二进位资讯的小型二进位类型。注: 与Oracle、IBM Content
+Manager、Informix及SQL Server的编写整合作业并未显示在一般可用性中。
+
+#+BEGIN_EXPORT html
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+  <colgroup>
+    <col  class="org-left" />
+
+    <col  class="org-left" />
+
+    <col  class="org-left" />
+
+    <col  class="org-left" />
+
+    <col  class="org-left" />
+
+    <col  class="org-left" />
+
+    <col  class="org-left" />
+
+    <col  class="org-left" />
+  </colgroup>
+  <thead>
+    <tr>
+      <th scope="col" class="org-left">java.sql.Types值</th>
+      <th scope="col" class="org-left">Java 类型</th>
+      <th scope="col" class="org-left">IBM DB2</th>
+      <th scope="col" class="org-left">Oracle</th>
+      <th scope="col" class="org-left">Sybase</th>
+      <th scope="col" class="org-left">SQL</th>
+      <th scope="col" class="org-left">Informix</th>
+      <th scope="col" class="org-left">IBM Content Manager</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td class="org-left">BIGINT</td>
+      <td class="org-left">java.lang.long</td>
+      <td class="org-left">BIGINT</td>
+      <td class="org-left">NUMBER (38, 0)</td>
+      <td class="org-left">BIGINT</td>
+      <td class="org-left">BIGINT</td>
+      <td class="org-left">INT8</td>
+      <td class="org-left">DK<sub>CM</sub><sub>BIGINT</sub></td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">BINARY</td>
+      <td class="org-left">byte[]</td>
+      <td class="org-left">CHAR FOR BIT DATA</td>
+      <td class="org-left">RAW</td>
+      <td class="org-left">BINARY</td>
+      <td class="org-left">IMAGE</td>
+      <td class="org-left">BYTE</td>
+      <td class="org-left">DK<sub>CM</sub><sub>BLOB</sub></td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">BIT</td>
+      <td class="org-left">java.lang.Boolean</td>
+      <td class="org-left">N/A</td>
+      <td class="org-left">BIT</td>
+      <td class="org-left">BIT</td>
+      <td class="org-left">BIT</td>
+      <td class="org-left">BIT</td>
+      <td class="org-left">DK<sub>CM</sub><sub>SMALLINT</sub></td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">BLOB</td>
+      <td class="org-left">byte[]</td>
+      <td class="org-left">BLOB</td>
+      <td class="org-left">BLOB</td>
+      <td class="org-left">BLOB</td>
+      <td class="org-left">BLOB</td>
+      <td class="org-left">BLOB</td>
+      <td class="org-left">DK<sub>CM</sub><sub>BLOB</sub></td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">CHAR</td>
+      <td class="org-left">java.lang.String</td>
+      <td class="org-left">CHAR, GRAPHIC</td>
+      <td class="org-left">CHAR</td>
+      <td class="org-left">CHAR</td>
+      <td class="org-left">CHAR</td>
+      <td class="org-left">CHAR</td>
+      <td class="org-left">DK<sub>CM</sub><sub>CHAR</sub></td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">CLOB</td>
+      <td class="org-left">java.lang.String</td>
+      <td class="org-left">CLOB, DBCLOB</td>
+      <td class="org-left">CLOB</td>
+      <td class="org-left">CLOB</td>
+      <td class="org-left">CLOB</td>
+      <td class="org-left">CLOB</td>
+      <td class="org-left">DK<sub>CM</sub><sub>CLOB</sub></td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">DATE</td>
+      <td class="org-left">java.sql.Date</td>
+      <td class="org-left">DATE</td>
+      <td class="org-left">DATE</td>
+      <td class="org-left">DATE</td>
+      <td class="org-left">DATE</td>
+      <td class="org-left">DATE</td>
+      <td class="org-left">DK<sub>CM</sub><sub>DATE</sub></td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">DECIMAL</td>
+      <td class="org-left">java.math.BigDecimal</td>
+      <td class="org-left">DECIMAL</td>
+      <td class="org-left">NUMBER</td>
+      <td class="org-left">DECIMAL, MONEY, SMALLMONEY</td>
+      <td class="org-left">DECIMAL</td>
+      <td class="org-left">DECIMAL</td>
+      <td class="org-left">DK<sub>CM</sub><sub>DECIMAL</sub></td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">DOUBLE</td>
+      <td class="org-left">java.lang.Double</td>
+      <td class="org-left">DOUBLE</td>
+      <td class="org-left">DOUBLE PRECISION</td>
+      <td class="org-left">DOUBLE PRECISION</td>
+      <td class="org-left">DOUBLE PRECISION</td>
+      <td class="org-left">DOUBLE PRECISION</td>
+      <td class="org-left">DK<sub>CM</sub><sub>DOUBLE</sub></td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">FLOAT</td>
+      <td class="org-left">java.lang.Double</td>
+      <td class="org-left">FLOAT</td>
+      <td class="org-left">FLOAT</td>
+      <td class="org-left">FLOAT</td>
+      <td class="org-left">FLOAT</td>
+      <td class="org-left">FLOAT</td>
+      <td class="org-left">DK<sub>CM</sub><sub>DOUBLE</sub></td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">INTEGER</td>
+      <td class="org-left">java.lang.Integer</td>
+      <td class="org-left">INTEGER</td>
+      <td class="org-left">INTEGER</td>
+      <td class="org-left">INT</td>
+      <td class="org-left">INTEGER</td>
+      <td class="org-left">INTEGER</td>
+      <td class="org-left">DK<sub>CM</sub><sub>INTEGER</sub></td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">JAVA<sub>OBJECT</sub></td>
+      <td class="org-left">java.lang.Object</td>
+      <td class="org-left">JAVA<sub>OBJECT</sub></td>
+      <td class="org-left">JAVA<sub>OBJECT</sub></td>
+      <td class="org-left">JAVA<sub>OBJECT</sub></td>
+      <td class="org-left">JAVA<sub>OBJECT</sub></td>
+      <td class="org-left">OPAQUE</td>
+      <td class="org-left">N/A</td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">LONGVARBINARY</td>
+      <td class="org-left">byte[]</td>
+      <td class="org-left">LONG VARCHAR FOR BIT DATA</td>
+      <td class="org-left">LONG RAW</td>
+      <td class="org-left">IMAGE</td>
+      <td class="org-left">IMAGE</td>
+      <td class="org-left">BYTE</td>
+      <td class="org-left">DK<sub>CM</sub><sub>BLOB</sub></td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">LONGVARCHAR</td>
+      <td class="org-left">java.lang.String</td>
+      <td class="org-left">LONG VARCHAR, LONG VARGRAPHIC</td>
+      <td class="org-left">LONG</td>
+      <td class="org-left">TEXT</td>
+      <td class="org-left">TEXT</td>
+      <td class="org-left">TEXT</td>
+      <td class="org-left">DK<sub>CM</sub><sub>VARCHAR</sub>(3500)</td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">NUMERIC</td>
+      <td class="org-left">java.math.BigDecimal</td>
+      <td class="org-left">NUMERIC</td>
+      <td class="org-left">NUMBER</td>
+      <td class="org-left">NUMERIC</td>
+      <td class="org-left">NUMERIC</td>
+      <td class="org-left">NUMERIC</td>
+      <td class="org-left">DK<sub>CM</sub><sub>DECIMAL</sub></td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">OTHER</td>
+      <td class="org-left">java.lang.Object</td>
+      <td class="org-left">OTHER</td>
+      <td class="org-left">OTHER</td>
+      <td class="org-left">OTHER</td>
+      <td class="org-left">OTHER</td>
+      <td class="org-left">OTHER</td>
+      <td class="org-left">N/A</td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">REAL</td>
+      <td class="org-left">java.lang.Float</td>
+      <td class="org-left">REAL</td>
+      <td class="org-left">REAL</td>
+      <td class="org-left">REAL</td>
+      <td class="org-left">REAL</td>
+      <td class="org-left">REAL</td>
+      <td class="org-left">DK<sub>CM</sub><sub>DOUBLE</sub></td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">SMALLINT</td>
+      <td class="org-left">java.lang.Integer</td>
+      <td class="org-left">SMALLINT</td>
+      <td class="org-left">SMALLINT</td>
+      <td class="org-left">SMALLINT</td>
+      <td class="org-left">SMALLINT</td>
+      <td class="org-left">SMALLINT</td>
+      <td class="org-left">DK<sub>CM</sub><sub>INTEGER</sub></td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">TIME</td>
+      <td class="org-left">java.sql.Time</td>
+      <td class="org-left">TIME</td>
+      <td class="org-left">DATE</td>
+      <td class="org-left">TIME</td>
+      <td class="org-left">TIME</td>
+      <td class="org-left">DATETIME HOUR TO SECOND</td>
+      <td class="org-left">DK<sub>CM</sub><sub>TIME</sub></td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">TIMESTAMP</td>
+      <td class="org-left">java.sql.Timestamp</td>
+      <td class="org-left">TIMESTAMP</td>
+      <td class="org-left">DATE</td>
+      <td class="org-left">DATETIME, SMALLDATETIME</td>
+      <td class="org-left">DATETIME</td>
+      <td class="org-left">DATETIME YEAR TO FRACTION (5)</td>
+      <td class="org-left">DK<sub>CM</sub><sub>TIMESTAMP</sub></td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">TINYINT</td>
+      <td class="org-left">java.lang.Bute</td>
+      <td class="org-left">SMALLINT</td>
+      <td class="org-left">TINYINT</td>
+      <td class="org-left">TINYINT</td>
+      <td class="org-left">TINYINT</td>
+      <td class="org-left">TINYINT</td>
+      <td class="org-left">DK<sub>CM</sub><sub>INTEGER</sub></td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">VARBINARY</td>
+      <td class="org-left">byte[]</td>
+      <td class="org-left">VARCHAR FOR BIT DATA</td>
+      <td class="org-left">RAW</td>
+      <td class="org-left">VARBINARY</td>
+      <td class="org-left">IMAGE</td>
+      <td class="org-left">BYTE</td>
+      <td class="org-left">DK<sub>CM</sub><sub>BLOB</sub></td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">VARCHAR</td>
+      <td class="org-left">java.lang.String</td>
+      <td class="org-left">VARCHAR, VARGRAPHIC</td>
+      <td class="org-left">VARCHAR</td>
+      <td class="org-left">VARCHAR</td>
+      <td class="org-left">VARCHAR</td>
+      <td class="org-left">VARCHAR</td>
+      <td class="org-left">DK<sub>CM</sub><sub>VARCHAR</sub></td>
+    </tr>
+  </tbody>
+</table>
+
+
+
+#+END_EXPORT

@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>mysql disconnet after 8 hours</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">mysql disconnet after 8 hours</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#mysql"><div class="category">mysql</div></a> </div>
+<div class="char-counter">2016-07-29</div>
+        <div id="content">
+
+<div id="outline-container-org691e3f8" class="outline-2">
+<h2 id="org691e3f8">前言</h2>
+<div class="outline-text-2" id="text-org691e3f8">
+<p>
+MySQL 的默认设置下，当一个连接的空闲时间超过8小时后，MySQL 就会断开该连接，而
+c3p0 连接池则以为该被断开的连接依然有效。在这种情况下，如果客户端代码向 c3p0 连
+接池请求连接的话，连接池就会把已经失效的连接返回给客户端，客户端在使用该失效连接
+的时候即抛出异常。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgd8676cb" class="outline-2">
+<h2 id="orgd8676cb">解决这个问题的办法有三种：</h2>
+<div class="outline-text-2" id="text-orgd8676cb">
+</div>
+<div id="outline-container-org6bef409" class="outline-3">
+<h3 id="org6bef409">1. 增加 MySQL 的 wait_timeout 属性的值。</h3>
+<div class="outline-text-3" id="text-org6bef409">
+<p>
+修改 /etc/mysql/my.cnf 文件，在 [mysqld] 节中设置：
+</p>
+<pre class="example">
+# Set a connection to wait 8 hours in idle status.
+wait_timeout = 86400
+
+</pre>
+
+
+<p>
+相关参数，红色部分
+</p>
+<p class="verse">
+mysql&gt; show variables like '%timeout%';<br>
+<del>--------------------------</del>-------+<br>
+| Variable_name            | Value |<br>
+<del>--------------------------</del>-------+<br>
+| connect_timeout          | 5     |<br>
+| delayed_insert_timeout   | 300   |<br>
+| innodb_lock_wait_timeout | 50    |<br>
+| interactive_timeout      | 28800 |<br>
+| net_read_timeout         | 30    |<br>
+| net_write_timeout        | 60    |<br>
+| slave_net_timeout        | 3600 |<br>
+| wait_timeout             | 28800 |<br>
+<del>--------------------------</del>-------+<br>
+</p>
+
+<p>
+同一时间，这两个参数只有一个起作用。到底是哪个参数起作用，和用户连接时指定的连接
+参数相关，缺省情况下是使用wait_timeout。我建议是将这两个参数都修改，以免引起不必
+要的麻烦。
+</p>
+
+<p>
+这两个参数的默认值是8小时(60*60*8=28800)。我测试过将这两个参数改为0，结果出人意
+料，系统自动将这个值设置为。换句话说，不能将该值设置为永久。将这2个参数设置为24
+小时(60*60*24=604800)即可。
+</p>
+<pre class="example">
+set interactive_timeout=604800;
+set wait_timeout=604800;
+
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org169f12d" class="outline-3">
+<h3 id="org169f12d">2. 减少连接池内连接的生存周期，使之小于上一项中所设置的 wait_timeout 的值。</h3>
+<div class="outline-text-3" id="text-org169f12d">
+<p>
+修改 c3p0 的配置文件，设置：
+</p>
+<pre class="example">
+# How long to keep unused connections around(in seconds)
+# Note: MySQL times out idle connections after 8 hours(28,800 seconds)
+# so ensure this value is below MySQL idle timeout
+cpool.maxIdleTime=25200
+
+</pre>
+
+
+<p>
+在 Spring 的配置文件中：
+</p>
+<div class="org-src-container">
+<pre class="src src-xml">&lt;<span style="font-weight: bold;">bean</span> <span style="font-weight: bold; font-style: italic;">id</span>=<span style="font-style: italic;">"dataSource"</span>
+     <span style="font-weight: bold; font-style: italic;">class</span>=<span style="font-style: italic;">"com.mchange.v2.c3p0.ComboPooledDataSource"</span>&gt;
+    &lt;<span style="font-weight: bold;">property</span> <span style="font-weight: bold; font-style: italic;">name</span>=<span style="font-style: italic;">"maxIdleTime"</span> <span style="font-weight: bold; font-style: italic;">value</span>=<span style="font-style: italic;">"${cpool.maxIdleTime}"</span> /&gt;
+    <span style="font-weight: bold; font-style: italic;">&lt;!-- </span><span style="font-weight: bold; font-style: italic;">other properties </span><span style="font-weight: bold; font-style: italic;">--&gt;</span>
+&lt;/<span style="font-weight: bold;">bean</span>&gt;
+
+</pre>
+</div>
+</div>
+</div>
+
+
+<div id="outline-container-orgc0fb00e" class="outline-3">
+<h3 id="orgc0fb00e">3. 定期使用连接池内的连接，使得它们不会因为闲置超时而被 MySQL 断开。</h3>
+<div class="outline-text-3" id="text-orgc0fb00e">
+<p>
+修改 c3p0 的配置文件，设置：
+</p>
+<pre class="example">
+# Prevent MySQL raise exception after a long idle time
+cpool.preferredTestQuery='SELECT 1'
+cpool.idleConnectionTestPeriod=18000
+cpool.testConnectionOnCheckout=true
+
+</pre>
+
+<p>
+修改 Spring 的配置文件：
+</p>
+<div class="org-src-container">
+<pre class="src src-xml">&lt;<span style="font-weight: bold;">bean</span> <span style="font-weight: bold; font-style: italic;">id</span>=<span style="font-style: italic;">"dataSource"</span>
+      <span style="font-weight: bold; font-style: italic;">class</span>=<span style="font-style: italic;">"com.mchange.v2.c3p0.ComboPooledDataSource"</span>&gt;
+    &lt;<span style="font-weight: bold;">property</span> <span style="font-weight: bold; font-style: italic;">name</span>=<span style="font-style: italic;">"preferredTestQuery"</span>
+          <span style="font-weight: bold; font-style: italic;">value</span>=<span style="font-style: italic;">"${cpool.preferredTestQuery}"</span> /&gt;
+    &lt;<span style="font-weight: bold;">property</span> <span style="font-weight: bold; font-style: italic;">name</span>=<span style="font-style: italic;">"idleConnectionTestPeriod"</span>
+          <span style="font-weight: bold; font-style: italic;">value</span>=<span style="font-style: italic;">"${cpool.idleConnectionTestPeriod}"</span> /&gt;
+    &lt;<span style="font-weight: bold;">property</span> <span style="font-weight: bold; font-style: italic;">name</span>=<span style="font-style: italic;">"testConnectionOnCheckout"</span>
+          <span style="font-weight: bold; font-style: italic;">value</span>=<span style="font-style: italic;">"${cpool.testConnectionOnCheckout}"</span> /&gt;
+    <span style="font-weight: bold; font-style: italic;">&lt;!-- </span><span style="font-weight: bold; font-style: italic;">other properties </span><span style="font-weight: bold; font-style: italic;">--&gt;</span>
+&lt;/<span style="font-weight: bold;">bean</span>&gt;
+
+</pre>
+</div>
+</div>
+</div>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

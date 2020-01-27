@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>java proxy settings</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">java proxy settings</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#java"><div class="category">java</div></a> </div>
+<div class="char-counter">2016-06-30</div>
+        <div id="content">
+<div class="org-src-container">
+<pre class="src src-java"><span style="font-weight: bold; text-decoration: underline;">Properties</span> <span style="font-weight: bold; font-style: italic;">prop</span> = System.getProperties();
+   <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">HTTP&#20195;&#29702;&#30340;IP&#35774;&#32622;</span>
+   prop.setProperty(<span style="font-style: italic;">"http.proxyHost"</span>, <span style="font-style: italic;">"10.28.0.254"</span>);
+   <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">HTTP&#20195;&#29702;&#30340;&#31471;&#21475;&#35774;&#32622;</span>
+   prop.setProperty(<span style="font-style: italic;">"http.proxyPort"</span>, <span style="font-style: italic;">"80"</span>);
+   <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#36825;&#37324;&#20063;&#21487;&#20197;&#35774;&#32622;&#19981;&#38656;&#35201;&#20351;&#29992;&#20195;&#29702;&#30340;&#22320;&#22336;</span>
+   prop.setProperty(<span style="font-style: italic;">"http.nonProxyHosts"</span>, <span style="font-style: italic;">"localhost|10.28.0.*"</span>);
+   <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#35774;&#32622;HTTPS&#23433;&#20840;&#35775;&#38382;&#30340;&#20195;&#29702;&#26381;&#21153;&#22120;&#22320;&#22336;&#19982;&#31471;&#21475;</span>
+   prop.setProperty(<span style="font-style: italic;">"https.proxyHost"</span>, <span style="font-style: italic;">"10.28.0.254"</span>);
+   prop.setProperty(<span style="font-style: italic;">"https.proxyPort"</span>, <span style="font-style: italic;">"443"</span>);
+   <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#23545;&#20110;&#23433;&#20840;&#35775;&#38382;&#30340;&#36807;&#28388;&#22320;&#22336;&#23646;&#24615;&#21516;&#26679;&#26159;http.nonProxyHosts&#24182;&#27809;&#26377;https.nonProxyHosts</span>
+
+   <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">FTP&#30340;&#20195;&#29702;&#35774;&#32622;&#20837;&#19979;</span>
+   prop.setProperty(<span style="font-style: italic;">"ftp.proxyHost"</span>, <span style="font-style: italic;">"192.168.0.254"</span>);
+   prop.setProperty(<span style="font-style: italic;">"ftp.proxyPort"</span>, <span style="font-style: italic;">"2121"</span>);
+   prop.setProperty(<span style="font-style: italic;">"ftp.nonProxyHosts"</span>, <span style="font-style: italic;">"localhost|192.168.0.*"</span>);
+   <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">SOCKS&#30340;&#20195;&#29702;&#35774;&#32622;</span>
+   prop.setProperty(<span style="font-style: italic;">"socksProxyHost"</span>, <span style="font-style: italic;">"192.168.0.254"</span>);
+   prop.setProperty(<span style="font-style: italic;">"socksProxyPort"</span>, <span style="font-style: italic;">"8000"</span>);
+
+
+
+</pre>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

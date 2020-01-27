@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>EMACS SPEED UP 1000 percent</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">EMACS SPEED UP 1000 percent</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#emacs"><div class="category">emacs</div></a> </div>
+<div class="char-counter">2016-05-21</div>
+        <div id="content">
+<p>
+I'm still NOT satisfied with my Emacs performance after applying below tricks:
+</p>
+
+<ul class="org-ul">
+<li>autoload packages</li>
+<li>idle-load packages</li>
+<li>compiling \*.el to \*.elc</li>
+</ul>
+
+<p>
+After some research, I found I could make my Emacs 1000% fast in 1 minute.
+Please note I'm talking about the general performance not just startup time.
+</p>
+
+<p>
+The solution is really simple.
+Since I'm a Linux guy and my computer got enough (24G) memory.
+I can place my setup on memory only.
+</p>
+
+<ol class="org-ol">
+<li>Step 1, insert below line into /etc/fstab and restart computer:</li>
+</ol>
+<pre class="example">
+tmpfs       /tmp        tmpfs       nodev,nosuid,size=8G    0   0
+
+</pre>
+
+<ol class="org-ol">
+<li>Step 2, run the script "emacs2ram":</li>
+</ol>
+<div class="org-src-container">
+<pre class="src src-sh"><span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">!/bin/</span><span style="font-weight: bold;">sh</span>
+<span style="font-weight: bold;">if</span> [ -z <span style="font-style: italic;">"$1"</span> ];<span style="font-weight: bold;">then</span>
+    <span style="font-weight: bold;">echo</span> <span style="font-style: italic;">"Usage:"</span>
+    <span style="font-weight: bold;">echo</span> <span style="font-style: italic;">"  emacs2ram start"</span>
+    <span style="font-weight: bold;">echo</span> <span style="font-style: italic;">"  emacs2ram restore"</span>
+    <span style="font-weight: bold;">exit</span> 1
+<span style="font-weight: bold;">fi</span>
+
+<span style="font-weight: bold;">if</span> [ <span style="font-style: italic;">"$1"</span> == <span style="font-style: italic;">"start"</span> ];<span style="font-weight: bold;">then</span>
+    <span style="font-weight: bold; font-style: italic;">backup</span>=emacs.d-backup
+    <span style="font-weight: bold; font-style: italic;">link</span>=.emacs.d
+    <span style="font-weight: bold; font-style: italic;">volatile</span>=/tmp/.emacs.d-$<span style="font-weight: bold; font-style: italic;">USER</span>
+
+    <span style="font-weight: bold; font-style: italic;">IFS</span>=
+    <span style="font-weight: bold;">set</span> -efu
+
+    <span style="font-weight: bold;">cd</span> ~/
+
+    <span style="font-weight: bold;">if</span> [ ! -r $<span style="font-weight: bold; font-style: italic;">volatile</span> ]; <span style="font-weight: bold;">then</span>
+        mkdir -m0700 $<span style="font-weight: bold; font-style: italic;">volatile</span>
+    <span style="font-weight: bold;">fi</span>
+
+    <span style="font-weight: bold; font-style: italic;"># </span><span style="font-weight: bold; font-style: italic;">link -&gt; volatie does not exist</span>
+    <span style="font-weight: bold;">if</span> [ <span style="font-style: italic;">"$(</span><span style="font-weight: bold;">readlink</span><span style="font-style: italic;"> $link)"</span> != <span style="font-style: italic;">"$volatile"</span> ]; <span style="font-weight: bold;">then</span>
+        <span style="font-weight: bold; font-style: italic;"># </span><span style="font-weight: bold; font-style: italic;">backup project at first</span>
+        mv $<span style="font-weight: bold; font-style: italic;">link</span> $<span style="font-weight: bold; font-style: italic;">backup</span>
+        <span style="font-weight: bold; font-style: italic;"># </span><span style="font-weight: bold; font-style: italic;">create the link</span>
+        ln -s $<span style="font-weight: bold; font-style: italic;">volatile</span> $<span style="font-weight: bold; font-style: italic;">link</span>
+    <span style="font-weight: bold;">fi</span>
+
+    <span style="font-weight: bold;">if</span> [ -e $<span style="font-weight: bold; font-style: italic;">link</span>/.unpacked ]; <span style="font-weight: bold;">then</span>
+        <span style="font-weight: bold;">echo</span> <span style="font-style: italic;">"Sync .emacs.d from memory to backup ..."</span>
+        rsync -avq --delete --exclude .unpacked ./$<span style="font-weight: bold; font-style: italic;">link</span>/ ./$<span style="font-weight: bold; font-style: italic;">backup</span>/
+        <span style="font-weight: bold;">echo</span> <span style="font-style: italic;">"DONE!"</span>
+    <span style="font-weight: bold;">else</span>
+        <span style="font-weight: bold;">echo</span> <span style="font-style: italic;">"Sync .emacs.d from disk to memory ..."</span>
+        rsync -avq ./$<span style="font-weight: bold; font-style: italic;">backup</span>/ ./$<span style="font-weight: bold; font-style: italic;">link</span>/
+        touch $<span style="font-weight: bold; font-style: italic;">link</span>/.unpacked
+        <span style="font-weight: bold;">echo</span> <span style="font-style: italic;">"DONE!"</span>
+    <span style="font-weight: bold;">fi</span>
+<span style="font-weight: bold;">else</span>
+    <span style="font-weight: bold;">echo</span> <span style="font-style: italic;">"Moving .emacs.d back to disk ..."</span>
+    <span style="font-weight: bold; font-style: italic;">backup</span>=$<span style="font-weight: bold; font-style: italic;">2</span>-backup
+    <span style="font-weight: bold; font-style: italic;">link</span>=$<span style="font-weight: bold; font-style: italic;">2</span>
+    <span style="font-weight: bold; font-style: italic;">volatile</span>=/tmp/$<span style="font-weight: bold; font-style: italic;">2</span>-$<span style="font-weight: bold; font-style: italic;">USER</span>
+    <span style="font-weight: bold;">cd</span> ~/projs
+    rm $<span style="font-weight: bold; font-style: italic;">link</span> &amp;&amp; mv $<span style="font-weight: bold; font-style: italic;">backup</span> $<span style="font-weight: bold; font-style: italic;">link</span> &amp;&amp; rm -rf $<span style="font-weight: bold; font-style: italic;">volatile</span>
+    <span style="font-weight: bold;">echo</span> <span style="font-style: italic;">"DONE!"</span>
+<span style="font-weight: bold;">fi</span>
+
+</pre>
+</div>
+
+<p>
+That's all! Please enjoy Emacs as usual. The original script is from ArchLinux
+Wiki. I learned this technique eight years ago.
+</p>
+
+<pre class="example">
+I'm just wondering why I need eight years to apply it?
+
+</pre>
+
+<p>
+BTW, I've also moved all my projects into memory, using similar scripts.
+</p>
+
+<p>
+UPDATE: I also publicize my project-managing script at gist. It's almost same as
+emacs2ram.
+</p>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

@@ -1,0 +1,5 @@
+(require 'package)
+(package-initialize)
+(setq org-html-validation-link nil)
+(setq org-export-with-section-numbers nil)
+(setq backup-directory-alist '(("." . nil)))

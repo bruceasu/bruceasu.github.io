@@ -1,0 +1,732 @@
+# -*- coding: utf-8-unix; -*-
+#+TITLE:       All in Org-mode
+#+AUTHOR:      Bruce Asu
+#+EMAIL:       bruceasu@163.com
+#+DATE:        <2019-07-21 20:00>
+#+filetags:    emacs
+#+DESCRIPTION: org-mode tips
+
+#+LANGUAGE:    en
+#+OPTIONS:     H:7 num:nil toc:t \n:nil ::t |:t ^:nil -:nil f:t *:t <:nil
+
+#+BEGIN_EXPORT HTML
+
+<div id="outline-container-org66fec92" class="outline-2">
+  <h2 id="org66fec92"><span class="section-number-2">1</span> &#x6982;&#x8981;</h2>
+  <div class="outline-text-2" id="text-1">
+    <ul class="org-ul">
+      <li>&#x4EE5; # &#x53F7;&#x540E;&#x52A0;&#x4E00;&#x7A7A;&#x683C;&#x5F00;&#x59CB;&#x7684;&#x884C;&#x8868;&#x793A;&#x6CE8;&#x91CA;&#xFF0C;&#x6587;&#x4EF6;&#x5BFC;&#x51FA;&#x65F6;&#x8FD9;&#x4E9B;&#x5185;&#x5BB9;&#x4E0D;&#x88AB;&#x5BFC;&#x51FA;&#xFF0C;&#x4E0A;&#x9762;&#x7B2C;&#x4E00;&#x884C;&#x5C31;&#x662F;&#x3002;</li>
+      <li>&#x4EE5; #+ &#x7B26;&#x53F7;&#x5F00;&#x59CB;&#x7684;&#x884C;&#x7528;&#x4E8E;&#x8BBE;&#x7F6E;&#x6587;&#x6863;&#x53C2;&#x6570;&#x6216;&#x5185;&#x5BB9;&#x5C5E;&#x6027;&#xFF0C;&#x6BD4;&#x5982;&#x6587;&#x6863;&#x7684;&#x6807;&#x9898;&#x3001;&#x4F5C;&#x8005;&#xFF0C;org-mode&#x6253;&#x5F00;&#x65F6;&#x6587;&#x6863;&#x7684;&#x5448;&#x73B0;&#x72B6;&#x6001;&#x7B49;&#x3002;</li>
+      <li>&#x7528; [[]] &#x62EC;&#x8D77;&#x6765;&#x7684;&#x5185;&#x5BB9;&#x8868;&#x793A;&#x5916;&#x90E8;&#x94FE;&#x63A5;</li>
+      <li>&#x7528; &lt;&lt;&gt;&gt; &#x62EC;&#x8D77;&#x6765;&#x7684;&#x5185;&#x5BB9;&#x8868;&#x793A;&#x6587;&#x6863;&#x7684;&#x5185;&#x90E8;&#x94FE;&#x63A5;</li>
+      <li>&#x4EE5; * &#x7B26;&#x53F7;&#x5F00;&#x59CB;&#x7684;&#x884C;&#xFF0C;&#x8868;&#x793A;&#x8BE5;&#x884C;&#x4E3A;&#x6807;&#x9898;&#x3002;</li>
+      <li>&#x6807;&#x9898;&#x5185;&#x5BB9;&#x524D;&#x7684; TODO &#x6807;&#x8BB0;&#x662F;&#x5F85;&#x529E;&#x4EFB;&#x52A1;&#x7684;&#x6807;&#x8BB0;&#x7B26;&#x53F7;&#x3002;</li>
+      <li>&#x6807;&#x9898;&#x884C;&#x540E;&#x9762;&#x4E24;&#x4E2A; : &#x7B26;&#x53F7;&#x95F4;&#x7684;&#x5185;&#x5BB9;&#x8868;&#x793A;&#x6807;&#x7B7E;&#xFF08; TAG &#xFF09;&#x3002;</li>
+      <li>&#x6807;&#x9898;&#x884C;&#x5982;&#x679C;&#x6807;&#x9898;&#x6587;&#x672C;&#x524D;&#x6709; COMMENT &#x6807;&#x8BB0;&#x8868;&#x793A;&#x8BE5;&#x6807;&#x9898;&#x4E0B;&#x7684;&#x6240;&#x6709;&#x5185;&#x5BB9;&#x4E3A;&#x6CE8;&#x91CA;&#x3002;</li>
+      <li>&#x4F4D;&#x4E8E; #+BEGIN<sub>XXX</sub> &#x548C; #+END<sub>XXX</sub> &#x4E4B;&#x95F4;&#x7684;&#x5185;&#x5BB9;&#x4E3A;&#x7279;&#x6B8A;&#x6587;&#x6863;&#x5757;&#xFF0C;&#x5982;&#x4EE3;&#x7801;&#x5757;&#x3001;&#x4F8B;&#x5B50;&#x3001;&#x5F15;&#x7528;&#x7B49;&#x3002;</li>
+      <li>C-c C-x C-h&#x67E5;&#x770B;&#x6309;&#x952E;&#x7684;&#x5E2E;&#x52A9;&#x4FE1;&#x606F;</li>
+    </ul>
+  </div>
+</div>
+
+<div id="outline-container-org89d42a8" class="outline-2">
+  <h2 id="org89d42a8"><span class="section-number-2">2</span> &#x5143;&#x6570;&#x636E;</h2>
+  <div class="outline-text-2" id="text-2">
+  </div>
+  <div id="outline-container-org7e28106" class="outline-3">
+    <h3 id="org7e28106"><span class="section-number-3">2.1</span> &#x6587;&#x6863;&#x5143;&#x6570;&#x636E;</h3>
+    <div class="outline-text-3" id="text-2-1">
+      <pre class="example">
+        &#x5177;&#x4F53;&#x5305;&#x62EC;&#xFF1A;
+
+        ,#+TITLE:       the title to be shown (default is the buffer name)
+        ,#+AUTHOR:      the author (default taken from user-full-name)
+        ,#+DATE:        a date, an Org timestamp1, or a format string for format-time-string
+        ,#+EMAIL:       his/her email address (default from user-mail-address)
+        ,#+DESCRIPTION: the page description, e.g. for the XHTML meta tag
+        ,#+KEYWORDS:    the page keywords, e.g. for the XHTML meta tag
+        ,#+LANGUAGE:    language for HTML, e.g. &#x2018;en&#x2019; (org-export-default-language)
+        ,#+TEXT:        Some descriptive text to be inserted at the beginning.
+        ,#+TEXT:        Several lines may be given.
+        ,#+OPTIONS:     H:2 num:t toc:t \n:nil @:t ::t |:t ^:t f:t TeX:t ...
+        ,#+BIND:        lisp-var lisp-val, e.g.: org-export-latex-low-levels itemize
+        You need to confirm using these, or configure org-export-allow-BIND
+        ,#+LINK_UP:     the ``up&apos;&apos; link of an exported page
+        ,#+LINK_HOME:   the ``home&apos;&apos; link of an exported page
+        ,#+LATEX_HEADER: extra line(s) for the LaTeX header, like \usepackage{xyz}
+        ,#+EXPORT_SELECT_TAGS:   Tags that select a tree for export
+        ,#+EXPORT_EXCLUDE_TAGS:  Tags that exclude a tree from export
+        ,#+XSLT:        the XSLT stylesheet used by DocBook exporter to generate FO file
+
+        &#x5176;&#x4E2D;#+OPTIONS&#x662F;&#x590D;&#x5408;&#x7684;&#x9009;&#x9879;&#xFF0C;&#x5305;&#x62EC;&#xFF1A;
+
+        H:         set the number of headline levels for export
+        num:       turn on/off section-numbers
+        toc:       turn on/off table of contents, or set level limit (integer)
+        \n:        turn on/off line-break-preservation (DOES NOT WORK)
+        @:         turn on/off quoted HTML tags
+        ::         turn on/off fixed-width sections
+        |:      turn on/off tables&#xFF08;&#x56E0;&#x4E3A;&#x4F7F;&#x7528;|&#x4F1A;&#x51FA;&#x9519;&#xFF09;
+        ^:         turn on/off TeX-like syntax for sub- and superscripts.  If
+        you write &quot;^:{}&quot;, a_{b} will be interpreted, but
+        the simple a_b will be left as it is.
+        -:         turn on/off conversion of special strings.
+        f:         turn on/off footnotes like this[1].
+        todo:      turn on/off inclusion of TODO keywords into exported text
+        tasks:     turn on/off inclusion of tasks (TODO items), can be nil to remove
+        all tasks, todo to remove DONE tasks, or list of kwds to keep
+        pri:       turn on/off priority cookies
+        tags:      turn on/off inclusion of tags, may also be not-in-toc
+        &lt;:         turn on/off inclusion of any time/date stamps like DEADLINES
+        ,*:         turn on/off emphasized text (bold, italic, underlined)
+        TeX:       turn on/off simple TeX macros in plain text
+        LaTeX:     configure export of LaTeX fragments.  Default auto
+        skip:      turn on/off skipping the text before the first heading
+        author:    turn on/off inclusion of author name/email into exported file
+        email:     turn on/off inclusion of author email into exported file
+        creator:   turn on/off inclusion of creator info into exported file
+        timestamp: turn on/off inclusion creation time into exported file
+        d:         turn on/off inclusion of drawers
+
+        &#x8FD9;&#x4E9B;&#x5143;&#x6570;&#x636E;&#x53EF;&#x4EE5;&#x6839;&#x636E;&#x9700;&#x8981;&#x8BBE;&#x7F6E;&#x3002;&#x5EFA;&#x8BAE;&#x653E;&#x5728;&#x6587;&#x6863;&#x7684;&#x5F00;&#x5934;&#x90E8;&#x5206;&#x3002;&#x5982;&#xFF0C;&#x672C;&#x6587;&#x91C7;&#x7528;&#x7684;&#x5143;&#x6570;&#x636E;&#x5982;&#x4E0B;&#xFF1A;
+
+        ,#+TITLE: org-mode: &#x6700;&#x597D;&#x7684;&#x6587;&#x6863;&#x7F16;&#x8F91;&#x5229;&#x5668;&#xFF0C;&#x6CA1;&#x6709;&#x4E4B;&#x4E00;
+        ,#+AUTHOR:sanshi Kong
+        ,#+EMAIL: kyleemail@163.com
+        ,#+KEYWORDS: emacs, org-mode
+        ,#+OPTIONS: H:4 toc:t </pre>
+    </div>
+  </div>
+  <div id="outline-container-org43a514f" class="outline-3">
+    <h3 id="org43a514f"><span class="section-number-3">2.2</span> &#x5185;&#x5BB9;&#x5143;&#x6570;&#x636E;</h3>
+    <div class="outline-text-3" id="text-2-2">
+      <pre class="example">
+        &#x901A;&#x5E38;&#x5728;&#x884C;&#x9996;&#x4EE5;&#x201C;#+&#x201D;&#x5F00;&#x5934;&#xFF0C;&#x53EF;&#x4EE5;&#x6709;&#x591A;&#x79CD;&#x7528;&#x9014;&#x3002;
+        &#x5206;&#x884C;&#x533A;&#x5757;
+        &#x9ED8;&#x8BA4;&#x5185;&#x5BB9;&#x4E0D;&#x6362;&#x884C;&#xFF0C;&#x9700;&#x8981;&#x7559;&#x51FA;&#x7A7A;&#x884C;&#x624D;&#x80FD;&#x6362;&#x884C;&#x3002;&#x5B9A;&#x4E49;&#x4E86;&#x5206;&#x884C;&#x7684;&#x533A;&#x5757;&#x53EF;&#x4EE5;&#x5B9E;&#x73B0;&#x666E;&#x901A;&#x6362;&#x884C;&#xFF1A;
+        ,#+BEGIN_VERSE
+        Great clouds overhead
+        Tiny black birds rise and fall
+        Snow covers Emacs
+        -- AlexSchroeder
+        ,#+END_VERSE
+        &#x7F29;&#x8FDB;&#x533A;&#x5757;
+        &#x901A;&#x5E38;&#x7528;&#x4E8E;&#x5F15;&#x7528;&#xFF0C;&#x4E0E;&#x9ED8;&#x8BA4;&#x683C;&#x5F0F;&#x76F8;&#x6BD4;&#x5DE6;&#x53F3;&#x90FD;&#x4F1A;&#x7559;&#x51FA;&#x7F29;&#x8FDB;&#xFF1A;
+        ,#+BEGIN_QUOTE
+        &#x7F29;&#x8FDB;&#x533A;&#x5757;
+        ,#+END_QUOTE
+        &#x5C45;&#x4E2D;&#x533A;&#x5757;
+        ,#+BEGIN_CENTER
+        Everything should be made as simple as possible, \\
+        but not any simpler
+        ,#+END_CENTER
+        &#x4EE3;&#x7801;&#x533A;&#x5757;
+        ,#+BEGIN_SRC ruby
+        require &apos;redcarpet&apos;
+        md = Redcarpet.new(&quot;Hello, world.&quot;)
+        puts md.to_html
+        ,#+END_SRC
+        &#x4F8B;&#x5B50;
+        : &#x5355;&#x884C;&#x7684;&#x4F8B;&#x5B50;&#x4EE5;&#x5192;&#x53F7;&#x5F00;
+        &#x4E0B;&#x9762;&#x591A;&#x884C;&#x4F8B;&#x5B50;&#x4E0D;&#x5F97;&#x5DF2;&#x524D;&#x9762;&#x90FD;&#x52A0;&#x4E0A;&#x4E86;:&#x5934;
+        : #+BEGIN_EXAMPLE
+        &#x591A;&#x884C;&#x7684;&#x4F8B;&#x5B50;
+        &#x4F7F;&#x7528;&#x533A;&#x5757;
+        : #+END_EXAMPLE
+        &#x6CE8;&#x91CA;
+        &#x4EE5;&#x2018;#&#x2018;&#x5F00;&#x5934;&#x7684;&#x884C;&#x88AB;&#x770B;&#x4F5C;&#x6CE8;&#x91CA;&#xFF0C;&#x4E0D;&#x4F1A;&#x88AB;&#x5BFC;&#x51FA;
+        &#x533A;&#x5757;&#x6CE8;&#x91CA;&#x91C7;&#x7528;&#x5982;&#x4E0B;&#x5199;&#x6CD5;&#xFF1A;
+        ,#+BEGIN_COMMENT
+        &#x5757;&#x6CE8;&#x91CA;
+        ...
+        ,#+END_COMMENT
+        &#x8868;&#x683C;&#x4E0E;&#x56FE;&#x7247;
+        &#x5BF9;&#x4E8E;&#x8868;&#x683C;&#x548C;&#x56FE;&#x7247;&#xFF0C;&#x53EF;&#x4EE5;&#x5728;&#x524D;&#x9762;&#x589E;&#x52A0;&#x6807;&#x9898;&#x548C;&#x6807;&#x7B7E;&#x7684;&#x8BF4;&#x660E;&#xFF0C;&#x4EE5;&#x65B9;&#x4FBF;&#x4EA4;&#x53C9;&#x5F15;&#x7528;&#x3002;
+        &#x6BD4;&#x5982;&#x5728;&#x8868;&#x683C;&#x7684;&#x524D;&#x9762;&#x6DFB;&#x52A0;&#xFF1A;
+        ,#+CAPTION: This is the caption for the next table (or link)
+        ,#+LABEL: tbl:table1
+        &#x5219;&#x5728;&#x9700;&#x8981;&#x7684;&#x5730;&#x65B9;&#x53EF;&#x4EE5;&#x901A;&#x8FC7;
+        \ref{table1}
+        &#x6765;&#x5F15;&#x7528;&#x8BE5;&#x8868;&#x683C;&#x3002;</pre>
+    </div>
+  </div>
+</div>
+
+<div id="outline-container-orga044996" class="outline-2">
+  <h2 id="orga044996"><span class="section-number-2">3</span> Org&#x6807;&#x9898;</h2>
+  <div class="outline-text-2" id="text-3">
+  </div>
+  <div id="outline-container-org435ab13" class="outline-3">
+    <h3 id="org435ab13"><span class="section-number-3">3.1</span> &#x6807;&#x9898;&#x8BED;&#x6CD5;</h3>
+    <div class="outline-text-3" id="text-3-1">
+      <div class="org-src-container">
+        <figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">STARS KEYWORD PRIORITY TITLE TAGS</span><br></pre></td></tr></table></figure>
+      </div>
+      <p>
+        &#x5176;&#x4E2D;&#xFF1A;
+      </p>
+      <ul class="org-ul">
+        <li>STARS&#x5373;&#x661F;&#x53F7;&#xFF0C;&#x8FD9;&#x662F;&#x4E00;&#x4E2A;&#x6807;&#x9898;&#x552F;&#x4E00;&#x5FC5;&#x8981;&#x7684;&#x5185;&#x5BB9;&#xFF0C;&#x5176;&#x4ED6;&#xFF08;&#x5305;&#x62EC;&#x6807;&#x9898;&#x540D;&#x79F0;&#xFF09;&#x90FD;&#x53EF;&#x4EE5;&#x7701;&#x7565;&#x3002;</li>
+        <li>KEYRORD &#x4E3A;TODO&#x5173;&#x952E;&#x8BCD;&#xFF0C;&#x5927;&#x5C0F;&#x5199;&#x654F;&#x611F;&#x3002;</li>
+        <li>PRIORITY &#x4E3A;&#x4F18;&#x5148;&#x7EA7;&#x9009;&#x9879;&#xFF0C;&#x4E3A;#&#x53F7;&#x52A0;&#x4E00;&#x4E2A;&#x5B57;&#x7B26;&#x5E76;&#x7528;&#x65B9;&#x62EC;&#x53F7;&#x62EC;&#x8D77;&#x6765;&#xFF0C;&#x5982; [#A]</li>
+        <li>TITLE &#x5373;&#x4E3A;&#x5B9E;&#x9645;&#x7684;&#x6807;&#x9898;&#x6587;&#x672C;</li>
+        <li>TAGS &#x4E3A;&#x6807;&#x7B7E;&#x3002;</li>
+      </ul>
+      <p>
+        &#x4F8B;&#x5B50;&#xFF1A;** TODO [#2] &#x4F18;&#x5148;&#x7EA7;&#x4E3A;2&#x7684;&#x5F85;&#x529E;&#x4E8B;&#x9879; :@home&#xFF1A;
+      </p>
+    </div>
+  </div>
+  <div id="outline-container-orgcf5dcd8" class="outline-3">
+    <h3 id="orgcf5dcd8"><span class="section-number-3">3.2</span> &#x57FA;&#x4E8E;&#x6807;&#x9898;&#x7684;&#x6587;&#x6863;&#x7F16;&#x8F91;</h3>
+    <div class="outline-text-3" id="text-3-2">
+      <p>
+        Org&#x57FA;&#x4E8E;&#x6807;&#x9898;&#x7684;&#x6587;&#x6863;&#x7F16;&#x8F91;&#x65B9;&#x5F0F;&#x5141;&#x8BB8;&#x7528;&#x6237;&#x5728;&#x975E;&#x5E38;&#x7B80;&#x6D01;&#x7684;&#x663E;&#x793A;&#x6A21;&#x5F0F;&#x4E0B;&#x5BF9;&#x67D0;&#x4E2A;&#x6216;&#x591A;&#x4E2A;&#x6807;&#x9898;&#x4E0B;&#x7684;&#x6240;&#x6709;&#x5185;&#x5BB9;&#x8FDB;&#x884C;&#x590D;&#x5236;&#x3001;
+        &#x7C98;&#x8D34;&#x3001;&#x79FB;&#x52A8;&#x7B49;&#x64CD;&#x4F5C;&#xFF0C;&#x76F8;&#x5F53;&#x65B9;&#x4FBF;&#xFF0C;&#x771F;&#x6B63;&#x5B9E;&#x73B0;&#x4E86;&#x6807;&#x9898;&#x5728;&#x6587;&#x6863;&#x7BA1;&#x7406;&#x4E2D;&#x7684;&#x7EC4;&#x7EC7;&#x8005;&#x4F5C;&#x7528;&#x3002;
+        Org&#x5927;&#x5927;&#x7B80;&#x5316;&#x4E86;&#x5927;&#x7EB2;&#x6A21;&#x5F0F;&#x7684;&#x4F7F;&#x7528;&#xFF0C;&#x628A;&#x5927;&#x7EB2;&#x6A21;&#x5F0F;&#x7684;&#x6574;&#x4E2A;&#x663E;&#x793A;/&#x9690;&#x85CF;&#x529F;&#x80FD;&#x6574;&#x5408;&#x5230;&#x4E86;&#x4E00;&#x4E2A;&#x547D;&#x4EE4;&#x4E2D;&#xFF1A;org-cycle&#xFF0C;&#x5E76;&#x7ED1;&#x5B9A;&#x5728;TAB&#x952E;&#x4E0A;&#x3002;
+      </p>
+    </div>
+    <div id="outline-container-org87a9712" class="outline-4">
+      <h4 id="org87a9712"><span class="section-number-4">3.2.1</span> &#x89C6;&#x56FE;&#x5FAA;&#x73AF;</h4>
+      <div class="outline-text-4" id="text-3-2-1">
+        <table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+          <colgroup>
+            <col class="org-left">
+
+            <col class="org-left">
+          </colgroup>
+          <thead>
+            <tr>
+              <th scope="col" class="org-left">&#x6309;&#x952E;</th>
+              <th scope="col" class="org-left">&#x52A8;&#x4F5C;</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="org-left">TAB</td>
+              <td class="org-left">&#x5B50;&#x6811;&#x5FAA;&#x73AF;&#xFF0C;&#x9700;&#x8981;&#x63D2;&#x5165;&#x70B9;&#x5728;&#x6807;&#x9898;&#x4E0A;</td>
+            </tr>
+
+            <tr>
+              <td class="org-left">C-u TAB</td>
+              <td class="org-left">&#x5B50;&#x6811;&#x89C6;&#x56FE;&#x5728;FOLDED-&gt;CHILDREN-&gt;SUBTREE</td>
+            </tr>
+
+            <tr>
+              <td class="org-left">S-TAB</td>
+              <td class="org-left">&#x5168;&#x5C40;&#x5FAA;&#x73AF;&#xFF0C;&#x6574;&#x4E2A;&#x7F13;&#x51B2;&#x533A;&#x5728;OVERVIEW-&gt;CONTENTS-&gt;SHOWALL&#x72B6;&#x6001;&#x4E2D;&#x5FAA;&#x73AF;</td>
+            </tr>
+
+            <tr>
+              <td class="org-left">C-u C-u C-u TAB</td>
+              <td class="org-left">&#x663E;&#x793A;&#x5168;&#x90E8;&#xFF0C;&#x5305;&#x62EC;drawers</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>
+          &#x9ED8;&#x8BA4;&#x6253;&#x5F00;&#x65F6;&#x662F;OVERVIEW&#x72B6;&#x6001;&#x3002;&#x53D8;&#x91CF;org-startup-folded&#x53EF;&#x4EE5;&#x5B9A;&#x5236;&#xFF0C;startup&#x5173;&#x952E;&#x5B57;&#x4E5F;&#x53EF;&#x4EE5;&#x5BF9;&#x5355;&#x4E2A;&#x6587;&#x4EF6;&#x751F;&#x6548;&#x3002;
+        </p>
+        <pre class="example">
+          ,#+STARTUP: content</pre>
+        <p>
+          :(setq org-startup-folded nil)
+        </p>
+      </div>
+    </div>
+  </div>
+  <div id="outline-container-orgaa7805f" class="outline-3">
+    <h3 id="orgaa7805f"><span class="section-number-3">3.3</span> &#x672F;&#x8BED;&#x7EA6;&#x5B9A;</h3>
+    <div class="outline-text-3" id="text-3-3">
+      <ul class="org-ul">
+        <li>&#x6807;&#x9898;&#xFF1A;&#x4EC5;&#x6307;&#x6807;&#x9898;&#x5B9A;&#x4E49;&#x884C;</li>
+        <li>&#x5B50;&#x6807;&#x9898;&#xFF1A;&#x5927;&#x6807;&#x9898;&#x4E0B;&#x5C5E;&#x7684;&#x5C0F;&#x6807;&#x9898;</li>
+        <li>&#x6807;&#x9898;&#x6811;&#xFF1A;&#x5305;&#x62EC;&#x6807;&#x9898;&#x3001;&#x5B50;&#x6807;&#x9898;&#x53CA;&#x5176;&#x4E0B;&#x5C5E;&#x7684;&#x6240;&#x6709;&#x6587;&#x672C;</li>
+        <li>&#x5927;&#x7EB2;&#xFF1A;&#x6216;&#x6587;&#x6863;&#x8F6E;&#x5ED3;&#xFF0C;&#x5373;&#x5168;&#x90E8;&#x6807;&#x9898;&#xFF0C;&#x662F;&#x4E00;&#x79CD;&#x663E;&#x793A;&#x6A21;&#x5F0F;</li>
+        <li>&#x5927;&#x7EB2;&#x6298;&#x53E0;&#xFF1A;&#x9690;&#x85CF;&#x5B50;&#x6807;&#x9898;&#x6811;</li>
+        <li>&#x5927;&#x7EB2;&#x5C55;&#x5F00;&#xFF1A;&#x5206;&#x7EA7;&#x663E;&#x793A;&#x5B50;&#x6807;&#x9898;&#x6811;</li>
+      </ul>
+    </div>
+  </div>
+  <div id="outline-container-orgcb17f0f" class="outline-3">
+    <h3 id="orgcb17f0f"><span class="section-number-3">3.4</span> &#x5728;&#x6807;&#x9898;&#x95F4;&#x79FB;&#x52A8;&#x5149;&#x6807;</h3>
+    <div class="outline-text-3" id="text-3-4">
+      <table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+        <colgroup>
+          <col class="org-left">
+
+          <col class="org-left">
+        </colgroup>
+        <thead>
+          <tr>
+            <th scope="col" class="org-left">&#x6309;&#x952E;</th>
+            <th scope="col" class="org-left">&#x52A8;&#x4F5C;</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="org-left">C-c C-p/n</td>
+            <td class="org-left">&#x79FB;&#x52A8;&#x5230;&#x4E0A;/&#x4E0B;&#x4E00;&#x4E2A;&#x6807;&#x9898;</td>
+          </tr>
+
+          <tr>
+            <td class="org-left">C-c C-b/f</td>
+            <td class="org-left">&#x79FB;&#x52A8;&#x5230;&#x540C;&#x7EA7;&#x522B;&#x7684;&#x4E0A;/&#x4E0B;&#x6807;&#x9898;</td>
+          </tr>
+
+          <tr>
+            <td class="org-left">C-c C-u</td>
+            <td class="org-left">&#x8DF3;&#x5230;&#x4E0A;&#x4E00;&#x7EA7;&#x6807;&#x9898;</td>
+          </tr>
+
+          <tr>
+            <td class="org-left">C-c C-j</td>
+            <td class="org-left">&#x5207;&#x6362;&#x5230;&#x5927;&#x7EB2;&#x6D4F;&#x89C8;&#x6A21;&#x5F0F;</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div id="outline-container-org0e95569" class="outline-3">
+    <h3 id="org0e95569"><span class="section-number-3">3.5</span> &#x5927;&#x7EB2;&#x7684;&#x6298;&#x53E0;&#x4E0E;&#x5C55;&#x5F00;</h3>
+    <div class="outline-text-3" id="text-3-5">
+      <table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+        <colgroup>
+          <col class="org-left">
+
+          <col class="org-left">
+        </colgroup>
+        <thead>
+          <tr>
+            <th scope="col" class="org-left">&#x6309;&#x952E;</th>
+            <th scope="col" class="org-left">&#x52A8;&#x4F5C;</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="org-left">TAB</td>
+            <td class="org-left">&#x5C40;&#x90E8;&#x547D;&#x4EE4;&#xFF0C;&#x5FAA;&#x73AF;&#x4F7F;&#x7528;&#x53EF;&#x4EE5;&#x6298;&#x53E0;&#x3001;&#x5C55;&#x5F00;&#x5149;&#x6807;&#x6240;&#x5728;&#x4F4D;&#x7F6E;&#x4E0A;&#x7684;&#x6807;&#x9898;&#x6811;</td>
+          </tr>
+
+          <tr>
+            <td class="org-left">S+TAB</td>
+            <td class="org-left">&#x5168;&#x5C40;&#x547D;&#x4EE4;&#xFF0C;&#x5FAA;&#x73AF;&#x4F7F;&#x7528;&#x53EF;&#x4EE5;&#x6298;&#x53E0;&#x3001;&#x5C55;&#x5F00;&#x6574;&#x4E2A;&#x6587;&#x6863;&#x7684;&#x6807;&#x9898;&#x6811;</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div id="outline-container-org0751531" class="outline-3">
+    <h3 id="org0751531"><span class="section-number-3">3.6</span> &#x8BBE;&#x5B9A;&#x6587;&#x6863;&#x5C5E;&#x6027;</h3>
+    <div class="outline-text-3" id="text-3-6">
+      <ul class="org-ul">
+        <li>#+STARTUP: overview</li>
+        <li>#+STARTUP: contant</li>
+        <li>#+STARTUP: showall</li>
+        <li>#+STARTUP: showeverything</li>
+      </ul>
+      <pre class="example">
+        # -*- Org -*-
+        ,#+TITLE: Org-mode&#x7B14;&#x8BB0;
+        ,#+AUTHOR: kyleemail@163.com
+        ,#+STARTUP: content
+        ,#+STARTUP: indent
+        ,#+TODO: TODO STARTED | DONE
+        ,#+TYP_TODO: &#x5DE5;&#x4F5C;(w!) &#x5B66;&#x4E60;(s!) &#x4F11;&#x95F2;(l!)
+        ,#+SEQ_TODO: PENDING(p!) TODO(t!) | DONE(d!) ABORT(a@/!)</pre>
+    </div>
+  </div>
+  <div id="outline-container-org07705d7" class="outline-3">
+    <h3 id="org07705d7"><span class="section-number-3">3.7</span> &#x7F16;&#x8F91;&#x6807;&#x9898;</h3>
+    <div class="outline-text-3" id="text-3-7">
+      <table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+        <colgroup>
+          <col class="org-left">
+
+          <col class="org-left">
+        </colgroup>
+        <thead>
+          <tr>
+            <th scope="col" class="org-left">&#x6309;&#x952E;</th>
+            <th scope="col" class="org-left">&#x52A8;&#x4F5C;</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="org-left">M-LEFT/RIGHT</td>
+            <td class="org-left">&#x5347;&#x7EA7;/&#x964D;&#x7EA7;&#x5F53;&#x524D;&#x6807;&#x9898;&#xFF0C;&#x4E0D;&#x5141;&#x8BB8;&#x6709;&#x5B50;&#x6807;&#x9898;&#x7684;&#x5B58;&#x5728;</td>
+          </tr>
+
+          <tr>
+            <td class="org-left">M-S-LEFT/RIGHT</td>
+            <td class="org-left">&#x5347;&#x7EA7;/&#x964D;&#x7EA7;&#x5F53;&#x524D;&#x6807;&#x9898;&#xFF0C;&#x6807;&#x9898;&#x6811;&#x5185;&#x7684;&#x5404;&#x7EA7;&#x6807;&#x9898;&#x76F8;&#x5E94;&#x5347;&#x7EA7;/&#x964D;&#x7EA7;</td>
+          </tr>
+
+          <tr>
+            <td class="org-left">M-UP/DOWN</td>
+            <td class="org-left">&#x5728;&#x540C;&#x7EA7;&#x6807;&#x9898;&#x95F4;&#x4E0A;/&#x4E0B;&#x79FB;&#x52A8;&#x6807;&#x9898;&#x6811;&#xFF0C;&#x4E0D;&#x80FD;&#x8DE8;&#x7EA7;&#x522B;&#x79FB;&#x52A8;</td>
+          </tr>
+
+          <tr>
+            <td class="org-left">M-RET</td>
+            <td class="org-left">&#x5728;&#x5F53;&#x524D;&#x6807;&#x9898;&#x540E;&#x63D2;&#x5165;&#x540C;&#x7EA7;&#x522B;&#x6807;&#x9898;&#x7B26;&#x53F7;</td>
+          </tr>
+
+          <tr>
+            <td class="org-left">C-RET</td>
+            <td class="org-left">&#x5728;&#x5F53;&#x524D;&#x6807;&#x9898;&#x6811;&#x540E;&#x63D2;&#x5165;&#x540C;&#x7EA7;&#x6807;&#x9898;&#x7B26;&#x53F7;</td>
+          </tr>
+
+          <tr>
+            <td class="org-left">M-S-RET</td>
+            <td class="org-left">&#x5728;&#x5F53;&#x524D;&#x6807;&#x9898;&#x540E;&#x63D2;&#x5165;&#x540C;&#x7EA7;TODO&#x6807;&#x9898;</td>
+          </tr>
+
+          <tr>
+            <td class="org-left">C-S-RET</td>
+            <td class="org-left">&#x5728;&#x5F53;&#x524D;&#x6807;&#x9898;&#x6811;&#x540E;&#x63D2;&#x5165;&#x540C;&#x7EA7;TODO&#x6807;&#x9898;</td>
+          </tr>
+
+          <tr>
+            <td class="org-left">C-c *</td>
+            <td class="org-left">&#x628A;&#x5149;&#x6807;&#x6240;&#x5728;&#x884C;&#x8F6C;&#x6210;&#x6807;&#x9898;</td>
+          </tr>
+
+          <tr>
+            <td class="org-left">C-c -</td>
+            <td class="org-left">&#x628A;&#x5149;&#x6807;&#x6240;&#x5728;&#x884C;&#x8F6C;&#x5316;&#x6210;&#x5217;&#x8868;</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>
+        &#x4F7F;&#x7528;Tips:Org-mode&#x5F88;&#x591A;&#x7F16;&#x8F91;&#x547D;&#x4EE4;&#x7684;&#x4F7F;&#x7528;&#x4E0E;&#x5149;&#x6807;&#x6240;&#x5904;&#x7684;&#x4F4D;&#x7F6E;&#x6709;&#x5173;&#xFF0C;&#x540C;&#x4E00;&#x4E2A;&#x952E;&#x76D8;&#x547D;&#x4EE4;&#x4F4D;&#x4E8E;&#x4E0D;&#x540C;&#x7684;&#x6587;&#x672C;&#x73AF;&#x5883;&#x6709;&#x4E0D;&#x540C;&#x7684;&#x4F5C;&#x7528;&#xFF0C;&#x8FD9;&#x4E9B;&#x547D;&#x4EE4;&#x79F0;&#x4E3A;**&#x5C40;
+        &#x90E8;&#x547D;&#x4EE4;**
+      </p>
+    </div>
+  </div>
+  <div id="outline-container-org291192e" class="outline-3">
+    <h3 id="org291192e"><span class="section-number-3">3.8</span> &#x7A00;&#x758F;&#x6811;</h3>
+    <div class="outline-text-3" id="text-3-8">
+      <p>
+        Org&#x6A21;&#x5F0F;&#x6709;&#x4E00;&#x4E2A;&#x91CD;&#x8981;&#x7684;&#x529F;&#x80FD;&#x662F;&#x80FD;&#x6839;&#x636E;&#x5927;&#x7EB2;&#x6811;&#x4E2D;&#x9009;&#x62E9;&#x7684;&#x4FE1;&#x606F;&#x6784;&#x5EFA;&#x5904;&#x7A00;&#x758F;&#x7684;&#x6811;&#xFF0C;&#x8FD9;&#x6837;&#x6587;&#x6863;&#x5C31;&#x53EF;&#x4EE5;&#x5C3D;&#x53EF;&#x80FD;&#x7684;&#x6298;&#x53E0;&#xFF0C;
+        &#x53EA;&#x6709;&#x9009;&#x62E9;&#x7684;&#x4FE1;&#x606F;&#x548C;&#x5B83;&#x5BF9;&#x5E94;&#x7684;&#x6807;&#x9898;&#x4F1A;&#x663E;&#x793A;&#x51FA;&#x6765;
+      </p>
+      <table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+        <colgroup>
+          <col class="org-left">
+
+          <col class="org-left">
+        </colgroup>
+        <tbody>
+          <tr>
+            <td class="org-left">C-c /</td>
+            <td class="org-left">&#x63D0;&#x793A;&#x8F93;&#x5165;&#x4E00;&#x4E2A;&#x5B57;&#x7B26;&#x6765;&#x9009;&#x62E9;&#x7A00;&#x758F;&#x6811;&#x7684;&#x521B;&#x5EFA;&#x547D;&#x4EE4;</td>
+          </tr>
+
+          <tr>
+            <td class="org-left">C-c / r</td>
+            <td class="org-left">&#x8F93;&#x5165;&#x5339;&#x914D;&#x5B57;&#x7B26;&#x4E32;&#xFF0C;&#x5C06;&#x5339;&#x914D;&#x7684;&#x9879;&#x663E;&#x793A;&#x6210;&#x7A00;&#x758F;&#x6811;&#xFF0C;&#x4E14;&#x9AD8;&#x4EAE;&#xFF1B;&#x6309;C-c C-c&#x53D6;&#x6D88;&#x9AD8;&#x4EAE;</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<div id="outline-container-org9d8d155" class="outline-2">
+  <h2 id="org9d8d155"><span class="section-number-2">4</span> &#x8868;&#x683C;</h2>
+  <div class="outline-text-2" id="text-4">
+    <p>
+      Org &#x80FD;&#x591F;&#x5F88;&#x5BB9;&#x6613;&#x5730;&#x5904;&#x7406; ASCII &#x6587;&#x672C;&#x8868;&#x683C;&#x3002;&#x4EFB;&#x4F55;&#x4EE5;&#x2018;|&#x2019;&#x4E3A;&#x9996;&#x4E2A;&#x975E;&#x7A7A;&#x5B57;&#x7B26;&#x7684;&#x884C;&#x90FD;&#x4F1A;&#x88AB;&#x8BA4;&#x4E3A;&#x662F;&#x8868;&#x683C;&#x7684;&#x4E00;&#x90E8;&#x5206;&#x3002;&#x2019;|&#x2018;&#x4E5F;&#x662F;&#x5217;&#x5206;&#x9694;&#x7B26;&#x3002;&#x4E00;&#x4E2A;&#x8868;&#x683C;&#x662F;&#x4E0B;
+      &#x9762;&#x7684;&#x6837;&#x5B50;&#xFF1A;
+    </p>
+    <table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+      <colgroup>
+        <col class="org-left">
+
+        <col class="org-right">
+
+        <col class="org-right">
+      </colgroup>
+      <thead>
+        <tr>
+          <th scope="col" class="org-left">Name</th>
+          <th scope="col" class="org-right">Pone</th>
+          <th scope="col" class="org-right">Age</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="org-left">Peter</td>
+          <td class="org-right">1234</td>
+          <td class="org-right">17</td>
+        </tr>
+
+        <tr>
+          <td class="org-left">Anna</td>
+          <td class="org-right">4321</td>
+          <td class="org-right">25</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>
+      &#x4F60;&#x53EF;&#x80FD;&#x8BA4;&#x4E3A;&#x8981;&#x5F55;&#x5165;&#x8FD9;&#x6837;&#x7684;&#x8868;&#x683C;&#x5F88;&#x7E41;&#x7410;&#xFF0C;&#x5B9E;&#x9645;&#x4E0A;&#x4F60;&#x53EA;&#x9700;&#x8981;&#x8F93;&#x5165;&#x8868;&#x5934;&#x201C;|Name|Pone|Age&#x201D;&#x4E4B;&#x540E;&#xFF0C;&#x6309;C-c RET,&#x5C31;&#x53EF;&#x4EE5;&#x751F;&#x6210;&#x6574;&#x4E2A;&#x8868;&#x683C;&#x7684;&#x7ED3;&#x6784;&#x3002;&#x7C7B;&#x4F3C;&#x7684;
+      &#x5FEB;&#x6377;&#x952E;&#x8FD8;&#x6709;&#x5F88;&#x591A;&#xFF1A;
+    </p>
+    <table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+      <colgroup>
+        <col class="org-left">
+
+        <col class="org-left">
+      </colgroup>
+      <thead>
+        <tr>
+          <th scope="col" class="org-left">&#x6309;&#x952E;</th>
+          <th scope="col" class="org-left">&#x52A8;&#x4F5C;</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="org-left">C-c  &#x7AD6;&#x7EBF;</td>
+          <td class="org-left">&#x521B;&#x5EFA;&#x6216;&#x8005;&#x8F6C;&#x6362;&#x6210;&#x8868;&#x683C;</td>
+        </tr>
+
+        <tr>
+          <td class="org-left">C-c C-c</td>
+          <td class="org-left">&#x8C03;&#x6574;&#x8868;&#x683C;&#xFF0C;&#x4F46;&#x4E0D;&#x79FB;&#x52A8;&#x5149;&#x6807;</td>
+        </tr>
+
+        <tr>
+          <td class="org-left">TAB</td>
+          <td class="org-left">&#x79FB;&#x52A8;&#x5230;&#x4E00;&#x4E2A;&#x533A;&#x57DF;&#xFF0C;&#x5FC5;&#x8981;&#x65F6;&#x65B0;&#x5EFA;&#x4E00;&#x884C;</td>
+        </tr>
+
+        <tr>
+          <td class="org-left">S-TAB</td>
+          <td class="org-left">&#x79FB;&#x52A8;&#x5230;&#x4E0A;&#x4E00;&#x533A;&#x57DF;</td>
+        </tr>
+
+        <tr>
+          <td class="org-left">RET</td>
+          <td class="org-left">&#x79FB;&#x52A8;&#x5230;&#x4E0B;&#x4E00;&#x884C;&#xFF0C;&#x5FC5;&#x8981;&#x662F;&#x65B0;&#x5EFA;&#x4E00;&#x884C;</td>
+        </tr>
+
+        <tr>
+          <td class="org-left">M-LEFT/RIGHT</td>
+          <td class="org-left">&#x79FB;&#x52A8;&#x5217;</td>
+        </tr>
+
+        <tr>
+          <td class="org-left">M-UP/DOWN</td>
+          <td class="org-left">&#x79FB;&#x52A8;&#x884C;</td>
+        </tr>
+
+        <tr>
+          <td class="org-left">M-S-LEFT/RIGHT</td>
+          <td class="org-left">&#x5220;&#x9664;/&#x521B;&#x5EFA;&#x5217;</td>
+        </tr>
+
+        <tr>
+          <td class="org-left">M-S-UP/DOWN</td>
+          <td class="org-left">&#x5220;&#x9664;/&#x521B;&#x5EFA;&#x884C;</td>
+        </tr>
+
+        <tr>
+          <td class="org-left">C-c -</td>
+          <td class="org-left">&#x6DFB;&#x52A0;&#x6C34;&#x5E73;&#x5206;&#x5272;&#x7EBF;</td>
+        </tr>
+
+        <tr>
+          <td class="org-left">C-c RET</td>
+          <td class="org-left">&#x6DFB;&#x52A0;&#x6C34;&#x5E73;&#x5206;&#x5272;&#x7EBF;&#x5E76;&#x8C03;&#x5230;&#x4E0B;&#x4E00;&#x884C;</td>
+        </tr>
+
+        <tr>
+          <td class="org-left">C-c ^</td>
+          <td class="org-left">&#x6839;&#x636E;&#x5F53;&#x524D;&#x5217;&#x9009;&#x62E9;&#x6392;&#x5E8F;&#x65B9;&#x5F0F;</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+<div id="outline-container-org95feb5e" class="outline-2">
+  <h2 id="org95feb5e"><span class="section-number-2">5</span> &#x6587;&#x672C;&#x5217;&#x8868;</h2>
+  <div class="outline-text-2" id="text-5">
+    <p>
+      Org&#x80FD;&#x591F;&#x8BC6;&#x522B;&#x6709;&#x5E8F;&#x5217;&#x8868;&#x3001;&#x65E0;&#x5E8F;&#x5217;&#x8868;&#x3001;&#x63CF;&#x8FF0;&#x5217;&#x8868;
+    </p>
+    <ul class="org-ul">
+      <li>&#x65E0;&#x5E8F;&#x5217;&#x8868;&#x4EE5;&apos;-&apos;&#x3001;&apos;+&apos;&#x3001;&apos;*&apos;&#x5F00;&#x5934;</li>
+      <li>&#x6709;&#x5E8F;&#x5217;&#x8868;&#x4EE5;&apos;1.&apos;&#x3001;&apos;1)&apos;&#x5F00;&#x5934;</li>
+      <li>&#x63CF;&#x8FF0;&#x5217;&#x8868;&#x7528;&apos;::&apos;&#x5C06;&#x9879;&#x548C;&#x63CF;&#x8FF0;&#x5206;&#x5F00;</li>
+    </ul>
+    <p>
+      &#x540C;&#x4E00;&#x5217;&#x8868;&#x4E2D;&#x9879;&#x7684;&#x7B2C;&#x4E00;&#x884C;&#x5FC5;&#x987B;&#x7F29;&#x8FDB;&#x76F8;&#x540C;&#x7684;&#x7A0B;&#x5EA6;&#xFF1B;&#x4E0B;&#x4E00;&#x884C;&#x7684;&#x7F29;&#x8FDB;&#x4E0E;&#x5217;&#x8868;&#x5F00;&#x5934;&#x7684;&#x7B26;&#x53F7;&#x6216;&#x8005;&#x6570;&#x5B57;&#x76F8;&#x540C;&#x6216;&#x8005;&#x66F4;&#x5C0F;&#x65F6;&#xFF0C;&#x8FD9;&#x4E00;&#x9879;&#x5C31;&#x7ED3;&#x675F;&#x4E86;&#x3002;
+    </p>
+    <pre class="example">
+      My favorite scenes are (in this order)
+      1. The attack of the Rohirrim
+      2. Eowyn&apos;s fight with the witch king
+      + this was already my favorite scene in the book
+      + I really like Miranda Otto.
+      Important actors in this film are:
+      - Elijah Wood :: He plays Frodo
+      - Sean Austin :: He plays Sam, Frodo&apos;s friend.</pre>
+  </div>
+</div>
+
+<div id="outline-container-org76abe76" class="outline-2">
+  <h2 id="org76abe76"><span class="section-number-2">6</span> &#x5B57;&#x4F53;</h2>
+  <div class="outline-text-2" id="text-6">
+    <p>
+      <b>&#x7C97;&#x4F53;</b>
+      <i>&#x659C;&#x4F53;</i>
+      <del>&#x5220;&#x9664;&#x7EBF;</del>
+      <span class="underline">&#x4E0B;&#x5212;&#x7EBF;</span>
+      &#x4E0B;&#x6807;&#xFF1A; H<sub>2</sub> O(&#x8FD9;&#x91CC;&#x5FC5;&#x987B;&#x7559;&#x4E00;&#x4E2A;&#x7A7A;&#x683C;&#x8981;&#x4E0D;&#x7136;2&#x548C;O&#x90FD;&#x6210;&#x4E3A;&#x5C0F;&#x6807;&#xFF0C;&#x76EE;&#x524D;&#x8FD8;&#x4E0D;&#x77E5;&#x9053;&#x600E;&#x4E48;&#x53BB;&#x6389;&#x7A7A;&#x683C;)
+      &#x4E0A;&#x6807;&#xFF1A; E=mc<sup>2</sup>
+      &#x7B49;&#x5BBD;&#x5B57;&#xFF1A;  <code>=git=</code>
+    </p>
+  </div>
+</div>
+<div id="outline-container-org645c1f5" class="outline-2">
+  <h2 id="org645c1f5"><span class="section-number-2">7</span> &#x6BB5;&#x843D;</h2>
+  <div class="outline-text-2" id="text-7">
+    <p>
+      &#x5BF9;&#x4E8E;&#x5355;&#x4E2A;&#x56DE;&#x8F66;&#x6362;&#x884C;&#x7684;&#x6587;&#x672C;&#xFF0C;&#x4EFB;&#x52A1;&#x5176;&#x5C5E;&#x4E8E;&#x540C;&#x4E00;&#x4E2A;&#x6BB5;&#x843D;&#x3002;
+      &#x5982;&#x679C;&#x8981;&#x65B0;&#x8D77;&#x4E00;&#x6BB5;&#xFF0C;&#x9700;&#x8981;&#x7559;&#x51FA;&#x4E00;&#x4E2A;&#x7A7A;&#x884C;&#x3002;
+    </p>
+  </div>
+</div>
+<div id="outline-container-orgbd75318" class="outline-2">
+  <h2 id="orgbd75318"><span class="section-number-2">8</span> &#x811A;&#x6CE8;</h2>
+  <div class="outline-text-2" id="text-8">
+    <p>
+      &#x811A;&#x6CE8;&#x5C31;&#x662F;&#x4EE5;&#x811A;&#x6CE8;&#x5B9A;&#x4E49;&#x7B26;&#x53F7;&#x5F00;&#x5934;&#x7684;&#x4E00;&#x6BB5;&#x8BDD;&#xFF0C;&#x811A;&#x6CE8;&#x5B9A;&#x4E49;&#x7B26;&#x53F7;&#x662F;&#x5C06;&#x811A;&#x6CE8;&#x540D;&#x79F0;&#x653E;&#x5728;&#x4E00;&#x4E2A;&#x65B9;&#x62EC;&#x53F7;&#x91CC;&#xFF0C;&#x9700;&#x8981;&#x811A;&#x6CE8;&#x7F16;&#x53F7;&#xFF0C;&#x8981;&#x6C42;&#x653E;&#x5728;&#x7B2C;0&#x5217;&#xFF0C;&#x4E0D;&#x80FD;&#x6709;&#x7F29;&#x8FDB;&#x3002;
+      &#x5F15;&#x7528;&#x5C31;&#x662F;&#x5728;&#x6B63;&#x6587;&#x4E2D;&#x5C06;&#x811A;&#x6CE8;&#x540D;&#x79F0;&#x7528;&#x65B9;&#x62EC;&#x53F7;&#x62EC;&#x8D77;&#x6765;&#x3002;
+    </p>
+    <pre class="example">
+      The Org homepage [fn:1] now looks a lot better than it used to.
+      ....
+      [fn:1] The link is:http://orgmode.org</pre>
+    <table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+      <colgroup>
+        <col class="org-left">
+
+        <col class="org-left">
+      </colgroup>
+      <tbody>
+        <tr>
+          <td class="org-left">C-c C-c</td>
+          <td class="org-left">&#x5728;&#x811A;&#x6CE8;&#x5B9A;&#x4E49;&#x548C;&#x5F15;&#x7528;&#x4E4B;&#x95F4;&#x8DF3;&#x8F6C;</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div id="outline-container-orgebcba86" class="outline-2">
+  <h2 id="orgebcba86"><span class="section-number-2">9</span> &#x8D85;&#x94FE;&#x63A5;</h2>
+  <div class="outline-text-2" id="text-9">
+    <p>
+      Org&#x80FD;&#x591F;&#x8BC6;&#x522B;URL&#x683C;&#x5F0F;&#x7684;&#x6587;&#x672C;&#x5E76;&#x5C06;&#x4ED6;&#x4EEC;&#x5904;&#x7406;&#x6210;&#x53EF;&#x70B9;&#x51FB;&#x7684;&#x94FE;&#x63A5;&#xFF1B;&#x901A;&#x5E38;&#x94FE;&#x63A5;&#x683C;&#x5F0F;&#x4E3A;
+    </p>
+    <pre class="example">
+      [[link][description]] &#x6216;&#x8005; [[link]]
+
+    </pre>
+    <p>
+      &#x94FE;&#x63A5;&#x8F93;&#x5165;&#x4E00;&#x65E6;&#x5B8C;&#x6210;&#xFF0C;Org&#x5C31;&#x4F1A;&#x6539;&#x53D8;&#x4ED6;&#x7684;&#x89C6;&#x56FE;&#xFF0C;&#x5982;&#x4E0A;&#x7684;&#x94FE;&#x63A5;&#x663E;&#x793A;
+      <span class="underline">description</span> &#x548C; <span class="underline">link</span>
+      &#x4F7F;&#x7528;C-c C-l&#x6765;&#x7F16;&#x8F91;&#x94FE;&#x63A5;&#xFF0C;&#x63D2;&#x5165;&#x70B9;&#x8981;&#x5728;&#x94FE;&#x63A5;&#x4E0A;&#x3002;
+    </p>
+  </div>
+  <div id="outline-container-org762025d" class="outline-3">
+    <h3 id="org762025d"><span class="section-number-3">9.1</span> &#x5916;&#x90E8;&#x94FE;&#x63A5;</h3>
+    <div class="outline-text-3" id="text-9-1">
+      <p>
+        Org&#x652F;&#x6301;&#x7684;&#x94FE;&#x63A5;&#x683C;&#x5F0F;&#x5305;&#x62EC;&#x6587;&#x4EF6;&#x3001;&#x7F51;&#x9875;&#x3001;&#x65B0;&#x95FB;&#x7EC4;&#x3001;BBDB&#x6570;&#x636E;&#x5E93;&#x9879;&#x3001;IRC&#x4F1A;&#x8BDD;&#x548C;&#x8BB0;&#x5F55;&#x3002;
+        &#x5916;&#x90E8;&#x94FE;&#x63A5;&#x662F;URL&#x683C;&#x5F0F;&#x7684;&#x5B9A;&#x4F4D;&#x5668;&#xFF0C;&#x4EE5;&#x8BC6;&#x522B;&#x7B26;&#x53F7;&#x5F00;&#x5934;&#xFF08;file&#x3001;http&#x3001;docview&#xFF09;&#xFF0C;&#x540E;&#x9762;&#x8DDF;&#x7740;&#x4E00;&#x4E2A;&#x5192;&#x53F7;&#xFF0C;&#x5192;&#x53F7;&#x540E;&#x9762;&#x4E0D;&#x80FD;&#x6709;&#x7A7A;&#x683C;&#x3002;
+      </p>
+      <pre class="example">
+        http://www.astro.uva.nl/~dominik            on the web
+        file:/home/dominik/images/jupiter.jpg       file, absolute path
+        /home/dominik/images/jupiter.jpg            same as above
+        file:papers/last.pdf                        file, relative path
+        file:projects.org                           another Org file
+        docview:papers/last.pdf::NNN                open file in doc-view mode at page NNN
+        id:B7423F4D-2E8A-471B-8810-C40F074717E9     Link to heading by ID
+        news:comp.emacs                             Usenet link
+        mailto:adent@galaxy.net                     Mail link
+        vm:folder                                   VM folder link
+        vm:folder#id                                VM message link
+        wl:folder#id                                WANDERLUST message link
+        mhe:folder#id                               MH-E message link
+        rmail:folder#id                             RMAIL message link
+        gnus:group#id                               Gnus article link
+        bbdb:R.*Stallman                            BBDB link (with regexp)
+        irc:/irc.com/#emacs/bob                     IRC link
+        info:org:External%20links                   Info node link (with encoded space)</pre>
+      <p>
+        &#x8FDE;&#x63A5;&#x5230;&#x56FE;&#x7247;&#x7684;&#xFF0C;&#x5982;&#x679C;&#x6709;&#x63CF;&#x8FF0;&#x4FE1;&#x606F;&#x5219;&#x4F1A;&#x4EA7;&#x751F;&#x94FE;&#x63A5;&#x6309;&#x94AE;&#xFF0C;&#x6CA1;&#x6709;&#x63CF;&#x8FF0;&#x4FE1;&#x606F;&#x7684;&#x5728;&#x5BFC;&#x51FA;&#x65F6;&#x4F1A;&#x5C06;&#x56FE;&#x7247;&#x5D4C;&#x5165;&#x5230;HTML&#x4E2D;&#x3002;
+      </p>
+    </div>
+  </div>
+  <div id="outline-container-orge77ad55" class="outline-3">
+    <h3 id="orge77ad55"><span class="section-number-3">9.2</span> &#x5185;&#x90E8;&#x94FE;&#x63A5;</h3>
+    <div class="outline-text-3" id="text-9-2">
+      <p>
+        &#x5982;&#x679C;&#x4E00;&#x4E2A;&#x94FE;&#x63A5;&#x5730;&#x5740;&#x4E0D;&#x662F;URL&#x5F62;&#x5F0F;&#xFF0C;&#x5C31;&#x4F1A;&#x4F5C;&#x4E3A;&#x5F53;&#x524D;&#x6587;&#x4EF6;&#x5185;&#x90E8;&#x94FE;&#x63A5;&#x6765;&#x5904;&#x7406;
+      </p>
+      <pre class="example">
+        [[#my-custom-id]]
+
+      </pre>
+      <p>
+        &#x4F1A;&#x94FE;&#x63A5;&#x5230;CUSTOM<sub>ID&#x5C5E;&#x6027;&#x662F;</sub>&quot;my-custom-id&quot;&#x7684;&#x9879;
+      </p>
+      <pre class="example">
+        [[My Target][Find my target]]
+        &#x8C03;&#x5230;&#x5BF9;&#x5E94;&#x7684;&#x76EE;&#x6807;&lt;&lt;My Target&gt;&gt;
+
+      </pre>
+      <pre class="example">
+        &lt;&lt;&#x76EE;&#x5F55;&gt;&gt;
+        [[www.gnu.org/software/emacs/][Downlad an install Emacs]]
+
+
+        [[/home/kyle/code/emacsLearning/Org/learn.org][Org&#x5B66;&#x4E60;&#x7B14;&#x8BB0;]]
+        ;;&#x663E;&#x793A;&#x5185;&#x5BB9;&#x4E3A; Org&#x5B66;&#x4E60;&#x7B14;&#x8BB0;&#xFF0C;&#x8DF3;&#x8F6C;&#x5230;&#x76F8;&#x5E94;&#x7684;&#x6587;&#x4EF6;
+
+        [[&#x76EE;&#x5F55;][&#x8FD4;&#x56DE;&#x76EE;&#x5F55;]]  ;;&#x6B64;&#x65F6;&#x663E;&#x793A;&#x5185;&#x5BB9;&#x4E3A;&#x2018;&#x8FD4;&#x56DE;&#x76EE;&#x5F55;&#x2019;&#xFF0C;&#x5355;&#x51FB;&#x4F1A;&#x8DF3;&#x8F6C;&#x5230; &lt;&lt;&#x76EE;&#x5F55;&gt;&gt; &#x7684;&#x4F4D;&#x7F6E;</pre>
+    </div>
+  </div>
+  <div id="outline-container-orgc509958" class="outline-3">
+    <h3 id="orgc509958"><span class="section-number-3">9.3</span> &#x76EE;&#x6807;&#x94FE;&#x63A5;</h3>
+    <div class="outline-text-3" id="text-9-3">
+      <p>
+        &#x6587;&#x4EF6;&#x94FE;&#x63A5;&#x53EF;&#x4EE5;&#x5305;&#x542B;&#x4E00;&#x4E9B;&#x989D;&#x5916;&#x7684;&#x4FE1;&#x606F;&#x4F7F;&#x5F97;&#x8FDB;&#x5165;&#x94FE;&#x63A5;&#x65F6;&#x53EF;&#x4EE5;&#x5230;&#x8FBE;&#x7279;&#x5B9A;&#x7684;&#x4F4D;&#x7F6E;
+        &#x4F7F;&#x7528;&#x53CC;&#x5192;&#x53F7;&#x52A0;&#x4E0A;&#x884C;&#x53F7;&#x6216;&#x8005;&#x641C;&#x7D22;&#x9009;&#x9879;&#x6765;&#x5B9E;&#x73B0;
+      </p>
+      <pre class="example">
+        file:~/code/main.c::255                     &#x8FDB;&#x5165;&#x5230; 255 &#x884C;
+        file:~/xx.org::My Target                    &#x627E;&#x5230;&#x76EE;&#x6807;&#x2018;&lt;&lt;My Target&gt;&gt;&#x2019;
+        file:~/xx.org/::#my-custom-id               &#x67E5;&#x627E;&#x81EA;&#x5B9A;&#x4E49; id &#x7684;&#x9879;</pre>
+    </div>
+  </div>
+</div>
+#+END_EXPORT

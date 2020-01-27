@@ -1,0 +1,187 @@
+# -*- coding: utf-8-unix; -*-
+#+TITLE:       spring_data_mongodb之mongodbTemplate查询总结
+#+AUTHOR:      Bruce Asu
+#+EMAIL:       bruceasu@163.com
+#+DATE:        <2016-05-03 20:48>
+#+filetags:    spring mongodb
+#+DESCRIPTION: 常用的列表查询（筛选条件，查询字段，排序及分页）
+#+LANGUAGE:    en
+#+OPTIONS:     H:7 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:nil
+
+* 常用的列表查询（筛选条件，查询字段，排序及分页）
+** 相当于关系型数据库的：
+: select fields from tableName where coditions order by field skip limit;
+
+#+BEGIN_SRC java
+DBObject cond = new BasicDBObject();
+// 等于条件
+cond.put("sex","male");
+//非等于条件
+cond.put("age", new BasicDBObject(QueryOperators.GTE,20)
+            .append(QueryOperators.LTE,30));
+// 添加or条件（和上面的条件还是and关系）
+BasicDBList orList = new BasicDBList();
+DBObject orCond1 = new BasicDBObject();
+orCond1.put("name", "lisi");
+DBObject orCond2 = new BasicDBObject();
+orCond2.put("name", "zhaoliu");
+orList.add(orCond1);
+orList.add(orCond2);
+cond.put(QueryOperators.OR, orList);
+// 限制查询返回的字段
+DBObject feild = new BasicDBObject();
+feild.put("name", 1);//查询name
+feild.put("_id", 0);//_id不查询
+Query query = new BasicQuery(cond,feild);
+// 单字段倒序
+query.with(new Sort(Direction.DESC,"age"));
+// 多字段排序
+List<Order> orders = new ArrayList<Sort.Order>();
+orders.add(new Order(Direction.DESC,"age"));
+orders.add(new Order(Direction.ASC,"name"));
+query.with(new Sort(orders));
+// 分页
+query.skip(0).limit(10);
+List<HashMap> result = mongoTemplate.find(query, HashMap.class,"person");
+#+END_SRC
+
+** QueryOperators常用的比较符：
+#+BEGIN_EXAMPLE
+OR = "$or"：or条件
+AND = "$and"：and条件
+GT = "$gt"：大于操作
+GTE = "$gte"：大于等于操作
+LT = "$lt"：小于操作
+LTE = "$lte"小于等于操作
+NE = "$ne"：不等于操作
+IN = "$in"：in操作
+#+END_EXAMPLE
+#+BEGIN_SRC java
+//示例
+BasicDBList fieldList = new BasicDBList();
+fieldList.add("上海");
+cond.put("province", new BasicDBObject(QueryOperators.IN,fieldList));
+
+NIN = "$nin"：not in
+MOD = "$mod";
+
+//示例（age和6取模为0的数据）
+BasicDBList modList = new BasicDBList();
+modList.add(6);
+modList.add(0);
+cond.put("age", new BasicDBObject(QueryOperators.MOD,modList));
+
+ALL = "$all"：字段同时满足all中的所有条件，可以和$elemMatch配合使用
+SIZE = "$size"：数组的长度
+EXISTS = "$exists"：字段是否存在筛选（true,false）
+ELEM_MATCH = "$elemMatch":内嵌文档完全匹配查询
+WHERE = "$where"：where条件，一般用于文档中两个字段的比较
+
+//示例（name字段的值和province的值不等的数据）
+cond.put(QueryOperators.WHERE,"this.name != this.province");
+
+NOR = "$nor"：同时不满足
+TYPE = "$type":字段类型匹配
+//模糊查询
+cond.put("province", new BasicDBObject("$regex","^.*上.*$"));
+NOT = "$not"：不满足指定条件，或者该字段不存在
+ORDER_BY = "$orderby":添加排序字段
+
+#+END_SRC
+
+
+** 这里列出的是比较常用的一些操作符，还有一些比较复杂的
+（例如计算点一点之间距离条件的）请参考：
+
+*** 使用游标的方式进行分页查询：
+#+BEGIN_SRC java
+DBObject cond = new BasicDBObject();
+//等于条件
+cond.put("sex","male");
+//非等于条件
+cond.put("age", new BasicDBObject(QueryOperators.GTE,20)
+            .append(QueryOperators.LTE,30));
+//添加or条件（和上面的条件还是and关系）
+BasicDBList orList = new BasicDBList();
+DBObject orCond1 = new BasicDBObject();
+orCond1.put("name", "lisi");
+DBObject orCond2 = new BasicDBObject();
+orCond2.put("name", "zhaoliu");
+orList.add(orCond1);
+orList.add(orCond2);
+cond.put(QueryOperators.OR, orList);
+//限制查询返回的字段
+DBObject feild = new BasicDBObject();
+feild.put("name", 1);//查询name
+feild.put("_id", 0);//_id不查询
+//排序字段
+DBObject order = new BasicDBObject();
+order.put("age",1);
+DBCursor dbCursor = mongoTemplate.getCollection("person").find(cond, feild).sort(order).skip(0).limit(10);
+System.err.println(dbCursor.count());
+System.err.println(dbCursor.toArray());
+#+END_SRC
+
+*** 根据某字段去重查询：
+#+BEGIN_SRC java
+DBObject cond = new BasicDBObject();
+cond.put("sex","male");
+List distinct = mongoTemplate.getCollection("person").distinct("name",cond);
+
+#+END_SRC
+
+*** 根据查询条件查询条数：
+#+BEGIN_SRC java
+DBObject cond = new BasicDBObject();
+cond.put("sex","male");
+long count = mongoTemplate.getCollection("person").count(cond);
+System.out.println(count);
+
+#+END_SRC
+
+*** 使用Aggregation Pipeline进行聚群分析：
+#+BEGIN_SRC java
+List<AggregationOperation> aggregationOptions = new ArrayList<AggregationOperation>();      aggregationOptions.add(Aggregation.match(Criteria.where("province").is("上海")));     aggregationOptions.add(Aggregation.group("age").count().as("count"));
+aggregationOptions.add(Aggregation.project("count").and("age").previousOperation().andExclude("_id"));
+aggregationOptions.add(Aggregation.sort(Direction.DESC,"age"));
+aggregationOptions.add(Aggregation.skip(0L));
+aggregationOptions.add(Aggregation.limit(10));
+Aggregation agg = Aggregation.newAggregation(aggregationOptions);
+AggregationResults<HashMap> aggregate = mongoTemplate.aggregate(agg,"person", HashMap.class);
+List<HashMap> mappedResults = aggregate.getMappedResults();
+#+END_SRC
+
+其中group后可以添加一些聚合函数，如sum，avg等。如果遇到内嵌文档，需要拆分的情况，
+我们可以使用unwind将内嵌文档进行拆分：
+
+: aggregationOptions.add(Aggregation.unwind(field));
+
+
+*** Spring整合MongoDB实现多个or的范围查询
+#+BEGIN_SRC java
+Criteria c1= Criteria.where("year").gte(startYear).lte(endYear).and("month").is(endMonth).and("day").gte(startDay).lte(endDay)
+            .and("hour").gte(startHour).lte(endHour).and("minute").is(startMinute).and("second").gte(startSecond);
+Criteria c2=Criteria.where("year").gte(startYear).lte(endYear).and("month").is(endMonth).and("day").gte(startDay).lte(endDay)
+            .and("hour").gte(startHour).lte(endHour).and("minute").is(endMinute).and("second").lte(endSecond);
+Criteria c3 =Criteria.where("year").gte(startYear).lte(endYear).and("month").is(endMonth).and("day").gte(startDay).lte(endDay)
+            .and("hour").gte(startHour).lte(endHour).and("minute").gt(startMinute).lt(endMinute);
+Criteria cr = new Criteria();
+query = new Query(cr.orOperator(c1,c2,c3));
+getMongoTemplate().find(query, SensorCollection.class);
+
+#+END_SRC
+
+** 附带Criteria方法：
+|                                           | Mongodb | 说明     |
+|-------------------------------------------+---------+----------|
+| Criteria and (String key)                 | $and    | 并且     |
+| Criteria andOperator (Criteria…​ criteria) | $and    | 并且     |
+| Criteria orOperator (Criteria…​ criteria)  | $or     | 或者     |
+| Criteria gt (Object o)                    | $gt     | 大于     |
+| Criteria gte (Object o)                   | $gte    | 大于等于 |
+| Criteria in (Object…​ o)                   | $in     | 包含     |
+| Criteria is (Object o)                    | $is     | 等于     |
+| Criteria lt (Object o)                    | $lt     | 小于     |
+| Criteria lte (Object o)                   | $lte    | 小等于   |
+| Criteria nin (Object…​ o)                  | $nin    | 不包含   |
+|-------------------------------------------+---------+----------|

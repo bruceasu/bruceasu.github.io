@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>git操作之合并commit（提交之前本地合并）</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">git操作之合并commit（提交之前本地合并）</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#git"><div class="category">git</div></a> </div>
+<div class="char-counter">2017-03-05</div>
+        <div id="content">
+<nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#org3b897f5">git 操作之合并commit（提交之前本地合并）</a></li>
+<li><a href="#org202d908">步骤：</a>
+<ul>
+<li><a href="#org9ab5cca">一、首先要切换的要合并commit的分支</a></li>
+<li><a href="#org6b93347">二、然后使用命令 <code>git rebase -i HEAD~2</code> (后面的2代表着要合并的分支数量)，最后出来的界面如下：</a></li>
+</ul>
+</li>
+<li><a href="#orgb7fd70b">三、将第二个pick改成squash或者s ，然后保存退出。最后会出现下面的界面：</a></li>
+<li><a href="#orgbfc16e5">四、修改成功</a></li>
+</ul>
+</div>
+</nav>
+
+
+<div id="outline-container-org3b897f5" class="outline-2">
+<h2 id="org3b897f5">git 操作之合并commit（提交之前本地合并）</h2>
+<div class="outline-text-2" id="text-org3b897f5">
+<p>
+本篇文章主要讲的是git操作之合并同一个分支的不同提交信息，即将多个提交记录合并为
+一个。 这里主要是使用“git rebase”命令，推荐在未提交到远程仓库的时候修改本地记录
+使用。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org202d908" class="outline-2">
+<h2 id="org202d908">步骤：</h2>
+<div class="outline-text-2" id="text-org202d908">
+</div>
+<div id="outline-container-org9ab5cca" class="outline-3">
+<h3 id="org9ab5cca">一、首先要切换的要合并commit的分支</h3>
+</div>
+<div id="outline-container-org6b93347" class="outline-3">
+<h3 id="org6b93347">二、然后使用命令 <code>git rebase -i HEAD~2</code> (后面的2代表着要合并的分支数量)，最后出来的界面如下：</h3>
+<div class="outline-text-3" id="text-org6b93347">
+<p class="verse">
+pick c6e4557 create second.txt<br>
+pick e1a7dfa add text in second.txt<br>
+<br>
+# Rebase a71eba2..e1a7dfa onto a71eba2<br>
+#<br>
+# Commands:<br>
+#  p, pick = use commit<br>
+#  r, reword = use commit, but edit the commit message<br>
+#  e, edit = use commit, but stop for amending<br>
+#  s, squash = use commit, but meld into previous commit<br>
+#  f, fixup = like "squash", but discard this commit's log message<br>
+#  x, exec = run command (the rest of the line) using shell<br>
+#<br>
+# These lines can be re-ordered; they are executed from top to bottom.<br>
+#<br>
+# If you remove a line here THAT COMMIT WILL BE LOST.<br>
+#<br>
+# However, if you remove everything, the rebase will be aborted.<br>
+#<br>
+# Note that empty commits are commented out<br>
+<br>
+</p>
+
+<p>
+-----------------------------------ps:---------------------------
+ps:第一列是rebase具体执行的操作，其中操作可以选择，其中含义如下:
+</p>
+<ul class="org-ul">
+<li>选择pick操作，git会应用这个补丁，以同样的提交信息（commit message）保存提交</li>
+<li>选择reword操作，git会应用这个补丁，但需要重新编辑提交信息</li>
+<li>选择edit操作，git会应用这个补丁，但会因为amending而终止</li>
+<li>选择squash操作，git会应用这个补丁，但会与之前的提交合并</li>
+<li>选择fixup操作，git会应用这个补丁，但会丢掉提交日志</li>
+<li>选择exec操作，git会在shell中运行这个命令</li>
+</ul>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgb7fd70b" class="outline-2">
+<h2 id="orgb7fd70b">三、将第二个pick改成squash或者s ，然后保存退出。最后会出现下面的界面：</h2>
+<div class="outline-text-2" id="text-orgb7fd70b">
+<p class="verse">
+&#xa0;&#xa0;# This is a combination of 2 commits.<br>
+# The first commit's message is:<br>
+<br>
+create second.txt<br>
+<br>
+# This is the 2nd commit message:<br>
+<br>
+add text in second.txt<br>
+<br>
+# 请为您的变更输入提交说明。以 '#' 开始的行将被忽略，而一个空的提交<br>
+# 说明将会终止提交。<br>
+#<br>
+# 日期：  Mon Nov 28 13:59:43 2016 +0800<br>
+#<br>
+# 变基操作正在进行中；至 a71eba2<br>
+# 您在执行将分支 'master' 变基到 'a71eba2' 的操作时编辑提交。<br>
+#<br>
+# 要提交的变更：<br>
+#   新文件：   second.txt<br>
+#<br>
+<br>
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgbfc16e5" class="outline-2">
+<h2 id="orgbfc16e5">四、修改成功</h2>
+<div class="outline-text-2" id="text-orgbfc16e5">
+<p>
+ps:部分代码参考自：<a href="http://www.cnblogs.com/tocy/p/git-rebase-merge-commit.html">http://www.cnblogs.com/tocy/p/git-rebase-merge-commit.html</a>
+</p>
+</div>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

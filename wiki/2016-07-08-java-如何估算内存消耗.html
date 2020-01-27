@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>Java 如何估算内存消耗</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">Java 如何估算内存消耗</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#java"><div class="category">java</div></a> </div>
+<div class="char-counter">2016-07-08</div>
+        <div id="content">
+<nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#org700289c">如何估算内存消耗</a></li>
+<li><a href="#orgbb8fc2b">实时数据的大小</a></li>
+<li><a href="#orgfe53c7d">总结</a></li>
+</ul>
+</div>
+</nav>
+
+
+<div id="outline-container-org700289c" class="outline-2">
+<h2 id="org700289c">如何估算内存消耗</h2>
+<div class="outline-text-2" id="text-org700289c">
+<p>
+Performance Zone是由New Relic和AppDynamics支持的。New Relic和AppDynami cs作为APM
+领域的领导者，有着备受瞩目的用户并为用户消减大量成本。
+</p>
+
+<p>
+这个故事至少可以追溯到十年前，当我第一次接触到PHB，遇到了这样一个问题——“为了产品
+部署我们应该购买多大的服务器”。这个崭新的系统上线已经九个月了。显然公司已经承诺
+提供整套的解决方案，包括硬件。
+</p>
+
+<p>
+哦，乖乖，我是陷入麻烦之中了吗？我有几年的经验，我倒是可以试一试。虽然我我完全没
+有信心，但我还是要解决这个问题。经过在谷歌上四个小时的搜索，我依然坐在那里，摆在
+我面前的还是那个令我感到困惑的问题：“如何估算计算容量呢？”。
+</p>
+
+<p>
+在这篇文章中我通过给你几个大致的纲领来开展这个主题，这些纲领是关于如何估计你的那
+个全新的Java应用所需的内存。对于性急的人来讲，答案大概约等于5x（内存通过实时数据
+消耗量），并从那里开始微调。而对于那些对背后逻辑更感兴趣的人，请随我一起，我会引
+导你完成推理。
+</p>
+
+<p>
+首先，在没有详细信息之前，我不能用简单的几句话来回答这个问题。你的答案必须是依据
+性能要求而来的，所以刚开始的时候首先要澄清这点。我并不是说要用很含糊不清的方式，
+譬如“这个系统需要在线支持700个用户”，但还有很多更具体的关于延迟和吞吐量的细节，
+还要考虑到大量数据，以及使用模式。预算也不应当被遗忘，我们都幻想着亚毫秒级的延迟，
+但是没有HTF银行那样的雄厚资金支持的话，很不幸，它终将只是一个梦想。
+</p>
+
+<p>
+现在，我们假设你有了一些需求，下一步是创建负载测试脚本来模拟用户的行为。如果你可
+以同时在线启动这些的脚本，你就已经为获取答案建立基础了。正如你猜想的那样，下一步
+是测试，而不是瞎猜，但是会有一个警告。
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-orgbb8fc2b" class="outline-2">
+<h2 id="orgbb8fc2b">实时数据的大小</h2>
+<div class="outline-text-2" id="text-orgbb8fc2b">
+<p>
+也就是说，最佳内存配置需要捕获实时数据大小。捕获到这些，我们就有了微调的基础。如
+何定义实时数据的大小？Charlie Hunt和Binu John在他们《Java性能》一书中给出的定义
+如下：实时数据的大小是由设置在其稳定状态运行应用程序所需的长期消耗对象的堆大小。
+有了这个定义，我们在GC日志的打开的情况下就可以对应用程序进行负载测试（-XX：
++PrintGCTimeStamps -Xloggc:/tmp/gc.log-XX:+PrintGCDetails）和可视化的日志（例如
+在gcviewer的帮助下）来确定应用程序达到稳定状态的时间。接下来你所看到的类似于下图：
+</p>
+
+<p>
+我们可以看到，GC进行了minor GC和full GC，有个熟悉的双锯齿形的图形。在第21秒第一
+次full GC完之后，这个特殊的应用程序看起来已经达到一个稳定的状态了。然而，在大多
+数情况下，观察到变化的趋势需要10-20次full GC的运行。经过四个full GC，我们可以估
+算出实时数据大小约等于100MB。
+</p>
+
+<p>
+上述《Java性能》这本书表明在一个经典的Java EE应用程序中，实时数据大小和最佳内存
+配置参数之间有很强的相关性，这个领域的证据也支持他们的建议:设置最大堆大小为
+3-4X(实时数据大小)。所以，就我们手中应用程序而言，我们应该将-Xmx设置为300M和400M
+之间进行初始性能测试，并从这里进行调试。我们对于书上给出的其他建议，建议设置最大
+的永久代大小为1.2-1.5x（永久代中实时数据大小）以及-XX：NewRatio设置为1-1.5x的
+（实时数据大小）。目前，我们正在收集更多的数据来确定正相关关系是否存在，但是在那
+之前，我建议你在配置生存者空间和伊甸园空间时，需要监视到的分配率来作决策。
+</p>
+
+<p>
+你可能会问为什么要烦恼这些问题呢？事实上，有两个原因让你不需要考虑这个问题：
+</p>
+<ol class="org-ol">
+<li>在写这篇文章的时候，8G内存芯片只售100美元</li>
+<li>虚拟化，尤其是大型供应商如亚马逊的AWS使得调试变得更为简单</li>
+</ol>
+
+<p>
+这两个原因的有效性都是片面的，而且明确地减少了精确调配所需。但是它们仍然能够将你
+拉入危险区域。
+</p>
+
+<ol class="org-ol">
+<li>当有大量内存空间时，你很有可能会对延迟造成重大影响，8G以上的堆非常容易进行
+full GC，这将可能停顿超过数十秒。</li>
+<li>过度配置时总是会有“稍后调整”的心态，而这“稍后”可能永远就不会再调整了。我见过
+大量的应用只是因为这个原因，运行在过度配置的环境中。例如，前面所提到的应用程
+序，我发现在亚马逊EC2上m1.xlarge实例运行成本是每个实例4200美元/年，若将其转换
+成m1.small就只需520美元。如果你的部署够大，从业务预算中就可以降低8倍成本，这
+一点上请相信我。</li>
+</ol>
+</div>
+</div>
+
+<div id="outline-container-orgfe53c7d" class="outline-2">
+<h2 id="orgfe53c7d">总结</h2>
+<div class="outline-text-2" id="text-orgfe53c7d">
+<p>
+不幸的是，我依然看到很多决策同我十年前被迫做的极其相似，这导致了规划不足或者过度，
+这两者都是很差劲的选择。特别是你甚至不能享受虚拟化带来的好处。你可能不能仅凭猜测
+就获得成功，所以我只能建议你使用这篇文章描述的简单框架之前，要有实际的计划。如果
+你很喜欢这些内容，我推荐你关注我们在Twitter上的关于性能调优的建议。
+</p>
+</div>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>JavaCPP_技术使用经验总结</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">JavaCPP_技术使用经验总结</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#java"><div class="category">java</div></a> <a href="https://bruceasu.github.io/tags.html#c++"><div class="category">c++</div></a> <a href="https://bruceasu.github.io/tags.html#reprint"><div class="category">reprint</div></a> </div>
+<div class="char-counter">2016-07-01</div>
+        <div id="content">
+
+<div id="outline-container-org1efba33" class="outline-2">
+<h2 id="org1efba33">JavaCPP 技术使用经验总结</h2>
+<div class="outline-text-2" id="text-org1efba33">
+<p>
+本文是对 JNI 技术的一个补充方法，提出了替换 JNI、JNA 的一种开源技术。首先对
+JavaCPP 技术进行简单介绍及对应于其他现有方案的介绍、对比。接下来，通过一个简单的
+示例让大家了解 JavaCPP 的工作原理。然后，介绍了JavaCPP p resets 子项目，最后通过
+若干个针对 presets 的示例来让大家了解如何使用它，本文主要提出了替换 JNI 的一种编
+程实现方式。
+</p>
+
+<p>
+周 明耀,
+技术带头人、项目经理,
+HikVision
+2015 年 9 月 10 日
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-org75e951b" class="outline-2">
+<h2 id="org75e951b">JavaCPP 简介</h2>
+<div class="outline-text-2" id="text-org75e951b">
+<p>
+JavaCPP 是一个开源库，它提供了在 Java 中高效访问本地 C++的方法。采用JNI技术实现，
+所以支持所有 Java 实现包括 Android 系统，Avian 和 RoboVM。
+</p>
+
+<ul class="org-ul">
+<li>Android 一种基于 Linux 的自由及开放源代码的操作系统，主要使用于移动设备，如智
+能手机和平板电脑，由 Google 公司和开放手机联盟领导及开发。</li>
+<li>Avian Avian 是一个轻量级的 Java 虚拟机和类库，提供了 Java 特性的一个有用的子集，
+适合开发跨平台、自包容的应用程序。它实现非常快速而且体积小，主要特性包括如下四
+点：</li>
+<li>类似于 HotSpot JVM 的 JIT 编译器，支持快速方法执行；</li>
+<li>采用 JVM 的复制算法，即将现有的内存空间分为两快，每次只使用其中一块，在垃圾回
+收时将正在使用的内存中的存活对象复制到未被使用的内存块中，之后，清除正在使用的
+内存块中的所有对象，交换两个内存的角色，完成垃圾回收。这样可以确保内存回收过程
+中内存暂停服务的时间较短，并且内存的使用空间局限性较小；</li>
+<li>JVM 内存区域里面的本地栈快速分配，没有同步开销；</li>
+<li>操作系统信号量方式解决了空指针问题，避免了不必要的分支。</li>
+<li>RoboVM RoboVM 编译器可以将 Java 字节码翻译成 ARM 或者 x86 平台上的原生代码，应
+用可直接在 CPU 上运行，无需其他解释器或者虚拟机。RoboVM 同时包含一个 Java 到
+Objective-C 的桥，可像其他 Java 对象一样来使用Objective-C 对象。</li>
+</ul>
+
+<p>
+大多数 UIKit 已经支持，而且将会支持更多的框架。总的来说，JavaCPP 提供了一系列的
+Annotation 将 Java 代码映射到 C++代码，并使用一个可执行的jar 包将 C++代码转化为
+可以从 JVM 内调用的动态链接库文件。
+</p>
+
+<p>
+与其他技术相比，特性总结如下表 1 所示。
+</p>
+
+<p>
+表 1. 类似技术介绍或特点
+</p>
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+  <colgroup>
+    <col  class="org-left" />
+
+    <col  class="org-left" />
+  </colgroup>
+  <tbody>
+    <tr>
+      <td class="org-left">技术名称</td>
+      <td class="org-left">技术介绍</td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">CableSwig</td>
+      <td class="org-left">用于针对 Tcl 和 Python 语言创建接口</td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">JNIGeneratorApp</td>
+      <td class="org-left">所有用于 SWT 的 C 代码都是通过它来创建的</td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">cxxwrap</td>
+      <td class="org-left">用于生成针对 C++的 Java JNI 包、HTML 文档、用户手册</td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">JNIWrapper</td>
+      <td class="org-left">商业版本，可以帮助实现 Java 和本地代码之间的无缝结合</td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">Platform Invoke</td>
+      <td class="org-left">微软发布的一个工具</td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">GlueGen</td>
+      <td class="org-left">针对 C 语言的一个工具，帮助生成 JNI 代码</td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">LWJGL Generator</td>
+      <td class="org-left">JNI 代码生成器</td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">ctypes</td>
+      <td class="org-left">针对 Python 的接口代码生成器</td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">JNA</td>
+      <td class="org-left">JNA（Java Native Access）提供一组 Java 工具类用于在运行期动态访问系统本地库（native library：如 Window 的 dll）而不需要编写任何 Native/JNI 代码。开发人员只要在一个 Java 接口中描述目标 native library 的函数与结构，JNA 将自动实现 Java 接口到 native function 的映射。</td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">JNIEasy</td>
+      <td class="org-left">替换 JNA 的一种技术</td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">JNative</td>
+      <td class="org-left">Windows 版本的库 (DLL)，提供了 JNI 代码生成</td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">fficxx</td>
+      <td class="org-left">针对 haskell 模型的代码生成器，主要生成 C 语言</td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">JavaCPP</td>
+      <td class="org-left">更加自然高效，它支持大部分的 C++语法特性。目前已经能成功封装 OpenCV, FFmpeg, libdc1394, PGR FlyCapture, OpenKinect, videoInput, and ARToolKitPlus。除此之外，它还能直接把 C/C++的头文件转化成 Java 类，能自动生成 JNI 代码，编译成本地库，开发人员无需编写繁琐的 C++、JNI 代码，从而提高开发效率。</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+<div id="outline-container-org4e2a4b7" class="outline-2">
+<h2 id="org4e2a4b7">JavaCPP 示例</h2>
+<div class="outline-text-2" id="text-org4e2a4b7">
+<p>
+为了调用本地方法，JavaCPP 生成了对应的 JNI 代码，并且把这些代码输入到C++编译器，
+用来构建本地库。使用了 Annotations 特性的 Java 代码在运行时会自动调用
+Loader.load() 方法从 Java 资源里载入本地库，这里指的资源是工程构建过程中配置好的。
+</p>
+
+<p>
+我们先来演示一个例子，这是一个简单的注入/读出方法，类似于 JavaBean 的工作方式。
+清单 1 所示的 LegacyLibrary.h 包含了 C++类。
+</p>
+
+<p>
+清单 1. LegacyLibrary.h
+</p>
+<div class="org-src-container">
+<pre class="src src-cpp"><span style="font-weight: bold;">#include</span> <span style="font-style: italic;">&lt;string&gt;</span>
+<span style="font-weight: bold;">namespace</span> <span style="font-weight: bold; text-decoration: underline;">LegacyLibrary</span> {
+  <span style="font-weight: bold;">class</span> <span style="font-weight: bold; text-decoration: underline;">LegacyClass</span> {
+    <span style="font-weight: bold;">public</span>:
+      <span style="font-weight: bold;">const</span> <span style="font-weight: bold; text-decoration: underline;">std</span>::<span style="font-weight: bold; text-decoration: underline;">string</span>&amp; <span style="font-weight: bold;">get_property</span>() { <span style="font-weight: bold;">return</span> property; }
+      <span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">set_property</span>(<span style="font-weight: bold;">const</span> <span style="font-weight: bold; text-decoration: underline;">std</span>::<span style="font-weight: bold; text-decoration: underline;">string</span>&amp; <span style="font-weight: bold; font-style: italic;">property</span>) { <span style="font-weight: bold;">this</span>-&gt;property = property; }
+      <span style="font-weight: bold; text-decoration: underline;">std</span>::<span style="font-weight: bold; text-decoration: underline;">string</span> <span style="font-weight: bold; font-style: italic;">property</span>;
+  };
+}
+
+</pre>
+</div>
+
+<p>
+接下来定义一个 Java 类，驱动 JavaCPP 来完成调用 C++代码。
+</p>
+
+<p>
+清单 2. LegacyLibrary.java
+</p>
+<div class="org-src-container">
+<pre class="src src-java"><span style="font-weight: bold;">import</span> <span style="font-weight: bold; text-decoration: underline;">org</span>.<span style="font-weight: bold; text-decoration: underline;">bytedeco</span>.<span style="font-weight: bold; text-decoration: underline;">javacpp</span>.*;
+<span style="font-weight: bold;">import</span> <span style="font-weight: bold; text-decoration: underline;">org</span>.<span style="font-weight: bold; text-decoration: underline;">bytedeco</span>.<span style="font-weight: bold; text-decoration: underline;">javacpp</span>.<span style="font-weight: bold; text-decoration: underline;">annotation</span>.*;
+
+<span style="font-weight: bold; text-decoration: underline;">@Platform</span>(include=<span style="font-style: italic;">"LegacyLibrary.h"</span>)
+<span style="font-weight: bold; text-decoration: underline;">@Namespace</span>(<span style="font-style: italic;">"LegacyLibrary"</span>)
+<span style="font-weight: bold;">public</span> <span style="font-weight: bold;">class</span> <span style="font-weight: bold; text-decoration: underline;">LegacyLibrary</span> {
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold;">class</span> <span style="font-weight: bold; text-decoration: underline;">LegacyClass</span> <span style="font-weight: bold;">extends</span> <span style="font-weight: bold; text-decoration: underline;">Pointer</span> {
+        <span style="font-weight: bold;">static</span> { Loader.load(); }
+        <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">LegacyClass</span>() { allocate(); }
+        <span style="font-weight: bold;">private</span> <span style="font-weight: bold;">native</span> <span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">allocate</span>();
+
+        <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">to call the getter and setter functions</span>
+        <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">native</span> <span style="font-weight: bold; text-decoration: underline;">@StdString</span> <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold;">get_property</span>(); <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">native</span> <span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">set_property</span>(<span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">property</span>);
+
+        <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">to access the member variable directly</span>
+        <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">native</span> <span style="font-weight: bold; text-decoration: underline;">@StdString</span> <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold;">property</span>(); <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">native</span> <span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">property</span>(<span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">property</span>);
+    }
+
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">main</span>(<span style="font-weight: bold; text-decoration: underline;">String</span>[] <span style="font-weight: bold; font-style: italic;">args</span>) {
+        <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">Pointer objects allocated in Java get deallocated once they become unreachable,</span>
+        <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">but C++ destructors can still be called in a timely fashion with Pointer.deallocate()</span>
+        <span style="font-weight: bold; text-decoration: underline;">LegacyClass</span> <span style="font-weight: bold; font-style: italic;">l</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">LegacyClass</span>();
+        l.set_property(<span style="font-style: italic;">"Hello World!"</span>);
+        System.out.println(l.property());
+    }
+}
+
+</pre>
+</div>
+
+<p>
+以上两个类放在一个目录下面，接下来运行一系列编译指令，如清单 3 所示。
+</p>
+
+<p>
+清单 3. 运行命令
+</p>
+<p class="verse">
+&#xa0;&#xa0;&#xa0;&#xa0;$ javac -cp javacpp.jar LegacyLibrary.java<br>
+&#xa0;&#xa0;&#xa0;&#xa0;$ java -jar javacpp.jar LegacyLibrary<br>
+&#xa0;&#xa0;&#xa0;&#xa0;$ java -cp javacpp.jar LegacyLibrary<br>
+<br>
+Hello World!<br>
+<br>
+</p>
+
+<p>
+我们看到清单 3 最后运行输出了一行“Hello World！”，这是 LegacyLibrary类里面定义好
+的，通过一个 setter 方法注入字符串，getter 方法读出字符串。我们可以看到文件夹里
+面内容的变化，刚开始的时候只有.h、.java两个文件，清单 3 所示的 3 个命令运行过后，
+生成了 class 文件及本地方法 (native method) 对应的.so 文件。
+</p>
+
+<p>
+清单 4. 文件夹内容变化
+</p>
+<p class="verse">
+/home/zhoumingyao/javacpp-1.0-bin/javacpp-bin<br>
+[root@node1:2 javacpp-bin]# ls -lrt<br>
+总用量 348<br>
+-rw-r--r-- 1 root root 30984 7 月 11 00:59 LICENSE.txt<br>
+-rw-r--r-- 1 root root 21986 7 月 11 08:52 README.md<br>
+-rw-r--r-- 1 root root 31955 7 月 11 08:53 CHANGELOG.md<br>
+-rw-r--r-- 1 root root 243318 7 月 11 12:20 javacpp.jar<br>
+-rw-r--r-- 1 root root 285 8 月 11 16:07 LegacyLibrary.h<br>
+-rw-r--r-- 1 root root 1026 8 月 11 16:13 LegacyLibrary.java<br>
+-rw-r--r-- 1 root root 643 8 月 11 16:13 LegacyLibrary$LegacyClass.class<br>
+-rw-r--r-- 1 root root 794 8 月 11 16:13 LegacyLibrary.class<br>
+drwxr-xr-x 2 root root 4096 8 月 11 16:13 linux-x86_64<br>
+[root@node1:2 javacpp-bin]# ls -lrt linux-x86_64<br>
+总用量 36<br>
+-rwxr-xr-x 1 root root 35784 8 月 11 16:13 libjniLegacyLibrary.so回页首<br>
+<br>
+</p>
+</div>
+</div>
+<div id="outline-container-orgb45da09" class="outline-2">
+<h2 id="orgb45da09">JavaCPP-Presents 简介</h2>
+<div class="outline-text-2" id="text-orgb45da09">
+<p>
+为了方便用户使用 JavaCPP，该项目下属有一个 presets 项目，它将一些常用的项目，例
+如 OpenCV、FFMpeg 等，都编译好了让用户通过调用 Jar 包的方式直接使用。当然，它也
+允许用户通过简便的方式上传自己做的本地库文件，通过将 jar 包上传到 Maven 仓库的方
+式共享给其他用户。如果我们想要使用JavaCPP-presents，我们需要下载 presets 源代码
+或者已经编译好的 jar 文件。
+</p>
+
+<p>
+具体下载地址：<a href="https://github.com/bytedeco/javacpp-presets">https://github.com/bytedeco/javacpp-presets</a>。
+编译好的 jar 文件有很多，主要是 JavaCPP 支持的项目，如图 1 所示。
+</p>
+
+<p>
+图 1. JavaCPP-presents binary 目录
+</p>
+
+<p>
+JavaCPP Presets 模型包括了很多广泛被使用到的 C/C++类库的 Java 配置和接口类。编译
+器结合 C/C++的头文件，使用 org.bytedeco.javacpp.presets 包里面的配置文件来创建
+Java 接口文件，这样就可以产生类似于 JNI 的库，Java程序可以调用底层的 C/C++库。它
+的机制较为方便，可以被用在 Java 平台、Android平台。
+</p>
+
+<p>
+这个项目提供了两种下载方式，一种是集成了常用库的 jar 包，支持 Android、L inux
+Fedora、Mac OS X、Windows 等操作系统，另一种是该项目的源代码，您可以自己编译适用
+于自己开发环境的 jar 包，当然如果您希望针对自己的c++工程制作 jar 包，可以采用其
+他方式。
+</p>
+
+<p>
+如果下载的是 JavaCPP-presets 源代码包，则 Centos 环境（该环境默认不被支持）需要
+安装 JDK、Maven、GCC，这样才能编译项目成为需要的 Jar 包。
+</p>
+
+<p>
+配置 Maven 的方式如清单 5 所示。
+</p>
+
+<p>
+清单 5. Linux 上配置 Maven
+</p>
+<ol class="org-ol">
+<li>下载 Maven 并上传到服务器，这里上传到了/root 目录下面；</li>
+<li><p>
+vi /etc/profile
+在最后两行加上代码：
+</p>
+<pre class="example">
+export MAVEN_HOME=/root/apache-maven-3.1.1
+export PATH=${MAVEN_HOME}/bin:${PATH}
+
+</pre></li>
+<li>source /etc/profile</li>
+<li><p>
+[root@node1:2 bin]# mvn -v
+</p>
+<p class="verse">
+Apache Maven 3.1.1 (0728685237757ffbf44136acec0402957f723d9a; 2013-09-17 23:22:22+0800)<br>
+Maven home: /root/apache-maven-3.1.1<br>
+Java version: 1.8.0_45, vendor: Oracle Corporation<br>
+Java home: /usr/share/jdk1.8.0_45/jre<br>
+Default locale: zh_CN, platform encoding: UTF-8<br>
+OS name: "linux", version: "2.6.32-504.el6.x86_64", arch: "amd64", family: "unix"<br>
+<br>
+</p></li>
+</ol>
+
+<p>
+如果您想要尝试完全动手编译 presets 项目，那您可以在 Maven 的 pom.xml文件里面配置，
+如清单 6 所示，这样您可以下载到所有需要的代码。
+</p>
+
+<p>
+清单 6. 下载全部代码
+</p>
+<div class="org-src-container">
+<pre class="src src-xml">&lt;<span style="font-weight: bold;">dependency</span>&gt;
+ &lt;<span style="font-weight: bold;">groupId</span>&gt;org.bytedeco.javacpp-presets&lt;/<span style="font-weight: bold;">groupId</span>&gt;
+ &lt;<span style="font-weight: bold;">artifactId</span>&gt;${moduleName}&lt;/<span style="font-weight: bold;">artifactId</span>&gt;
+ &lt;<span style="font-weight: bold;">version</span>&gt;${moduleVersion}-1.0&lt;/<span style="font-weight: bold;">version</span>&gt;
+&lt;/<span style="font-weight: bold;">dependency</span>&gt;
+
+</pre>
+</div>
+
+<p>
+JavaCPP-Presents 已经默认包含了一些开源库，例如 OpenCV、FFmpeg、FlyCapt ure、GSL、
+CUDA、Tesseract 等等，我们可以通过运行 Maven 命令来编译、构建.so 文件和 jar 文件，
+命令是$ mvn install &amp;#x2013;projects .,opencv,ffmpeg,fly
+capture,libdc1394,libfreenect,videoinput,artoolkitplus,etc.如清单 7 所示，我们编
+译 ffmpeg 库，我这里只截取小部分的打印输出，都是到 Maven 仓库下载 jar 包的过程输
+出。
+</p>
+
+<p>
+清单 7. 编译 ffmpeg 库
+</p>
+<p class="verse">
+[root@localhost javacpp-presets]# mvn install --projects ffmpeg<br>
+[INFO] Scanning for projects...<br>
+Downloading: <a href="http://repo.maven.apache.org/maven2/org/sonatype/plugins/">http://repo.maven.apache.org/maven2/org/sonatype/plugins/</a><br>
+&#xa0;&#xa0;nexus-staging-maven-plugin/1.6/nexus-staging-maven-plugin-1.6.pom<br>
+Downloaded: <a href="http://repo.maven.apache.org/maven2/org/sonatype/plugins/">http://repo.maven.apache.org/maven2/org/sonatype/plugins/</a><br>
+&#xa0;&#xa0;nexus-staging-maven-plugin/1.6/nexus-staging-maven-plugin-1.6.pom (12 KB at 0.7 KB/sec)<br>
+Downloading: <a href="http://repo.maven.apache.org/maven2/org/sonatype/">http://repo.maven.apache.org/maven2/org/sonatype/</a><br>
+&#xa0;&#xa0;nexus/maven/nexus-staging/1.6/nexus-staging-1.6.pom<br>
+Downloaded: <a href="http://repo.maven.apache.org/maven2/org/sonatype/">http://repo.maven.apache.org/maven2/org/sonatype/</a><br>
+&#xa0;&#xa0;nexus/maven/nexus-staging/1.6/nexus-staging-1.6.pom (3 KB at 3.8 KB/sec)<br>
+Downloading: <a href="http://repo.maven.apache.org/maven2/org/sonatype/">http://repo.maven.apache.org/maven2/org/sonatype/</a><br>
+&#xa0;&#xa0;nexus/maven/nexus-maven-plugins/1.6/nexus-maven-plugins-1.6.pom<br>
+Downloaded: <a href="http://repo.maven.apache.org/maven2/org/sonatype/">http://repo.maven.apache.org/maven2/org/sonatype/</a><br>
+&#xa0;&#xa0;nexus/maven/nexus-maven-plugins/1.6/nexus-maven-plugins-1.6.pom (17 KB at 7.8 KB/sec)<br>
+Downloading: <a href="http://repo.maven.apache.org/maven2/org/sonatype/">http://repo.maven.apache.org/maven2/org/sonatype/</a><br>
+&#xa0;&#xa0;buildsupport/public-parent/5/public-parent-5.pom<br>
+<br>
+</p>
+</div>
+</div>
+
+<div id="outline-container-org28ebe44" class="outline-2">
+<h2 id="org28ebe44">JavaCPP-Presents 示例</h2>
+<div class="outline-text-2" id="text-org28ebe44">
+<p>
+讲解程序前，我们先来了解一下 cppbuild.sh 这个文件，这个脚本在根目录下面，它主要
+功能是被用来构建和创建本地 C++库。例如清单 8 所示，我们编译ffmpeg 库，
+</p>
+
+<p>
+清单 8. 编译 ffmpeg 库
+</p>
+
+<pre class="example">
+./cppbuild.sh -platform linux-x86_64 install ffmpeg
+
+</pre>
+
+<p>
+脚本的第一个参数是-platform，值是 linux-x86&lt;sub&gt;64&lt;/sub&gt; 判断代码如清单 9 所示，
+如果第一个参数是-platform，那么初始化变量 PLATFORM，然后参数位移动一位到第二个参
+数，如果第二个参数是 install，那么初始化变量 OPERATION 为install，如果第二个参数
+是 clean，初始化变量 OPERATION 为 clean。这里是install。
+</p>
+
+<p>
+清单 9. 判断平台
+</p>
+<div class="org-src-container">
+<pre class="src src-bash"><span style="font-weight: bold;">while</span> [[ $<span style="font-weight: bold; font-style: italic;">#</span> &gt; 0 ]]; <span style="font-weight: bold;">do</span>
+ <span style="font-weight: bold;">case</span> <span style="font-style: italic;">"$1"</span><span style="font-weight: bold;"> in</span>
+ -platform)
+ <span style="font-weight: bold;">shift</span>
+ <span style="font-weight: bold; font-style: italic;">PLATFORM</span>=<span style="font-style: italic;">"$1"</span>
+ ;;
+ install)
+ <span style="font-weight: bold; font-style: italic;">OPERATION</span>=install
+ ;;
+ clean)
+ <span style="font-weight: bold; font-style: italic;">OPERATION</span>=clean
+ ;;
+ *)
+ <span style="font-weight: bold; font-style: italic;">PROJECTS</span>+=(<span style="font-style: italic;">"$1"</span>)
+ ;;
+ <span style="font-weight: bold;">esac</span>
+ <span style="font-weight: bold;">shift</span>
+<span style="font-weight: bold;">done</span>
+
+</pre>
+</div>
+
+<p>
+确定了需要 install 操作后，程序进入实际执行阶段，如清单 10 所示。
+</p>
+
+<p>
+清单 10. install 执行阶段
+</p>
+<div class="org-src-container">
+<pre class="src src-bash"><span style="font-weight: bold;">case</span> $<span style="font-weight: bold; font-style: italic;">OPERATION</span><span style="font-weight: bold;"> in</span>
+ install)
+ <span style="font-weight: bold;">if</span> [[ ! -d $<span style="font-weight: bold; font-style: italic;">PROJECT</span> ]]; <span style="font-weight: bold;">then</span>
+ <span style="font-weight: bold;">echo</span> <span style="font-style: italic;">"Warning: Project \"$PROJECT\" not found"</span>
+ <span style="font-weight: bold;">else</span>
+ <span style="font-weight: bold;">echo</span> <span style="font-style: italic;">"Installing \"$PROJECT\""</span>
+ mkdir -p $<span style="font-weight: bold; font-style: italic;">PROJECT</span>/cppbuild
+ <span style="font-weight: bold;">pushd</span> $<span style="font-weight: bold; font-style: italic;">PROJECT</span>/cppbuild
+ <span style="font-weight: bold;">source</span> ../cppbuild.sh
+ <span style="font-weight: bold;">popd</span>
+ <span style="font-weight: bold;">fi</span>
+
+</pre>
+</div>
+
+<p>
+清单 10 所示代码，创建 ffmpeg/cpubuild 目录，接下来将目录压入目录栈，在当前 bash
+环境下读取并执行 ffmpeg 目录下的 cpubuild.sh 中的命令，最后将目录弹出目录栈。从
+这里可以看出，真实执行的是 ffmpeg 目录下面的cpubuild.s h 命令，它的代码在这里不
+做展开，主要执行的是一连串的 make命令，编译 C++代码、生成.so 文件。
+</p>
+
+<p>
+示例程序 1：自己写一个简单的 FFmpeg 库
+</p>
+
+<p>
+我们这里所举例的例子是一个调用 FFmpeg 多媒体库的示例。FFmpeg 是一套可以用来记录、
+转换数字音频、视频，并能将其转化为流的开源计算机程序。采用LG PL 或 GPL 许可证。
+它提供了录制、转换以及流化音视频的完整解决方案。
+</p>
+
+<p>
+如果想要下载 FFmpeg 源代码或者库文件，可以在这里查找：<a href="http://ffmpeg.org/">http://ffmpeg.org/</a>。
+</p>
+
+<p>
+如果想要查看 FFmpeg 的 API，可以在这里查找：
+<a href="http://bytedeco.org/javacpp-presets/ffmpeg/apidocs/">http://bytedeco.org/javacpp-presets/ffmpeg/apidocs/</a>。
+</p>
+
+<p>
+运行整个程序，我们需要三个文件，大家把这三个文件放在同一个目录下面。首先是 C 的
+源代码，这里只引用一小部分，剩余的可以到 github 上看，作者是 Stephen Dranger。
+</p>
+
+<p>
+清单 11. C 源代码
+</p>
+<div class="org-src-container">
+<pre class="src src-C"><span style="font-weight: bold; font-style: italic;">//</span>
+<span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">This tutorial was written by Stephen Dranger (dranger@gmail.com).</span>
+<span style="font-weight: bold; font-style: italic;">//</span>
+<span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">Code based on a tutorial by Martin Bohme (boehme@inb.uni-luebeckREMOVETHIS.de)</span>
+<span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">Tested on Gentoo, CVS version 5/01/07 compiled with GCC 4.1.1</span>
+
+<span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">A small sample program that shows how to use libavformat and libavcodec to</span>
+<span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">read video from a file.</span>
+<span style="font-weight: bold; font-style: italic;">//</span>
+<span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">Use the Makefile to build all examples.</span>
+<span style="font-weight: bold; font-style: italic;">//</span>
+<span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">Run using</span>
+<span style="font-weight: bold; font-style: italic;">//</span>
+<span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">tutorial01 myvideofile.mpg</span>
+<span style="font-weight: bold; font-style: italic;">//</span>
+<span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">to write the first five frames from "myvideofile.mpg" to disk in PPM</span>
+<span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">format.</span>
+
+<span style="font-weight: bold;">#include</span> <span style="font-style: italic;">&lt;libavcodec/avcodec.h&gt;</span>
+<span style="font-weight: bold;">#include</span> <span style="font-style: italic;">&lt;libavformat/avformat.h&gt;</span>
+<span style="font-weight: bold;">#include</span> <span style="font-style: italic;">&lt;libswscale/swscale.h&gt;</span>
+
+<span style="font-weight: bold;">#include</span> <span style="font-style: italic;">&lt;stdio.h&gt;</span>
+
+<span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">SaveFrame</span>(<span style="font-weight: bold; text-decoration: underline;">AVFrame</span> *<span style="font-weight: bold; font-style: italic;">pFrame</span>, <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">width</span>, <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">height</span>, <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">iFrame</span>) {
+<span style="font-weight: bold; text-decoration: underline;">FILE</span> *<span style="font-weight: bold; font-style: italic;">pFile</span>;
+<span style="font-weight: bold; text-decoration: underline;">char</span> <span style="font-weight: bold; font-style: italic;">szFilename</span>[32];
+<span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">y</span>;
+
+<span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">Open file</span>
+sprintf(szFilename, <span style="font-style: italic;">"frame%d.ppm"</span>, iFrame);
+pFile=fopen(szFilename, <span style="font-style: italic;">"wb"</span>);
+<span style="font-weight: bold;">if</span>(pFile==<span style="font-weight: bold; text-decoration: underline;">NULL</span>)
+<span style="font-weight: bold;">return</span>;
+
+<span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">Write header</span>
+fprintf(pFile, <span style="font-style: italic;">"P6\n%d %d\n255\n"</span>, width, height);
+
+<span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">Write pixel data</span>
+<span style="font-weight: bold;">for</span>(y=0; y&lt;height; y++)
+fwrite(pFrame-&gt;data[0]+y*pFrame-&gt;linesize[0], 1, width*3, pFile);
+
+<span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">Close file</span>
+fclose(pFile);
+}
+
+<span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold;">main</span>(<span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">argc</span>, <span style="font-weight: bold; text-decoration: underline;">char</span> *<span style="font-weight: bold; font-style: italic;">argv</span>[]) {
+<span style="font-weight: bold; text-decoration: underline;">AVFormatContext</span> *<span style="font-weight: bold; font-style: italic;">pFormatCtx</span> = <span style="font-weight: bold; text-decoration: underline;">NULL</span>;
+<span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">i</span>, <span style="font-weight: bold; font-style: italic;">videoStream</span>;
+<span style="font-weight: bold; text-decoration: underline;">AVCodecContext</span> *<span style="font-weight: bold; font-style: italic;">pCodecCtx</span> = <span style="font-weight: bold; text-decoration: underline;">NULL</span>;
+<span style="font-weight: bold; text-decoration: underline;">AVCodec</span> *<span style="font-weight: bold; font-style: italic;">pCodec</span> = <span style="font-weight: bold; text-decoration: underline;">NULL</span>;
+<span style="font-weight: bold; text-decoration: underline;">AVFrame</span> *<span style="font-weight: bold; font-style: italic;">pFrame</span> = <span style="font-weight: bold; text-decoration: underline;">NULL</span>;
+<span style="font-weight: bold; text-decoration: underline;">AVFrame</span> *<span style="font-weight: bold; font-style: italic;">pFrameRGB</span> = <span style="font-weight: bold; text-decoration: underline;">NULL</span>;
+<span style="font-weight: bold; text-decoration: underline;">AVPacket</span> <span style="font-weight: bold; font-style: italic;">packet</span>;
+<span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">frameFinished</span>;
+<span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">numBytes</span>;
+<span style="font-weight: bold; text-decoration: underline;">uint8_t</span> *<span style="font-weight: bold; font-style: italic;">buffer</span> = <span style="font-weight: bold; text-decoration: underline;">NULL</span>;
+
+<span style="font-weight: bold; text-decoration: underline;">AVDictionary</span> *<span style="font-weight: bold; font-style: italic;">optionsDict</span> = <span style="font-weight: bold; text-decoration: underline;">NULL</span>;
+<span style="font-weight: bold;">struct</span> <span style="font-weight: bold; text-decoration: underline;">SwsContext</span> *<span style="font-weight: bold; font-style: italic;">sws_ctx</span> = <span style="font-weight: bold; text-decoration: underline;">NULL</span>;
+
+</pre>
+</div>
+
+<p>
+接下来，需要创建一个 pom.xml 文件，这样可以利用 Maven 仓库下载我们需要的FFmpeg
+ 库文件。pom.xml 文件内容如清单 12 所示。
+</p>
+
+<p>
+清单 12. pom.xml 文件
+</p>
+<div class="org-src-container">
+<pre class="src src-xml">&lt;<span style="font-weight: bold;">project</span>&gt;
+ &lt;<span style="font-weight: bold;">modelVersion</span>&gt;4.0.0&lt;/<span style="font-weight: bold;">modelVersion</span>&gt;
+ &lt;<span style="font-weight: bold;">groupId</span>&gt;org.bytedeco.javacpp-presets.ffmpeg&lt;/<span style="font-weight: bold;">groupId</span>&gt;
+ &lt;<span style="font-weight: bold;">artifactId</span>&gt;tutorial01&lt;/<span style="font-weight: bold;">artifactId</span>&gt;
+ &lt;<span style="font-weight: bold;">version</span>&gt;1.0&lt;/<span style="font-weight: bold;">version</span>&gt;
+ &lt;<span style="font-weight: bold;">dependencies</span>&gt;
+ &lt;<span style="font-weight: bold;">dependency</span>&gt;
+ &lt;<span style="font-weight: bold;">groupId</span>&gt;org.bytedeco.javacpp-presets&lt;/<span style="font-weight: bold;">groupId</span>&gt;
+ &lt;<span style="font-weight: bold;">artifactId</span>&gt;ffmpeg&lt;/<span style="font-weight: bold;">artifactId</span>&gt;
+ &lt;<span style="font-weight: bold;">version</span>&gt;2.7.1-1.0&lt;/<span style="font-weight: bold;">version</span>&gt;
+ &lt;/<span style="font-weight: bold;">dependency</span>&gt;
+ &lt;/<span style="font-weight: bold;">dependencies</span>&gt;
+&lt;/<span style="font-weight: bold;">project</span>&gt;
+
+</pre>
+</div>
+
+<p>
+最后是 Java 代码的实现，在这个 Java 代码里面，它会调用 FFmpeg 的库函数进行针对视
+频的转换，如清单 13 所示。
+</p>
+
+<p>
+清单 13. Java 文件源代码
+</p>
+<div class="org-src-container">
+<pre class="src src-java"><span style="font-weight: bold;">import</span> <span style="font-weight: bold; text-decoration: underline;">java</span>.<span style="font-weight: bold; text-decoration: underline;">io</span>.*;
+<span style="font-weight: bold;">import</span> <span style="font-weight: bold; text-decoration: underline;">org</span>.<span style="font-weight: bold; text-decoration: underline;">bytedeco</span>.<span style="font-weight: bold; text-decoration: underline;">javacpp</span>.*;
+<span style="font-weight: bold;">import</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold; text-decoration: underline;">org</span>.<span style="font-weight: bold; text-decoration: underline;">bytedeco</span>.<span style="font-weight: bold; text-decoration: underline;">javacpp</span>.<span style="font-weight: bold; text-decoration: underline;">avcodec</span>.*;
+<span style="font-weight: bold;">import</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold; text-decoration: underline;">org</span>.<span style="font-weight: bold; text-decoration: underline;">bytedeco</span>.<span style="font-weight: bold; text-decoration: underline;">javacpp</span>.<span style="font-weight: bold; text-decoration: underline;">avformat</span>.*;
+<span style="font-weight: bold;">import</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold; text-decoration: underline;">org</span>.<span style="font-weight: bold; text-decoration: underline;">bytedeco</span>.<span style="font-weight: bold; text-decoration: underline;">javacpp</span>.<span style="font-weight: bold; text-decoration: underline;">avutil</span>.*;
+<span style="font-weight: bold;">import</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold; text-decoration: underline;">org</span>.<span style="font-weight: bold; text-decoration: underline;">bytedeco</span>.<span style="font-weight: bold; text-decoration: underline;">javacpp</span>.<span style="font-weight: bold; text-decoration: underline;">swscale</span>.*;
+
+<span style="font-weight: bold;">public</span> <span style="font-weight: bold;">class</span> <span style="font-weight: bold; text-decoration: underline;">testJavaCPP</span> {
+    <span style="font-weight: bold;">static</span> <span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">SaveFrame</span>(<span style="font-weight: bold; text-decoration: underline;">AVFrame</span> <span style="font-weight: bold; font-style: italic;">pFrame</span>, <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">width</span>, <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">height</span>, <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">iFrame</span>)
+        <span style="font-weight: bold;">throws</span> <span style="font-weight: bold; text-decoration: underline;">IOException</span> {
+        <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">Open file</span>
+        <span style="font-weight: bold; text-decoration: underline;">OutputStream</span> <span style="font-weight: bold; font-style: italic;">stream</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">FileOutputStream</span>(<span style="font-style: italic;">"frame"</span> + iFrame + <span style="font-style: italic;">".ppm"</span>);
+
+        <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">Write header</span>
+        stream.write((<span style="font-style: italic;">"P6\n"</span> + width + <span style="font-style: italic;">" "</span> + height + <span style="font-style: italic;">"\n255\n"</span>).getBytes());
+
+        <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">Write pixel data</span>
+        <span style="font-weight: bold; text-decoration: underline;">BytePointer</span> <span style="font-weight: bold; font-style: italic;">data</span> = pFrame.data(0);
+        <span style="font-weight: bold; text-decoration: underline;">byte</span>[] <span style="font-weight: bold; font-style: italic;">bytes</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">byte</span>[width * 3];
+        <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">l</span> = pFrame.linesize(0);
+        <span style="font-weight: bold;">for</span>(<span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">y</span> = 0; y &lt; <span style="font-weight: bold; text-decoration: underline;">height</span>; y++) {
+            data.position(y * l).get(bytes);
+            stream.write(bytes);
+        }
+
+        <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">Close file</span>
+        stream.close();
+    }
+
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">main</span>(<span style="font-weight: bold; text-decoration: underline;">String</span>[] <span style="font-weight: bold; font-style: italic;">args</span>) <span style="font-weight: bold;">throws</span> <span style="font-weight: bold; text-decoration: underline;">IOException</span> {
+        <span style="font-weight: bold; text-decoration: underline;">AVFormatContext</span> <span style="font-weight: bold; font-style: italic;">pFormatCtx</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">AVFormatContext</span>(<span style="font-weight: bold; text-decoration: underline;">null</span>);
+        <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">i</span>, <span style="font-weight: bold; font-style: italic;">videoStream</span>;
+        <span style="font-weight: bold; text-decoration: underline;">AVCodecContext</span> <span style="font-weight: bold; font-style: italic;">pCodecCtx</span> = <span style="font-weight: bold; text-decoration: underline;">null</span>;
+        <span style="font-weight: bold; text-decoration: underline;">AVCodec</span> <span style="font-weight: bold; font-style: italic;">pCodec</span> = <span style="font-weight: bold; text-decoration: underline;">null</span>;
+        <span style="font-weight: bold; text-decoration: underline;">AVFrame</span> <span style="font-weight: bold; font-style: italic;">pFrame</span> = <span style="font-weight: bold; text-decoration: underline;">null</span>;
+        <span style="font-weight: bold; text-decoration: underline;">AVFrame</span> <span style="font-weight: bold; font-style: italic;">pFrameRGB</span> = <span style="font-weight: bold; text-decoration: underline;">null</span>;
+        <span style="font-weight: bold; text-decoration: underline;">AVPacket</span> <span style="font-weight: bold; font-style: italic;">packet</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">AVPacket</span>();
+        <span style="font-weight: bold; text-decoration: underline;">int</span>[] <span style="font-weight: bold; font-style: italic;">frameFinished</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">int</span>[1];
+        <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">numBytes</span>;
+        <span style="font-weight: bold; text-decoration: underline;">BytePointer</span> <span style="font-weight: bold; font-style: italic;">buffer</span> = <span style="font-weight: bold; text-decoration: underline;">null</span>;
+
+        <span style="font-weight: bold; text-decoration: underline;">AVDictionary</span> <span style="font-weight: bold; font-style: italic;">optionsDict</span> = <span style="font-weight: bold; text-decoration: underline;">null</span>;
+        <span style="font-weight: bold; text-decoration: underline;">SwsContext</span> <span style="font-weight: bold; font-style: italic;">sws_ctx</span> = <span style="font-weight: bold; text-decoration: underline;">null</span>;
+
+        <span style="font-weight: bold;">if</span> (args.length &lt; 1) {
+            System.out.println(<span style="font-style: italic;">"Please provide a movie file"</span>);
+            System.exit(-1);
+        }
+        <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">Register all formats and codecs</span>
+        av_register_all();
+
+        <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">Open video file</span>
+        <span style="font-weight: bold;">if</span> (avformat_open_input(pFormatCtx, args[0], <span style="font-weight: bold; text-decoration: underline;">null</span>, <span style="font-weight: bold; text-decoration: underline;">null</span>) != 0) {
+            System.exit(-1); <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">Couldn't open file</span>
+        }
+
+        <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">Retrieve stream information</span>
+        <span style="font-weight: bold;">if</span> (avformat_find_stream_info(pFormatCtx, (PointerPointer)<span style="font-weight: bold; text-decoration: underline;">null</span>) &lt; 0) {
+            System.exit(-1); <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">Couldn't find stream information</span>
+        }
+
+        <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">Dump information about file onto standard error</span>
+        av_dump_format(pFormatCtx, 0, args[0], 0);
+
+        <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">Find the first video stream</span>
+        videoStream = -1;
+        <span style="font-weight: bold;">for</span> (i = 0; i &lt; pFormatCtx.<span style="font-weight: bold; text-decoration: underline;">nb_streams</span>(); i++) {
+            <span style="font-weight: bold;">if</span> (pFormatCtx.streams(i).codec().codec_type() == AVMEDIA_TYPE_VIDEO) {
+                videoStream = i;
+                <span style="font-weight: bold;">break</span>;
+            }
+        }
+        <span style="font-weight: bold;">if</span> (videoStream == -1) {
+            System.exit(-1); <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">Didn't find a video stream</span>
+        }
+
+        <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">Get a pointer to the codec context for the video stream</span>
+        pCodecCtx = pFormatCtx.streams(videoStream).codec();
+
+        <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">Find the decoder for the video stream</span>
+        pCodec = avcodec_find_decoder(pCodecCtx.codec_id());
+        <span style="font-weight: bold;">if</span> (pCodec == <span style="font-weight: bold; text-decoration: underline;">null</span>) {
+            System.err.println(<span style="font-style: italic;">"Unsupported codec!"</span>);
+            System.exit(-1); <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">Codec not found</span>
+        }
+        <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">Open codec</span>
+        <span style="font-weight: bold;">if</span> (avcodec_open2(pCodecCtx, pCodec, optionsDict) &lt; 0) {
+            System.exit(-1); <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">Could not open codec</span>
+        }
+
+        <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">Allocate video frame</span>
+        pFrame = av_frame_alloc();
+
+        <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">Allocate an AVFrame structure</span>
+        pFrameRGB = av_frame_alloc();
+        <span style="font-weight: bold;">if</span>(pFrameRGB == <span style="font-weight: bold; text-decoration: underline;">null</span>) {
+            System.exit(-1);
+        }
+
+        <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">Determine required buffer size and allocate buffer</span>
+        numBytes = avpicture_get_size(AV_PIX_FMT_RGB24,
+                                      pCodecCtx.width(), pCodecCtx.height());
+        buffer = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">BytePointer</span>(av_malloc(numBytes));
+
+        sws_ctx = sws_getContext(pCodecCtx.width(), pCodecCtx.height(),
+                                 pCodecCtx.pix_fmt(), pCodecCtx.width(), pCodecCtx.height(),
+                                 AV_PIX_FMT_RGB24, SWS_BILINEAR, <span style="font-weight: bold; text-decoration: underline;">null</span>, <span style="font-weight: bold; text-decoration: underline;">null</span>, (DoublePointer)<span style="font-weight: bold; text-decoration: underline;">null</span>);
+
+        <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">Assign appropriate parts of buffer to image planes in pFrameRGB</span>
+        <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">Note that pFrameRGB is an AVFrame, but AVFrame is a superset</span>
+        <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">of AVPicture</span>
+        avpicture_fill(<span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">AVPicture</span>(pFrameRGB), buffer, AV_PIX_FMT_RGB24,
+                       pCodecCtx.width(), pCodecCtx.height());
+
+        <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">Read frames and save first five frames to disk</span>
+        i = 0;
+        <span style="font-weight: bold;">while</span> (av_read_frame(pFormatCtx, packet) &gt;= 0) {
+            <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">Is this a packet from the video stream?</span>
+            <span style="font-weight: bold;">if</span> (packet.stream_index() == videoStream) {
+                <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">Decode video frame</span>
+                avcodec_decode_video2(pCodecCtx, pFrame, frameFinished, packet);
+
+                <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">Did we get a video frame?</span>
+                <span style="font-weight: bold;">if</span> (frameFinished[0] != 0) {
+                    <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">Convert the image from its native format to RGB</span>
+                    sws_scale(sws_ctx, pFrame.data(), pFrame.linesize(), 0,
+                              pCodecCtx.height(), pFrameRGB.data(), pFrameRGB.linesize());
+
+                    <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">Save the frame to disk</span>
+                    <span style="font-weight: bold;">if</span> (++i&lt;=5) {
+                        SaveFrame(pFrameRGB, pCodecCtx.width(), pCodecCtx.height(), i);
+                    }
+                }
+            }
+
+            <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">Free the packet that was allocated by av_read_frame</span>
+            av_free_packet(packet);
+        }
+
+        <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">Free the RGB image</span>
+        av_free(buffer);
+        av_free(pFrameRGB);
+
+        <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">Free the YUV frame</span>
+        av_free(pFrame);
+
+        <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">Close the codec</span>
+        avcodec_close(pCodecCtx);
+
+        <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">Close the video file</span>
+        avformat_close_input(pFormatCtx);
+
+        System.exit(0);
+    }
+
+</pre>
+</div>
+
+<p>
+所需要的文件创建完毕以后，可以通过 maven 命令来编译、执行程序，如清单 14 所示。
+</p>
+
+<p>
+清单 14. 运行命令
+</p>
+
+<pre class="example">
+mvn package exec:java -Dexec.mainClass=testJavaCPP -Dexec.args="您的视频文件"
+
+</pre>
+
+<p>
+示例程序 2：加入一个新的库
+</p>
+
+<p>
+从清单 10 我们知道，最终调用的是自己 C++代码文件夹里面的 cppbuild.sh文件，所以我
+们如果想要增加一个新的库，势必也需要创建该文件。总的来说，我们需要注意三点：
+</p>
+
+<ol class="org-ol">
+<li>创建一个全部小写字母组成的文件夹，这个文件夹的名称和最终生成的JAR 包的文件名，
+以及 Maven 的 attifact 名称会完全一致，例如 test c++；</li>
+<li>在这个文件夹下，创建新的工程，这个工程需要包括 cppbuild.sh 文件和pom.xml 文件，
+以及属于 org.bytedeco.javacpp.presets 包的 Java 的配置文件；</li>
+<li>上述 2 步到位后，发起一个请求，编译自己的代码，然后上传二进制库文件到 Maven
+中央仓库，这样其他用户也可以调用您的库实现本地方法操作了。 我们以
+java.util.zip 包为例，里面包含了一个 zlib 库，首先需要创建 cppbuild.s h，代码
+里面需要下载 zlib 源代码，如清单 15 所示。</li>
+</ol>
+
+<p>
+清单 15. zlib 的 cppbuild.sh 文件源代码
+</p>
+<div class="org-src-container">
+<pre class="src src-bash"><span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">!/bin/</span><span style="font-weight: bold;">bash</span>
+<span style="font-weight: bold; font-style: italic;"># </span><span style="font-weight: bold; font-style: italic;">This file is meant to be included by the parent cppbuild.sh script</span>
+<span style="font-weight: bold;">if</span> [[ -z <span style="font-style: italic;">"$PLATFORM"</span> ]]; <span style="font-weight: bold;">then</span>
+ <span style="font-weight: bold;">pushd</span> ..
+ bash cppbuild.sh <span style="font-style: italic;">"$@"</span> zlib
+ <span style="font-weight: bold;">popd</span>
+ <span style="font-weight: bold;">exit</span>
+<span style="font-weight: bold;">fi</span>
+
+<span style="font-weight: bold;">if</span> [[ $<span style="font-weight: bold; font-style: italic;">PLATFORM</span> == windows* ]]; <span style="font-weight: bold;">then</span>
+ <span style="font-weight: bold; font-style: italic;">ZLIB_VERSION</span>=128
+ download http://zlib.net/zlib$<span style="font-weight: bold; font-style: italic;">ZLIB_VERSION</span>-dll.zip zlib$<span style="font-weight: bold; font-style: italic;">ZLIB_VERSION</span>-dll.zip
+ mkdir -p $<span style="font-weight: bold; font-style: italic;">PLATFORM</span>
+ <span style="font-weight: bold;">cd</span> $<span style="font-weight: bold; font-style: italic;">PLATFORM</span>
+ unzip ../zlib$<span style="font-weight: bold; font-style: italic;">ZLIB_VERSION</span>-dll.zip -d zlib$<span style="font-weight: bold; font-style: italic;">ZLIB_VERSION</span>-dll
+ <span style="font-weight: bold;">cd</span> zlib$<span style="font-weight: bold; font-style: italic;">ZLIB_VERSION</span>-dll
+<span style="font-weight: bold;">else</span>
+ <span style="font-weight: bold; font-style: italic;">ZLIB_VERSION</span>=1.2.8
+ download http://zlib.net/zlib-$<span style="font-weight: bold; font-style: italic;">ZLIB_VERSION</span>.tar.gz zlib-$<span style="font-weight: bold; font-style: italic;">ZLIB_VERSION</span>.tar.gz
+ mkdir -p $<span style="font-weight: bold; font-style: italic;">PLATFORM</span>
+ <span style="font-weight: bold;">cd</span> $<span style="font-weight: bold; font-style: italic;">PLATFORM</span>
+ tar -xzvf ../zlib-$<span style="font-weight: bold; font-style: italic;">ZLIB_VERSION</span>.tar.gz
+ <span style="font-weight: bold;">cd</span> zlib-$<span style="font-weight: bold; font-style: italic;">ZLIB_VERSION</span>
+<span style="font-weight: bold;">fi</span>
+
+<span style="font-weight: bold;">case</span> $<span style="font-weight: bold; font-style: italic;">PLATFORM</span><span style="font-weight: bold;"> in</span>
+ linux-x86)
+ <span style="font-weight: bold; font-style: italic;">CC</span>=<span style="font-style: italic;">"gcc -m32 -fPIC"</span> ./configure --prefix=.. --static
+ make -j4
+ make install
+ ;;
+ *)
+ <span style="font-weight: bold;">echo</span> <span style="font-style: italic;">"Error: Platform \"$PLATFORM\" is not supported"</span>
+ ;;
+<span style="font-weight: bold;">esac</span>
+
+<span style="font-weight: bold;">cd</span> ../..
+</pre>
+</div>
+
+<p>
+pom.xml 如清单 16 所示，最终生成 zlib 的 jar 包。
+</p>
+
+<p>
+清单 16. zlib 的 pom.xml 源代码
+</p>
+<div class="org-src-container">
+<pre class="src src-xml"><span style="font-style: italic;">&lt;?</span><span style="font-weight: bold; font-style: italic;">xml</span><span style="font-style: italic;"> </span><span style="font-style: italic;">version="1.0" encoding="UTF-8"</span><span style="font-style: italic;">?&gt;</span>
+&lt;<span style="font-weight: bold;">project</span> <span style="font-weight: bold;">xmlns</span>=<span style="font-style: italic;">"http://maven.apache.org/POM/4.0.0"</span> <span style="font-weight: bold;">xmlns</span>:<span style="font-weight: bold; font-style: italic;">xsi</span>=<span style="font-style: italic;">"http://www.w3.org/2001/XMLSchema-instance"</span>
+ <span style="font-weight: bold;">xsi</span>:<span style="font-weight: bold; font-style: italic;">schemaLocation</span>=<span style="font-style: italic;">"http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"</span>&gt;
+ &lt;<span style="font-weight: bold;">modelVersion</span>&gt;4.0.0&lt;/<span style="font-weight: bold;">modelVersion</span>&gt;
+
+ &lt;<span style="font-weight: bold;">parent</span>&gt;
+ &lt;<span style="font-weight: bold;">groupId</span>&gt;org.bytedeco&lt;/<span style="font-weight: bold;">groupId</span>&gt;
+ &lt;<span style="font-weight: bold;">artifactId</span>&gt;javacpp-presets&lt;/<span style="font-weight: bold;">artifactId</span>&gt;
+ &lt;<span style="font-weight: bold;">version</span>&gt;0.10&lt;/<span style="font-weight: bold;">version</span>&gt;
+ &lt;/<span style="font-weight: bold;">parent</span>&gt;
+
+ &lt;<span style="font-weight: bold;">groupId</span>&gt;org.bytedeco.javacpp-presets&lt;/<span style="font-weight: bold;">groupId</span>&gt;
+ &lt;<span style="font-weight: bold;">artifactId</span>&gt;zlib&lt;/<span style="font-weight: bold;">artifactId</span>&gt;
+ &lt;<span style="font-weight: bold;">version</span>&gt;1.2.8-${project.parent.version}&lt;/<span style="font-weight: bold;">version</span>&gt;
+ &lt;<span style="font-weight: bold;">packaging</span>&gt;jar&lt;/<span style="font-weight: bold;">packaging</span>&gt;
+ &lt;<span style="font-weight: bold;">name</span>&gt;JavaCPP Presets for zlib&lt;/<span style="font-weight: bold;">name</span>&gt;
+
+ &lt;<span style="font-weight: bold;">dependencies</span>&gt;
+ &lt;<span style="font-weight: bold;">dependency</span>&gt;
+ &lt;<span style="font-weight: bold;">groupId</span>&gt;org.bytedeco&lt;/<span style="font-weight: bold;">groupId</span>&gt;
+ &lt;<span style="font-weight: bold;">artifactId</span>&gt;javacpp&lt;/<span style="font-weight: bold;">artifactId</span>&gt;
+ &lt;/<span style="font-weight: bold;">dependency</span>&gt;
+ &lt;/<span style="font-weight: bold;">dependencies</span>&gt;
+
+ &lt;<span style="font-weight: bold;">build</span>&gt;
+ &lt;<span style="font-weight: bold;">plugins</span>&gt;
+ &lt;<span style="font-weight: bold;">plugin</span>&gt;
+ &lt;<span style="font-weight: bold;">artifactId</span>&gt;maven-resources-plugin&lt;/<span style="font-weight: bold;">artifactId</span>&gt;
+ &lt;/<span style="font-weight: bold;">plugin</span>&gt;
+ &lt;<span style="font-weight: bold;">plugin</span>&gt;
+ &lt;<span style="font-weight: bold;">artifactId</span>&gt;maven-compiler-plugin&lt;/<span style="font-weight: bold;">artifactId</span>&gt;
+ &lt;/<span style="font-weight: bold;">plugin</span>&gt;
+ &lt;<span style="font-weight: bold;">plugin</span>&gt;
+ &lt;<span style="font-weight: bold;">groupId</span>&gt;org.bytedeco&lt;/<span style="font-weight: bold;">groupId</span>&gt;
+ &lt;<span style="font-weight: bold;">artifactId</span>&gt;javacpp&lt;/<span style="font-weight: bold;">artifactId</span>&gt;
+ &lt;/<span style="font-weight: bold;">plugin</span>&gt;
+ &lt;<span style="font-weight: bold;">plugin</span>&gt;
+ &lt;<span style="font-weight: bold;">artifactId</span>&gt;maven-jar-plugin&lt;/<span style="font-weight: bold;">artifactId</span>&gt;
+ &lt;/<span style="font-weight: bold;">plugin</span>&gt;
+ &lt;<span style="font-weight: bold;">plugin</span>&gt;
+ &lt;<span style="font-weight: bold;">artifactId</span>&gt;maven-dependency-plugin&lt;/<span style="font-weight: bold;">artifactId</span>&gt;
+ &lt;/<span style="font-weight: bold;">plugin</span>&gt;
+ &lt;<span style="font-weight: bold;">plugin</span>&gt;
+ &lt;<span style="font-weight: bold;">artifactId</span>&gt;maven-source-plugin&lt;/<span style="font-weight: bold;">artifactId</span>&gt;
+ &lt;/<span style="font-weight: bold;">plugin</span>&gt;
+ &lt;<span style="font-weight: bold;">plugin</span>&gt;
+ &lt;<span style="font-weight: bold;">artifactId</span>&gt;maven-javadoc-plugin&lt;/<span style="font-weight: bold;">artifactId</span>&gt;
+ &lt;/<span style="font-weight: bold;">plugin</span>&gt;
+ &lt;/<span style="font-weight: bold;">plugins</span>&gt;
+ &lt;/<span style="font-weight: bold;">build</span>&gt;
+
+&lt;/<span style="font-weight: bold;">project</span>&gt;
+
+</pre>
+</div>
+
+<p>
+清单 17 所示是 Java 配置文件，文件需要被放在
+src/main/java/org/bytedeco/javacpp/presets 目录下面。
+</p>
+
+<p>
+清单 17. zlib 的 Java 源代码
+</p>
+<div class="org-src-container">
+<pre class="src src-java"><span style="font-weight: bold;">package</span> org.bytedeco.javacpp.<span style="font-weight: bold; text-decoration: underline;">presets</span>;
+
+<span style="font-weight: bold;">import</span> <span style="font-weight: bold; text-decoration: underline;">org</span>.<span style="font-weight: bold; text-decoration: underline;">bytedeco</span>.<span style="font-weight: bold; text-decoration: underline;">javacpp</span>.<span style="font-weight: bold; text-decoration: underline;">annotation</span>.*;
+<span style="font-weight: bold;">import</span> <span style="font-weight: bold; text-decoration: underline;">org</span>.<span style="font-weight: bold; text-decoration: underline;">bytedeco</span>.<span style="font-weight: bold; text-decoration: underline;">javacpp</span>.<span style="font-weight: bold; text-decoration: underline;">tools</span>.*;
+
+<span style="font-weight: bold; text-decoration: underline;">@Properties</span>(target=<span style="font-style: italic;">"org.bytedeco.javacpp.zlib"</span>, value={
+                                 <span style="font-weight: bold; text-decoration: underline;">@Platform</span>(include=<span style="font-style: italic;">"&lt;zlib.h&gt;"</span>, link=<span style="font-style: italic;">"z@.1"</span>),
+ <span style="font-weight: bold; text-decoration: underline;">@Platform</span>(value=<span style="font-style: italic;">"windows"</span>, link=<span style="font-style: italic;">"zdll"</span>, preload=<span style="font-style: italic;">"zlib1"</span>)})
+<span style="font-weight: bold;">public</span> <span style="font-weight: bold;">class</span> <span style="font-weight: bold; text-decoration: underline;">zlib</span> <span style="font-weight: bold;">implements</span> <span style="font-weight: bold; text-decoration: underline;">InfoMapper</span> {
+ <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">map</span>(<span style="font-weight: bold; text-decoration: underline;">InfoMap</span> <span style="font-weight: bold; font-style: italic;">infoMap</span>) {
+ infoMap.put(<span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">Info</span>(<span style="font-style: italic;">"ZEXTERN"</span>, <span style="font-style: italic;">"ZEXPORT"</span>, <span style="font-style: italic;">"z_const"</span>, <span style="font-style: italic;">"zlib_version"</span>).cppTypes().annotations())
+ .put(<span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">Info</span>(<span style="font-style: italic;">"FAR"</span>).cppText(<span style="font-style: italic;">"#define FAR"</span>))
+ .put(<span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">Info</span>(<span style="font-style: italic;">"OF"</span>).cppText(<span style="font-style: italic;">"#define OF(args) args"</span>))
+ .put(<span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">Info</span>(<span style="font-style: italic;">"Z_ARG"</span>).cppText(<span style="font-style: italic;">"#define Z_ARG(args) args"</span>))
+ .put(<span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">Info</span>(<span style="font-style: italic;">"Byte"</span>, <span style="font-style: italic;">"Bytef"</span>, <span style="font-style: italic;">"charf"</span>).cast().valueTypes(<span style="font-style: italic;">"byte"</span>).pointerTypes(<span style="font-style: italic;">"BytePointer"</span>))
+ .put(<span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">Info</span>(<span style="font-style: italic;">"uInt"</span>, <span style="font-style: italic;">"uIntf"</span>).cast().valueTypes(<span style="font-style: italic;">"int"</span>).pointerTypes(<span style="font-style: italic;">"IntPointer"</span>))
+ .put(<span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">Info</span>(<span style="font-style: italic;">"uLong"</span>, <span style="font-style: italic;">"uLongf"</span>, <span style="font-style: italic;">"z_crc_t"</span>, <span style="font-style: italic;">"z_off_t"</span>).cast().valueTypes(
+                                    <span style="font-style: italic;">"long"</span>).pointerTypes(<span style="font-style: italic;">"CLongPointer"</span>))
+ .put(<span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">Info</span>(<span style="font-style: italic;">"z_off64_t"</span>).cast().valueTypes(<span style="font-style: italic;">"long"</span>).pointerTypes(<span style="font-style: italic;">"LongPointer"</span>))
+ .put(<span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">Info</span>(<span style="font-style: italic;">"voidp"</span>, <span style="font-style: italic;">"voidpc"</span>, <span style="font-style: italic;">"voidpf"</span>).valueTypes(<span style="font-style: italic;">"Pointer"</span>))
+ .put(<span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">Info</span>(<span style="font-style: italic;">"gzFile_s"</span>).pointerTypes(<span style="font-style: italic;">"gzFile"</span>))
+ .put(<span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">Info</span>(<span style="font-style: italic;">"gzFile"</span>).valueTypes(<span style="font-style: italic;">"gzFile"</span>))
+ .put(<span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">Info</span>(<span style="font-style: italic;">"Z_LARGE64"</span>, <span style="font-style: italic;">"!defined(ZLIB_INTERNAL) &amp;&amp; defined(Z_WANT64)"</span>).define(<span style="font-weight: bold; text-decoration: underline;">false</span>))
+ .put(<span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">Info</span>(<span style="font-style: italic;">"inflateGetDictionary"</span>, <span style="font-style: italic;">"gzopen_w"</span>, <span style="font-style: italic;">"gzvprintf"</span>).skip());
+ }
+}
+
+</pre>
+</div>
+
+<p>
+在我们的父目录 javacpp-presets 里面，我们需要把 zlib 这个模块的名称加入到
+pom.xml 的模块列表里面，这样我们就可以像前面示例代码一样运行程序来生成.so 包和
+jar 包，mvn install –projects zlib。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org03d74b0" class="outline-2">
+<h2 id="org03d74b0">JavaCPP 性能测试</h2>
+<div class="outline-text-2" id="text-org03d74b0">
+<p>
+通过上面实验的实现，我们掌握了如何使用 JavaCpp，现在我们开始尝试针对JavaCpp 的测
+试。我们这个实验基于一个人脸算法库，该人脸算法库具备检测、建模、比对功能，网上有
+很多开源的人脸识别算法库，大家可以自行下载。当我们使用单线程时，本地预先加载人脸
+特征值数据，分别使用 C++代码和 Java调用 JNI 库的方式，在内存中循环比对 1000 万次，
+比对测试结果如表 2 所示。
+</p>
+
+<p>
+表 2. JNI 库和 C++库单线程性能比较
+</p>
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+  <colgroup>
+    <col  class="org-left" />
+
+    <col  class="org-right" />
+
+    <col  class="org-right" />
+
+    <col  class="org-right" />
+  </colgroup>
+  <tbody>
+    <tr>
+      <td class="org-left">方式</td>
+      <td class="org-right">比对次数 (万次)</td>
+      <td class="org-right">耗时/ms</td>
+      <td class="org-right">比对速率/rps（records per second）</td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">C++</td>
+      <td class="org-right">1000</td>
+      <td class="org-right">11055</td>
+      <td class="org-right">904322</td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">Java 调用 JNI 库</td>
+      <td class="org-right">1000</td>
+      <td class="org-right">14732</td>
+      <td class="org-right">702592</td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">Javacpp 调用算法库</td>
+      <td class="org-right">1000</td>
+      <td class="org-right">13066</td>
+      <td class="org-right">765345</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>
+从上面的数据可以看出，直接用 C++调用算法库效率最高，其次是 JavaCPP 方式，JNI 方
+式耗时最长。当然，这里没有列举的 JNA 技术，它的效率会更差。这些效率差距主要在底
+层字节码的编译形式上的区别。表 2 的方式是单线程方式，我们采用多线程方式再来做一
+次测试，测试结果如图 2 所示。我们可以看出，多线程环境下，C++和 JavaCPP 的优势更
+加明显，整体效率系统接近0.95-1，JNI 方式的效率则平均在 0.81 左右。
+</p>
+
+<p>
+图 2. JNI 库和 C++库多线程性能比较
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgb7a562e" class="outline-2">
+<h2 id="orgb7a562e">结束语</h2>
+<div class="outline-text-2" id="text-orgb7a562e">
+<p>
+我们发现，采用 JavaCPP 方式在编程上较 JNI 方式简单很多，另外，效率也比JNI 高，所
+以建议多采用 JavaCPP 技术。当然，如果是开源项目，也可以通过JavaCPP presets 子项
+目来分享自己做的库文件，让其他人快速使用。最后，通过一个有针对性的性能测试案例，
+读者也可以了解较 JNI 技术相比 JavaCPP 的优势所在。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org47e3cb8" class="outline-2">
+<h2 id="org47e3cb8">参考资料</h2>
+<div class="outline-text-2" id="text-org47e3cb8">
+<ul class="org-ul">
+<li>参考网站 IBM 开发者论坛 这里发布了多篇关于 JNI 的文章。</li>
+<li>参考文章 较详细的介绍 JNI 作者对于 JNI 技术的介绍较为深入、详细。</li>
+<li>参考网站 FFMPEG 这里详细介绍了 JavaCpp Presets 对于 FFMPEG 库的封装实现方式。</li>
+<li>参考网站 JavaCPP 这里是 JavaCPP 技术的分享地点。</li>
+<li>参考网站 JavaCPP Presets 这里是 Presets 子项目的技术分享地点。</li>
+<li>developerWorks Java 技术专区：这里有数百篇关于 Java 编程各个方面的文章。</li>
+</ul>
+</div>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

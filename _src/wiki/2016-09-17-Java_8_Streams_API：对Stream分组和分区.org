@@ -1,0 +1,102 @@
+#+title: Java 8 Streams API：对Stream分组和分区
+#+date: <2016-09-17 20:48>
+#+filetags: java reprint
+
+这篇文章展示了如何使用 Streams API 中的 Collector 及 groupingBy 和
+partitioningBy 来对流中的元素进行分组和分区。
+
+思考一下 Employee 对象流，每个对象对应一个名字、城市和销售数量，如下表所示：
+
+| Name    | City      | Number of Sales |
+|---------+-----------+-----------------|
+| Alice   | London    |             200 |
+| Bob     | London    |             150 |
+| Charles | New York  |             160 |
+| Dorothy | Hong Kong |             190 |
+
+
+* 分组
+
+首先，我们利用（lambda表达式出现之前的）命令式风格Java 程序对流中的雇员按城市进
+行分组：
+#+BEGIN_SRC java
+Map<String, List<Employee>> result = new HashMap<>();
+for (Employee e : employees) {
+  String city = e.getCity();
+  List<Employee> empsInCity = result.get(city);
+  if (empsInCity == null) {
+    empsInCity = new ArrayList<>();
+    result.put(city, empsInCity);
+  }
+  empsInCity.add(e);
+}
+#+END_SRC
+
+你可能很熟悉写这样的代码，你也看到了，一个如此简单的任务就需要这么多代码！
+
+而在 Java 8 中，你可以使用 groupingBy 收集器，一条语句就能完成相同的功能，像这样：
+#+BEGIN_SRC java
+Map<String, List<Employee>> employeesByCity =
+  employees.stream().collect(groupingBy(Employee::getCity));
+#+END_SRC
+
+结果如下面的 map 所示：
+: {New York=[Charles], Hong Kong=[Dorothy], London=[Alice, Bob]}
+
+还可以计算每个城市中雇员的数量，只需传递一个计数收集器给 groupingBy 收集器。第二
+个收集器的作用是在流分类的同一个组中对每个元素进行递归操作。
+#+BEGIN_SRC java
+Map<String, Long> numEmployeesByCity =
+  employees.stream().collect(groupingBy(Employee::getCity, counting()));
+
+#+END_SRC
+结果如下面的 map 所示：
+: {New York=1, Hong Kong=1, London=2}
+
+顺便提一下，该功能与下面的 SQL 语句是等同的：
+
+: select city, count(*) from Employee group by city
+
+另一个例子是计算每个城市的平均年龄，这可以联合使用 averagingInt 和 groupingBy 收
+集器：
+#+BEGIN_SRC
+Map<String, Double> avgSalesByCity =
+  employees.stream().collect(groupingBy(Employee::getCity,
+                               averagingInt(Employee::getNumSales)));
+
+#+END_SRC
+结果如下 map 所示：
+: {New York=160.0, Hong Kong=190.0, London=175.0}
+
+
+* 分区
+
+分区是一种特殊的分组，结果 map 至少包含两个不同的分组——一个true，一个false。例如，
+如果想找出最优秀的员工，你可以将所有雇员分为两组，一组销售量大于 N，另一组小于 N，
+使用 partitioningBy 收集器：
+
+#+BEGIN_SRC java
+Map<Boolean, List<Employee>> partitioned =
+  employees.stream().collect(partitioningBy(e -> e.getNumSales() > 150));
+
+#+END_SRC
+输出如下结果：
+: {false=[Bob], true=[Alice, Charles, Dorothy]}
+
+你也可以将 groupingBy 收集器传递给 partitioningBy 收集器来将联合使用分区和分组。
+例如，你可以统计每个分区中的每个城市的雇员人数：
+#+BEGIN_SRC java
+Map<Boolean, Map<String, Long>> result =
+  employees.stream().collect(partitioningBy(e -> e.getNumSales() > 150,
+                               groupingBy(Employee::getCity, counting())));
+
+#+END_SRC
+这样会生成一个二级 Map:
+: {false={London=1}, true={New York=1, Hong Kong=1, London=1}}
+#+BEGIN_VERSE
+原文链接： javacodegeeks
+翻译： ImportNew.com - paddx
+译文链接： http://www.importnew.com/17313.html
+[ 转载请保留原文出处、译者和译文链接。]
+
+#+END_VERSE

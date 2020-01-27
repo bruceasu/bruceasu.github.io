@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>手机验证短信设计与代码实现</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">手机验证短信设计与代码实现</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#design"><div class="category">design</div></a> </div>
+<div class="char-counter">2018-04-02</div>
+        <div id="content">
+<nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#orgee259db">手机验证短信设计与代码实现</a>
+<ul>
+<li><a href="#org97c99dd">总体思路</a>
+<ul>
+<li><a href="#orgd5dff54">数据库设计 (CheckCode)</a></li>
+<li><a href="#org03459f2">具体代码实现(mongoose + nodejs 代码不完全正确，主要see思路吧)</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</nav>
+<blockquote>
+<p>
+摘要:
+</p>
+
+<p>
+手机验证短信设计与代码实现
+</p>
+<ul class="org-ul">
+<li>1. 时效限制: [5-10min]</li>
+<li>2. 使用次数限制: 1次</li>
+<li>3. IP次数限制: 防止恶意刷手机验证码短信</li>
+<li>4. 手机号限制: 防止短信轰炸</li>
+<li>5. 跨域请求限制: 进一步限制恶意刷短信</li>
+<li>6. 验证码验证: 进一步限制恶意刷短信</li>
+</ul>
+</blockquote>
+
+<div id="outline-container-orgee259db" class="outline-2">
+<h2 id="orgee259db">手机验证短信设计与代码实现</h2>
+<div class="outline-text-2" id="text-orgee259db">
+</div>
+<div id="outline-container-org97c99dd" class="outline-3">
+<h3 id="org97c99dd">总体思路</h3>
+<div class="outline-text-3" id="text-org97c99dd">
+<ul class="org-ul">
+<li>时效限制: [5-10min]</li>
+<li>使用次数限制: 1次</li>
+<li>IP次数限制: 防止恶意刷手机验证码短信</li>
+<li>手机号限制: 防止短信轰炸</li>
+<li>跨域请求限制: 进一步限制恶意刷短信</li>
+<li>验证码验证: 进一步限制恶意刷短信</li>
+</ul>
+</div>
+
+<div id="outline-container-orgd5dff54" class="outline-4">
+<h4 id="orgd5dff54">数据库设计 (CheckCode)</h4>
+<div class="outline-text-4" id="text-orgd5dff54">
+<ul class="org-ul">
+<li>ID</li>
+<li>mobile(手机号)</li>
+<li>checkCode(验证码)</li>
+<li>ip(IP地址)</li>
+<li>createAt(创建时间)</li>
+<li>expireAt(时效时间)</li>
+<li>isUse(是否使用)</li>
+<li>usingAt(使用时间)</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-org03459f2" class="outline-4">
+<h4 id="org03459f2">具体代码实现(mongoose + nodejs 代码不完全正确，主要see思路吧)</h4>
+<div class="outline-text-4" id="text-org03459f2">
+<ul class="org-ul">
+<li>查询90s内是否发送过，如果存在，需要等待 90-(已发送时间)s</li>
+</ul>
+<div class="org-src-container">
+<pre class="src src-javascript"><span style="font-weight: bold;">var</span> <span style="font-weight: bold; font-style: italic;">mobile</span> = <span style="font-style: italic;">'155*****111'</span>,
+ip = <span style="font-style: italic;">'127.0.0.1'</span>,
+now = Date.now();
+
+CheckCode.findOne({mobile: mobile, expireAt:{$gt: now}}, <span style="font-weight: bold;">function</span>(<span style="font-weight: bold; font-style: italic;">err</span>, <span style="font-weight: bold; font-style: italic;">checkCode</span>) {
+    <span style="font-weight: bold;">if</span> (err) {
+        <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#38169;&#35823;&#20102;</span>
+    } <span style="font-weight: bold;">else</span> <span style="font-weight: bold;">if</span>(checkCode) {
+        <span style="font-weight: bold;">var</span> <span style="font-weight: bold; font-style: italic;">now</span> = Date.now(),
+            diffSeconds = parseInt((now - checkCode.createAt.getTime())/1000, 10);
+        <span style="font-weight: bold;">if</span> (diffSeconds &lt; 90) {
+            <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#26102;&#38388;&#38388;&#38548;&#22826;&#23567;&#65292;&#32769;&#24351;&#20320;&#21047;&#30701;&#20449;&#32435;&#26159;&#21543;&#65292;&#26524;&#26029;&#25298;&#32477;&#20320;</span>
+        } <span style="font-weight: bold;">else</span> {
+            checkCode.setIsUsed();  <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#35774;&#32622;&#20026;&#24050;&#32463;&#20351;&#29992;&#36807;</span>
+            newCheckCodeByMobile(mobile, {ip:ip}, done);
+        }
+    } <span style="font-weight: bold;">else</span> {
+        newCheckCodeByMobile(mobile, {ip:ip}, done);
+    }
+}
+</pre>
+</div>
+
+<ul class="org-ul">
+<li>查询手机号码接收次数，如果太多明显要轰炸别人，让我们背黑锅呀</li>
+</ul>
+<div class="org-src-container">
+<pre class="src src-javascript"><span style="font-weight: bold;">var</span> <span style="font-weight: bold; font-style: italic;">end</span> = now,
+begin = now - 24 * 60 * 60 * 1000;
+CheckCode.count({mobile: mobile, createAt: {$gt: begin, $lt: end}}, <span style="font-weight: bold;">function</span>(<span style="font-weight: bold; font-style: italic;">err</span>, <span style="font-weight: bold; font-style: italic;">count</span>){
+    <span style="font-weight: bold;">if</span> (err) {
+        <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#38169;&#35823;</span>
+    } <span style="font-weight: bold;">else</span> <span style="font-weight: bold;">if</span>(count &gt;3) {
+        <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#32769;&#22823;&#65292;&#37117;&#32473;&#20320;&#25163;&#26426;&#21495;&#21457;3&#27425;&#20102;&#36824;&#25910;&#19981;&#21040;&#65292;&#20320;&#26159;&#35201;&#29992;&#30701;&#20449;&#36720;&#28856;&#21035;&#20154;&#21602;&#36824;&#26159;&#30495;&#25910;&#19981;&#21040;&#65292;&#26524;&#26029;&#33293;&#24323;&#20320;&#36825;&#29992;&#25143;&#25226;</span>
+    } <span style="font-weight: bold;">else</span> {
+        newCheckCodeByMobile()  <span style="font-weight: bold; font-style: italic;">//</span>
+    }
+});
+</pre>
+</div>
+
+<ul class="org-ul">
+<li>查询这个Ip发送了多少次了， 如果太多明显是来浪费我们财产来了，短信是要钱的呀老大</li>
+</ul>
+<div class="org-src-container">
+<pre class="src src-javascript">CheckCode.count({ip:ip, createAt: {$gt: begin, $lt: end}}, <span style="font-weight: bold;">function</span>(<span style="font-weight: bold; font-style: italic;">err</span>, <span style="font-weight: bold; font-style: italic;">count</span>){
+      <span style="font-weight: bold;">if</span> (err) {
+          <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">err</span>
+      } <span style="font-weight: bold;">else</span> <span style="font-weight: bold;">if</span> (count &gt;6) {
+          <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#32769;&#22823;&#65292;&#20320;&#36825;&#20010;Ip&#37117;&#28010;&#36153;&#20102;&#25105;5&#27611;&#38065;&#20102;&#65292;&#20320;&#36824;&#19981;&#29976;&#24515;&#21568;&#65292;&#31639;&#20102;&#65292;&#25918;&#24323;&#20320;&#20102;</span>
+      }  <span style="font-weight: bold;">else</span> {
+          newCheckCodeByMobile() <span style="font-weight: bold; font-style: italic;">//</span>
+      }
+  });
+
+  <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#29983;&#25104;&#25163;&#26426;&#39564;&#35777;&#30721;</span>
+  <span style="font-weight: bold;">function</span> <span style="font-weight: bold;">newCheckCodeByMobile</span>(<span style="font-weight: bold; font-style: italic;">mobile</span>, <span style="font-weight: bold; font-style: italic;">options</span>, <span style="font-weight: bold; font-style: italic;">callback</span>) {
+      <span style="font-weight: bold;">if</span> (<span style="font-weight: bold; text-decoration: underline;">arguments</span>.length === 2 ) {
+          callback = options;
+          options = {};
+      }
+      <span style="font-weight: bold;">var</span> <span style="font-weight: bold; font-style: italic;">ip</span> = options.ip;
+      <span style="font-weight: bold;">var</span> <span style="font-weight: bold; font-style: italic;">now</span> = Date.now(),
+      expireAt = now + 60 * 1000 * 5; <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">5&#20998;&#38047;&#21518;&#26102;&#25928;</span>
+      CheckCode.save({mobile: mobile, ip:ip, checkCode:<span style="font-style: italic;">"123456"</span>, isUse:<span style="font-weight: bold; text-decoration: underline;">false</span>}, callback);
+  }
+</pre>
+</div>
+
+<ul class="org-ul">
+<li>限制跨域提交</li>
+</ul>
+<div class="org-src-container">
+<pre class="src src-javascript"><span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#28210;&#26579;&#39029;&#38754;&#26102;</span>
+<span style="font-weight: bold;">var</span> <span style="font-weight: bold; font-style: italic;">oldCrsf</span> = <span style="font-style: italic;">"12345679"</span>;
+req.session._csrf = oldCrsf;
+
+<span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#25509;&#21463;&#25552;&#20132;</span>
+<span style="font-weight: bold;">var</span> <span style="font-weight: bold; font-style: italic;">_crsf</span> = req.body._crsf;
+<span style="font-weight: bold;">if</span> (_crsf !== req.session._csrf) {
+   res.send(302);
+} <span style="font-weight: bold;">else</span> {
+   <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">ok</span>
+}
+</pre>
+</div>
+
+<ul class="org-ul">
+<li>验证码限制 (同跨域提交思路)</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

@@ -1,0 +1,40 @@
+# -*- coding: utf-8-unix; -*-
+#+TITLE:       如何设置让org-mode在默认情况下，不转义_字符呢
+#+AUTHOR:      Bruce Asu
+#+EMAIL:       bruceasu@163.com
+#+DATE:        <2016-05-23 20:00>
+#+filetags: emacs org-mode
+#+DESCRIPTION: 如何设置让org-mode在默认情况下，不转义_字符呢?
+#+LANGUAGE:    en
+#+OPTIONS:     H:7 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:nil
+
+何设置让 Org Mode 在默认情况下，不转义 \_ 字符呢？
+
+单个 org 文件的解决办法
+你可以在一个 org 文件的开头，用下面的设置来关闭这个功能。
+: #+OPTIONS: ^:nil
+
+如果你需要更方便的设置，可以把上面这个改为
+: #+OPTIONS: ^:{}
+
+这样，当你写
+#+BEGIN_EXPORT html
+a<sub>b </sub>
+#+END_EXPORT
+
+时，\_ 后被 {} 括起来的内容就会被转义，而写 a\_b 时，就按普通的方式来显示。
+
+org sites 的解决办法如果你是用 org sites 来写笔记，想让某个 site 的所有 org 文件
+不转义 \_ 字符，则也可以直接在 org sites 配置文件里，配置下面这么一句，一了百了：
+: (setq org-export-with-sub-superscripts nil)
+
+也可以在 org sites 里设置这个属性，只作用于某一个 site：
+: :sub-superscript nil
+
+如果需要像上面一样，采用相对智能的 {} 方式，可以设置成
+: :sub-superscript {}
+
+或是直接用 elisp 来设置全局的属性：
+: (setq org-export-with-sub-superscripts '{})
+
+这样就会用 {} 来转义了。

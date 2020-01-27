@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>无线APP日志上报优化实践</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">无线APP日志上报优化实践</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#reprint"><div class="category">reprint</div></a> </div>
+<div class="char-counter">2017-03-12</div>
+        <div id="content">
+<nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#org9a774c5">一、APP可不可以不进行日志上报，而单纯从服务器日志统计用户的行为和产品数据？</a></li>
+<li><a href="#org71a3c34">二、APP通常有一些什么方法来上报日志？</a></li>
+<li><a href="#org3d6e357">三、APP上报日志协议细节是怎么样的？</a></li>
+<li><a href="#orga3f88a4">四、APP上报日志，流量很大，主要矛盾是什么？</a></li>
+<li><a href="#org6aa92b4">五、有什么优化的方法？</a></li>
+<li><a href="#orgc373b0f">六、非实时上报，数据时效性怎么保证？在什么时机进行日志上报呢？</a></li>
+<li><a href="#orgddb6648">七、还有其他什么优化方案？</a></li>
+</ul>
+</div>
+</nav>
+<p>
+缘起：无线时代，APP流量敏感，为了统计APP内用户行为，或者需要收集某些产品数据，往
+往需要进行日志上报，日志上报往往又非常费流量，有没有一些好的节省流量的优化方法呢，
+这是本文将要讨论的问题。
+</p>
+
+<div id="outline-container-org9a774c5" class="outline-2">
+<h2 id="org9a774c5">一、APP可不可以不进行日志上报，而单纯从服务器日志统计用户的行为和产品数据？</h2>
+<div class="outline-text-2" id="text-org9a774c5">
+<p>
+答：不行，有些用户行为是不会与服务器进行交互的（例如TAB的点击），从服务器日志无法完成所有统计。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org71a3c34" class="outline-2">
+<h2 id="org71a3c34">二、APP通常有一些什么方法来上报日志？</h2>
+<div class="outline-text-2" id="text-org71a3c34">
+<p>
+答：常用方法有三种： 1. 利用类似于Google
+Analytics的第三方工具进行上报，优点是无需开发，缺点是不能做个性化统计 2.
+自己制订私有协议进行上报（例如TCP二进制协议），优点是节省流量，缺点是开发成本高
+</p>
+<ol class="org-ol">
+<li>使用HTTP上报，例如通过GET参数传递需要上报的数据，这种方案使用最为广泛</li>
+</ol>
+</div>
+</div>
+
+<div id="outline-container-org3d6e357" class="outline-2">
+<h2 id="org3d6e357">三、APP上报日志协议细节是怎么样的？</h2>
+<div class="outline-text-2" id="text-org3d6e357">
+<p>
+答：一般是在web-server下放置一个空文件，APP通过发起HTTP请求访问这个空文件，通过GET参数传递数据，通过分析access日志来得到想要的数据。GET协议一般又有两种方式，约定格式法
+</p>
+<ul class="org-ul">
+<li>KV法 1. 约定格式法：约定分隔符，约定占位符，约定每个字段的含义，例如：</li>
+</ul>
+<p>
+<a href="http://daojia.com/up">http://daojia.com/up</a>?[bj][20151021][1939][1][login]
+APP和server约定好，空白文件是up，分隔符是[]，第一个字段[bj]是城市，第二个字段[20151021]是日期，第三个字段
+[1939]是时间，第四个字段[1]是用户id，第五个字段[login]是行为这个方法的缺点是，扩展
+性较差，有时候某些字段没有值，也必须在相应的位置保留占位符（因为每个字段是什么含
+义都是事先约定好的），要想新增统计项，只能在GET后面新增[]
+</p>
+
+<ol class="org-ol">
+<li>KV法：通过自解释的kv方式来上报数据，上面的例子用KV法来上报，则上报形式为：
+<a href="http://daojia.com/up?city=bj&amp;date=20151021&amp;time=1939&amp;uid=1&amp;action=login">http://daojia.com/up?city=bj&amp;date=20151021&amp;time=1939&amp;uid=1&amp;action=login</a>
+这个方法的优点是扩展性好（好太多了），缺点是上报数据量比较大，KEY其实是冗余的字符
+笔者强烈建议使用第二种方法来上报数据，后文会简述一些流量的优化方法</li>
+</ol>
+</div>
+</div>
+
+<div id="outline-container-orga3f88a4" class="outline-2">
+<h2 id="orga3f88a4">四、APP上报日志，流量很大，主要矛盾是什么？</h2>
+<div class="outline-text-2" id="text-orga3f88a4">
+<p>
+答：笔者了解到的主要矛盾有： 1. 无效的流量较多，HTTP请求内有很多无效数据
+</p>
+<ol class="org-ol">
+<li>URL冗余，每次都要上报URL 3. KEY冗余，每次都要上报KEY 4.</li>
+</ol>
+<p>
+上报频度高，每当用户进行了一个操作都要日志上报的话，HTTP量还是很大的
+</p>
+</div>
+</div>
+
+<div id="outline-container-org6aa92b4" class="outline-2">
+<h2 id="org6aa92b4">五、有什么优化的方法？</h2>
+<div class="outline-text-2" id="text-org6aa92b4">
+<p>
+答：针对上述 1 - 4 的主要矛盾，逐一进行优化： 1.
+手动构造HTTP请求，尽可能多的去除HTTP中的无效数据，只保留GET /up
+HTTP/1.1和GET传递的数据 2.
+使用尽可能短的域名来接收上报的日志，例如s.daojia.cn/a 3.
+使用尽可能短的KEY来标识数据，例如city=bj可以优化为c=bj，日志收集方注意规范好KEY
+</p>
+<ol class="org-ol">
+<li></li>
+</ol>
+<p>
+批量非实时上报，先将数据保存到APP本地存储（例如sqlite中），定时上报，这类优化对于
+PV类，SUM类，AVG类统计尤为有效，例如，要统计登录按钮的点击次数，三次点击，传统统计
+可能需要上报三次
+<a href="http://daojia.com/up?city=bj&amp;date=20151021&amp;time=1939&amp;uid=1&amp;action=login">http://daojia.com/up?city=bj&amp;date=20151021&amp;time=1939&amp;uid=1&amp;action=login</a>
+<a href="http://daojia.com/up?city=bj&amp;date=20151021&amp;time=1939&amp;uid=1&amp;action=login">http://daojia.com/up?city=bj&amp;date=20151021&amp;time=1939&amp;uid=1&amp;action=login</a>
+<a href="http://daojia.com/up?city=bj&amp;date=20151021&amp;time=1939&amp;uid=1&amp;action=login">http://daojia.com/up?city=bj&amp;date=20151021&amp;time=1939&amp;uid=1&amp;action=login</a>
+优化后，只需要上报一次（注意加了一个count=3的参数）
+<a href="http://daojia.com/up?city=bj&amp;date=20151021&amp;time=1939&amp;uid=1&amp;action=login&amp;count=3">http://daojia.com/up?city=bj&amp;date=20151021&amp;time=1939&amp;uid=1&amp;action=login&amp;count=3</a>
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgc373b0f" class="outline-2">
+<h2 id="orgc373b0f">六、非实时上报，数据时效性怎么保证？在什么时机进行日志上报呢？</h2>
+<div class="outline-text-2" id="text-orgc373b0f">
+<p>
+答：数据的时效性会有一定的影响，但问题不大。为了优化，会在这样的一些时间点进行上报：
+</p>
+<ol class="org-ol">
+<li>特殊时间点：APP打开时，APP关闭时等 2.</li>
+</ol>
+<p>
+按时间上报：例如每隔10分钟上报一次 3.
+按数据量上报：例如每收集10条记录才上报一次
+</p>
+
+<p>
+一般来说上述三种优化方法会结合进行
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgddb6648" class="outline-2">
+<h2 id="orgddb6648">七、还有其他什么优化方案？</h2>
+<div class="outline-text-2" id="text-orgddb6648">
+<p>
+答：数据压缩也是一种常见的优化方案
+</p>
+</div>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

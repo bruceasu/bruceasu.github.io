@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>Emacs regex</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">Emacs regex</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#emacs"><div class="category">emacs</div></a> </div>
+<div class="char-counter">2017-03-01</div>
+        <div id="content">
+<nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#orgc203d99">正则表达式语法</a></li>
+<li><a href="#orga181f50">特殊字符</a>
+<ul>
+<li><a href="#orgeafeab2">“. (Period)”</a></li>
+<li><a href="#org6ffbd2a">“*”</a></li>
+<li><a href="#org35ef7ae">“+”</a></li>
+<li><a href="#org0cdc294">“?”</a></li>
+<li><a href="#orgeb2db7b">“*?, +?, ??”</a></li>
+<li><a href="#org417bcd8">“\{N\}”</a></li>
+<li><a href="#orgdde7b63">“\{N,M\}”</a></li>
+<li><a href="#org5bfac4b">“[ ... ]”</a></li>
+<li><a href="#orgd3814c2">“[^ ... ]”</a></li>
+<li><a href="#orgd84382b">“^”</a></li>
+<li><a href="#org985c29e">“$”</a></li>
+<li><a href="#org4621844">“\”</a></li>
+</ul>
+</li>
+<li><a href="#orgb99cd8d">关于反斜线</a>
+<ul>
+<li><a href="#orgb3b309a">“\｜”</a></li>
+<li><a href="#orgcf186ea">“\( ... \)”</a></li>
+<li><a href="#orgca3c693">“\(?: ... \)”</a></li>
+<li><a href="#org2de2a3a">“\D”</a></li>
+<li><a href="#org3a441a4">“\`”</a></li>
+<li><a href="#org6c22830">“\'”</a></li>
+<li><a href="#orgc6485f7">“\=”</a></li>
+<li><a href="#org9f70245">“\b”</a></li>
+<li><a href="#org2b3251c">“\B”</a></li>
+<li><a href="#org90cfe1f">“\&lt;”</a></li>
+<li><a href="#orgc52e58f">“\&gt;”</a></li>
+<li><a href="#orgd402e8e">“\w”</a></li>
+<li><a href="#orge919e96">“\W”</a></li>
+<li><a href="#org29f13fc">“\sC”</a></li>
+<li><a href="#org877e07c">“\SC”</a></li>
+<li><a href="#orgca89ebd">“\cC”</a></li>
+<li><a href="#org26f5d9d">“\CC”</a></li>
+</ul>
+</li>
+<li><a href="#orgfc41447">例</a></li>
+</ul>
+</div>
+</nav>
+
+<div id="outline-container-orgc203d99" class="outline-2">
+<h2 id="orgc203d99">正则表达式语法</h2>
+<div class="outline-text-2" id="text-orgc203d99">
+<p>
+正则表达式(regular expressions, 缩写为regexp)是由几个特殊字符和一些普通 字符组成，
+一个普通就是一个简单的正则表达式，仅仅可以匹配与自己相同的字符。 而特殊字符包括
+“$”，“^”， “.”， “*”， “+”， “?”，“[”， “]” 以及 “\”。除非在一个字符前面有“\”，
+否则正则表达式中的出现的任何其他字符 都是普通字符，（当你在Lisp 语言的程序中使用
+正则表达式的时候，每一个“\”都 必须写成两个，请看下面的例子。）
+</p>
+
+<p>
+例如，“f”不是特殊字符，是普通字符，因此“f”是一个正则表达式，它仅仅 匹配“f”这个字
+符串。（不匹配串“ff”。）同样“o”是一个仅仅匹配串“o”的正 则表达式。（当不区分大小
+写的时候，上面提到的式子也匹配“F”和“O”，而一般 认为它们是“同样的串”，并不是例外。）
+</p>
+
+<p>
+两个任意的表达式 A 和 B 可以被连接。结果是一个能够匹配以 A 开始，其余部 分是 B
+的字符串的表达式。
+</p>
+
+<p>
+举个简单的例子，我们将表达式“f”和“o”连接，得到表达式“fo”，它仅匹 配串“fo”，很简
+单的。想做些不简单的，你需要使用特殊字符。下面为这些特殊字 符。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orga181f50" class="outline-2">
+<h2 id="orga181f50">特殊字符</h2>
+<div class="outline-text-2" id="text-orga181f50">
+</div>
+<div id="outline-container-orgeafeab2" class="outline-3">
+<h3 id="orgeafeab2">“. (Period)”</h3>
+<div class="outline-text-3" id="text-orgeafeab2">
+<p>
+一个匹配除了换行符(newline)之外任何单个字符的特殊字符。使用连接，我们 可以得到如
+“a.b”的表达式，它匹配了所有的以“a”开始，以“b”结束的三 个字符的字符串。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org6ffbd2a" class="outline-3">
+<h3 id="org6ffbd2a">“*”</h3>
+<div class="outline-text-3" id="text-org6ffbd2a">
+<p>
+自身不构成表达式的部分；它是个后缀操作符，表示某个前导表达式重复任意次。 比如，
+“o*”匹配任意个数的“o”（包括没有“o”）。
+</p>
+
+<p>
+“*”总是作用于“最少的”可能的前导表达式。于是，“fo*”中，认为“o”是 的重复，
+而不是“fo”，匹配形如“f”, “fo”, “foo”的串等等。
+</p>
+
+<p>
+匹配程序以迅速的、尽可能多的找到重复部分来处理一个带“*”的结构。然后继 续其他部分
+的处理。如果失败了，为了使剩余的部分能够尽可能的匹配，匹配程 序会回退，放弃一些
+由“*”匹配的结构。例如，在使用“ca*ar”来匹配串 “caaar”时，“a*”首先试图匹配全部的三
+个“a”；但余下的部分是“ar”并 且仅有“r”没被匹配，因此这次试图匹配失败。接着选择是
+用“a*”来匹配两个 “a”，并且匹配成功。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org35ef7ae" class="outline-3">
+<h3 id="org35ef7ae">“+”</h3>
+<div class="outline-text-3" id="text-org35ef7ae">
+<p>
+是一个和“*”相似的后缀操作符，它匹配前导表达式至少一次的出现。例如， “ca+r”匹配串
+“car”和“caaaar”，不匹配“cr”，然而“ca*r”可以匹配这 三个串。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org0cdc294" class="outline-3">
+<h3 id="org0cdc294">“?”</h3>
+<div class="outline-text-3" id="text-org0cdc294">
+<p>
+也是一个和“*”相似的操作符，它匹配前导表达式至多一次的出现。例如， “ca?r”仅仅匹配
+“car”或“cr”。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgeb2db7b" class="outline-3">
+<h3 id="orgeb2db7b">“*?, +?, ??”</h3>
+<div class="outline-text-3" id="text-orgeb2db7b">
+<p>
+是前面几个个操作符的非贪心(non-greedy)的变体。正常的“*”， “+”， “?” 操作符是“贪
+心的(greedy)”，只要总体上能够匹配，这些操作符总是尽可能多 的匹配。当有一个紧跟着
+的“?”，就是是非贪心的了：将尽可能少的匹配。
+</p>
+
+<p>
+“ab*”和“ab*?”都能匹配串“a”和“abbbb”；但如果你试图用它们来匹配 “abbb”时，“ab*”将
+匹配全部（最长有效匹配），而“ab*?”将仅仅匹配“a” （最短有效匹配）。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org417bcd8" class="outline-3">
+<h3 id="org417bcd8">“\{N\}”</h3>
+<div class="outline-text-3" id="text-org417bcd8">
+<p>
+指定重复次数为 N 的后缀操作符，一个前导表达式必须恰好匹配了 N 次。例如“x\{4\}”仅
+仅匹配串“xxxx”。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgdde7b63" class="outline-3">
+<h3 id="orgdde7b63">“\{N,M\}”</h3>
+<div class="outline-text-3" id="text-orgdde7b63">
+<p>
+指定重复次数在N和M之间的后缀操作符，就是说它的前导表达式的匹配次数至少 N 次但不
+能超过 M 次。如果省略 M，表示没有上限，但它的前导表达式至少匹配 N 次。“\{0,1\}”
+等同于“?”。“\{0,\}”等同于“*”。“\{1,\}”等同于 “+”。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org5bfac4b" class="outline-3">
+<h3 id="org5bfac4b">“[ ... ]”</h3>
+<div class="outline-text-3" id="text-org5bfac4b">
+<p>
+字符集，以“[”开始以“]”结束。最简单的例子，在两个方括号中间的字符就 是这个集合所
+能匹配的全部。
+</p>
+
+<p>
+所以，“[ad]”仅匹配一个“a”或一个“d”，“[ad]*”匹配所有仅由“a”和 “d”构成的串（包括空
+串）。“c[ad]*r”匹配“cr”，“car”， “cdr”， “caddaar”，等等。
+</p>
+
+<p>
+也可以用一个“-”放在一个开始字符和一个结束字符的中间来在字符集中包含这 个范围。
+“[a-z]”匹配所有小写 ASCII 字母。范围可以和单独的字符自由的组 合在一起，比如
+“[a-z\(%.]”，匹配了任意的小写字母，或“\)”，“%”，以及 “.”。
+</p>
+
+<p>
+注意，通常在字符集中的特殊字符不再特殊。而在字符集中的“]”，“-”和 “^”却不这样。
+</p>
+
+<p>
+如果想在集中包括“]”，必须把它作为字符集中的第一个字符。例如，“[]a]” 匹配“]”或“a”。
+想包括“-”，它要是字符集中的第一个或最后一个字符。 或者放在一个范围的后面。如
+“[]-]”匹配“]”和“-”。
+</p>
+
+<p>
+如果想在集包括字符“^”，它可以在除第一个位置以外的任何地方。（在开始 位置，它会把
+这个字符集取补——看下面。）
+</p>
+
+<p>
+当不区分大小写使用范围时，表示范围的两个字符或者都是大写、或者都是小写、 或者都
+不是字母。混合大小写的范围如“A-z”有点错误定义的意思，在将来的 Emacs 中这个可能会
+被改变。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgd3814c2" class="outline-3">
+<h3 id="orgd3814c2">“[^ ... ]”</h3>
+<div class="outline-text-3" id="text-orgd3814c2">
+<p>
+“[^”表示“补集合”，匹配的字符是除掉指定的字符外其他所有的字符。如，“[^a-z0-9A-Z]”
+匹配除掉ASCII字母和数字的所有字符。
+</p>
+
+<p>
+当“^”在字符集中第一个时，被看作是特殊字符。而跟在“^”后面的字符被看 作是第一个字
+符（就是说，此处的“-”和“]”将不是特殊的）。
+</p>
+
+<p>
+一个补集合可以匹配换行符，除非换行符被指定为补集合中的一个字符。这不同 于某些象
+“grep”的程序对正则表达式的处理。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgd84382b" class="outline-3">
+<h3 id="orgd84382b">“^”</h3>
+<div class="outline-text-3" id="text-orgd84382b">
+<p>
+仅仅匹配在文本中行首的那个空串的特殊字符。就是说，“^foo”匹配在行首的 “foo”。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org985c29e" class="outline-3">
+<h3 id="org985c29e">“$”</h3>
+<div class="outline-text-3" id="text-org985c29e">
+<p>
+和“^”相似，但仅匹配行尾的空串。因此“x+$”匹配在行尾的一个或多个“x” 的串。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org4621844" class="outline-3">
+<h3 id="org4621844">“\”</h3>
+<div class="outline-text-3" id="text-org4621844">
+<p>
+有两个作用：引用特殊字符（包括“\”）；产生附加的特殊结构。因为“\”引用特殊字符，
+“\\(”是一个仅匹配“\)”的表达式，“\[”是一个仅 匹配“[”的表达式，等等。
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgb99cd8d" class="outline-2">
+<h2 id="orgb99cd8d">关于反斜线</h2>
+<div class="outline-text-2" id="text-orgb99cd8d">
+<p>
+注意：为兼容性考虑，特殊字符，如果在其没有意义的上下文中，将被当作普通 字符。比
+如：“*foo”中把“*”当作普通字符，因为在它前面没有可以作用的前导表 达式。很少有人会
+根据这条规则去实践；无论如何，在任何地方都加上引用会更好些。对于大多数情况，“\”
+后接任何字符仅仅匹配那个字符。然而，有几个例外： 以“\”开始的两字符序列会有特殊的
+意思。其中的第二个字符往往是普通字符。下 面是“\”的结构表。
+</p>
+</div>
+
+<div id="outline-container-orgb3b309a" class="outline-3">
+<h3 id="orgb3b309a">“\｜”</h3>
+<div class="outline-text-3" id="text-orgb3b309a">
+<p>
+指定一个选择。中间有一个“\｜”的两个正则表达式 A 和 B，形成了一个可以匹 配 A 或B
+的文本。它首先试图用 A 匹配，如果失败再用 B 去试。
+</p>
+
+<p>
+由此，“foo\｜bar”仅匹配“foo”或“bar”。
+</p>
+
+<p>
+“\｜”作用于两边最长的可能的表达式。仅由“\( ... \)”括起来才可以限制 “\｜”的分组能
+力。
+</p>
+
+<p>
+Emacs 有全面的回退功能，以处理“\｜”的多种的用途。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgcf186ea" class="outline-3">
+<h3 id="orgcf186ea">“\( ... \)”</h3>
+<div class="outline-text-3" id="text-orgcf186ea">
+<p>
+分组结构，有三个功能：
+</p>
+
+<p>
+围住“\｜”的选择项，以实现别的操作。例如“\(foo\｜bar\)x”匹配 “foox”或“barx”。
+</p>
+
+<p>
+围住复杂的表达式以实现后缀操作符（如“*”“+”和“?”）的操作。例如“ba\(na\)*”匹配如
+“bananana”等，有任意个（零或更多）的“na”串。记录一个已匹配的子串用作后面的参考引
+用。
+</p>
+
+<p>
+最后一个应用并不是括号的分组功能思想的结果；这个分开的特点是给同样的 “\( ... \)”
+结构赋予的第二种含义。在实际应用中，这两种含义通常不会发生 冲突。当发生冲突的时
+候，可以使用“谨慎的”分组("shy" group)。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgca3c693" class="outline-3">
+<h3 id="orgca3c693">“\(?: ... \)”</h3>
+<div class="outline-text-3" id="text-orgca3c693">
+<p>
+“谨慎的”分组("shy" group)，这个分组不记录匹配的子串；你不能用“\D”来 引用。这在机
+械的结合正则表达式的时候有用，这样，你可以为语法目的加入分 组，而不用干涉使用者
+写的分组的个数。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org2de2a3a" class="outline-3">
+<h3 id="org2de2a3a">“\D”</h3>
+<div class="outline-text-3" id="text-org2de2a3a">
+<p>
+匹配和“\( ... \)”结构第 D 次出现时所匹配的同样的文本。在“\( ... \)”结构结束之后，
+匹配程序保存被这个结构匹配的文本（的开始和 结束）；之后的正则表达式中，你可以使
+用“\”跟着一个数字 D 来表示“匹配 和‘\( ... \)’结构第 D 次出现时所匹配的同样的文本。”
+</p>
+
+<p>
+正则表达式中前九个出现的“\( ... \)”结构，按正则表达式中左括号出现的次 序从 1到 9
+赋值。因此可以用“\1”到“\9”来引用相应的“\( ... \)”结构。
+</p>
+
+<p>
+例如，“\(.*\)\1”匹配任何有完全相同的两部分而无换行符的串。“\(.*\)” 匹配前一半，
+可以是任意的串，“\1”匹配后面的，但必须和前面的完全相同。
+</p>
+
+<p>
+如果一个特定的“\( ... \)”结构匹配了多次（比如后面有一个“*”，这很显 然），那么仅
+记录最后一次的匹配。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org3a441a4" class="outline-3">
+<h3 id="org3a441a4">“\`”</h3>
+<div class="outline-text-3" id="text-org3a441a4">
+<p>
+匹配空串，但仅是接在缓冲区的开始处的。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org6c22830" class="outline-3">
+<h3 id="org6c22830">“\'”</h3>
+<div class="outline-text-3" id="text-org6c22830">
+<p>
+匹配空串，但仅是接在缓冲区的尾部的。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgc6485f7" class="outline-3">
+<h3 id="orgc6485f7">“\=”</h3>
+<div class="outline-text-3" id="text-orgc6485f7">
+<p>
+匹配空串，但仅在“点(point)”处的。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org9f70245" class="outline-3">
+<h3 id="org9f70245">“\b”</h3>
+<div class="outline-text-3" id="text-org9f70245">
+<p>
+匹配空串，但仅在一个词的开始或者结尾的。例如，“\bfoo\b”匹配任何作为单 独的词出现
+的“foo”。“\bballs?\b”匹配作为单独的词出现的“ball”或 “balls”。
+</p>
+
+<p>
+在缓冲区的开始和结束位置时，“\b”不考虑紧接其前的文本是什么。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org2b3251c" class="outline-3">
+<h3 id="org2b3251c">“\B”</h3>
+<div class="outline-text-3" id="text-org2b3251c">
+<p>
+匹配空串，但不在词的开始或结尾处。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org90cfe1f" class="outline-3">
+<h3 id="org90cfe1f">“\&lt;”</h3>
+<div class="outline-text-3" id="text-org90cfe1f">
+<p>
+匹配空串，但仅在词的开始处。仅当一个构成词的字符在缓冲区开始处时“\&lt;” 匹配缓冲区
+开始处的空串。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgc52e58f" class="outline-3">
+<h3 id="orgc52e58f">“\&gt;”</h3>
+<div class="outline-text-3" id="text-orgc52e58f">
+<p>
+匹配空串，但仅在词的结尾处。仅当缓冲区尾部有构成词的字符时“\&gt;”匹配缓 冲区尾部的
+空串。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgd402e8e" class="outline-3">
+<h3 id="orgd402e8e">“\w”</h3>
+<div class="outline-text-3" id="text-orgd402e8e">
+<p>
+匹配任何构成词的字符。由语法表决定这些字符是什么。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orge919e96" class="outline-3">
+<h3 id="orge919e96">“\W”</h3>
+<div class="outline-text-3" id="text-orge919e96">
+<p>
+匹配任何非构成词的字符。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org29f13fc" class="outline-3">
+<h3 id="org29f13fc">“\sC”</h3>
+<div class="outline-text-3" id="text-org29f13fc">
+<p>
+匹配任何语法是 C 的字符。这里 C 是一个指定特定语法类的字符：如“w”为词 的构成字符，
+“-”或“ ”为空白，“.”为普通标点符号，等等。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org877e07c" class="outline-3">
+<h3 id="org877e07c">“\SC”</h3>
+<div class="outline-text-3" id="text-org877e07c">
+<p>
+匹配任何字符不属于语法 C。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgca89ebd" class="outline-3">
+<h3 id="orgca89ebd">“\cC”</h3>
+<div class="outline-text-3" id="text-orgca89ebd">
+<p>
+匹配任何属于种类 C 的字符。例如，“\cc”匹配汉字，“\cg”匹配希腊字符等。 如果想
+了解已知种类，用“M-x describe-categories ”。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org26f5d9d" class="outline-3">
+<h3 id="org26f5d9d">“\CC”</h3>
+<div class="outline-text-3" id="text-org26f5d9d">
+<p>
+匹配所有不属于种类C的字符。
+属于词和语法的结构是由语法表的设置来控制的。
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgfc41447" class="outline-2">
+<h2 id="orgfc41447">例</h2>
+<div class="outline-text-2" id="text-orgfc41447">
+<p>
+下面是一个复杂的正则表达式，存储在“sentence-end”，Emacs 将其用于识 别句子的结束
+以及后面的任何空白。其中以 Lisp 语法区分了空白符和制表符。在 Lisp 语法中，串常量
+用双引号括起来。“\"”表示双引号是表达式的一部分， “\\”表示反斜扛是表达式的一部分，
+“\t”表示制表符，“\n”表示换行。
+</p>
+
+<pre class="example">
+"[.?!][]\"')]*\\($\\| $\\|\t\\|  \\)[ \t\n]*"
+
+</pre>
+
+<p>
+其中包含四个连续的部分：匹配句号(“.”)、“?”或“!”的字符集；匹配右方括 号、右(单/双)引
+号的字符集的任意次重复的部分；在“反斜线括号”部分中，匹配 行尾、行尾空白、制表符
+或两个空格的可选集合；以及一个任意次匹配空白的字符 集。
+</p>
+
+<p>
+在增量搜索中，要用 输入制表符，“C-j”输入换行符。也可以使用单 独的反斜线，不用象
+Lisp 串中那样写成两个。
+</p>
+</div>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

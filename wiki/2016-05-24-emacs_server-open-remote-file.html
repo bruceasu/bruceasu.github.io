@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>使用本地 emacs_server 模式打开远程文件(转)</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">使用本地 emacs_server 模式打开远程文件(转)</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#emacs"><div class="category">emacs</div></a> <a href="https://bruceasu.github.io/tags.html#reprint"><div class="category">reprint</div></a> </div>
+<div class="char-counter">2016-05-24</div>
+        <div id="content">
+<p>
+使用emacs的用户都知道，一般要打开远程机器上的文件要使用TrampMode模式，调用方式如
+下:
+</p>
+<pre class="example">
+C-x C-f /remotehost:filename  RET (or /method:user@remotehost:filename)
+
+</pre>
+
+<p>
+但,这样打开有点麻烦,你必要输入用户名和机器ip等。emacs提供了一种client/server的模
+式,当我们在本地打开一个emacs,可以将它作为server运行。然后,在本地机器的其他都方要
+用emacs的时候,如在terminal中要调用emacs,只需要使用emacsclient就可以了。
+</p>
+
+<p>
+我希望的情形是这样的:
+</p>
+
+<ol class="org-ol">
+<li>把本地机器的emacs当成一个server</li>
+<li>用ssh登录一台远程机器</li>
+<li>在远程机器上使用emacsclient 调用本地的emacs server</li>
+<li>然后,我们就可以在本地机器上编辑远程机器上的文件了</li>
+</ol>
+
+<p>
+在网上找了一个人给出的解决方法,链接 (墙外),现把步骤整理如下:注:这里我远程机器
+HOST名为:yoks 登录的用户名为:lisp
+</p>
+
+<ol class="org-ol">
+<li><p>
+设置Port Forwarding(或者称为SSH Tunneling),编辑本都机器的 ~/.ssh/config 加入
+以下内容
+</p>
+<pre class="example">
+Host yoks
+User lisp
+ControlMaster auto
+ControlPath ~/.ssh/yoks.sock
+RemoteForward 9999 localhost:9999
+
+</pre>
+
+<p>
+这里将本地的9999端口与远程的9999端口进行影射(map)
+</p></li>
+
+<li><p>
+配制本地机器的emacs,将以下代码加入到你的emacs配制文件(.emacs 或 init.el)中
+</p>
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(<span style="font-weight: bold;">setq</span>&#160;server-use-tcp&#160;t
+      server-port&#160;9999)
+(<span style="font-weight: bold;">require</span>&#160;'server)
+(<span style="font-weight: bold;">defun</span>&#160;server-start-and-copy&#160;()
+  &#160;  <span style="font-style: italic;">"start&#160;server&#160;and&#160;copy&#160;auth&#160;files"</span>
+  (<span style="font-weight: bold;">when</span>&#160;(<span style="font-weight: bold;">and</span>&#160;(fboundp&#160;'server-running-p)&#160;&#160;&#160;<span style="font-weight: bold; font-style: italic;">;</span><span style="font-weight: bold; font-style: italic;">&#160;function&#160;exists.</span>
+             &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;(not&#160;(server-running-p)))
+        &#160;&#160;(server-start)&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold; font-style: italic;">;</span><span style="font-weight: bold; font-style: italic;">&#160;emacs&#160;as&#160;server&#160;mode</span>
+        (<span style="font-weight: bold;">when</span>&#160;(file-exists-p&#160;<span style="font-style: italic;">"/lisp@yoks:~/.emacs.d/server/server"</span>)
+              &#160;&#160;(delete-file&#160;<span style="font-style: italic;">"/lisp@yoks:~/.emacs.d/server/server"</span>))
+        (copy-file&#160;<span style="font-style: italic;">"~/.emacs.d/server/server"</span>&#160;<span style="font-style: italic;">"/lisp@yoks:~/.emacs.d/server/server"</span>)
+        &#160;&#160;&#160;&#160;))
+(add-hook&#160;'emacs-startup-hook&#160;'server-start-and-copy)
+</pre>
+</div>
+
+<p>
+这里一方面启动emacs server模式,将其tcp端口设置为9999. 然后将server
+文件拷贝到远程机器(lisp@yoks)上同时在本地机器上重启emacs
+</p></li>
+
+<li><p>
+在远程机器上编辑一个以下脚本,名字为 ec, 并加入可执行权限
+</p>
+<div class="org-src-container">
+<pre class="src src-sh"><span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">!/bin/</span><span style="font-weight: bold;">bash</span>
+<span style="font-weight: bold; font-style: italic;">params</span>=()
+<span style="font-weight: bold;">for</span>&#160;p&#160;in&#160;<span style="font-style: italic;">"$@"</span>;&#160;do
+   <span style="font-weight: bold;">if</span>&#160;[&#160;<span style="font-style: italic;">"$p"</span>&#160;==&#160;<span style="font-style: italic;">"-n"</span>&#160;];&#160;then
+       params += (&#160;<span style="font-style: italic;">"$p"</span>&#160;)
+   <span style="font-weight: bold;">elif</span>&#160;[&#160;<span style="font-style: italic;">"${p:0:1}"</span>&#160;==&#160;<span style="font-style: italic;">"+"</span>&#160;];&#160;then
+       params += (&#160;<span style="font-style: italic;">"$p"</span>&#160;)
+   <span style="font-weight: bold;">else</span>
+       params += (&#160;<span style="font-style: italic;">"/ssh:yoks:"</span>$(<span style="font-weight: bold;">readlink</span>&#160;-f&#160;$<span style="font-weight: bold; font-style: italic;">p</span>)&#160;)
+   <span style="font-weight: bold;">fi</span>
+<span style="font-weight: bold;">done</span>
+emacsclient&#160;<span style="font-style: italic;">"${params[@]}"</span>
+</pre>
+</div></li>
+
+<li><p>
+用ssh登录远程机器,然后用ec打开一个文件,我们发现,文件内容出现在了本
+地机器的emacs中了,如下:
+</p>
+
+<p>
+可以看到它的地址为: /ssh:yoks:/home/lisp 这个地址和我们用TRAMP模式打开的一模一样.
+</p></li>
+</ol>
+
+<p>
+注意:我的机器环境为Linux
+</p>
+
+<p>
+版权声明：本文为博主原创文章，未经博主允许不得转载。
+</p>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>sar</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">sar</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#linux"><div class="category">linux</div></a> </div>
+<div class="char-counter">2016-05-14</div>
+        <div id="content">
+<nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#orgb915187">前言</a></li>
+<li><a href="#orgb8cc605">CPU资源监控</a></li>
+<li><a href="#orgda24065">inode、文件和其他内核表监控</a></li>
+<li><a href="#orgcbd25df">内存和交换空间监控</a></li>
+<li><a href="#org071a4e2">内存分页监控</a></li>
+<li><a href="#org9ef1d63">I/O和传送速率监控</a></li>
+<li><a href="#org626e2c0">进程队列长度和平均负载状态监控</a></li>
+<li><a href="#org702d5c8">系统交换活动信息监控</a></li>
+<li><a href="#org951ed8b">设备使用情况监控</a></li>
+</ul>
+</div>
+</nav>
+
+<div id="outline-container-orgb915187" class="outline-2">
+<h2 id="orgb915187">前言</h2>
+<div class="outline-text-2" id="text-orgb915187">
+<p>
+sar（System Activity Reporter系统活动情况报告）是目前 Linux 上最为全面的系统性能
+分析工具之一，可以从多方面对系统的活动进行报告，包括：文件的读写情况、系统调用的
+使用情况、磁盘I/O、CPU效率、内存使用状况、进程活动及IPC有关的活动等。本文主要以
+CentOS 6.3 x64系统为例，介绍sar命令。
+</p>
+
+<p>
+sar命令常用格式
+</p>
+
+<pre class="example">
+sar [options] [-A] [-o file] t [n]
+
+</pre>
+
+<p>
+其中：
+</p>
+<ul class="org-ul">
+<li>t为采样间隔，n为采样次数，默认值是1；</li>
+<li>-o file表示将命令结果以二进制格式存放在文件中，file 是文件名。</li>
+<li>options 为命令行选项，sar命令常用选项如下：
+<ul class="org-ul">
+<li>-A：所有报告的总和</li>
+<li>-u：输出CPU使用情况的统计信息</li>
+<li>-v：输出inode、文件和其他内核表的统计信息</li>
+<li>-d：输出每一个块设备的活动信息</li>
+<li>-r：输出内存和交换空间的统计信息</li>
+<li>-b：显示I/O和传送速率的统计信息</li>
+<li>-a：文件读写情况</li>
+<li>-c：输出进程统计信息，每秒创建的进程数</li>
+<li>-R：输出内存页面的统计信息</li>
+<li>-y：终端设备活动情况</li>
+<li>-w：输出系统交换活动信息</li>
+</ul></li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-orgb8cc605" class="outline-2">
+<h2 id="orgb8cc605">CPU资源监控</h2>
+<div class="outline-text-2" id="text-orgb8cc605">
+<p>
+例如，每10秒采样一次，连续采样3次，观察CPU 的使用情况，并将采样结果以二进制形式
+存入当前目录下的文件test中，需键入如下命令：
+</p>
+
+<pre class="example">
+sar -u -o test 10 3
+
+</pre>
+
+<p>
+屏幕显示如下：
+</p>
+<p class="verse">
+17:06:16 CPU %user %nice %system %iowait %steal %idle<br>
+17:06:26 all 0.00 0.00 0.20 0.00 0.00 99.80<br>
+17:06:36 all 0.00 0.00 0.20 0.00 0.00 99.80<br>
+17:06:46 all 0.00 0.00 0.10 0.00 0.00 99.90<br>
+Average: all 0.00 0.00 0.17 0.00 0.00 99.83<br>
+<br>
+输出项说明：<br>
+CPU：all 表示统计信息为所有 CPU 的平均值。<br>
+%user：显示在用户级别(application)运行使用 CPU 总时间的百分比。<br>
+%nice：显示在用户级别，用于nice操作，所占用 CPU 总时间的百分比。<br>
+%system：在核心级别(kernel)运行所使用 CPU 总时间的百分比。<br>
+%iowait：显示用于等待I/O操作占用 CPU 总时间的百分比。<br>
+%steal：管理程序(hypervisor)为另一个虚拟进程提供服务而等待虚拟 CPU 的百分比。<br>
+%idle：显示 CPU 空闲时间占用 CPU 总时间的百分比。<br>
+</p>
+<ol class="org-ol">
+<li>若 %iowait 的值过高，表示硬盘存在I/O瓶颈</li>
+<li>若 %idle 的值高但系统响应慢时，有可能是 CPU 等待分配内存，此时应加大内存容量</li>
+<li>若 %idle 的值持续低于1，则系统的 CPU 处理能力相对较低，表明系统中最需要解决
+的资源是 CPU 。如果要查看二进制文件test中的内容，需键入如下sar命令：</li>
+</ol>
+
+<pre class="example">
+sar -u -f test
+
+</pre>
+</div>
+</div>
+
+<div id="outline-container-orgda24065" class="outline-2">
+<h2 id="orgda24065">inode、文件和其他内核表监控</h2>
+<div class="outline-text-2" id="text-orgda24065">
+<p>
+例如，每10秒采样一次，连续采样3次，观察核心表的状态，需键入如下命令：
+</p>
+<pre class="example">
+sar -v 10 3
+
+</pre>
+<p class="verse">
+屏幕显示如下：<br>
+17:10:49 dentunusd file-nr inode-nr pty-nr<br>
+17:10:59 6301 5664 12037 4<br>
+17:11:09 6301 5664 12037 4<br>
+17:11:19 6301 5664 12037 4<br>
+Average: 6301 5664 12037 4<br>
+输出项说明：<br>
+dentunusd：目录高速缓存中未被使用的条目数量<br>
+file-nr：文件句柄（file handle）的使用数量<br>
+inode-nr：索引节点句柄（inode handle）的使用数量<br>
+pty-nr：使用的pty数量<br>
+<br>
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgcbd25df" class="outline-2">
+<h2 id="orgcbd25df">内存和交换空间监控</h2>
+<div class="outline-text-2" id="text-orgcbd25df">
+<p>
+例如，每10秒采样一次，连续采样3次，监控内存分页：
+</p>
+<pre class="example">
+sar -r 10 3
+
+</pre>
+
+<p>
+屏幕显示如下：
+</p>
+<p class="verse">
+输出项说明：<br>
+kbmemfree：这个值和free命令中的free值基本一致,所以它不包括buffer和cache的空间.<br>
+kbmemused：这个值和free命令中的used值基本一致,所以它包括buffer和cache的空间.<br>
+%memused：这个值是kbmemused和内存总量(不包括swap)的一个百分比.<br>
+kbbuffers和kbcached：这两个值就是free命令中的buffer和cache.<br>
+kbcommit：保证当前系统所需要的内存,即为了确保不溢出而需要的内存(RAM+swap).<br>
+%commit：这个值是kbcommit与内存总量(包括swap)的一个百分比.<br>
+</p>
+</div>
+</div>
+
+<div id="outline-container-org071a4e2" class="outline-2">
+<h2 id="org071a4e2">内存分页监控</h2>
+<div class="outline-text-2" id="text-org071a4e2">
+<p>
+例如，每10秒采样一次，连续采样3次，监控内存分页：
+</p>
+<pre class="example">
+sar -B 10 3
+
+</pre>
+
+<p>
+屏幕显示如下：
+</p>
+<p class="verse">
+输出项说明：<br>
+pgpgin/s：表示每秒从磁盘或SWAP置换到内存的字节数(KB)<br>
+pgpgout/s：表示每秒从内存置换到磁盘或SWAP的字节数(KB)<br>
+fault/s：每秒钟系统产生的缺页数,即主缺页与次缺页之和(major + minor)<br>
+majflt/s：每秒钟产生的主缺页数.<br>
+pgfree/s：每秒被放入空闲队列中的页个数<br>
+pgscank/s：每秒被kswapd扫描的页个数<br>
+pgscand/s：每秒直接被扫描的页个数<br>
+pgsteal/s：每秒钟从cache中被清除来满足内存需要的页个数<br>
+%vmeff：每秒清除的页(pgsteal)占总扫描页(pgscank+pgscand)的百分比<br>
+</p>
+</div>
+</div>
+<div id="outline-container-org9ef1d63" class="outline-2">
+<h2 id="org9ef1d63">I/O和传送速率监控</h2>
+<div class="outline-text-2" id="text-org9ef1d63">
+<p>
+例如，每10秒采样一次，连续采样3次，报告缓冲区的使用情况，需键入如下命令：
+</p>
+<pre class="example">
+sar -b 10 3
+
+</pre>
+<p class="verse">
+屏幕显示如下：<br>
+18:51:05 tps rtps wtps bread/s bwrtn/s<br>
+18:51:15 0.00 0.00 0.00 0.00 0.00<br>
+18:51:25 1.92 0.00 1.92 0.00 22.65<br>
+18:51:35 0.00 0.00 0.00 0.00 0.00<br>
+Average: 0.64 0.00 0.64 0.00 7.59<br>
+输出项说明：<br>
+tps：每秒钟物理设备的 I/O 传输总量<br>
+rtps：每秒钟从物理设备读入的数据总量<br>
+wtps：每秒钟向物理设备写入的数据总量<br>
+bread/s：每秒钟从物理设备读入的数据量，单位为 块/s<br>
+bwrtn/s：每秒钟向物理设备写入的数据量，单位为 块/s<br>
+</p>
+</div>
+</div>
+
+<div id="outline-container-org626e2c0" class="outline-2">
+<h2 id="org626e2c0">进程队列长度和平均负载状态监控</h2>
+<div class="outline-text-2" id="text-org626e2c0">
+<p>
+例如，每10秒采样一次，连续采样3次，监控进程队列长度和平均负载状态：
+</p>
+<pre class="example">
+sar -q 10 3
+
+</pre>
+<p class="verse">
+屏幕显示如下：<br>
+19:25:50 runq-sz plist-sz ldavg-1 ldavg-5 ldavg-15<br>
+19:26:00 0 259 0.00 0.00 0.00<br>
+19:26:10 0 259 0.00 0.00 0.00<br>
+19:26:20 0 259 0.00 0.00 0.00<br>
+Average: 0 259 0.00 0.00 0.00<br>
+输出项说明：<br>
+runq-sz：运行队列的长度（等待运行的进程数）<br>
+plist-sz：进程列表中进程（processes）和线程（threads）的数量<br>
+ldavg-1：最后1分钟的系统平均负载（System load average）<br>
+ldavg-5：过去5分钟的系统平均负载<br>
+ldavg-15：过去15分钟的系统平均负载<br>
+</p>
+</div>
+</div>
+
+<div id="outline-container-org702d5c8" class="outline-2">
+<h2 id="org702d5c8">系统交换活动信息监控</h2>
+<div class="outline-text-2" id="text-org702d5c8">
+<p>
+例如，每10秒采样一次，连续采样3次，监控系统交换活动信息：
+</p>
+<pre class="example">
+sar -    W 10 3
+
+</pre>
+<p class="verse">
+屏幕显示如下：<br>
+19:39:50 pswpin/s pswpout/s<br>
+19:40:00 0.00 0.00<br>
+19:40:10 0.00 0.00<br>
+19:40:20 0.00 0.00<br>
+Average: 0.00 0.00<br>
+输出项说明：<br>
+pswpin/s：每秒系统换入的交换页面（swap page）数量<br>
+pswpout/s：每秒系统换出的交换页面（swap page）数量<br>
+</p>
+</div>
+</div>
+<div id="outline-container-org951ed8b" class="outline-2">
+<h2 id="org951ed8b">设备使用情况监控</h2>
+<div class="outline-text-2" id="text-org951ed8b">
+<p>
+例如，每10秒采样一次，连续采样3次，报告设备使用情况，需键入如下命令：
+</p>
+<pre class="example">
+sar -d 10 3 –p
+
+</pre>
+<p class="verse">
+屏幕显示如下：<br>
+17:45:54    DEV    tps    rd&lt;sub&gt;sec&lt;/sub&gt;/s    wr&lt;sub&gt;sec&lt;/sub&gt;/s    avgrq-sz    avgqu-sz    await    svctm    %util<br>
+17:46:04    scd0    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00<br>
+17:46:04    sda    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00<br>
+17:46:04    vg&lt;sub&gt;livedvd&lt;/sub&gt;-lv&lt;sub&gt;root&lt;/sub&gt;    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00<br>
+17:46:04    vg&lt;sub&gt;livedvd&lt;/sub&gt;-lv&lt;sub&gt;swap&lt;/sub&gt;    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00<br>
+其中：<br>
+参数-p可以打印出sda,hdc等磁盘设备名称,如果不用参数-p,设备节点则有可能是dev8-0,dev22-0<br>
+tps:每秒从物理磁盘I/O的次数.多个逻辑请求会被合并为一个I/O磁盘请求,一次传输的大小是不确定的.<br>
+rd&lt;sub&gt;sec&lt;/sub&gt;/s:每秒读扇区的次数.<br>
+wr&lt;sub&gt;sec&lt;/sub&gt;/s:每秒写扇区的次数.<br>
+avgrq-sz:平均每次设备I/O操作的数据大小(扇区).<br>
+avgqu-sz:磁盘请求队列的平均长度.<br>
+await:从请求磁盘操作到系统完成处理,每次请求的平均消耗时间,包括请求队列等待时间,单位是毫秒(1秒=1000毫秒).<br>
+svctm:系统处理每次请求的平均时间,不包括在请求队列中消耗的时间.<br>
+%util:I/O请求占CPU的百分比,比率越大,说明越饱和.<br>
+</p>
+<ol class="org-ol">
+<li>avgqu-sz 的值较低时，设备的利用率较高。</li>
+<li>当%util的值接近 1% 时，表示设备带宽已经占满。要判断系统瓶颈问题，有时需几个
+sar 命令选项结合起来
+<ul class="org-ul">
+<li>怀疑CPU存在瓶颈，可用 sar -u 和 sar -q 等来查看</li>
+<li>怀疑内存存在瓶颈，可用 sar -B、sar -r 和 sar -W 等来查看</li>
+<li>怀疑I/O存在瓶颈，可用 sar -b、sar -u 和 sar -d 等来查看</li>
+</ul></li>
+</ol>
+</div>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

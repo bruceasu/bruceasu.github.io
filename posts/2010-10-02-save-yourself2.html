@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>自作孽，不可活</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">自作孽，不可活</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#linux"><div class="category">linux</div></a> <a href="https://bruceasu.github.io/tags.html#knowledge"><div class="category">knowledge</div></a> </div>
+<div class="char-counter">2010-10-02</div>
+        <div id="content">
+
+<div id="outline-container-org212e516" class="outline-2">
+<h2 id="org212e516">巧用crontab</h2>
+<div class="outline-text-2" id="text-org212e516">
+<p>
+如果你的Linux机器处于IDC机房，前端没有硬件防火墙时建议开启iptables防护；但此时就
+有一个问题，你可能要在处于千里之外的公司调试iptables脚本，稍一出错后果就很严重。
+我在配置一台服务器的iptables时，不小心设置了某一项错误参数，结果锁定了SSH会话，
+导致我们经理及另一技术员连不上服务器。郁闷之余，看到此法特推荐给大家，极其有用，
+建议大家学习参考：
+</p>
+
+<p>
+可以配置一计划任务crontab, 每5分钟运行一次，即
+</p>
+<pre class="example">
+*/5 * * * * root /bin/sh /root/firestop.sh，
+
+</pre>
+
+<p>
+firestop.sh内容为：
+</p>
+<pre class="example">
+service iptables stop；
+
+</pre>
+
+<p>
+这样即使你的脚本存在错误设置（或丢失的）规则时，也不至于将你锁在计算机外而无法返
+回与计算机的连接，
+</p>
+
+<p>
+让你放心大胆的调试你的脚本。同学们可参考学习下，这毕竟是生产环境下逼出来的办法。
+</p>
+</div>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

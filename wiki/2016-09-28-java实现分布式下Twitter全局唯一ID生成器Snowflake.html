@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>java实现分布式下Twitter全局唯一ID生成器Snowflake</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">java实现分布式下Twitter全局唯一ID生成器Snowflake</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#java"><div class="category">java</div></a> <a href="https://bruceasu.github.io/tags.html#reprint"><div class="category">reprint</div></a> </div>
+<div class="char-counter">2016-09-28</div>
+        <div id="content">
+<p>
+Twitter-Snowflake算法产生的背景相当简单，为了满足Twitter每秒上万条消息的请求，每
+条消息都必须分配一条唯一的id，这些id还需要一些大致的顺序（方便客户端排序），并且
+在分布式系统中不同机器产生的id必须不同。
+</p>
+
+<p>
+关于的算法，网上有很多的介绍。大家可以搜索相关内容进行查看，本文主要用java实现它
+在分布式下的生成方法。
+</p>
+
+<p>
+Snowflake算法核心
+</p>
+
+<p>
+把时间戳，工作机器id，序列号组合在一起。
+</p>
+
+<p>
+SnowFlake的结构如下(每部分用-分开)：
+</p>
+<pre class="example">
+0 – 0000000000 0000000000 0000000000 0000000000 0 – 00000 – 00000 – 000000000000
+
+</pre>
+
+<p>
+解释如下：
+</p>
+<ul class="org-ul">
+<li>1位标识，由于long基本类型在Java中是带符号的，最高位是符号位，正数是0，负数是1，所以id一般是正数，最高位是0</li>
+<li>41位时间截(毫秒级)，注意，41位时间截不是存储当前时间的时间截，而是存储时间截的差值（当前时间截 – 开始时间截)得到的值），这里的的开始时间截，一般是我们的id生成器开始使用的时间，由我们程序来指定的（如下下面程序IdWorker类的startTime属性）。41位的时间截，可以使用69年，年T = (1L &lt;&lt; 41) / (1000L * 60 * 60 * 24 * 365) = 69</li>
+<li>10位的数据机器位，可以部署在1024个节点，包括5位datacenterId和5位workerId</li>
+<li>12位序列，毫秒内的计数，12位的计数顺序号支持每个节点每毫秒(同一机器，同一时间截)产生4096个ID序号</li>
+<li>加起来刚好64位，为一个Long型。</li>
+</ul>
+
+<p>
+SnowFlake的优点是，整体上按照时间自增排序，并且整个分布式系统内不会产生ID碰撞(由
+数据中心ID和机器ID作区分)，并且效率较高，经测试，SnowFlake每秒能够产生26万ID左右。
+</p>
+
+<p>
+下面是java对该算法的实现：
+</p>
+<div class="org-src-container">
+<pre class="src src-java"><span style="font-weight: bold;">public</span> <span style="font-weight: bold;">class</span> <span style="font-weight: bold; text-decoration: underline;">SnowflakeIdWorker</span> {
+    <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">==============================Fields===========================================</span>
+    <span style="font-style: italic;">/**</span>
+<span style="font-style: italic;">     * &#24320;&#22987;&#26102;&#38388;&#25130; (2015-01-01)</span>
+<span style="font-style: italic;">     */</span>
+    <span style="font-weight: bold;">private</span> <span style="font-weight: bold;">final</span> <span style="font-weight: bold; text-decoration: underline;">long</span> <span style="font-weight: bold; font-style: italic;">twepoch</span> = 1420041600000L;
+
+    <span style="font-style: italic;">/**</span>
+<span style="font-style: italic;">     * &#26426;&#22120;id&#25152;&#21344;&#30340;&#20301;&#25968;</span>
+<span style="font-style: italic;">     */</span>
+    <span style="font-weight: bold;">private</span> <span style="font-weight: bold;">final</span> <span style="font-weight: bold; text-decoration: underline;">long</span> <span style="font-weight: bold; font-style: italic;">workerIdBits</span> = 5L;
+
+    <span style="font-style: italic;">/**</span>
+<span style="font-style: italic;">     * &#25968;&#25454;&#26631;&#35782;id&#25152;&#21344;&#30340;&#20301;&#25968;</span>
+<span style="font-style: italic;">     */</span>
+    <span style="font-weight: bold;">private</span> <span style="font-weight: bold;">final</span> <span style="font-weight: bold; text-decoration: underline;">long</span> <span style="font-weight: bold; font-style: italic;">datacenterIdBits</span> = 5L;
+
+    <span style="font-style: italic;">/**</span>
+<span style="font-style: italic;">     * &#25903;&#25345;&#30340;&#26368;&#22823;&#26426;&#22120;id&#65292;&#32467;&#26524;&#26159;31 (&#36825;&#20010;&#31227;&#20301;&#31639;&#27861;&#21487;&#20197;&#24456;&#24555;&#30340;&#35745;&#31639;&#20986;&#20960;&#20301;&#20108;&#36827;&#21046;&#25968;&#25152;&#33021;&#34920;&#31034;&#30340;&#26368;&#22823;&#21313;&#36827;&#21046;&#25968;)</span>
+<span style="font-style: italic;">     */</span>
+    <span style="font-weight: bold;">private</span> <span style="font-weight: bold;">final</span> <span style="font-weight: bold; text-decoration: underline;">long</span> <span style="font-weight: bold; font-style: italic;">maxWorkerId</span> = -1L ^ (-1L &lt;&lt; workerIdBits);
+
+    <span style="font-style: italic;">/**</span>
+<span style="font-style: italic;">     * &#25903;&#25345;&#30340;&#26368;&#22823;&#25968;&#25454;&#26631;&#35782;id&#65292;&#32467;&#26524;&#26159;31</span>
+<span style="font-style: italic;">     */</span>
+    <span style="font-weight: bold;">private</span> <span style="font-weight: bold;">final</span> <span style="font-weight: bold; text-decoration: underline;">long</span> <span style="font-weight: bold; font-style: italic;">maxDatacenterId</span> = -1L ^ (-1L &lt;&lt; datacenterIdBits);
+
+    <span style="font-style: italic;">/**</span>
+<span style="font-style: italic;">     * &#24207;&#21015;&#22312;id&#20013;&#21344;&#30340;&#20301;&#25968;</span>
+<span style="font-style: italic;">     */</span>
+    <span style="font-weight: bold;">private</span> <span style="font-weight: bold;">final</span> <span style="font-weight: bold; text-decoration: underline;">long</span> <span style="font-weight: bold; font-style: italic;">sequenceBits</span> = 12L;
+
+    <span style="font-style: italic;">/**</span>
+<span style="font-style: italic;">     * &#26426;&#22120;ID&#21521;&#24038;&#31227;12&#20301;</span>
+<span style="font-style: italic;">     */</span>
+    <span style="font-weight: bold;">private</span> <span style="font-weight: bold;">final</span> <span style="font-weight: bold; text-decoration: underline;">long</span> <span style="font-weight: bold; font-style: italic;">workerIdShift</span> = sequenceBits;
+
+    <span style="font-style: italic;">/**</span>
+<span style="font-style: italic;">     * &#25968;&#25454;&#26631;&#35782;id&#21521;&#24038;&#31227;17&#20301;(12+5)</span>
+<span style="font-style: italic;">     */</span>
+    <span style="font-weight: bold;">private</span> <span style="font-weight: bold;">final</span> <span style="font-weight: bold; text-decoration: underline;">long</span> <span style="font-weight: bold; font-style: italic;">datacenterIdShift</span> = sequenceBits + workerIdBits;
+
+    <span style="font-style: italic;">/**</span>
+<span style="font-style: italic;">     * &#26102;&#38388;&#25130;&#21521;&#24038;&#31227;22&#20301;(5+5+12)</span>
+<span style="font-style: italic;">     */</span>
+    <span style="font-weight: bold;">private</span> <span style="font-weight: bold;">final</span> <span style="font-weight: bold; text-decoration: underline;">long</span> <span style="font-weight: bold; font-style: italic;">timestampLeftShift</span> = sequenceBits + workerIdBits + datacenterIdBits;
+
+    <span style="font-style: italic;">/**</span>
+<span style="font-style: italic;">     * &#29983;&#25104;&#24207;&#21015;&#30340;&#25513;&#30721;&#65292;&#36825;&#37324;&#20026;4095 (0b111111111111=0xfff=4095)</span>
+<span style="font-style: italic;">     */</span>
+    <span style="font-weight: bold;">private</span> <span style="font-weight: bold;">final</span> <span style="font-weight: bold; text-decoration: underline;">long</span> <span style="font-weight: bold; font-style: italic;">sequenceMask</span> = -1L ^ (-1L &lt;&lt; sequenceBits);
+
+    <span style="font-style: italic;">/**</span>
+<span style="font-style: italic;">     * &#24037;&#20316;&#26426;&#22120;ID(0~31)</span>
+<span style="font-style: italic;">     */</span>
+    <span style="font-weight: bold;">private</span> <span style="font-weight: bold; text-decoration: underline;">long</span> <span style="font-weight: bold; font-style: italic;">workerId</span>;
+
+    <span style="font-style: italic;">/**</span>
+<span style="font-style: italic;">     * &#25968;&#25454;&#20013;&#24515;ID(0~31)</span>
+<span style="font-style: italic;">     */</span>
+    <span style="font-weight: bold;">private</span> <span style="font-weight: bold; text-decoration: underline;">long</span> <span style="font-weight: bold; font-style: italic;">datacenterId</span>;
+
+    <span style="font-style: italic;">/**</span>
+<span style="font-style: italic;">     * &#27627;&#31186;&#20869;&#24207;&#21015;(0~4095)</span>
+<span style="font-style: italic;">     */</span>
+    <span style="font-weight: bold;">private</span> <span style="font-weight: bold; text-decoration: underline;">long</span> <span style="font-weight: bold; font-style: italic;">sequence</span> = 0L;
+
+    <span style="font-style: italic;">/**</span>
+<span style="font-style: italic;">     * &#19978;&#27425;&#29983;&#25104;ID&#30340;&#26102;&#38388;&#25130;</span>
+<span style="font-style: italic;">     */</span>
+    <span style="font-weight: bold;">private</span> <span style="font-weight: bold; text-decoration: underline;">long</span> <span style="font-weight: bold; font-style: italic;">lastTimestamp</span> = -1L;
+
+    <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">==============================Constructors=====================================</span>
+
+    <span style="font-style: italic;">/**</span>
+<span style="font-style: italic;">     * &#26500;&#36896;&#20989;&#25968;</span>
+<span style="font-style: italic;">     *</span>
+<span style="font-style: italic;">     * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@param</span><span style="font-style: italic;"> workerId     &#24037;&#20316;ID (0~31)</span>
+<span style="font-style: italic;">     * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@param</span><span style="font-style: italic;"> datacenterId &#25968;&#25454;&#20013;&#24515;ID (0~31)</span>
+<span style="font-style: italic;">     */</span>
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">SnowflakeIdWorker</span>(<span style="font-weight: bold; text-decoration: underline;">long</span> <span style="font-weight: bold; font-style: italic;">workerId</span>, <span style="font-weight: bold; text-decoration: underline;">long</span> <span style="font-weight: bold; font-style: italic;">datacenterId</span>) {
+        <span style="font-weight: bold;">if</span> (workerId &gt; maxWorkerId || workerId &lt; 0) {
+            <span style="font-weight: bold;">throw</span> <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">IllegalArgumentException</span>(String.format(<span style="font-style: italic;">"worker Id can't be greater than %d or less than 0"</span>, maxWorkerId));
+        }
+        <span style="font-weight: bold;">if</span> (datacenterId &gt; maxDatacenterId || datacenterId &lt; 0) {
+            <span style="font-weight: bold;">throw</span> <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">IllegalArgumentException</span>(String.format(<span style="font-style: italic;">"datacenter Id can't be greater than %d or less than 0"</span>, maxDatacenterId));
+        }
+        <span style="font-weight: bold;">this</span>.workerId = workerId;
+        <span style="font-weight: bold;">this</span>.datacenterId = datacenterId;
+    }
+
+    <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">==============================Methods==========================================</span>
+
+    <span style="font-style: italic;">/**</span>
+<span style="font-style: italic;">     * &#33719;&#24471;&#19979;&#19968;&#20010;ID (&#35813;&#26041;&#27861;&#26159;&#32447;&#31243;&#23433;&#20840;&#30340;)</span>
+<span style="font-style: italic;">     *</span>
+<span style="font-style: italic;">     * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@return</span><span style="font-style: italic;"> SnowflakeId</span>
+<span style="font-style: italic;">     */</span>
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">synchronized</span> <span style="font-weight: bold; text-decoration: underline;">long</span> <span style="font-weight: bold;">nextId</span>() {
+        <span style="font-weight: bold; text-decoration: underline;">long</span> <span style="font-weight: bold; font-style: italic;">timestamp</span> = timeGen();
+
+        <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#22914;&#26524;&#24403;&#21069;&#26102;&#38388;&#23567;&#20110;&#19978;&#19968;&#27425;ID&#29983;&#25104;&#30340;&#26102;&#38388;&#25139;&#65292;&#35828;&#26126;&#31995;&#32479;&#26102;&#38047;&#22238;&#36864;&#36807;&#36825;&#20010;&#26102;&#20505;&#24212;&#24403;&#25243;&#20986;&#24322;&#24120;</span>
+        <span style="font-weight: bold;">if</span> (timestamp &lt; <span style="font-weight: bold; text-decoration: underline;">lastTimestamp</span>) {
+            <span style="font-weight: bold;">throw</span> <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">RuntimeException</span>(
+                    String.format(<span style="font-style: italic;">"Clock moved backwards.  Refusing to generate id for %d milliseconds"</span>, lastTimestamp - timestamp));
+        }
+
+        <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#22914;&#26524;&#26159;&#21516;&#19968;&#26102;&#38388;&#29983;&#25104;&#30340;&#65292;&#21017;&#36827;&#34892;&#27627;&#31186;&#20869;&#24207;&#21015;</span>
+        <span style="font-weight: bold;">if</span> (lastTimestamp == timestamp) {
+            sequence = (sequence + 1) &amp; sequenceMask;
+            <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#27627;&#31186;&#20869;&#24207;&#21015;&#28322;&#20986;</span>
+            <span style="font-weight: bold;">if</span> (sequence == 0) {
+                <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#38459;&#22622;&#21040;&#19979;&#19968;&#20010;&#27627;&#31186;,&#33719;&#24471;&#26032;&#30340;&#26102;&#38388;&#25139;</span>
+                timestamp = tilNextMillis(lastTimestamp);
+            }
+        }
+        <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#26102;&#38388;&#25139;&#25913;&#21464;&#65292;&#27627;&#31186;&#20869;&#24207;&#21015;&#37325;&#32622;</span>
+        <span style="font-weight: bold;">else</span> {
+            sequence = 0L;
+        }
+
+        <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#19978;&#27425;&#29983;&#25104;ID&#30340;&#26102;&#38388;&#25130;</span>
+        lastTimestamp = timestamp;
+
+        <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#31227;&#20301;&#24182;&#36890;&#36807;&#25110;&#36816;&#31639;&#25340;&#21040;&#19968;&#36215;&#32452;&#25104;64&#20301;&#30340;ID</span>
+        <span style="font-weight: bold;">return</span> ((timestamp - twepoch) &lt;&lt; timestampLeftShift) <span style="font-weight: bold; font-style: italic;">//</span>
+                | (datacenterId &lt;&lt; datacenterIdShift) <span style="font-weight: bold; font-style: italic;">//</span>
+                | (workerId &lt;&lt; workerIdShift) <span style="font-weight: bold; font-style: italic;">//</span>
+                | sequence;
+    }
+
+    <span style="font-style: italic;">/**</span>
+<span style="font-style: italic;">     * &#38459;&#22622;&#21040;&#19979;&#19968;&#20010;&#27627;&#31186;&#65292;&#30452;&#21040;&#33719;&#24471;&#26032;&#30340;&#26102;&#38388;&#25139;</span>
+<span style="font-style: italic;">     *&#65306;www.xttblog.com</span>
+<span style="font-style: italic;">     * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@param</span><span style="font-style: italic;"> lastTimestamp &#19978;&#27425;&#29983;&#25104;ID&#30340;&#26102;&#38388;&#25130;</span>
+<span style="font-style: italic;">     * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@return</span><span style="font-style: italic;"> &#24403;&#21069;&#26102;&#38388;&#25139;</span>
+<span style="font-style: italic;">     */</span>
+    <span style="font-weight: bold;">protected</span> <span style="font-weight: bold; text-decoration: underline;">long</span> <span style="font-weight: bold;">tilNextMillis</span>(<span style="font-weight: bold; text-decoration: underline;">long</span> <span style="font-weight: bold; font-style: italic;">lastTimestamp</span>) {
+        <span style="font-weight: bold; text-decoration: underline;">long</span> <span style="font-weight: bold; font-style: italic;">timestamp</span> = timeGen();
+        <span style="font-weight: bold;">while</span> (timestamp &lt;= lastTimestamp) {
+            timestamp = timeGen();
+        }
+        <span style="font-weight: bold;">return</span> timestamp;
+    }
+
+    <span style="font-style: italic;">/**</span>
+<span style="font-style: italic;">     * &#36820;&#22238;&#20197;&#27627;&#31186;&#20026;&#21333;&#20301;&#30340;&#24403;&#21069;&#26102;&#38388;</span>
+<span style="font-style: italic;">     * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@return</span><span style="font-style: italic;"> &#24403;&#21069;&#26102;&#38388;(&#27627;&#31186;)</span>
+<span style="font-style: italic;">     */</span>
+    <span style="font-weight: bold;">protected</span> <span style="font-weight: bold; text-decoration: underline;">long</span> <span style="font-weight: bold;">timeGen</span>() {
+        <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">return System.currentTimeMillis();</span>
+        <span style="font-weight: bold;">return</span> SystemClock.now();
+    }
+
+    <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">==============================Test=============================================</span>
+
+    <span style="font-style: italic;">/**</span>
+<span style="font-style: italic;">     * &#27979;&#35797;&#65306;www.xttblog.com</span>
+<span style="font-style: italic;">     */</span>
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">main</span>(<span style="font-weight: bold; text-decoration: underline;">String</span>[] <span style="font-weight: bold; font-style: italic;">args</span>) {
+        <span style="font-weight: bold; text-decoration: underline;">long</span> <span style="font-weight: bold; font-style: italic;">start</span> = System.currentTimeMillis();
+        <span style="font-weight: bold; text-decoration: underline;">SnowflakeIdWorker</span> <span style="font-weight: bold; font-style: italic;">idWorker0</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">SnowflakeIdWorker</span>(0, 0);
+        <span style="font-weight: bold;">for</span> (<span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">i</span> = 0; i &lt; 10000000; i++) {
+            <span style="font-weight: bold; text-decoration: underline;">long</span> <span style="font-weight: bold; font-style: italic;">id</span> = idWorker0.nextId();
+            <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">System.out.println(id);</span>
+        }
+        System.out.println(<span style="font-style: italic;">"&#32791;&#26102;&#65306;"</span> + (System.currentTimeMillis() - start));
+    }
+}
+
+</pre>
+</div>
+
+<p>
+本实例1亿个id耗时：37124毫秒。
+</p>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

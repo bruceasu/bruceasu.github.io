@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>关于PKCS5Padding与PKCS7Padding的区别</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">关于PKCS5Padding与PKCS7Padding的区别</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#knowledge"><div class="category">knowledge</div></a> </div>
+<div class="char-counter">2016-07-10</div>
+        <div id="content">
+
+
+<div id="outline-container-orge865785" class="outline-2">
+<h2 id="orge865785"><b>区别</b></h2>
+<div class="outline-text-2" id="text-orge865785">
+<p>
+关于PKCS5Padding与PKCS7Padding的区别工作中，我们常常会遇到跨语言平台的加密解密算
+法的交互使用，特别是一些标准的加解密算法，都设计到数据块Block与填充算法的问题。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org3c7b446" class="outline-2">
+<h2 id="org3c7b446">例如 C# 与 JAVA 中的常见的填充算法如下：</h2>
+<div class="outline-text-2" id="text-org3c7b446">
+<ul class="org-ul">
+<li>.Net中的填充算法：</li>
+</ul>
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+  <colgroup>
+    <col  class="org-left" />
+
+    <col  class="org-left" />
+  </colgroup>
+  <thead>
+    <tr>
+      <th scope="col" class="org-left">成员名称</th>
+      <th scope="col" class="org-left">说明</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td class="org-left">ANSIX923</td>
+      <td class="org-left">ANSIX923 填充字符串由一个字节序列组成，此字节序列的最后一个字节填充字节序列的长度，其余字节均填充数字零。 下面的示例演示此模式的工作原理。假定块长度为 8，数据长度为 9，则填充用八位字节数等于 7，数据等于 FF FF FF FF FF FF FF FF FF：数据： FF FF FF FF FF FF FF FF FFX923 填充： FF FF FF FF FF FF FF FF FF 00 00 00 00 00 00 07</td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">ISO10126</td>
+      <td class="org-left">ISO10126 填充字符串由一个字节序列组成，此字节序列的最后一个字节填充字节序列的长度，其余字节填充随机数据。 下面的示例演示此模式的工作原理。假定块长度为 8，数据长度为 9，则填充用八位字节数等于 7，数据等于 FF FF FF FF FF FF FF FF FF：数据： FF FF FF FF FF FF FF FF FF ISO10126 填充： FF FF FF FF FF FF FF FF FF 7D 2A 75 EF F8 EF 07</td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">None</td>
+      <td class="org-left">不填充。</td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">PKCS7</td>
+      <td class="org-left">PKCS #7 填充字符串由一个字节序列组成，每个字节填充该字节序列的长度。  下面的示例演示这些模式的工作原理。假定块长度为 8，数据长度为 9，则填充用八位字节数等于 7，数据等于 FF FF FF FF FF FF FF FF FF：数据： FF FF FF FF FF FF FF FF FFPKCS7 填充： FF FF FF FF FF FF FF FF FF 07 07 07 07 07 07 07</td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">Zeros</td>
+      <td class="org-left">填充字符串由设置为零的字节组成。</td>
+    </tr>
+  </tbody>
+</table>
+
+<ul class="org-ul">
+<li>JAVA中支持的填充算法（Cipher）有</li>
+</ul>
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+  <colgroup>
+    <col  class="org-left" />
+
+    <col  class="org-left" />
+  </colgroup>
+  <thead>
+    <tr>
+      <th scope="col" class="org-left">Alg. Name</th>
+      <th scope="col" class="org-left">Description</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td class="org-left">NoPadding</td>
+      <td class="org-left">No padding.</td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">ISO10126Padding</td>
+      <td class="org-left">This padding for block ciphers is described in 5.2 Block Encryption Algorithms in the W3C's "XML Encryption Syntax and Processing" document.</td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">OAEPPadding, OAEPWith<digest>And<mgf>Padding</td>
+      <td class="org-left">Optimal Asymmetric Encryption Padding scheme defined in PKCS1, where <digest> should be replaced by the message digest and <mgf> by the mask generation function. Examples:OAEPWithMD5AndMGF1Padding and OAEPWithSHA-512AndMGF1Padding.If OAEPPadding is used, Cipher objects are initialized with ajavax.crypto.spec.OAEPParameterSpec object to suppply values needed for OAEPPadding.</td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">PKCS1Padding</td>
+      <td class="org-left">The padding scheme described in PKCS1, used with the RSA algorithm.</td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">PKCS5Padding</td>
+      <td class="org-left">The padding scheme described in RSA Laboratories, "PKCS5: Password-Based Encryption Standard," version 1.5, November 1993.</td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">SSL3Padding</td>
+      <td class="org-left">The padding scheme defined in the SSL Protocol Version 3.0, November 18, 1996, section 5.2.3.2 (CBC block cipher):    block-ciphered struct { opaque content[SSLCompressed.length]; opaque MAC[CipherSpec.hash\_size]; uint8 padding[GenericBlockCipher.padding\_length]; uint8 padding\_length;} GenericBlockCipher;The size of an instance of a GenericBlockCipher must be a multiple of the block cipher's block length. The padding length, which is always present, contributes to the padding, which implies that if:    sizeof(content) + sizeof(MAC) % block\_length = 0, padding has to be (block\_length - 1) bytes long, because of the existence of padding\_length.This make the padding scheme similar (but not quite) to PKCS5Padding, where the padding length is encoded in the padding (and ranges from 1 to block\_length). With the SSL scheme, the sizeof(padding) is encoded in the always present padding\_length and therefore ranges from 0 to block\_length-1.</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>
+简单对比之下发现，通用的有None，ISO10126两种填充法，实际上PKCS5Padding与
+PKCS7Padding基本上也是可以通用的。通过研读参考资料下面的参考资料可以发现两者定义
+的区别：
+</p>
+
+<ul class="org-ul">
+<li>[Def] PKCS #7: Cryptographic Message Syntax Standard,</li>
+</ul>
+
+<p>
+An RSA Laboratories Technical Note, Version 1.5. Revised November 1,
+1993.<a href="http://www.cnblogs.com/midea0978/admin/ftp://ftp.rsa.com/pub/pkcs/ascii/pkcs-7.asc">http://www.cnblogs.com/midea0978/admin/ftp://ftp.rsa.com/pub/pkcs/ascii/pkcs-7.asc</a>
+</p>
+
+<ul class="org-ul">
+<li>[Inf] PKCS #5: Password-Based Encryption Standard,</li>
+</ul>
+
+<p>
+An RSA Laboratories Technical Note, Version 1.5. Revised November 1,
+1993.<a href="http://www.cnblogs.com/midea0978/admin/ftp://ftp.rsa.com/pub/pkcs/ascii/pkcs-5.asc">http://www.cnblogs.com/midea0978/admin/ftp://ftp.rsa.com/pub/pkcs/ascii/pkcs-5.asc</a>
+</p>
+
+<p>
+在PKCS5Padding中，明确定义Block的大小是8位，而在PKCS7Padding定义中，对于块的大小
+是不确定的，可以在1-255之间（块长度超出255的尚待研究），填充值的算法都是一样的：
+value=k - (l mod k) ,K=块大小，l=数据长度，如果l=8, 则需要填充额外的8个byte的8
+</p>
+
+<p>
+在.net中，例如TripleDESCryptoServiceProvider ，默认BlockSize=64bits=8bytes，所以
+在这种情况下在PKCS5Padding=PKCS7Padding。如果在C#中自己定义了一个不是64bits的加
+密块大小，同时使用PKCS7Padding，那么在java中使用JDK标准的PKCS5Padding就不能解密
+了。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org7141380" class="outline-2">
+<h2 id="org7141380">示例</h2>
+<div class="outline-text-2" id="text-org7141380">
+<ul class="org-ul">
+<li>JAVA Code示例</li>
+</ul>
+<div class="org-src-container">
+<pre class="src src-java"><span style="font-weight: bold;">try</span> {
+       <span style="font-weight: bold; text-decoration: underline;">byte</span>[] <span style="font-weight: bold; font-style: italic;">KEY_DATA</span> = {1,8,-49,-31,77,90,10,121,-14,109,107,38,29,68,59,5,82,49,31,42,-25,67,96,15};
+       <span style="font-weight: bold; text-decoration: underline;">Cipher</span> <span style="font-weight: bold; font-style: italic;">cipher</span> = Cipher.getInstance(<span style="font-style: italic;">"DESede/ECB/PKCS5Padding"</span>);
+       <span style="font-weight: bold; text-decoration: underline;">SecretKeySpec</span> <span style="font-weight: bold; font-style: italic;">key</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">SecretKeySpec</span>(KEY_DATA, <span style="font-style: italic;">"DESede"</span>);<span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#29983;&#25104;&#21152;&#23494;&#35299;&#23494;&#38656;&#35201;&#30340;Key</span>
+       cipher.init(<span style="font-weight: bold; text-decoration: underline;">Cipher</span>.ENCRYPT_MODE, key);
+       <span style="font-weight: bold; text-decoration: underline;">byte</span>[] <span style="font-weight: bold; font-style: italic;">res</span> = cipher.doFinal(data.getBytes());
+   } <span style="font-weight: bold;">catch</span> (<span style="font-weight: bold; text-decoration: underline;">Exception</span> <span style="font-weight: bold; font-style: italic;">e</span>) {
+       e.printStackTrace();
+   }
+</pre>
+</div>
+
+
+<ul class="org-ul">
+<li>C# Code示例</li>
+</ul>
+<div class="org-src-container">
+<pre class="src src-C++"><span style="font-weight: bold; text-decoration: underline;">TripleDESCryptoServiceProvider</span> <span style="font-weight: bold; font-style: italic;">des</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">TripleDESCryptoServiceProvider</span>();
+des.Mode=CipherMode.ECB;
+des.Padding=PaddingMode.PKCS7;
+byte[] buffer =Encoding.Default.GetBytes(<span style="font-style: italic;">"&#26126;&#25991;"</span>);
+<span style="font-weight: bold; text-decoration: underline;">MemoryStream</span> <span style="font-weight: bold; font-style: italic;">stream</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">MemoryStream</span>();
+byte[] key=Convert.FromBase64String(<span style="font-style: italic;">"AQjP4U1aCnnybWsmHUQ7BVIxHyrnQ2AP"</span>);
+<span style="font-weight: bold; text-decoration: underline;">CryptoStream</span> <span style="font-weight: bold; font-style: italic;">encStream</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">CryptoStream</span>(stream, des.CreateEncryptor(key, null), CryptoStreamMode.Write);
+encStream.Write(buffer, 0, buffer.Length);
+encStream.FlushFinalBlock();
+byte[] res=stream.ToArray();
+Console.WriteLine(<span style="font-style: italic;">"result:"</span>+Convert.ToBase64String(res));
+
+
+</pre>
+</div>
+</div>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

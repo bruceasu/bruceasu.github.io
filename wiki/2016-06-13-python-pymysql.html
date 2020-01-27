@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>Python PyMySQLdb</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">Python PyMySQLdb</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#python"><div class="category">python</div></a> </div>
+<div class="char-counter">2016-06-13</div>
+        <div id="content">
+<nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#orge511257">PYMYSQL.PY</a></li>
+<li><a href="#org0d80d30">测试代码：</a></li>
+<li><a href="#orgcc7c676">测试输出：</a></li>
+</ul>
+</div>
+</nav>
+
+
+<div id="outline-container-orge511257" class="outline-2">
+<h2 id="orge511257">PYMYSQL.PY</h2>
+<div class="outline-text-2" id="text-orge511257">
+<div class="org-src-container">
+<pre class="src src-python"><span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">-*- encoding:utf-8 -*-_</span>
+<span style="font-style: italic;">'''</span>
+<span style="font-style: italic;">Created on 2012-1-12</span>
+<span style="font-style: italic;">@author: xiaojay</span>
+<span style="font-style: italic;">'''</span>
+<span style="font-weight: bold;">import</span> MySQLdb
+<span style="font-weight: bold;">import</span> MySQLdb.cursors
+
+<span style="font-weight: bold; font-style: italic;">STORE_RESULT_MODE</span> = 0
+<span style="font-weight: bold; font-style: italic;">USE_RESULT_MODE</span> = 1
+
+<span style="font-weight: bold; font-style: italic;">CURSOR_MODE</span> = 0
+<span style="font-weight: bold; font-style: italic;">DICTCURSOR_MODE</span> = 1
+<span style="font-weight: bold; font-style: italic;">SSCURSOR_MODE</span> = 2
+<span style="font-weight: bold; font-style: italic;">SSDICTCURSOR_MODE</span> = 3
+
+<span style="font-weight: bold; font-style: italic;">FETCH_ONE</span> = 0
+<span style="font-weight: bold; font-style: italic;">FETCH_MANY</span> = 1
+<span style="font-weight: bold; font-style: italic;">FETCH_ALL</span> = 2
+
+<span style="font-weight: bold;">class</span> <span style="font-weight: bold; text-decoration: underline;">PyMysql</span>:
+    <span style="font-weight: bold;">def</span> <span style="font-weight: bold;">__init__</span>(<span style="font-weight: bold;">self</span>):
+        <span style="font-weight: bold;">self</span>.conn = <span style="font-weight: bold; text-decoration: underline;">None</span>
+        <span style="font-weight: bold;">pass</span>
+
+    <span style="font-weight: bold;">def</span> <span style="font-weight: bold;">newConnection</span>(<span style="font-weight: bold;">self</span>,host,user,passwd,defaultdb):
+         <span style="font-style: italic;">"""</span>
+<span style="font-style: italic;">          &#24314;&#31435;&#19968;&#20010;&#26032;&#36830;&#25509;&#65292;&#25351;&#23450;host&#12289;&#29992;&#25143;&#21517;&#12289;&#23494;&#30721;&#12289;&#40664;&#35748;&#25968;&#25454;&#24211;</span>
+<span style="font-style: italic;">          """</span>
+         <span style="font-weight: bold;">self</span>.conn = MySQLdb.Connect(host,user,passwd,defaultdb)
+         <span style="font-weight: bold;">if</span> <span style="font-weight: bold;">self</span>.conn.<span style="font-weight: bold;">open</span> == <span style="font-weight: bold; text-decoration: underline;">False</span>:
+             <span style="font-weight: bold;">raise</span> <span style="font-weight: bold; text-decoration: underline;">None</span>
+
+    <span style="font-weight: bold;">def</span> <span style="font-weight: bold;">closeConnnection</span>(<span style="font-weight: bold;">self</span>):
+         <span style="font-style: italic;">"""</span>
+<span style="font-style: italic;">          &#20851;&#38381;&#24403;&#21069;&#36830;&#25509;</span>
+<span style="font-style: italic;">          """</span>
+         <span style="font-weight: bold;">self</span>.conn.close()
+
+    <span style="font-weight: bold;">def</span> <span style="font-weight: bold;">query</span>(<span style="font-weight: bold;">self</span>,sqltext,mode=STORE_RESULT_MODE):
+         <span style="font-style: italic;">"""</span>
+<span style="font-style: italic;">          &#20316;&#29992;&#65306;&#20351;&#29992;connection&#23545;&#35937;&#30340;query&#26041;&#27861;&#65292;&#24182;&#36820;&#22238;&#19968;&#20010;&#20803;&#32452;(&#24433;&#21709;&#34892;&#25968;(int),&#32467;&#26524;&#38598;(result))</span>
+<span style="font-style: italic;">          &#21442;&#25968;&#65306;sqltext&#65306;sql&#35821;&#21477;</span>
+<span style="font-style: italic;">               mode=STORE_RESULT_MODE&#65288;0&#65289; &#34920;&#31034;&#36820;&#22238;store_result&#65292;mode=USESTORE_RESULT_MODE&#65288;1&#65289; &#34920;&#31034;&#36820;&#22238;use_result</span>
+<span style="font-style: italic;">          &#36820;&#22238;&#65306;&#20803;&#32452;(&#24433;&#21709;&#34892;&#25968;(int),&#32467;&#26524;&#38598;(result)</span>
+<span style="font-style: italic;">          """</span>
+         <span style="font-weight: bold;">if</span> <span style="font-weight: bold;">self</span>.conn==<span style="font-weight: bold; text-decoration: underline;">None</span> <span style="font-weight: bold;">or</span> <span style="font-weight: bold;">self</span>.conn.<span style="font-weight: bold;">open</span>==<span style="font-weight: bold; text-decoration: underline;">False</span> :
+             <span style="font-weight: bold;">return</span> -1
+         <span style="font-weight: bold;">self</span>.conn.query(sqltext)
+         <span style="font-weight: bold;">if</span> mode == 0 :
+             <span style="font-weight: bold; font-style: italic;">result</span> = <span style="font-weight: bold;">self</span>.conn.store_result()
+         <span style="font-weight: bold;">elif</span> mode == 1 :
+             <span style="font-weight: bold; font-style: italic;">result</span> = <span style="font-weight: bold;">self</span>.conn.use_result()
+         <span style="font-weight: bold;">else</span> :
+             <span style="font-weight: bold;">raise</span> <span style="font-weight: bold; text-decoration: underline;">Exception</span>(<span style="font-style: italic;">"mode value is wrong."</span>)
+         <span style="font-weight: bold;">return</span> (<span style="font-weight: bold;">self</span>.conn.affected_rows(),result)
+
+    <span style="font-weight: bold;">def</span> <span style="font-weight: bold;">fetch_queryresult</span>(<span style="font-weight: bold;">self</span>,result,maxrows=1,how=0,moreinfo=<span style="font-weight: bold; text-decoration: underline;">False</span>):
+         <span style="font-style: italic;">"""</span>
+<span style="font-style: italic;">          &#21442;&#25968;:result&#65306; query&#21518;&#30340;&#32467;&#26524;&#38598;&#21512;</span>
+<span style="font-style: italic;">              maxrows&#65306; &#36820;&#22238;&#30340;&#26368;&#22823;&#34892;&#25968;</span>
+<span style="font-style: italic;">              how&#65306; &#20197;&#20309;&#31181;&#26041;&#24335;&#23384;&#20648;&#32467;&#26524;</span>
+<span style="font-style: italic;">               (0&#65306;tuple,1&#65306;dictionaries with columnname,2&#65306;dictionaries with table.columnname)</span>
+<span style="font-style: italic;">              moreinfo &#34920;&#31034;&#26159;&#21542;&#33719;&#21462;&#26356;&#22810;&#39069;&#22806;&#20449;&#24687;&#65288;num_fields&#65292;num_rows,num_fields&#65289;</span>
+<span style="font-style: italic;">          &#36820;&#22238;&#65306;&#20803;&#32452;&#65288;&#25968;&#25454;&#38598;&#65292;&#38468;&#21152;&#20449;&#24687;&#65288;&#24403;moreinfo=False&#65289;&#25110;&#21333;&#19968;&#25968;&#25454;&#38598;&#65288;&#24403;moreinfo=True&#65289;</span>
+<span style="font-style: italic;">          """</span>
+         <span style="font-weight: bold;">if</span> result == <span style="font-weight: bold; text-decoration: underline;">None</span> : <span style="font-weight: bold;">return</span> <span style="font-weight: bold; text-decoration: underline;">None</span>
+         <span style="font-weight: bold; font-style: italic;">dataset</span> =  result.fetch_row(maxrows,how)
+         <span style="font-weight: bold;">if</span> moreinfo <span style="font-weight: bold;">is</span> <span style="font-weight: bold; text-decoration: underline;">False</span> :
+             <span style="font-weight: bold;">return</span> dataset
+         <span style="font-weight: bold;">else</span>:
+             <span style="font-weight: bold; font-style: italic;">num_fields</span> = result.num_fields()
+             <span style="font-weight: bold; font-style: italic;">num_rows</span> = result.num_rows()
+             <span style="font-weight: bold; font-style: italic;">field_flags</span> = result.field_flags()
+             <span style="font-weight: bold; font-style: italic;">info</span> = (num_fields,num_rows,field_flags)
+             <span style="font-weight: bold;">return</span> (dataset,info)
+
+    <span style="font-weight: bold;">def</span> <span style="font-weight: bold;">execute</span>(<span style="font-weight: bold;">self</span>,sqltext,args=<span style="font-weight: bold; text-decoration: underline;">None</span>,mode=CURSOR_MODE,many=<span style="font-weight: bold; text-decoration: underline;">False</span>):
+         <span style="font-style: italic;">"""</span>
+<span style="font-style: italic;">          &#20316;&#29992;&#65306;&#20351;&#29992;&#28216;&#26631;&#65288;cursor&#65289;&#30340;execute &#25191;&#34892;query</span>
+<span style="font-style: italic;">          &#21442;&#25968;&#65306;sqltext&#65306; &#34920;&#31034;sql&#35821;&#21477;</span>
+<span style="font-style: italic;">               args&#65306; sqltext&#30340;&#21442;&#25968;</span>
+<span style="font-style: italic;">               mode&#65306;&#20197;&#20309;&#31181;&#26041;&#24335;&#36820;&#22238;&#25968;&#25454;&#38598;</span>
+<span style="font-style: italic;">                  CURSOR_MODE = 0 &#65306;use_result , tuple</span>
+<span style="font-style: italic;">                  DICTCURSOR_MODE = 1 &#65306;  use_result, dict</span>
+<span style="font-style: italic;">                  SSCURSOR_MODE = 2 :  store_result, tuple</span>
+<span style="font-style: italic;">                  SSDICTCURSOR_MODE = 3 : store_result , dict</span>
+<span style="font-style: italic;">               many&#65306;&#26159;&#21542;&#25191;&#34892;&#22810;&#34892;&#25805;&#20316;&#65288;executemany&#65289;</span>
+<span style="font-style: italic;">          &#36820;&#22238;&#65306;&#20803;&#32452;&#65288;&#24433;&#21709;&#34892;&#25968;&#65288;int&#65289;&#65292;&#28216;&#26631;&#65288;Cursor&#65289;&#65289;</span>
+<span style="font-style: italic;">          """</span>
+         <span style="font-weight: bold;">if</span> mode == CURSOR_MODE :
+             <span style="font-weight: bold; font-style: italic;">curclass</span> = MySQLdb.cursors.Cursor
+         <span style="font-weight: bold;">elif</span> mode == DICTCURSOR_MODE :
+             <span style="font-weight: bold; font-style: italic;">curclass</span> = MySQLdb.cursors.DictCursor
+         <span style="font-weight: bold;">elif</span> mode == SSCURSOR_MODE :
+             <span style="font-weight: bold; font-style: italic;">curclass</span> = MySQLdb.cursors.SSCursor
+         <span style="font-weight: bold;">elif</span> mode == SSDICTCURSOR_MODE :
+             <span style="font-weight: bold; font-style: italic;">curclass</span> = MySQLdb.cursors.SSDictCursor
+         <span style="font-weight: bold;">else</span> :
+             <span style="font-weight: bold;">raise</span> <span style="font-weight: bold; text-decoration: underline;">Exception</span>(<span style="font-style: italic;">"mode value is wrong"</span>)
+
+         <span style="font-weight: bold; font-style: italic;">cur</span> = <span style="font-weight: bold;">self</span>.conn.cursor(cursorclass=curclass)
+         <span style="font-weight: bold; font-style: italic;">line</span> = 0
+         <span style="font-weight: bold;">if</span> many == <span style="font-weight: bold; text-decoration: underline;">False</span> :
+             <span style="font-weight: bold;">if</span> args == <span style="font-weight: bold; text-decoration: underline;">None</span> :
+                 <span style="font-weight: bold; font-style: italic;">line</span> = cur.execute(sqltext)
+             <span style="font-weight: bold;">else</span> :
+                 <span style="font-weight: bold; font-style: italic;">line</span> = cur.execute(sqltext,args)
+         <span style="font-weight: bold;">else</span>:
+             <span style="font-weight: bold;">if</span> args == <span style="font-weight: bold; text-decoration: underline;">None</span> :
+                 <span style="font-weight: bold; font-style: italic;">line</span> = cur.executemany(sqltext)
+             <span style="font-weight: bold;">else</span> :
+                 <span style="font-weight: bold; font-style: italic;">line</span> = cur.executemany(sqltext,args)
+         <span style="font-weight: bold;">return</span> (line , cur )
+
+    <span style="font-weight: bold;">def</span> <span style="font-weight: bold;">fetch_executeresult</span>(<span style="font-weight: bold;">self</span>,cursor,mode=FETCH_ONE,rows=1):
+         <span style="font-style: italic;">"""</span>
+<span style="font-style: italic;">          &#20316;&#29992;&#65306;&#25552;&#21462;cursor&#33719;&#21462;&#30340;&#25968;&#25454;&#38598;</span>
+<span style="font-style: italic;">          &#21442;&#25968;&#65306;cursor&#65306;&#28216;&#26631;</span>
+<span style="font-style: italic;">               mode&#65306;&#25191;&#34892;&#25552;&#21462;&#27169;&#24335;</span>
+<span style="font-style: italic;">                FETCH_ONE: &#25552;&#21462;&#19968;&#20010;&#65307; FETCH_MANY :&#25552;&#21462;rows&#20010; &#65307;FETCH_ALL : &#25552;&#21462;&#25152;&#26377;</span>
+<span style="font-style: italic;">               rows&#65306;&#25552;&#21462;&#34892;&#25968;</span>
+<span style="font-style: italic;">          &#36820;&#22238;&#65306;fetch&#25968;&#25454;&#38598;</span>
+<span style="font-style: italic;">          """</span>
+         <span style="font-weight: bold;">if</span> cursor == <span style="font-weight: bold; text-decoration: underline;">None</span> :
+             <span style="font-weight: bold;">return</span>
+         <span style="font-weight: bold;">if</span> mode == FETCH_ONE :
+             <span style="font-weight: bold;">return</span> cursor.fetchone()
+         <span style="font-weight: bold;">elif</span> mode == FETCH_MANY :
+             <span style="font-weight: bold;">return</span> cursor.fetchmany(rows)
+         <span style="font-weight: bold;">elif</span> mode == FETCH_ALL :
+             <span style="font-weight: bold;">return</span> cursor.fetchall()
+
+
+<span style="font-weight: bold;">if</span> <span style="font-weight: bold;">__name__</span>==<span style="font-style: italic;">"__main__"</span> :
+    <span style="font-weight: bold;">print</span> <span style="font-weight: bold;">help</span> (PyMysql)
+
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org0d80d30" class="outline-2">
+<h2 id="org0d80d30">测试代码：</h2>
+<div class="outline-text-2" id="text-org0d80d30">
+<div class="org-src-container">
+<pre class="src src-python"><span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">-*- encoding:utf-8 -*-</span>
+<span style="font-weight: bold;">import</span> PyMysql
+
+<span style="font-style: italic;">"""</span>
+<span style="font-style: italic;">authors &#36825;&#24352;&#34920;&#24456;&#31616;&#21333;&#12290;</span>
+<span style="font-style: italic;">+--------------+-------------+------+-----+---------+----------------+</span>
+<span style="font-style: italic;">| Field        | Type        | Null | Key | Default | Extra          |</span>
+<span style="font-style: italic;">+--------------+-------------+------+-----+---------+----------------+</span>
+<span style="font-style: italic;">| author_id    | int(11)     | NO   | PRI | NULL    | auto_increment |</span>
+<span style="font-style: italic;">| author_last  | varchar(50) | YES  |     | NULL    |                |</span>
+<span style="font-style: italic;">| author_first | varchar(50) | YES  | MUL | NULL    |                |</span>
+<span style="font-style: italic;">| country      | varchar(50) | YES  |     | NULL    |                |</span>
+<span style="font-style: italic;">+--------------+-------------+------+-----+---------+----------------+</span>
+<span style="font-style: italic;">&#26412;&#25991;&#20027;&#35201;&#30340;&#25152;&#26377;&#25805;&#20316;&#37117;&#38024;&#23545;&#35813;&#34920;&#12290;</span>
+<span style="font-style: italic;">"""</span>
+
+<span style="font-weight: bold;">def</span> <span style="font-weight: bold;">printAuthors</span>(res,mode=0,lines=0):
+    <span style="font-style: italic;">"""</span>
+<span style="font-style: italic;">    &#26684;&#24335;&#21270;&#36755;&#20986;</span>
+<span style="font-style: italic;">    """</span>
+    <span style="font-weight: bold;">print</span> <span style="font-style: italic;">"*"</span>*20, <span style="font-style: italic;">" lines: "</span>,lines ,<span style="font-style: italic;">" "</span>,<span style="font-style: italic;">"*"</span>*20
+    <span style="font-weight: bold;">if</span> mode==0  :
+        <span style="font-weight: bold;">for</span> author_id , author_last , author_first , country <span style="font-weight: bold;">in</span> res :
+            <span style="font-weight: bold;">print</span> <span style="font-style: italic;">"ID : %s , Author_last : %s , Author_First : %s , Country : %s"</span> \
+            % (author_id , author_last , author_first , country )
+    <span style="font-weight: bold;">else</span> :
+        <span style="font-weight: bold;">for</span> item <span style="font-weight: bold;">in</span> res :
+            <span style="font-weight: bold;">print</span> <span style="font-style: italic;">"-----------"</span>
+            <span style="font-weight: bold;">for</span> key <span style="font-weight: bold;">in</span> item.keys():
+                <span style="font-weight: bold;">print</span> key ,<span style="font-style: italic;">" : "</span>,item[key]
+
+
+<span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">&#24314;&#31435;&#36830;&#25509;</span>
+<span style="font-weight: bold; font-style: italic;">mysql</span> = PyMysql.PyMysql()
+mysql.newConnection(
+        host=<span style="font-style: italic;">"localhost"</span>,
+        user=<span style="font-style: italic;">"root"</span>,
+        passwd=<span style="font-style: italic;">"peterbbs"</span>,
+        defaultdb=<span style="font-style: italic;">"bookstore"</span>)
+<span style="font-style: italic;">""</span>
+<span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">&#23450;&#20041;sql&#35821;&#21477;</span>
+<span style="font-weight: bold; font-style: italic;">sqltext</span> = <span style="font-style: italic;">"select * from authors order by author_id "</span>
+<span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">&#35843;&#29992;query&#26041;&#27861;,&#24471;&#21040;result</span>
+<span style="font-weight: bold; font-style: italic;">lines</span> , <span style="font-weight: bold; font-style: italic;">res</span> = mysql.query(sqltext, mode=PyMysql.STORE_RESULT_MODE)
+<span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">&#25552;&#21462;&#25968;&#25454;</span>
+<span style="font-weight: bold; font-style: italic;">data</span> = mysql.fetch_queryresult(res, maxrows=20, how=0, moreinfo=<span style="font-weight: bold; text-decoration: underline;">False</span>)
+<span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">&#25171;&#21360;</span>
+printAuthors(data,0,lines)
+
+<span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">&#28436;&#31034;&#22810;&#34892;&#25554;&#20837;</span>
+<span style="font-weight: bold; font-style: italic;">sqltext</span> = <span style="font-style: italic;">"insert into authors (author_last,author_first,country) values (%s,%s,%s)"</span>
+<span style="font-weight: bold; font-style: italic;">args</span> = [(<span style="font-style: italic;">'aaaaaa'</span>,<span style="font-style: italic;">'bbbbbb'</span>,<span style="font-style: italic;">'cccccc'</span>),(<span style="font-style: italic;">'dddddd'</span>,<span style="font-style: italic;">'eeeeee'</span>,<span style="font-style: italic;">'ffffff'</span>),(<span style="font-style: italic;">'gggggg'</span>,<span style="font-style: italic;">'hhhhhh'</span>,<span style="font-style: italic;">'iiiiii'</span>)]
+<span style="font-weight: bold; font-style: italic;">lines</span> ,<span style="font-weight: bold; font-style: italic;">cur</span> = mysql.execute(sqltext,args,mode=PyMysql.DICTCURSOR_MODE,many=<span style="font-weight: bold; text-decoration: underline;">True</span>)
+<span style="font-weight: bold;">print</span> <span style="font-style: italic;">"*"</span>*20, lines ,<span style="font-style: italic;">"&#34892;&#34987;&#25554;&#20837; "</span>,<span style="font-style: italic;">"*"</span>*20
+
+<span style="font-weight: bold; font-style: italic;">sqltext</span> = <span style="font-style: italic;">"select * from authors order by author_id "</span>
+<span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">&#35843;&#29992;cursor.execute&#26041;&#27861;,&#24471;&#21040;result</span>
+<span style="font-weight: bold; font-style: italic;">lines</span> ,<span style="font-weight: bold; font-style: italic;">cur</span> = mysql.execute(sqltext,mode=PyMysql.DICTCURSOR_MODE)
+<span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">&#25552;&#21462;&#25968;&#25454;</span>
+<span style="font-weight: bold; font-style: italic;">data</span> = mysql.fetch_executeresult(cur, mode=PyMysql.FETCH_MANY, rows=20)
+<span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">&#25171;&#21360;</span>
+printAuthors(data,1,lines)
+
+<span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">&#20851;&#38381;&#36830;&#25509;</span>
+mysql.closeConnnection()
+
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgcc7c676" class="outline-2">
+<h2 id="orgcc7c676">测试输出：</h2>
+<div class="outline-text-2" id="text-orgcc7c676">
+<p class="verse">
+<b><b><b><b><b><b><b><b><b>**</b></b></b></b></b></b></b></b></b> lines: 5 <b><b><b><b><b><b><b><b><b>**</b></b></b></b></b></b></b></b></b><br>
+<br>
+ID : 1 , Author_last : Greene , Author_First : Graham , Country : United Kingdom<br>
+ID : 4 , Author_last : Peter , Author_First : David , Country : China<br>
+ID : 5 , Author_last : mayday , Author_First : Feng , Country : France<br>
+ID : 6 , Author_last : zhang , Author_First : lixin , Country : France<br>
+ID : 9 , Author_last : zhang111 , Author_First : lixin , Country : France<br>
+<b><b><b><b><b><b><b><b><b>**</b></b></b></b></b></b></b></b></b> 3 行被插入 <b><b><b><b><b><b><b><b><b>**</b></b></b></b></b></b></b></b></b><br>
+<b><b><b><b><b><b><b><b><b>**</b></b></b></b></b></b></b></b></b> lines: 8 <b><b><b><b><b><b><b><b><b>**</b></b></b></b></b></b></b></b></b><br>
+-----------<br>
+country : United Kingdom<br>
+author_id : 1<br>
+author_first : Graham<br>
+author_last : Greene<br>
+-----------<br>
+country : China<br>
+author_id : 4<br>
+author_first : David<br>
+author_last : Peter<br>
+-----------<br>
+country : France<br>
+author_id : 5<br>
+author_first : Feng<br>
+author_last : mayday<br>
+-----------<br>
+country : France<br>
+author_id : 6<br>
+author_first : lixin<br>
+author_last : zhang<br>
+-----------<br>
+country : France<br>
+author_id : 9<br>
+author_first : lixin<br>
+author_last : zhang111<br>
+-----------<br>
+country : cccccc<br>
+author_id : 53<br>
+author_first : bbbbbb<br>
+author_last : aaaaaa<br>
+-----------<br>
+country : ffffff<br>
+author_id : 54<br>
+author_first : eeeeee<br>
+author_last : dddddd<br>
+-----------<br>
+country : iiiiii<br>
+author_id : 55<br>
+author_first : hhhhhh<br>
+author_last : gggggg<br>
+<br>
+</p>
+</div>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

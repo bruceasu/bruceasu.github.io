@@ -1,0 +1,15 @@
+# -*- coding: utf-8-unix; -*-
+#+TITLE:       SSH is too slow
+#+AUTHOR:      Bruce Asu
+#+EMAIL:       bruceasu@163.com
+#+DATE:        <2016-08-02 20:48>
+#+filetags:    linux
+
+#+LANGUAGE:    en
+#+OPTIONS:     H:7 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:nil
+
+最近装了个 linux 的虚机,发现ssh到其他的linux时很久才出现密码提示,等的实在让人烦,通
+过修改/etc/ssh/ssh_config文件，将其中
+
+: GSSAPIAuthentication yes 改为 GSSAPIAuthentication no 后, 再 ssh 到远程 linux 服务器。发现马上就出现了密码提示。问题解决!
+: GSSAPIAuthentication 参数是用于 Kerberos 验证的，而对于绝大多数人来说，不可能使用这种验证机制的，所以要注意把他们停掉。

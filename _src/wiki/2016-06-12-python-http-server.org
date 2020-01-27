@@ -1,0 +1,24 @@
+# -*- coding: utf-8-unix; -*-
+#+TITLE:       python http server
+#+AUTHOR:      Bruce Asu
+#+EMAIL:       bruceasu@163.com
+#+DATE:        <2016-06-12 20:48>
+#+filetags:    python
+#+DESCRIPTION: python2 and python3 SimpleHTTPServer modular
+
+#+LANGUAGE:    en
+#+OPTIONS:     H:7 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:nil
+
+
+*HTTP SERVER*
+
+- 2.7
+  #+BEGIN_SRC python
+    python -m SimpleHTTPServer
+    python -m SimpleHTTPServer 8080 #指定端口号
+  #+END_SRC
+
+- 3.x
+  #+BEGIN_SRC python
+    python -m http.server 8000
+  #+END_SRC

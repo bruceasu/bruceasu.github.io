@@ -1,0 +1,315 @@
+# -*- coding: utf-8-unix; -*-
+#+TITLE:       Java socket tcp ip options
+#+AUTHOR:      Bruce Asu
+#+EMAIL:       bruceasu@163.com
+#+DATE:        <20116-06-18 20:48>
+#+filetags:    java socket
+
+#+LANGUAGE:    en
+#+OPTIONS:     H:7 num:nil toc:t \n:nil ::t |:t ^:nil -:nil f:t *:t <:nil
+
+
+* 前言
+
+Socket选择可以指定Socket类发送和接受数据的方式。在JDK1.4中共有8个Socket选择可以
+设置。这8个选项都定义在java.net.SocketOptions接口中。
+
+定义如下：
+#+BEGIN_EXAMPLE
+public final static int TCP_NODELAY = 0x0001;
+public final static int SO_REUSEADDR = 0x04;
+public final static int SO_LINGER = 0x0080;
+public final static int SO_TIMEOUT = 0x1006;
+public final static int SO_SNDBUF = 0x1001;
+public final static int SO_RCVBUF = 0x1002;
+public final static int SO_KEEPALIVE = 0x0008;
+public final static int SO_OOBINLINE = 0x1003;
+
+#+END_EXAMPLE
+
+有趣的是，这8个选项除了第一个没在SO前缀外，其他7个选项都以SO作为前缀。其实这个SO
+就是Socket Option的缩写；因此，在Java中约定所有以SO为前缀的常量都表示Socket选项；
+当然，也有例外，如TCP_NODELAY.在Socket类中为每一个选项提供了一对get和set方法，
+分别用来获得和设置这些选项。
+
+* TCP_NODELAY
+#+BEGIN_EXAMPLE
+public boolean getTcpNoDelay() throws SocketException
+public void setTcpNoDelay(boolean on) throws SocketException
+
+#+END_EXAMPLE
+
+在默认情况下，客户端向服务器发送数据时，会根据数据包的大小决定是否立即发送。当数
+据包中的数据很少时，如只有1个字节，而数据包的头却有几十个字节（IP头+TCP头）时，
+系统会在发送之前先将较小的包合并到软大的包后，一起将数据发送出去。在发送下一个数
+据包时，系统会等待服务器对前一个数据包的响应，当收到服务器的响应后，再发送下一个
+数据包，这就是所谓的Nagle算法；在默认情况下，Nagle算法是开启的。
+
+这种算法虽然可以有效地改善网络传输的效率，但对于网络速度比较慢，而且对实现性的要
+求比较高的情况下（如游戏、Telnet等），使用这种方式传输数据会使得客户端有明显的停
+顿现象。因此，最好的解决方案就是需要Nagle算法时就使用它，不需要时就关闭它。而使
+用setTcpToDelay正好可以满 足这个需求。当使用setTcpNoDelay（true）将Nagle算法关闭
+后，客户端每发送一次数据，无论数据包的大小都会将这些数据发送出去。
+
+
+* SO_REUSEADDR
+#+BEGIN_EXAMPLE
+    public boolean getReuseAddress() throws SocketException
+    public void setReuseAddress(boolean on) throws SocketException
+
+#+END_EXAMPLE
+- 错误的说法：通过这个选项，可以使多个Socket对象绑定在同一个端口上。
+- 正确的说明是：如果端口忙，但TCP状态位于 TIME_WAIT ，可以重用端口。如果端口忙，
+  而TCP状态位于其他状态，重用端口时依旧得到一个错误信息，抛出“Address already in
+  use： JVM_Bind”。如果你的服务程序停止后想立即重启，不等60秒，而新套接字依旧使
+  用同一端口，此时 SO_REUSEADDR 选项非常有用。必须意识到，此时任何非期望数据到
+  达，都可能导致服务程序反应混乱，不过这只是一种可能，事实上很不可能。
+
+这个参数在 Windows 平台与 Linux 平台表现的特点不一样。在 Windows 平台表现的特点是不正
+确的， 在 Linux 平台表现的特点是正确的。
+
+在 Windows 平台，多个 Socket 新建立对象可以绑定在同一个端口上，这些新连接是非
+TIME_WAIT 状态的。这样做并没有多大意义。
+
+在 Linux 平台，只有 TCP 状态位于 TIME_WAIT ，才可以重用端口。这才是正确的行为。
+#+BEGIN_SRC java
+public class Test {
+  public static void main(String[] args) {
+    try {
+      ServerSocket socket1 = new ServerSocket();
+      ServerSocket socket2 = new ServerSocket();
+      socket1.setReuseAddress(true);
+      socket1.bind(new InetSocketAddress("127.0.0.1", 8899));
+      System.out.println("socket1.getReuseAddress():" + socket1.getReuseAddress());
+      socket2.setReuseAddress(true);
+      socket2.bind(new InetSocketAddress("127.0.0.1", 8899));
+      System.out.println("socket2.getReuseAddress():" + socket1.getReuseAddress());
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
+}
+
+#+END_SRC
+
+使用 SO_REUSEADDR 选项时有两点需要注意：
+
+1. 必须在调用 bind 方法之前使用 setReuseAddress 方法来打开SO_REUSEADDR选项。因此，
+   要想使用 SO_REUSEADDR 选项，就不能通过 Socket 类的构造方法来绑定端口。
+2. 必须将绑定同一个端口的所有的 Socket 对象的 SO_REUSEADDR 选项都打开才能起作用。
+   如在例程4-12中，socket1 和 socket2 都使用了 setReuseAddress 方法打开了各自的
+   SO_REUSEADDR 选项。
+
+在 Windows 操作系统上运行上面的代码的运行结果如下：
+这种结果是不正确的。
+#+BEGIN_EXAMPLE
+    socket1.getReuseAddress():true
+    socket2.getReuseAddress():true
+
+#+END_EXAMPLE
+
+在 Linux 操作系统上运行上面的代码的运行结果如下：
+
+这种结果是正确的。因为第一个连接不是 TIME_WAIT 状态的，第二个连接就不能使用 8899
+端口；只有第一个连接是 TIME_WAIT 状态的，第二个连接就才能使用8899 端口；
+#+BEGIN_SRC java
+  socket1.getReuseAddress():true
+    java.net.BindException: Address already in use
+           at java.net.PlainSocketImpl.socketBind(Native Method)
+           at java.net.PlainSocketImpl.bind(PlainSocketImpl.java:383)
+           at java.net.ServerSocket.bind(ServerSocket.java:328)
+           at java.net.ServerSocket.bind(ServerSocket.java:286)
+           at com.Test.main(Test.java:15)
+#+END_SRC
+
+
+* SO_LINGER
+#+BEGIN_EXAMPLE
+    public int getSoLinger() throws SocketException
+    public void setSoLinger(boolean on, int linger) throws SocketException
+
+#+END_EXAMPLE
+
+这个 Socket 选项可以影响 close 方法的行为。在默认情况下，当调用 close 方法后，将
+立即返回；如果这时仍然有未被送出的数据包，那么这些数据包将被丢弃。如果将 linger
+参数设为一个正整数 n 时（ n 的值最大是 65535），在调用 close 方法后，将最多被阻
+塞 n 秒。在这 n 秒内，系统将尽量将未送出的数据包发送出去；如果超过了 n 秒，如果
+还有未发送的数据包，这些数据包将全部被丢弃；而 close 方法会立即返回。如果将
+linger 设为 0，和关闭 SO_LINGER 选项的作用是一样的。
+
+如果底层的 Socket 实现不支持 SO_LINGER 都会抛出 SocketException 例外。当给linger
+参数传递负数值时，setSoLinger 还会抛出一个IllegalArgumentException 例外。可以通
+过 getSoLinger 方法得到延迟关闭的时间，如果返回 -1，则表明 SO_LINGER 是关闭的。
+例如，下面的代码将延迟关闭的时间设为1分钟：
+: if(socket.getSoLinger() == -1) socket.setSoLinger(true, 60);
+
+* SO_TIMEOUT
+#+BEGIN_EXAMPLE
+    public int getSoTimeout() throws SocketException
+    public void setSoTimeout(int timeout) throws SocketException
+
+#+END_EXAMPLE
+
+这个 Socket 选项在前面已经讨论过。可以通过这个选项来设置读取数据超时。当输入流的
+read 方法被阻塞时，如果设置 timeout（timeout 的单位是毫秒），那么系统在等待了
+timeout 毫秒后会抛出一个 InterruptedIOException 例外。在抛出例外后，输入流并未关
+闭，你可以继续通过 read 方法读取数据。
+
+如果将 timeout 设为 0，就意味着 read 将会无限等待下去，直到服务端程序关闭这个
+Socket. 这也是 timeout 的默认值。如下面的语句将读取数据超时设为 30 秒：
+: socket1.setSoTimeout(30 * 1000);
+
+当底层的 Socket 实现不支持 SO_TIMEOUT 选项时，这两个方法将抛出SocketException 例
+外。不能将 timeout 设为负数，否则 setSoTimeout 方法将抛出
+IllegalArgumentException 例外。
+
+* SO_SNDBUF
+#+BEGIN_EXAMPLE
+    public int getSendBufferSize() throws SocketException
+    public void setSendBufferSize(int size) throws SocketException
+
+#+END_EXAMPLE
+
+在默认情况下，输出流的发送缓冲区是 8096 个字节（8K）。这个值是Java所建议的输出缓
+冲区的大小。如果这个默认值不能满足要求，可以用setSendBufferSize 方法来重新设置缓
+冲区的大小。但最好不要将输出缓冲区设得太小，否则会导致传输数据过于频繁，从而降低
+网络传输的效率。如果底层的Socket 实现不支持 SO_SENDBUF 选项，这两个方法将会抛出
+SocketException 例外。必须将 size 设为正整数，否则 setSendBufferedSize 方法将抛
+出IllegalArgumentException 例外。
+
+* SO_RCVBUF
+#+BEGIN_EXAMPLE
+    public int getReceiveBufferSize() throws SocketException
+    public void setReceiveBufferSize(int size) throws SocketException
+
+#+END_EXAMPLE
+
+在默认情况下，输入流的接收缓冲区是 8096 个字节（8K）。这个值是 Java 所建议的输入
+缓冲区的大小。如果这个默认值不能满足要求，可以用 setReceiveBufferSize 方法来重新
+设置缓冲区的大小。但最好不要将输入缓冲区设得太小，否则会导致传输数据过于频繁，从
+而降低网络传输 的效率。如果底层的 Socket 实现不支持 SO_RCVBUF 选项，这两个方法将
+会抛出 SocketException 例外。必须将 size 设为正整数，否则 setReceiveBufferSize
+方法将抛出 IllegalArgumentException 例外。
+
+
+* SO_KEEPALIVE
+#+BEGIN_EXAMPLE
+    public boolean getKeepAlive() throws SocketException
+    public void setKeepAlive(boolean on) throws SocketException
+
+#+END_EXAMPLE
+
+如果将这个 Socket 选项打开，客户端 Socket 每隔段的时间（大约两个小时）就会利用空
+闲的连接向服务器发送一个数据包。这个数据包并没有其它的作 用，只是为了检测一下服
+务器是否仍处于活动状态。如果服务器未响应这个数据包，在大约 11 分钟后，客户端
+Socket 再发送一个数据包，如果在 12 分钟 内，服务器还没响应，那么客户端 Socket 将
+关闭。如果将Socket 选项关闭，客户端Socket在服务器无效的情况下可能会长时间不会关
+闭。 SO_KEEPALIVE 选项在默认情况下是关闭的，可以使用如下的语句将这个
+SO_KEEPALIVE 选项打开：
+: socket1.setKeepAlive(true);
+
+* SO_OOBINLINE
+#+BEGIN_EXAMPLE
+    public boolean getOOBInline() throws SocketException
+    public void setOOBInline(boolean on) throws SocketException
+
+#+END_EXAMPLE
+
+如果这个 Socket 选项打开，可以通过 Socket 类的 sendUrgentData 方法向服务器发送一
+个单字节的数据。这个单字节数据并不经过输出缓 冲区，而是立即发出。虽然在客户端并
+不是使用 OutputStream 向服务器发送数据，但在服务端程序中这个单字节的数据是和其它
+的普通数据混在一起 的。因此，在服务端程序中并不知道由客户端发过来的数据是由
+OutputStream 还是由 sendUrgentData 发过来的。下面是 sendUrgentData方法的声明：
+
+: public void sendUrgentData(int data) throws IOException
+
+虽然 sendUrgentData 的参数 data 是 int 类型，但只有这个 int 类型的低字节被发送，
+其它的三个字节被忽略。下面的代码演示了如何使用 SO_OOBINLINE 选项来发送单字节数据。
+#+BEGIN_SRC java
+package mynet;
+
+import java.net.*;
+import java.io.*;
+
+class Server
+{
+    public static void main(String[] args) throws Exception
+    {
+        ServerSocket serverSocket = new ServerSocket(1234);
+        System.out.println("服务器已经启动，端口号：1234");
+        while (true)
+        {
+            Socket socket = serverSocket.accept();
+            socket.setOOBInline(true);
+            InputStream in = socket.getInputStream();
+            InputStreamReader inReader = new InputStreamReader(in);
+            BufferedReader bReader = new BufferedReader(inReader);
+            System.out.println(bReader.readLine());
+            System.out.println(bReader.readLine());
+            socket.close();
+        }
+    }
+}
+public class Client
+{
+    public static void main(String[] args) throws Exception
+    {
+        Socket socket = new Socket("127.0.0.1", 1234);
+        socket.setOOBInline(true);
+        OutputStream out = socket.getOutputStream();
+        OutputStreamWriter outWriter = new OutputStreamWriter(out);
+        outWriter.write(67);              // 向服务器发送字符"C"
+        outWriter.write("hello world\r\n");
+        socket.sendUrgentData(65);        // 向服务器发送字符"A"
+        socket.sendUrgentData(322);        // 向服务器发送字符"B"
+        outWriter.flush();
+        socket.sendUrgentData(214);       // 向服务器发送汉字”中”
+        socket.sendUrgentData(208);
+        socket.sendUrgentData(185);       // 向服务器发送汉字”国”
+        socket.sendUrgentData(250);
+        socket.close();
+    }
+}
+
+#+END_SRC
+
+由于运行上面的代码需要一个服务器类，因此，在加了一个类名为 Server 的服务器类，关
+于服务端套接字的使用方法将会在后面的文章中详细讨论。在类 Server 类中只使用了
+ServerSocket 类的 accept 方法接收客户端的请求。并从客户端传来的数据中读取两行字
+符串，并显示在控制台上。
+
+测试
+
+由于本例使用了 127.0.0.1，因 Server 和 Client 类必须在同一台机器上运行。
+
+- 运行Server: =java mynet.Server=
+- 运行Client: =java mynet.Client=
+- 在服务端控制台的输出结果
+#+BEGIN_VERSE
+        服务器已经启动，端口号：1234
+        ABChello world
+        中国
+
+#+END_VERSE
+
+在 ClienT 类中使用了 sendUrgentData 方法向服务器发送了字符'A'（65）和'B'（66）。
+但发送'B'时实际发送的是 322，由于 sendUrgentData 只发送整型数的低字节。因此，实
+际发送的是 66.十进制整型 322 的二进制形式如图1所示。
+
+图1  十进制整型 322 的二进制形式
+
+从图1可以看出，虽然 322 分布在了两个字节上，但它的低字节仍然是66.
+
+在 Client 类中使用 flush 将缓冲区中的数据发送到服务器。我们可以从输出结果发现一
+个问题，在 Client 类中先后向服务器发送了 'C'、"hello world"r"n"、'A'、'B'.而在服
+务端程序的控制台上显示的却是 ABChello world. 这种现象说明使用 sendUrgentData 方法发
+送数据后，系统会立即将这些数据发送出去；而使用 write 发送数据，必须要使用 flush 方
+法才会真正发送数据。
+
+在 Client 类中向服务器发送"中国"字符串。由于"中"是由 214 和 208 两个字节组成
+的；而"国"是由 185 和 250 两个字节组成的；因此，可分别发送这四个字节来传送
+"中国"字符串。
+
+注意：在使用 setOOBInline 方法打开 SO_OOBINLINE 选项时要注意是必须在客户端和服务
+端程序同时使用 setOOBInline 方法打开这个选项，否则无法命名用sendUrgentData 来发
+送数据。

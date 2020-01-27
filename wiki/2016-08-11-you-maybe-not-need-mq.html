@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>你可能并不需要消息队列</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">你可能并不需要消息队列</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#reprint"><div class="category">reprint</div></a> </div>
+<div class="char-counter">2016-08-11</div>
+        <div id="content">
+<p>
+#-<b>- org-mode -</b>-
+</p>
+
+<p>
+我是一个极简主义者，我不喜欢过早或者没必要地让软件复杂化。而往软件系统中添加组件
+就是严重增加复杂性的一种做法。我们来拿消息队列举个例子。
+</p>
+
+<p>
+消息队列是一个能让你获得容错性，分布式，解耦等架构能力的系统。纸上谈兵的话，它看
+起来还不错。或许消息列队在你的应用中有不少适用的场景。你可以看下这篇关于消息队列
+优点的文章，看看到底有哪些合适的场景。但可不要因为说"能解耦那太好了”就轻易使用它。
+我们来看一个例子——你希望你的邮件发送和订单处理互相解耦。因此你发送一个消息到消息
+队列里，然后邮件处理系统取出这个消息并发送邮件。那你在一个独立的单classpath的应
+用中怎么实现呢？让你的订单处理服务依赖于一个邮件服务，然后调用sendEmail()方法，
+而不是sendToMQ()方法。如果你使用了消息队列，你需要定义一个两个系统都能识别的消息
+格式 ；如果你不使用消息队列，那么你得定义一个方法签名。它们有什么本质的区别吗？
+其实没有。不过你可能还有别的消费者想要对某个指定的消息进行额外的处理？这的确是可
+能发生的，而并不只是针对我们这里说到的这个项目而已。尽管确有可能，但相比添加另一
+个方法调用而言，它可能并不值当。耦合？是的。不过这个耦合并没有什么不方便的。那我
+应该如何处理峰值流量？你可以通过消息队列将请求放到一个持久化队列中，然后再一并处
+理它们。这是一个非常有用的特性，不过它也受限于几个因素——你的请求是在UI后台处理，
+还是需要即时响应？serlvet容器的线程池某种程度上可以当作是一个队列，用户最终会拿
+到响应，但是得需要等待（如果线程的超时时间过短的话，请求可能会丢失）。你可以使用
+一个内存队列来存储那些较重的请求（得在UI后台进行处理）。不过注意了，你的队列并不
+是默认高可用的。比如说，如果一个消息队列节点挂掉了，你的消息就丢失了。因此，不去
+使用应用节点内的内存队列，而是去使用一个消息队列，这可能并没有什么优势。
+</p>
+
+<p>
+消息队列使得我们可以进行异步处理——这的确是个有用的特性。你不希望在用户等待的时候
+做一些很重的操作。不过你也可以使用一个内存队列，或者简单地启动一个新的线程（比如
+Spring的@Async注解）。这样又有另一个问题——如果消息丢失的话是否有问题？如果你应用
+处理请求的节点挂了，你可以进行恢复吗？你会发现这事会经常发生，如果不保证所有消息
+都处理到的话，很难保证功能的正确性。因此，仅将较重的调用进行异步处理是比较可取的。
+</p>
+
+<p>
+把消息放到队列以便让另一个组件来进行处理，对于这个场景，如果消息丢失是无法接受的
+，这也有一个很简单的解决方案——数据库。你可以把一条processed=false的数据存储到数
+据库中。然后再运行一个调度作业，将所有未处理的记录挑选出来，异步地进行处理。当处
+理完成的时候，将标记设为true。我经常用这个方法，包括在一些大型的线上系统中，它也
+工作得挺好的。这样你还能不断地对你的应用节点进行扩展，只要它们的内存中没有任何的
+持久化状态的话。不管你是否使用了消息队列都可以（临时的内存处理队列并不属于持久化
+状态）。
+</p>
+
+<p>
+为什么我要给经常用到的消息队列提供一些备选方案？
+</p>
+
+<p>
+因为如果你由于不恰当的原因选择了它，那么消息队列可能会成为一个负担。它们并非如想
+像中那样容易使用。首先，它有一个学习曲线。一般来说，你集成的组件切分得越多，就越
+容易出现问题。其次，还有一个设置及配置的成本。比如说，当消息队列需要在一个集群中
+运行的话，比如说多个数据中心，那么这就变得复杂了。高可用性并不是上来就有的——默认
+它是不会打开的。还有就是你的应用节点如何连接到消息队列？通过一个刷新的连接池，或
+者使用短生命周期的DNS记录，还是通过一个负载均衡器？你的队列可能还有许多配置项，
+大小是多少，行为是怎样的（消费者需不需要确认接受，要不要通知处理失败，多个消费者
+能够取到同一个消息吗，消息有没有TTL，等等）同时还有网络及消息传递的开销，尤其是
+现在大家都喜欢用XML或者JSON来传输消息。如果你过度地使用了消息队列，那么它会增加
+你系统的延时。最后一点，但并不是最次要的——如果出现问题的话，使用消息队列会让问题
+跟踪变得异常困难。你没法在IDE中看到所谓的调用层次，因为一旦你发送消息到队列里了，
+你就得自己去查找它在哪里处理的了。这可不是听起来那么简单的。你看到了吧，它会给你
+增加许多的复杂性，以及许多需要注意的东西。
+</p>
+
+<p>
+通常而言，在某些上下文中，消息队列还是非常有用的。当它们的确适合的话，我也会在项
+目中使用它们——比方说，我们不想丢失消息，但又希望能快速地进行处理。我也见过它在一
+些不太常见的场景中使用的情况，比如说只有一个应用节点来进行消费，不管是哪个节点投
+递过来的消息。你还可以看下stackoverflow上的这个问题。还有一些使用场景就是，或许
+你的确需要进行多语言间的通信，又或者你的数据流已经过于复杂了，不使用新的消息消费
+者而是增加新方法调用的话代价会很大。
+</p>
+
+<p>
+我想说的是那句老掉牙的真理“杀鸡焉用牛刀”。如果你不是很确定已经没有别的更容易管理
+和维护的方法，一定要使用消息队列的话，最好不要使用它。不要因为”万一它有用呢“而去
+用它——只有你确实觉得需要的话再去使用。因为很有可能，就像这里说到的这个项目一样，
+消息队列其实是没有必要的。
+</p>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

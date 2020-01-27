@@ -1,0 +1,22 @@
+# -*- coding: utf-8-unix; -*-
+#+TITLE:       MYSQL語句命令行直接執行
+#+AUTHOR:      Bruce Asu
+#+EMAIL:       bruceasu@163.com
+#+DATE:        <2016-07-19 20:48>
+#+filetags:    mysql
+
+#+LANGUAGE:    en
+#+OPTIONS:     H:7 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:nil
+
+=mysql -u root -h 127.0.0.1 -p mysql密碼 數據庫名 -e "mysql語句;"=
+
+: mysql -uaHmin -proot test -e "select now()" -N  >H:/work/target1.txt
+
+如果sql很长:
+: mysql -uroot -pmypwH -h127.0.0.1 -p3306 test < H:/work/source.sql > H:/work/target.txt
+
+在提示符下执行：
+#+BEGIN_EXAMPLE
+mysql> source H:/1.sql
+mysql> select now()  into outfile 'h:/data/2.sql';
+#+END_EXAMPLE

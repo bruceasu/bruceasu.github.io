@@ -1,0 +1,111 @@
+# -*- coding: utf-8-unix; -*-
+#+TITLE:       javascript arguments, callee, caller, apply(转)
+#+AUTHOR:      Bruce Asu
+#+EMAIL:       bruceasu@163.com
+#+DATE:        <2016-07-28 20:48>
+#+filetags:    javascript reprint
+
+#+LANGUAGE:    en
+#+OPTIONS:     H:7 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:nil
+
+
+看了网上的一篇文章<<全面理解javascript的caller,callee,call,apply概念>>,记下代码,备用
+#+BEGIN_SRC javascript
+/*
+ * 演示arguments的用法,如何获取实参数和形数数
+ */
+function argTest(a,b,c,d){
+    var numargs = arguments.length;     // 获取被传递参数的数值。
+    var expargs = argTest.length;       // 获取期望参数的数值。
+    alert("实参数目为:"+numargs)
+    alert("形数数目为:"+expargs)
+
+    alert(arguments[0])
+    alert(argTest[0])          //undefined 没有这种用法
+}
+//argTest(1,2)
+//argTest(1,2,3,4,5)
+
+/*
+ *  arguments不是数组(Array类)
+ */
+
+Array.prototype.selfvalue = 1;
+function testAguments(){
+    alert("arguments.selfvalue="+arguments.selfvalue);
+}
+//alert("Array.sefvalue="+new Array().selfvalue);
+//testAguments();
+
+
+
+
+
+/*
+ * 演示函数的caller属性.
+ * 说明:(当前函数).caller:返回一个对函数的引用，该函数调用了当前函数
+ */
+
+function callerDemo() {
+    if (callerDemo.caller) {
+        var a= callerDemo.caller.arguments[0];
+        alert(a);
+    } else {
+        alert("this is a top function");
+    }
+}
+function handleCaller() {
+    callerDemo();
+}
+
+//callerDemo();
+//handleCaller("参数1","参数2");
+
+
+/*
+ * 演示函数的callee属性.
+ * 说明:arguments.callee:初始值就是正被执行的 Function 对象,用于匿名函数
+ */
+function calleeDemo() {
+    alert(arguments.callee);
+}
+//calleeDemo();
+//(function(arg0,arg1){alert("形数数目为:"+arguments.callee.length)})();
+
+
+/*
+ * 演示apply,call函数的用法
+ * 说明:作用都是将函数绑定到另外一个对象上去运行，两者仅在定义参数方式有所区别：
+ *       apply(thisArg,argArray);
+ *     call(thisArg[,arg1,arg2…] ]);
+ *     即所有函数内部的this指针都会被赋值为thisArg
+ */
+
+ function ObjectA(){
+    alert("执行ObjectA()");
+    alert(arguments[0]);
+    this.hit=function(msg){alert(msg)}
+    this.info="我来自ObjectA"
+ }
+
+ function ObjectB(){
+    alert("执行ObjectB()");
+    //调用ObjectA()方法,同时ObjectA构造函数中的所有this就会被ObjectB中的this替代
+    ObjectA.apply(this,arguments);//ObjectA.call(this);
+    alert(this.info);
+ }
+ //ObjectB('参数0');
+
+
+ var value="global 变量";
+ function Obj(){
+    this.value="对象！";
+ }
+ function Fun1(){
+    alert(this.value);
+ }
+ //Fun1();
+ //Fun1.apply(window);
+ //Fun1.apply(new Obj());
+
+#+END_SRC

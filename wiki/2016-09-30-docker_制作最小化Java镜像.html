@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>docker 制作最小化Java镜像</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">docker 制作最小化Java镜像</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#java"><div class="category">java</div></a> <a href="https://bruceasu.github.io/tags.html#reprint"><div class="category">reprint</div></a> </div>
+<div class="char-counter">2016-09-30</div>
+        <div id="content">
+<p>
+前提：目前大部分的java images都是根据centos和Ubuntu做的，结果是镜像非常大，基本上300-500m，太影响docker的使用了。
+思路：换更加轻量级的linux系统，删除jdk中无关的东西
+先下载jdk的tar包，然后删除jdk中无关的东西
+将 <code>jdk1.6.0_33.tgz</code>  解压到 /usr/java/jdk
+</p>
+<pre class="example">
+rm -rf /usr/java/jdk/*src.zip \
+       /usr/java/jdk/lib/missioncontrol \
+       /usr/java/jdk/lib/visualvm \
+       /usr/java/jdk/lib/*javafx* \
+       /usr/java/jdk/jre/lib/plugin.jar \
+       /usr/java/jdk/jre/lib/ext/jfxrt.jar \
+       /usr/java/jdk/jre/bin/javaws \
+       /usr/java/jdk/jre/lib/javaws.jar \
+       /usr/java/jdk/jre/lib/desktop \
+       /usr/java/jdk/jre/plugin \
+       /usr/java/jdk/jre/lib/deploy* \
+       /usr/java/jdk/jre/lib/*javafx* \
+       /usr/java/jdk/jre/lib/*jfx* \
+       /usr/java/jdk/jre/lib/amd64/libdecora_sse.so \
+       /usr/java/jdk/jre/lib/amd64/libprism_*.so \
+       /usr/java/jdk/jre/lib/amd64/libfxplugins.so \
+       /usr/java/jdk/jre/lib/amd64/libglass.so \
+       /usr/java/jdk/jre/lib/amd64/libgstreamer-lite.so \
+       /usr/java/jdk/jre/lib/amd64/libjavafx*.so \
+       /usr/java/jdk/jre/lib/amd64/libjfx*.so
+
+</pre>
+
+<p>
+以下dockerfile 基于 AlpineLinux
+</p>
+<pre class="example">
+#Alpine Linux with a glibc-2.21 and Oracle Java 7
+FROM docker.io/jeanblanchard/alpine-glibc
+
+#MAINTAINER Fox Chan
+
+#Java Version
+#ENV JAVA_VERSION_MAJOR 7
+#ENV JAVA_VERSION_MINOR 60
+#ENV JAVA_PACKAGE       jdk
+
+#install java
+ADD jdk /usr/java/jdk
+
+# Set environment
+ENV JAVA_HOME /usr/java/jdk
+ENV PATH ${PATH}:${JAVA_HOME}/bin
+
+</pre>
+
+<p>
+才 158.3 MB，太酷了！
+</p>
+
+<p>
+本文出自 “银狐” 博客，请务必保留此出处<a href="http://foxhound.blog.51cto.com/1167932/1725221">http://foxhound.blog.51cto.com/1167932/1725221</a>
+</p>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

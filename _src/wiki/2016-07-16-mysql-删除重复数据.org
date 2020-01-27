@@ -1,0 +1,22 @@
+# -*- coding: utf-8-unix; -*-
+#+TITLE:       mysql 删除重复数据
+#+AUTHOR:      Bruce Asu
+#+EMAIL:       bruceasu@163.com
+#+DATE:        <2016-07-16 20:48>
+#+filetags:    mysql
+
+#+LANGUAGE:    en
+#+OPTIONS:     H:7 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:nil
+
+#+BEGIN_SRC sql
+  select * from tb_phone_no_prefix a
+    where (a.prefix, a.isp, a.area) in
+     (select prefix,isp, area from tb_phone_no_prefix group by prefix,isp, area having count(*) > 1)
+
+
+    delete from tb_phone_no_prefix a
+    where (a.prefix, a.isp, a.area) in
+     (select prefix,isp, area from tb_phone_no_prefix group by prefix,isp, area having count(*) > 1)
+    and id not in (select min(id) from tb_phone_no_prefix group by prefix,isp, area having count(*)>1)
+
+#+END_SRC

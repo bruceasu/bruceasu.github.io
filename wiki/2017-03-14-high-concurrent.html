@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>究竟啥才是互联网架构“高并发”</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">究竟啥才是互联网架构“高并发”</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#reprint"><div class="category">reprint</div></a> </div>
+<div class="char-counter">2017-03-14</div>
+        <div id="content">
+<nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#org17bf881">一、什么是高并发</a></li>
+<li><a href="#org7a5b1fe">二、如何提升系统的并发能力</a></li>
+<li><a href="#org2fdb632">三、常见的互联网分层架构</a></li>
+<li><a href="#org4bbca5f">四、分层水平扩展架构实践</a>
+<ul>
+<li><a href="#org1d9a0e0">反向代理层的水平扩展</a></li>
+<li><a href="#orgfe86e65">站点层的水平扩展</a></li>
+<li><a href="#org4c835b4">服务层的水平扩展</a></li>
+<li><a href="#org364e6e6">数据层的水平扩展</a>
+<ul>
+<li><a href="#org9df56ca">按照范围水平拆分</a></li>
+<li><a href="#org86e4e7a">按照哈希水平拆分</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#org5d6acdd">五、总结</a></li>
+</ul>
+</div>
+</nav>
+
+<div id="outline-container-org17bf881" class="outline-2">
+<h2 id="org17bf881">一、什么是高并发</h2>
+<div class="outline-text-2" id="text-org17bf881">
+<p>
+高并发（High
+Concurrency）是互联网分布式系统架构设计中必须考虑的因素之一，它
+通常是指，通过设计保证系统能够同时并行处理很多请求。
+</p>
+
+<p>
+高并发相关常用的一些指标有响应时间（Response
+Time），吞吐量（Throughput），每秒 查询率QPS（Query Per
+Second），并发用户数等。
+</p>
+
+<ul class="org-ul">
+<li>*响应时间*：系统对请求做出响应的时间。例如系统处理一个HTTP请求需要200ms，
+这个200ms就是系统的响应时间。</li>
+<li>*吞吐量*：单位时间内处理的请求数量。</li>
+<li>*QPS*：每秒响应请求数。在互联网领域，这个指标和吞吐量区分的没有这么明显。</li>
+</ul>
+
+<p>
+并发用户数：同时承载正常使用系统功能的用户数量。例如一个即时通讯系统，同时
+在线量一定程度上代表了系统的并发用户数。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org7a5b1fe" class="outline-2">
+<h2 id="org7a5b1fe">二、如何提升系统的并发能力</h2>
+<div class="outline-text-2" id="text-org7a5b1fe">
+<p>
+互联网分布式架构设计，提高系统并发能力的方式，方法论上主要有两种：垂直扩展
+（Scale Up）与水平扩展（Scale Out）。
+</p>
+
+<p>
+垂直扩展：提升单机处理能力。垂直扩展的方式又有两种： -
+（1）增强单机硬件性能，例如：增加CPU核数如32核，升级更好的网卡如万兆，升级
+更好的硬盘如SSD，扩充硬盘容量如2T，扩充系统内存如128G； -
+（2）提升单机架构性能，例如：使用Cache来减少IO次数，使用异步来增加单服务吞吐量，
+使用无锁数据结构来减少响应时间；
+</p>
+
+<p>
+在互联网业务发展非常迅猛的早期，如果预算不是问题，强烈建议使用“增强单机硬件
+性能”的方式提升系统并发能力，因为这个阶段，公司的战略往往是发展业务抢时间，
+而“增强单机硬件性能”往往是最快的方法。
+</p>
+
+<p>
+不管是提升单机硬件性能，还是提升单机架构性能，都有一个致命的不足：单机性能总
+是有极限的。所以互联网分布式架构设计高并发终极解决方案还是水平扩展。
+</p>
+
+<p>
+水平扩展：只要增加服务器数量，就能线性扩充系统性能。水平扩展对系统架构设计
+是有要求的，如何在架构各层进行可水平扩展的设计，以及互联网公司架构各层常见
+的水平扩展实践，是本文重点讨论的内容。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org2fdb632" class="outline-2">
+<h2 id="org2fdb632">三、常见的互联网分层架构</h2>
+<div class="outline-text-2" id="text-org2fdb632">
+<p>
+<a href="./images/2017-03-14-high-concurrent/1.webp">./images/2017-03-14-high-concurrent/1.webp</a>
+常见互联网分布式架构如上，分为： -
+（1）客户端层：典型调用方是浏览器browser或者手机应用APP -
+（2）反向代理层：系统入口，反向代理 -
+（3）站点应用层：实现核心应用逻辑，返回html或者json -
+（4）服务层：如果实现了服务化，就有这一层 -
+（5）数据-缓存层：缓存加速访问存储 -
+（6）数据-数据库层：数据库固化数据存储
+</p>
+
+<p>
+整个系统各层次的水平扩展，又分别是如何实施的呢？
+</p>
+</div>
+</div>
+
+<div id="outline-container-org4bbca5f" class="outline-2">
+<h2 id="org4bbca5f">四、分层水平扩展架构实践</h2>
+<div class="outline-text-2" id="text-org4bbca5f">
+</div>
+<div id="outline-container-org1d9a0e0" class="outline-3">
+<h3 id="org1d9a0e0">反向代理层的水平扩展</h3>
+<div class="outline-text-3" id="text-org1d9a0e0">
+<p>
+<a href="./images/2017-03-14-high-concurrent/2.webp">./images/2017-03-14-high-concurrent/2.webp</a>
+反向代理层的水平扩展，是通过“DNS轮询”实现的： dns-server
+对于一个域名配置了 多个解析 ip，每次DNS解析请求来访问
+dns-server，会轮询返回这些 ip。
+</p>
+
+<p>
+当 nginx 成为瓶颈的时候，只要增加服务器数量，新增 nginx
+服务的部署，增加一个 外网
+ip，就能扩展反向代理层的性能，做到理论上的无限高并发。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgfe86e65" class="outline-3">
+<h3 id="orgfe86e65">站点层的水平扩展</h3>
+<div class="outline-text-3" id="text-orgfe86e65">
+<p>
+<a href="./images/2017-03-14-high-concurrent/3.webp">./images/2017-03-14-high-concurrent/3.webp</a>
+站点层的水平扩展，是通过“nginx”实现的。通过修改nginx.conf，可以设置多个web后端。
+</p>
+
+<p>
+当web后端成为瓶颈的时候，只要增加服务器数量，新增 web 服务的部署，在
+nginx 配置中 配置上新的 web
+后端，就能扩展站点层的性能，做到理论上的无限高并发。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org4c835b4" class="outline-3">
+<h3 id="org4c835b4">服务层的水平扩展</h3>
+<div class="outline-text-3" id="text-org4c835b4">
+<p>
+服务层的水平扩展，是通过“服务连接池”实现的。
+</p>
+
+<p>
+站点层通过 RPC-client 调用下游的服务层 RPC-server 时，RPC-client
+中的连接
+池会建立与下游服务多个连接，当服务成为瓶颈的时候，只要增加服务器数量，新增服
+务部署，在 RPC-client
+处建立新的下游服务连接，就能扩展服务层性能，做到理论上
+的无限高并发。如果需要优雅的进行服务层自动扩容，这里可能需要配置中心里服务
+自动发现功能的支持。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org364e6e6" class="outline-3">
+<h3 id="org364e6e6">数据层的水平扩展</h3>
+<div class="outline-text-3" id="text-org364e6e6">
+<p>
+在数据量很大的情况下，数据层（缓存，数据库）涉及数据的水平扩展，将原本存储在一台
+服务器上的数据（缓存，数据库）水平拆分到不同服务器上去，以达到扩充系统性能的
+目的。
+</p>
+
+<p>
+互联网数据层常见的水平拆分方式有这么几种，以数据库为例：
+</p>
+</div>
+
+<div id="outline-container-org9df56ca" class="outline-4">
+<h4 id="org9df56ca">按照范围水平拆分</h4>
+<div class="outline-text-4" id="text-org9df56ca">
+<p>
+每一个数据服务，存储一定范围的数据，上图为例：
+</p>
+
+<ul class="org-ul">
+<li>user0库，存储uid范围1-1kw</li>
+<li>user1库，存储uid范围1kw-2kw</li>
+</ul>
+
+<p>
+这个方案的好处是： -
+（1）规则简单，service只需判断一下uid范围就能路由到对应的存储服务； -
+（2）数据均衡性较好； -
+（3）比较容易扩展，可以随时加一个uid[2kw,3kw]的数据服务；
+</p>
+
+<p>
+不足是： -
+（1）请求的负载不一定均衡，一般来说，新注册的用户会比老用户更活跃，大range的服务
+请求压力会更大；
+</p>
+</div>
+</div>
+
+<div id="outline-container-org86e4e7a" class="outline-4">
+<h4 id="org86e4e7a">按照哈希水平拆分</h4>
+<div class="outline-text-4" id="text-org86e4e7a">
+<p>
+每一个数据库，存储某个key值hash后的部分数据，上图为例： -
+user0库，存储偶数uid数据 - user1库，存储奇数uid数据
+</p>
+
+<p>
+这个方案的好处是： -
+（1）规则简单，service只需对uid进行hash能路由到对应的存储服务； -
+（2）数据均衡性较好； - （3）请求均匀性较好；
+</p>
+
+<p>
+不足是： -
+（1）不容易扩展，扩展一个数据服务，hash方法改变时候，可能需要进行数据迁移；
+</p>
+
+<p>
+这里需要注意的是，通过水平拆分来扩充系统性能，与主从同步读写分离来扩充数据库
+性能的方式有本质的不同。
+</p>
+
+<p>
+通过水平拆分扩展数据库性能： -
+（1）每个服务器上存储的数据量是总量的1/n，所以单机的性能也会有提升； -
+（2）n个服务器上的数据没有交集，那个服务器上数据的并集是数据的全集； -
+（3）数据水平拆分到了n个服务器上，理论上读性能扩充了n倍，写性能也扩充了n倍
+（其实远不止n倍，因为单机的数据量变为了原来的1/n）；
+</p>
+
+<p>
+通过主从同步读写分离扩展数据库性能： -
+（1）每个服务器上存储的数据量是和总量相同； -
+（2）n个服务器上的数据都一样，都是全集； -
+（3）理论上读性能扩充了n倍，写仍然是单点，写性能不变；
+</p>
+
+<p>
+缓存层的水平拆分和数据库层的水平拆分类似，也是以范围拆分和哈希拆分的方式居多，
+就不再展开。
+</p>
+</div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org5d6acdd" class="outline-2">
+<h2 id="org5d6acdd">五、总结</h2>
+<div class="outline-text-2" id="text-org5d6acdd">
+<p>
+高并发（High
+Concurrency）是互联网分布式系统架构设计中必须考虑的因素之一，
+它通常是指，通过设计保证系统能够同时并行处理很多请求。
+</p>
+
+<p>
+提高系统并发能力的方式，方法论上主要有两种：垂直扩展（Scale
+Up）与水平扩展（Scale Out）。
+前者垂直扩展可以通过提升单机硬件性能，或者提升单机架构性能，来提高并发性，但单机性能总是
+有极限的，互联网分布式架构设计高并发终极解决方案还是后者：水平扩展。
+</p>
+
+<p>
+互联网分层架构中，各层次水平扩展的实践又有所不同： -
+（1）反向代理层可以通过“DNS轮询”的方式来进行水平扩展； -
+（2）站点层可以通过nginx来进行水平扩展； -
+（3）服务层可以通过服务连接池来进行水平扩展； -
+（4）数据库可以按照数据范围，或者数据哈希的方式来进行水平扩展；
+</p>
+
+<p>
+各层实施水平扩展后，能够通过增加服务器数量的方式来提升系统的性能，做到理论上的
+性能无限。
+</p>
+
+<p>
+末了，希望文章的思路是清晰的，希望大家对高并发的概念和实践有个系统的认识，
+结合上一篇《究竟啥才是互联网架构“高可用”》的分享互联网分布式架构是不是逐步
+的不再神秘啦？
+</p>
+
+<p>
+<code>=【完】=</code>
+</p>
+</div>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

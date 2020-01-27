@@ -1,0 +1,132 @@
+# -*- coding: utf-8-unix; -*-
+#+TITLE:       Linux 自解压安装文件
+#+AUTHOR:      Bruce Asu
+#+EMAIL:       bruceasu@163.com
+#+DATE:        <2016-07-27 20:48>
+#+filetags:        linux
+
+#+LANGUAGE:    en
+#+OPTIONS:     H:7 num:nil toc:t \n:nil ::t |:t ^:nil -:nil f:t *:t <:nil
+
+
+这篇博文讲的是一个自解压安装文件的制作过程，主要参考
+http://www.linuxjournal.com/node/1005818。
+
+* 1）需要的预安装软件
+: bash, cat, gzip, tar, tail。一般Linux系统都安装了这些极其常用的软件工具。
+
+* 2）发布文件的目录结构
+
+例如，假设你的需要安装的文件全部位于release下，当然release下还可以有很多子目录，
+如下图所示。
+#+BEGIN_VERSE
+projects/ ------ release/-------  bin/
+               |                   |---- doc/
+               |                   |---- lib/
+               |                   \---- ReadMe
+               |--- install                                                                            <<<1>>>
+               |--- decompress                                                                    <<<2>>>
+               |--- build
+               |--- release_tmp/release.tar    （中间产生的临时文件）                    <<<3>>>
+               \--- distribute.bin （最终发布文件）                                             <<<1&2&3>>>
+
+#+END_VERSE
+
+最终的发布文件为distribute.bin，它其实是由三个文件构成，即安装脚本install，发布
+文件档案 release.tar，以及自解压脚本decompress。build脚本只是我们建立这个自解压
+安装文件的工具，如上图所示。
+
+* 3）制作自解压安装文件的bash脚本
+
+我们需要写三个bash脚本，build，decompress，install ，如上图所示
+** 3.1）build
+#+BEGIN_SRC sh
+#!/bin/bash
+mkdir release_tmp
+cd release
+tar -cf ../release_tmp/release.tar ./*
+cd ../release_tmp
+cp ../install ./
+tar -czf ../release_install.tar.gz ./*
+cd ../
+rm -rf release_tmp
+if [ ! -f release_install.tar.gz ]; then
+  echo "distributed archieve does not exist"
+  exit 1
+fi
+if [ ! -f decompress ]; then
+  echo "decompress does not exist"
+  exit 1
+fi
+cat decompress release_install.tar.gz > distribute.bin
+rm release_install.tar.gz
+if [ -f distribute.bin ]; then
+  chmod +x distribute.bin
+  echo "distribute.bin created"
+else
+  echo "distribute binary does not exist"
+fi
+
+#+END_SRC
+
+这个脚本的功能相当简单，除了做一些简单的文件存在性测试外，它的主要功能就是
+- 1）archive所要发布的文件，即release目录下的文件，得到release.tar；
+- 2）将release.tar和install脚本压缩为一个压缩档案文件，即 release_install.tar.gz；
+- 3）将这个压缩档案文件release_install.tar.gz附加在decompress脚本后面，成为一个
+  新的文件distribute.bin
+
+** 3.2）decompress
+#+BEGIN_SRC sh
+#!/bin/bash
+INSTDIR=/default/install/path/
+if [ $# -gt 0 ];then
+   INSTDIR=$1
+   if [ "${INSTDIR:0:1}" != "/" ];then
+       echo "You must assign an absolute directory to install!"
+       exit 1
+   fi
+fi
+
+export TMPDIR=`mktemp -d /tmp/myinstaller.XXXXXX`
+ARCHIVE=`awk '/^__ARCHIVE_BELOW__/ {print NR + 1; exit 0; }' $0`
+tail -n+$ARCHIVE $0 | tar xzv -C $TMPDIR
+CDIR=`pwd`
+cd $TMPDIR
+./install $INSTDIR
+cd $CDIR
+rm -rf $TMPDIR
+exit 0
+
+__ARCHIVE_BELOW__
+
+#+END_SRC
+
+这个脚本主要有两个功能，
+- 1）检查安装路径，是否为绝对路径，
+- 2）将distribute.bin后面的部分（其实就是 release_install.tar.gz，它与decompress
+  脚本内容由分隔符号__ARCHIVE_BELOW__分开）解压缩到一个临时文件夹中，并在此临时
+  文件夹中运行install脚本。
+
+注意__ARCHIVE_BELOW__后面不要有空行。
+
+** 3.3）install
+#+BEGIN_SRC sh
+#!/bin/bash
+[ -d $1] || mkdir -p $1
+tar -C $1 -xf release.tar
+#other stuff, like set env etc
+#
+#+END_SRC
+
+这个脚本的主要功能就是解开档案文件release.tar。当然，一般安装过程，可能还需要其
+他的操作，如环境变量的设置，一些系统配置的修改，都可以在这里进行。
+
+这里有个问题。如果创建安装目录失败（通常是权限不够），安装脚本并没有清理
+decompress脚本（也就是 distribute.bin）产生的临时文件夹。
+
+* 4）运行build，产生distirbute.bin，发布之
+
+顾客只需要运行distribute.bin即可安装我们的软件。
+
+* 同类产品
+makeself

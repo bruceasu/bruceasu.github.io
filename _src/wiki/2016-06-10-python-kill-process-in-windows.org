@@ -1,0 +1,119 @@
+# -*- coding: utf-8-unix; -*-
+#+TITLE:       python kill process in windows (转)
+#+AUTHOR:      Bruce Asu
+#+EMAIL:       bruceasu@163.com
+#+DATE:        <2016-06-10 20:48>
+#+filetags:    python reprint
+#+DESCRIPTION: 本篇Python语言源码为：如何在windows平台下如何用Python杀进程的方法。
+
+#+LANGUAGE:    en
+#+OPTIONS:     H:7 num:nil toc:t \n:nil ::t |:t ^:nil -:nil f:t *:t <:nil
+
+
+本篇Python语言源码为：如何在windows平台下如何用Python杀进程的方法。主要的思路是
+在Python程序设置一个timeout，条件是一定时间内，如果这个程序没有返回，那么执行“杀
+掉这个这个新开的进程”。这就是我大概的思路，大家也可以自由发挥用你们的方法来杀进
+程。
+
+如下就是我用Python杀进程的方法（windows）源码：需要用到ctypes、sys两个方法模块
+#+BEGIN_SRC python
+    import ctypes
+    import sys
+
+    TH32CS_SNAPPROCESS = 0x00000002
+
+    class PROCESSENTRY32(ctypes.Structure):
+         _fields_ = [("dwSize", ctypes.c_ulong),
+                     ("cntUsage", ctypes.c_ulong),
+                     ("th32ProcessID", ctypes.c_ulong),
+                     ("th32DefaultHeapID", ctypes.c_ulong),
+                     ("th32ModuleID", ctypes.c_ulong),
+                     ("cntThreads", ctypes.c_ulong),
+                     ("th32ParentProcessID", ctypes.c_ulong),
+                     ("pcPriClassBase", ctypes.c_ulong),
+                     ("dwFlags", ctypes.c_ulong),
+                     ("szExeFile", ctypes.c_char * 260)]
+
+    def getProcList():
+        CreateToolhelp32Snapshot = ctypes.windll.kernel32.CreateToolhelp32Snapshot
+        Process32First = ctypes.windll.kernel32.Process32First
+        Process32Next = ctypes.windll.kernel32.Process32Next
+        CloseHandle = ctypes.windll.kernel32.CloseHandle
+        hProcessSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0)
+        pe32 = PROCESSENTRY32()
+        pe32.dwSize = ctypes.sizeof(PROCESSENTRY32)
+
+        if Process32First(hProcessSnap,ctypes.byref(pe32)) == False:
+            print >> sys.stderr, "Failed getting first process."
+            return
+
+        while True:
+            yield pe32
+            if Process32Next(hProcessSnap,ctypes.byref(pe32)) == False:
+                break
+        CloseHandle(hProcessSnap)
+
+    def getChildPid(pid):
+
+        procList = getProcList()
+
+        for proc in procList:
+
+            if proc.th32ParentProcessID == pid:
+                yield proc.th32ProcessID
+
+    def killPid(pid):
+
+        childList = getChildPid(pid)
+
+        for childPid in childList:
+            killPid(childPid)
+
+        handle = ctypes.windll.kernel32.OpenProcess(1, False, pid)
+
+        ctypes.windll.kernel32.TerminateProcess(handle,0)
+
+
+    if __name__ =='__main__':
+
+        args = sys.argv
+
+        if len(args) >1 :
+            pid = int(args[1])
+            killPid(pid)
+
+        else:
+            procList = getProcList()
+            for proc in procList:
+                print proc.szExeFile+'  '+str(proc.th32ParentProcessID) + '  '+str(proc.th32ProcessID)
+
+#+END_SRC
+
+另一個例子，使用了winproc模塊：
+#+BEGIN_SRC python
+    import subprocess
+    import time
+    import winproc
+
+    timeout = 2
+
+    process = subprocess.Popen("cmd /k ping localhost -t",shell = True)
+
+    start = int(time.time())
+
+    while process.poll()==None:
+
+        now = int(time.time())
+
+        if int (now - start) >timeout:
+            pid = process.pid
+            break
+
+    winproc.killPid(pid)
+
+    print "End"
+
+#+END_SRC
+
+网上还有好多关于 用Python语言杀进程的方法，但都不是太完整。希望我的这个源码能帮
+到有这方面需求的朋友们。

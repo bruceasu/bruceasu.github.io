@@ -1,0 +1,35 @@
+# -*- coding: utf-8-unix; -*-
+#+TITLE:       javascript_对屏幕位置及浏览器位置的获取
+#+AUTHOR:      Bruce Asu
+#+EMAIL:       bruceasu@163.com
+#+DATE:        <2016-05-30 20:48>
+#+filetags:    javascript
+#+LANGUAGE:    en
+#+OPTIONS:     H:7 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:nil
+
+#+BEGIN_SRC javascript
+// 浏览器显示区域的宽和高，向下还原后值会变小。
+document.documentElement.clientWidth;
+document.documentElement.clientHeight;
+// 与上面的两个值相比，我觉得就是加上了滚动条的宽和高
+document.body.offsetWidth;
+document.body.offsetHeight;
+// 整个网页的高度和宽度，包括滚动条中没有显示出来的
+document.body.scrollWidth;
+document.body.scrollHeight;
+// 网页被滚动条滚过去的宽和高
+document.body.scrollTop;
+document.body.scrollLeft;
+// 页面最左上角的位置距整个屏幕左上角的距离
+window.screenTop;
+window.screenLeft;
+// 这个就是屏幕分辨率
+window.screen.height;
+window.screen.width;
+// 浏览器最大化后窗口的大小
+window.screen.availHeight;
+window.screen.availWidth;
+// 鼠标的位置
+event.clentX
+event.clentY
+#+END_SRC

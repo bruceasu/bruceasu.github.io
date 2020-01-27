@@ -1,0 +1,100 @@
+# -*- coding: utf-8-unix; -*-
+#+TITLE:       Windows create shortcut
+#+AUTHOR:      Bruce Asu
+#+EMAIL:       bruceasu@163.com
+#+DATE:        <2018-05-06 20:00>
+#+filetags:    windows
+#+DESCRIPTION: Create the shortcut in Windows.
+#+LANGUAGE:    en
+#+OPTIONS:     H:7 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:nil
+
+
+* 一、示例为创建记事本的快捷方式到桌面
+#+BEGIN_SRC
+set path=%WINDIR%\notepad.exe
+set topath="%USERPROFILE%\桌面\记事本.url"
+echo [InternetShortcut] >> %topath%
+echo URL="%path%" >> %topath%
+echo IconIndex=0 >> %topath%
+echo IconFile=%path% >> %topath%
+#+END_SRC
+
+
+* 二、利用批处理创建桌面快捷方式
+#+BEGIN_SRC bat
+goto :eof
+Rem 以下为VbScript脚本
+Set WshShell = WScript.CreateObject("WScript.Shell")
+strDesktop = WshShell.SpecialFolders("Desktop") :'特殊文件夹“桌面”
+
+Rem 在桌面创建一个记事本快捷方式
+set oShellLink = WshShell.CreateShortcut(strDesktop & "\记事本.lnk")
+oShellLink.TargetPath = "notepad.exe" : '目标
+oShellLink.WindowStyle = 3 :'参数1默认窗口激活，参数3最大化激活，参数7最小化
+oShellLink.Hotkey = "Ctrl+Alt+e" : '快捷键
+oShellLink.Ic : '图标
+oShellLink.Description = "记事本快捷方式" : '备注
+oShellLink.WorkingDirectory = strDesktop : '起始位置
+oShellLink.Save : '创建保存快捷方式
+
+Rem 在桌面创建一个 腾讯QQ 2007
+set oShellLink = WshShell.CreateShortcut(strDesktop & "\腾讯QQ 2007 .lnk")
+oShellLink.TargetPath = "D:\Tencent\QQ\QQ.exe" : '目标
+oShellLink.WindowStyle = 3 :'参数1默认窗口激活，参数3最大化激活，参数7最小化
+oShellLink.Hotkey = "Ctrl+Alt+q" : '快捷键
+oShellLink.Ic : '图标
+oShellLink.Description = "腾讯QQ 2007" : '备注
+oShellLink.WorkingDirectory = strDesktop : '起始位置
+oShellLink.Save : '创建保存快捷方式
+
+Rem 在桌面创建一个“微软中国”的Url快捷方式
+set oUrlLink = WshShell.CreateShortcut(strDesktop & "\百度搜索.url")
+oUrlLink.TargetPath = "http://www.baidu.com/"
+oUrlLink.Save
+
+#+END_SRC
+
+
+* 三、批处理桌面创建快捷方式
+** EXE型
+#+BEGIN_SRC bat
+S bat
+echo off & cls
+echo create_shortcut
+start wscript -e:vbs "%~f0"
+Exit S
+End S
+
+Set WshShell = WScript.CreateObject("WScript.Shell")
+strDesktop = WshShell.SpecialFolders("Desktop")
+set oShellLink = WshShell.CreateShortcut(strDesktop & "\QQ.lnk")
+oShellLink.TargetPath = "d:\QQ\QQ.exe"
+oShellLink.WindowStyle = 3
+oShellLink.Hotkey = "Ctrl+Alt+e"
+oShellLink.IconLocation = "d:\QQ\QQ.exe, 0"
+oShellLink.Description = "快捷方式"
+oShellLink.WorkingDirectory = "d:\QQ"
+oShellLink.Save
+#+END_SRC
+
+** IP型
+#+BEGIN_SRC bat
+S bat
+echo off & cls
+echo create_shortcut
+start wscript -e:vbs "%~f0"
+Exit S
+End S
+
+Set WshShell = WScript.CreateObject("WScript.Shell")
+strDesktop = WshShell.SpecialFolders("Desktop")
+set oShellLink = WshShell.CreateShortcut(strDesktop & "\学习天地.lnk")
+oShellLink.TargetPath = "http://localhost:81"
+oShellLink.WindowStyle = 3
+oShellLink.Hotkey = "Ctrl+Alt+e"
+oShellLink.IconLocation = "%SystemRoot%\system32\url.dll, 0"
+oShellLink.Description = "快捷方式"
+oShellLink.WorkingDirectory = "C:\Program Files\Internet Explorer"
+oShellLink.Save
+
+#+END_SRC

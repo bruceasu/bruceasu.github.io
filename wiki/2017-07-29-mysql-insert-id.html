@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>Java 获取最后插入 MySQL 记录的自增 ID 值的 3 种方法</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">Java 获取最后插入 MySQL 记录的自增 ID 值的 3 种方法</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#mysql"><div class="category">mysql</div></a> </div>
+<div class="char-counter">2017-07-29</div>
+        <div id="content">
+<div class="org-src-container">
+<pre class="src src-java">
+<span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">sql</span> = <span style="font-style: italic;">"INSERT INTO users (username,password,email) VALUES (?,?,?);"</span>
+<span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#20256;&#20837;&#21442;&#25968;&#65306;Statement.RETURN_GENERATED_KEYS</span>
+PreparedStatement pstmt = (<span style="font-weight: bold; text-decoration: underline;">PreparedStatement</span>) conn.prepareStatement(sql,<span style="font-weight: bold; text-decoration: underline;">Statement</span>.RETURN_GENERATED_KEYS);
+pstmt.setString(1, user.getUsername());
+pstmt.setString(2, user.getPassword());
+pstmt.setString(3, user.getEmail());
+pstmt.executeUpdate(); <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#25191;&#34892;sql</span>
+<span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">autoInckey</span> = -1;
+<span style="font-weight: bold; text-decoration: underline;">ResultSet</span> <span style="font-weight: bold; font-style: italic;">rs</span> = pstmt.getGeneratedKeys(); <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#33719;&#21462;&#32467;&#26524;</span>
+<span style="font-weight: bold;">if</span> (rs.next()) {
+&#12288;&#12288;autoIncKey = rs.getInt(1);<span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#21462;&#24471;ID</span>
+} <span style="font-weight: bold;">else</span> {
+&#12288;&#12288;<span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">throw an exception from here</span>
+}
+
+<span style="font-weight: bold; text-decoration: underline;">SELECT</span> <span style="font-weight: bold;">MAX</span>(<span style="font-weight: bold; text-decoration: underline;">id</span>) FROM table
+</pre>
+</div>
+
+
+<p>
+该方法在多线程等情况下可能会造成不正确。
+</p>
+<pre class="example">
+SELECT LAST_INSERT_ID()
+
+</pre>
+<p>
+或者
+</p>
+<pre class="example">
+SELECT @@INDENTITY
+
+</pre>
+
+<p>
+这两个都是单个连接的，不存在所谓的两个人都同时插入，分不清的问题唯一的问题是，如
+果一句 INSERT 插入多条，返回的是第一个ID
+</p>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

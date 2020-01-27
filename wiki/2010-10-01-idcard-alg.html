@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>中国身份证号码算法</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">中国身份证号码算法</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#java"><div class="category">java</div></a> </div>
+<div class="char-counter">2010-10-01</div>
+        <div id="content">
+
+
+<div id="outline-container-org22d979d" class="outline-2">
+<h2 id="org22d979d">算法1</h2>
+<div class="outline-text-2" id="text-org22d979d">
+<div class="org-src-container">
+<pre class="src src-java"><span style="font-weight: bold;">import</span>&#160;<span style="font-weight: bold; text-decoration: underline;">java</span>.<span style="font-weight: bold; text-decoration: underline;">text</span>.SimpleDateFormat;
+<span style="font-weight: bold;">import</span>&#160;<span style="font-weight: bold; text-decoration: underline;">java</span>.<span style="font-weight: bold; text-decoration: underline;">util</span>.Calendar;
+<span style="font-weight: bold;">import</span>&#160;<span style="font-weight: bold; text-decoration: underline;">java</span>.<span style="font-weight: bold; text-decoration: underline;">util</span>.GregorianCalendar;
+<span style="font-weight: bold;">import</span>&#160;<span style="font-weight: bold; text-decoration: underline;">java</span>.<span style="font-weight: bold; text-decoration: underline;">util</span>.Hashtable;
+<span style="font-weight: bold;">import</span>&#160;<span style="font-weight: bold; text-decoration: underline;">java</span>.<span style="font-weight: bold; text-decoration: underline;">util</span>.<span style="font-weight: bold; text-decoration: underline;">regex</span>.Matcher;
+<span style="font-weight: bold;">import</span>&#160;<span style="font-weight: bold; text-decoration: underline;">java</span>.<span style="font-weight: bold; text-decoration: underline;">util</span>.<span style="font-weight: bold; text-decoration: underline;">regex</span>.Pattern;
+
+<span style="font-weight: bold;">public</span>&#160;<span style="font-weight: bold;">class</span>&#160;IDCard&#160;{
+&#160;&#160;&#160;&#160;<span style="font-style: italic;">/***********************************&#160;&#36523;&#20221;&#35777;&#39564;&#35777;&#24320;&#22987;&#160;****************************************/</span>
+&#160;&#160;&#160;&#160;<span style="font-style: italic;">/**</span>
+<span style="font-style: italic;">&#160;&#160;&#160;&#160;&#160;*&#160;&#36523;&#20221;&#35777;&#21495;&#30721;&#39564;&#35777;&#160;1&#12289;&#21495;&#30721;&#30340;&#32467;&#26500;&#160;&#20844;&#27665;&#36523;&#20221;&#21495;&#30721;&#26159;&#29305;&#24449;&#32452;&#21512;&#30721;&#65292;&#30001;&#21313;&#19971;&#20301;&#25968;&#23383;&#26412;&#20307;&#30721;&#21644;&#19968;&#20301;&#26657;&#39564;&#30721;&#32452;&#25104;&#12290;&#25490;&#21015;&#39034;&#24207;&#20174;&#24038;&#33267;&#21491;&#20381;&#27425;&#20026;&#65306;&#20845;&#20301;&#25968;&#23383;&#22320;&#22336;&#30721;&#65292;</span>
+<span style="font-style: italic;">&#160;&#160;&#160;&#160;&#160;*&#160;&#20843;&#20301;&#25968;&#23383;&#20986;&#29983;&#26085;&#26399;&#30721;&#65292;&#19977;&#20301;&#25968;&#23383;&#39034;&#24207;&#30721;&#21644;&#19968;&#20301;&#25968;&#23383;&#26657;&#39564;&#30721;&#12290;&#160;2&#12289;&#22320;&#22336;&#30721;(&#21069;&#20845;&#20301;&#25968;&#65289;</span>
+<span style="font-style: italic;">&#160;&#160;&#160;&#160;&#160;*&#160;&#34920;&#31034;&#32534;&#30721;&#23545;&#35937;&#24120;&#20303;&#25143;&#21475;&#25152;&#22312;&#21439;(&#24066;&#12289;&#26071;&#12289;&#21306;)&#30340;&#34892;&#25919;&#21306;&#21010;&#20195;&#30721;&#65292;&#25353;GB/T2260&#30340;&#35268;&#23450;&#25191;&#34892;&#12290;&#160;3&#12289;&#20986;&#29983;&#26085;&#26399;&#30721;&#65288;&#31532;&#19971;&#20301;&#33267;&#21313;&#22235;&#20301;&#65289;</span>
+<span style="font-style: italic;">&#160;&#160;&#160;&#160;&#160;*&#160;&#34920;&#31034;&#32534;&#30721;&#23545;&#35937;&#20986;&#29983;&#30340;&#24180;&#12289;&#26376;&#12289;&#26085;&#65292;&#25353;GB/T7408&#30340;&#35268;&#23450;&#25191;&#34892;&#65292;&#24180;&#12289;&#26376;&#12289;&#26085;&#20195;&#30721;&#20043;&#38388;&#19981;&#29992;&#20998;&#38548;&#31526;&#12290;&#160;4&#12289;&#39034;&#24207;&#30721;&#65288;&#31532;&#21313;&#20116;&#20301;&#33267;&#21313;&#19971;&#20301;&#65289;</span>
+<span style="font-style: italic;">&#160;&#160;&#160;&#160;&#160;*&#160;&#34920;&#31034;&#22312;&#21516;&#19968;&#22320;&#22336;&#30721;&#25152;&#26631;&#35782;&#30340;&#21306;&#22495;&#33539;&#22260;&#20869;&#65292;&#23545;&#21516;&#24180;&#12289;&#21516;&#26376;&#12289;&#21516;&#26085;&#20986;&#29983;&#30340;&#20154;&#32534;&#23450;&#30340;&#39034;&#24207;&#21495;&#65292;&#160;&#39034;&#24207;&#30721;&#30340;&#22855;&#25968;&#20998;&#37197;&#32473;&#30007;&#24615;&#65292;&#20598;&#25968;&#20998;&#37197;&#32473;&#22899;&#24615;&#12290;&#160;5&#12289;&#26657;&#39564;&#30721;&#65288;&#31532;&#21313;&#20843;&#20301;&#25968;&#65289;</span>
+<span style="font-style: italic;">&#160;&#160;&#160;&#160;&#160;*&#160;&#65288;1&#65289;&#21313;&#19971;&#20301;&#25968;&#23383;&#26412;&#20307;&#30721;&#21152;&#26435;&#27714;&#21644;&#20844;&#24335;&#160;S&#160;=&#160;Sum(Ai&#160;*&#160;Wi),&#160;i&#160;=&#160;0, ...&#160;,&#160;16&#160;&#65292;&#20808;&#23545;&#21069;17&#20301;&#25968;&#23383;&#30340;&#26435;&#27714;&#21644;</span>
+<span style="font-style: italic;">&#160;&#160;&#160;&#160;&#160;*&#160;Ai:&#34920;&#31034;&#31532;i&#20301;&#32622;&#19978;&#30340;&#36523;&#20221;&#35777;&#21495;&#30721;&#25968;&#23383;&#20540;&#160;Wi:&#34920;&#31034;&#31532;i&#20301;&#32622;&#19978;&#30340;&#21152;&#26435;&#22240;&#23376;&#160;Wi:&#160;7&#160;9&#160;10&#160;5&#160;8&#160;4&#160;2&#160;1&#160;6&#160;3&#160;7&#160;9&#160;10&#160;5&#160;8&#160;4&#160;2</span>
+<span style="font-style: italic;">&#160;&#160;&#160;&#160;&#160;*&#160;&#65288;2&#65289;&#35745;&#31639;&#27169;&#160;Y&#160;=&#160;mod(S,&#160;11)&#160;&#65288;3&#65289;&#36890;&#36807;&#27169;&#24471;&#21040;&#23545;&#24212;&#30340;&#26657;&#39564;&#30721;&#160;Y:&#160;0&#160;1&#160;2&#160;3&#160;4&#160;5&#160;6&#160;7&#160;8&#160;9&#160;10&#160;&#26657;&#39564;&#30721;:&#160;1&#160;0&#160;X&#160;9&#160;8&#160;7&#160;6&#160;5&#160;4&#160;3&#160;2</span>
+<span style="font-style: italic;">&#160;&#160;&#160;&#160;&#160;*/</span>
+
+&#160;&#160;&#160;&#160;<span style="font-style: italic;">/**</span>
+<span style="font-style: italic;">&#160;&#160;&#160;&#160;&#160;*&#160;&#21151;&#33021;&#65306;&#36523;&#20221;&#35777;&#30340;&#26377;&#25928;&#39564;&#35777;</span>
+<span style="font-style: italic;">&#160;&#160;&#160;&#160;&#160;*</span>
+<span style="font-style: italic;">&#160;&#160;&#160;&#160;&#160;*&#160;@param&#160;IDStr</span>
+<span style="font-style: italic;">&#160;&#160;&#160;&#160;&#160;*&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#36523;&#20221;&#35777;&#21495;</span>
+<span style="font-style: italic;">&#160;&#160;&#160;&#160;&#160;*&#160;@return&#160;&#26377;&#25928;&#65306;&#36820;&#22238;""&#160;&#26080;&#25928;&#65306;&#36820;&#22238;String&#20449;&#24687;</span>
+<span style="font-style: italic;">&#160;&#160;&#160;&#160;&#160;*&#160;@throws&#160;ParseException</span>
+<span style="font-style: italic;">&#160;&#160;&#160;&#160;&#160;*/</span>
+&#160;&#160;&#160;&#160;<span style="font-weight: bold; text-decoration: underline;">@SuppressWarnings</span>(<span style="font-style: italic;">"unchecked"</span>)
+&#160;&#160;&#160;&#160;<span style="font-weight: bold;">public</span>&#160;<span style="font-weight: bold;">static</span>&#160;String&#160;IDCardValidate(String&#160;IDStr)&#160;<span style="font-weight: bold;">throws</span>&#160;Exception&#160;{
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;String&#160;errorInfo&#160;=&#160;<span style="font-style: italic;">""</span>;<span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#160;&#35760;&#24405;&#38169;&#35823;&#20449;&#24687;</span>
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;String[]&#160;ValCodeArr&#160;=&#160;{&#160;<span style="font-style: italic;">"1"</span>,&#160;<span style="font-style: italic;">"0"</span>,&#160;<span style="font-style: italic;">"x"</span>,&#160;<span style="font-style: italic;">"9"</span>,&#160;<span style="font-style: italic;">"8"</span>,&#160;<span style="font-style: italic;">"7"</span>,&#160;<span style="font-style: italic;">"6"</span>,&#160;<span style="font-style: italic;">"5"</span>,&#160;<span style="font-style: italic;">"4"</span>,
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-style: italic;">"3"</span>,&#160;<span style="font-style: italic;">"2"</span>&#160;};
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;String[]&#160;Wi&#160;=&#160;{&#160;<span style="font-style: italic;">"7"</span>,&#160;<span style="font-style: italic;">"9"</span>,&#160;<span style="font-style: italic;">"10"</span>,&#160;<span style="font-style: italic;">"5"</span>,&#160;<span style="font-style: italic;">"8"</span>,&#160;<span style="font-style: italic;">"4"</span>,&#160;<span style="font-style: italic;">"2"</span>,&#160;<span style="font-style: italic;">"1"</span>,&#160;<span style="font-style: italic;">"6"</span>,&#160;<span style="font-style: italic;">"3"</span>,&#160;<span style="font-style: italic;">"7"</span>,
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-style: italic;">"9"</span>,&#160;<span style="font-style: italic;">"10"</span>,&#160;<span style="font-style: italic;">"5"</span>,&#160;<span style="font-style: italic;">"8"</span>,&#160;<span style="font-style: italic;">"4"</span>,&#160;<span style="font-style: italic;">"2"</span>&#160;};
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;String&#160;Ai&#160;=&#160;<span style="font-style: italic;">""</span>;
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#160;================&#160;&#21495;&#30721;&#30340;&#38271;&#24230;&#160;15&#20301;&#25110;18&#20301;&#160;================</span>
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold;">if</span>&#160;(IDStr.length()&#160;!=&#160;15&#160;&amp;&amp;&#160;IDStr.length()&#160;!=&#160;18)&#160;{
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;errorInfo&#160;=&#160;<span style="font-style: italic;">"&#36523;&#20221;&#35777;&#21495;&#30721;&#38271;&#24230;&#24212;&#35813;&#20026;15&#20301;&#25110;18&#20301;&#12290;"</span>;
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold;">return</span>&#160;errorInfo;
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;}
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#160;=======================(end)========================</span>
+
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#160;================&#160;&#25968;&#23383;&#160;&#38500;&#26368;&#21518;&#20197;&#20026;&#37117;&#20026;&#25968;&#23383;&#160;================</span>
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold;">if</span>&#160;(IDStr.length()&#160;==&#160;18)&#160;{
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;Ai&#160;=&#160;IDStr.substring(0,&#160;17);
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;}&#160;<span style="font-weight: bold;">else</span>&#160;<span style="font-weight: bold;">if</span>&#160;(IDStr.length()&#160;==&#160;15)&#160;{
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;Ai&#160;=&#160;IDStr.substring(0,&#160;6)&#160;+&#160;<span style="font-style: italic;">"19"</span>&#160;+&#160;IDStr.substring(6,&#160;15);
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;}
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold;">if</span>&#160;(isNumeric(Ai)&#160;==&#160;<span style="font-weight: bold; text-decoration: underline;">false</span>)&#160;{
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;errorInfo&#160;=&#160;<span style="font-style: italic;">"&#36523;&#20221;&#35777;15&#20301;&#21495;&#30721;&#37117;&#24212;&#20026;&#25968;&#23383;&#160;;&#160;18&#20301;&#21495;&#30721;&#38500;&#26368;&#21518;&#19968;&#20301;&#22806;&#65292;&#37117;&#24212;&#20026;&#25968;&#23383;&#12290;"</span>;
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold;">return</span>&#160;errorInfo;
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;}
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#160;=======================(end)========================</span>
+
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#160;================&#160;&#20986;&#29983;&#24180;&#26376;&#26159;&#21542;&#26377;&#25928;&#160;================</span>
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;String&#160;strYear&#160;=&#160;Ai.substring(6,&#160;10);<span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#160;&#24180;&#20221;</span>
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;String&#160;strMonth&#160;=&#160;Ai.substring(10,&#160;12);<span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#160;&#26376;&#20221;</span>
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;String&#160;strDay&#160;=&#160;Ai.substring(12,&#160;14);<span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#160;&#26376;&#20221;</span>
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold;">if</span>&#160;(isDate(strYear&#160;+&#160;<span style="font-style: italic;">"-"</span>&#160;+&#160;strMonth&#160;+&#160;<span style="font-style: italic;">"-"</span>&#160;+&#160;strDay)&#160;==&#160;<span style="font-weight: bold; text-decoration: underline;">false</span>)&#160;{
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;errorInfo&#160;=&#160;<span style="font-style: italic;">"&#36523;&#20221;&#35777;&#29983;&#26085;&#26080;&#25928;&#12290;"</span>;
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold;">return</span>&#160;errorInfo;
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;}
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;GregorianCalendar&#160;gc&#160;=&#160;<span style="font-weight: bold;">new</span>&#160;GregorianCalendar();
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;SimpleDateFormat&#160;s&#160;=&#160;<span style="font-weight: bold;">new</span>&#160;SimpleDateFormat(<span style="font-style: italic;">"yyyy-MM-dd"</span>);
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold;">try</span>&#160;{
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold;">if</span>&#160;((gc.get(<span style="font-weight: bold; text-decoration: underline;">Calendar</span>.YEAR)&#160;-&#160;Integer.parseInt(strYear))&#160;&gt;&#160;150
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;||&#160;(gc.getTime().getTime()&#160;-&#160;s.parse(
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;strYear&#160;+&#160;<span style="font-style: italic;">"-"</span>&#160;+&#160;strMonth&#160;+&#160;<span style="font-style: italic;">"-"</span>&#160;+&#160;strDay).getTime())&#160;&lt;&#160;0)&#160;{
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;errorInfo&#160;=&#160;<span style="font-style: italic;">"&#36523;&#20221;&#35777;&#29983;&#26085;&#19981;&#22312;&#26377;&#25928;&#33539;&#22260;&#12290;"</span>;
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold;">return</span>&#160;errorInfo;
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;}
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;}&#160;<span style="font-weight: bold;">catch</span>&#160;(NumberFormatException&#160;e)&#160;{
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;e.printStackTrace();
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;}&#160;<span style="font-weight: bold;">catch</span>&#160;(<span style="font-weight: bold; text-decoration: underline;">java</span>.<span style="font-weight: bold; text-decoration: underline;">text</span>.ParseException&#160;e)&#160;{
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;e.printStackTrace();
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;}
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold;">if</span>&#160;(Integer.parseInt(strMonth)&#160;&gt;&#160;12&#160;||&#160;Integer.parseInt(strMonth)&#160;==&#160;0)&#160;{
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;errorInfo&#160;=&#160;<span style="font-style: italic;">"&#36523;&#20221;&#35777;&#26376;&#20221;&#26080;&#25928;"</span>;
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold;">return</span>&#160;errorInfo;
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;}
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold;">if</span>&#160;(Integer.parseInt(strDay)&#160;&gt;&#160;31&#160;||&#160;Integer.parseInt(strDay)&#160;==&#160;0)&#160;{
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;errorInfo&#160;=&#160;<span style="font-style: italic;">"&#36523;&#20221;&#35777;&#26085;&#26399;&#26080;&#25928;"</span>;
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold;">return</span>&#160;errorInfo;
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;}
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#160;=====================(end)=====================</span>
+
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#160;================&#160;&#22320;&#21306;&#30721;&#26102;&#20505;&#26377;&#25928;&#160;================</span>
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;Hashtable&#160;h&#160;=&#160;GetAreaCode();
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold;">if</span>&#160;(h.get(Ai.substring(0,&#160;2))&#160;==&#160;<span style="font-weight: bold; text-decoration: underline;">null</span>)&#160;{
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;errorInfo&#160;=&#160;<span style="font-style: italic;">"&#36523;&#20221;&#35777;&#22320;&#21306;&#32534;&#30721;&#38169;&#35823;&#12290;"</span>;
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold;">return</span>&#160;errorInfo;
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;}
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#160;==============================================</span>
+
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#160;================&#160;&#21028;&#26029;&#26368;&#21518;&#19968;&#20301;&#30340;&#20540;&#160;================</span>
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold; text-decoration: underline;">int</span>&#160;TotalmulAiWi&#160;=&#160;0;
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold;">for</span>&#160;(<span style="font-weight: bold; text-decoration: underline;">int</span>&#160;i&#160;=&#160;0;&#160;i&#160;&lt;&#160;17;&#160;i++)&#160;{
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;TotalmulAiWi&#160;=&#160;TotalmulAiWi
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;+&#160;Integer.parseInt(String.valueOf(Ai.charAt(i)))
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;*&#160;Integer.parseInt(Wi[i]);
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;}
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold; text-decoration: underline;">int</span>&#160;modValue&#160;=&#160;TotalmulAiWi&#160;%&#160;11;
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;String&#160;strVerifyCode&#160;=&#160;ValCodeArr[modValue];
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;Ai&#160;=&#160;Ai&#160;+&#160;strVerifyCode;
+
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold;">if</span>&#160;(IDStr.length()&#160;==&#160;18)&#160;{
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold;">if</span>&#160;(Ai.equals(IDStr)&#160;==&#160;<span style="font-weight: bold; text-decoration: underline;">false</span>)&#160;{
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;errorInfo&#160;=&#160;<span style="font-style: italic;">"&#36523;&#20221;&#35777;&#26080;&#25928;&#65292;&#19981;&#26159;&#21512;&#27861;&#30340;&#36523;&#20221;&#35777;&#21495;&#30721;"</span>;
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold;">return</span>&#160;errorInfo;
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;}
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;}&#160;<span style="font-weight: bold;">else</span>&#160;{
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold;">return</span>&#160;<span style="font-style: italic;">""</span>;
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;}
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#160;=====================(end)=====================</span>
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold;">return</span>&#160;<span style="font-style: italic;">""</span>;
+&#160;&#160;&#160;&#160;}
+
+&#160;&#160;&#160;&#160;<span style="font-style: italic;">/**</span>
+<span style="font-style: italic;">&#160;&#160;&#160;&#160;&#160;*&#160;&#21151;&#33021;&#65306;&#35774;&#32622;&#22320;&#21306;&#32534;&#30721;</span>
+<span style="font-style: italic;">&#160;&#160;&#160;&#160;&#160;*</span>
+<span style="font-style: italic;">&#160;&#160;&#160;&#160;&#160;*&#160;@return&#160;Hashtable&#160;&#23545;&#35937;</span>
+<span style="font-style: italic;">&#160;&#160;&#160;&#160;&#160;*/</span>
+&#160;&#160;&#160;&#160;<span style="font-weight: bold; text-decoration: underline;">@SuppressWarnings</span>(<span style="font-style: italic;">"unchecked"</span>)
+&#160;&#160;&#160;&#160;<span style="font-weight: bold;">private</span>&#160;<span style="font-weight: bold;">static</span>&#160;Hashtable&#160;GetAreaCode()&#160;{
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;Hashtable&#160;hashtable&#160;=&#160;<span style="font-weight: bold;">new</span>&#160;Hashtable();
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;hashtable.put(<span style="font-style: italic;">"11"</span>,&#160;<span style="font-style: italic;">"&#21271;&#20140;"</span>);
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;hashtable.put(<span style="font-style: italic;">"12"</span>,&#160;<span style="font-style: italic;">"&#22825;&#27941;"</span>);
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;hashtable.put(<span style="font-style: italic;">"13"</span>,&#160;<span style="font-style: italic;">"&#27827;&#21271;"</span>);
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;hashtable.put(<span style="font-style: italic;">"14"</span>,&#160;<span style="font-style: italic;">"&#23665;&#35199;"</span>);
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;hashtable.put(<span style="font-style: italic;">"15"</span>,&#160;<span style="font-style: italic;">"&#20869;&#33945;&#21476;"</span>);
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;hashtable.put(<span style="font-style: italic;">"21"</span>,&#160;<span style="font-style: italic;">"&#36797;&#23425;"</span>);
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;hashtable.put(<span style="font-style: italic;">"22"</span>,&#160;<span style="font-style: italic;">"&#21513;&#26519;"</span>);
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;hashtable.put(<span style="font-style: italic;">"23"</span>,&#160;<span style="font-style: italic;">"&#40657;&#40857;&#27743;"</span>);
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;hashtable.put(<span style="font-style: italic;">"31"</span>,&#160;<span style="font-style: italic;">"&#19978;&#28023;"</span>);
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;hashtable.put(<span style="font-style: italic;">"32"</span>,&#160;<span style="font-style: italic;">"&#27743;&#33487;"</span>);
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;hashtable.put(<span style="font-style: italic;">"33"</span>,&#160;<span style="font-style: italic;">"&#27993;&#27743;"</span>);
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;hashtable.put(<span style="font-style: italic;">"34"</span>,&#160;<span style="font-style: italic;">"&#23433;&#24509;"</span>);
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;hashtable.put(<span style="font-style: italic;">"35"</span>,&#160;<span style="font-style: italic;">"&#31119;&#24314;"</span>);
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;hashtable.put(<span style="font-style: italic;">"36"</span>,&#160;<span style="font-style: italic;">"&#27743;&#35199;"</span>);
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;hashtable.put(<span style="font-style: italic;">"37"</span>,&#160;<span style="font-style: italic;">"&#23665;&#19996;"</span>);
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;hashtable.put(<span style="font-style: italic;">"41"</span>,&#160;<span style="font-style: italic;">"&#27827;&#21335;"</span>);
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;hashtable.put(<span style="font-style: italic;">"42"</span>,&#160;<span style="font-style: italic;">"&#28246;&#21271;"</span>);
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;hashtable.put(<span style="font-style: italic;">"43"</span>,&#160;<span style="font-style: italic;">"&#28246;&#21335;"</span>);
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;hashtable.put(<span style="font-style: italic;">"44"</span>,&#160;<span style="font-style: italic;">"&#24191;&#19996;"</span>);
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;hashtable.put(<span style="font-style: italic;">"45"</span>,&#160;<span style="font-style: italic;">"&#24191;&#35199;"</span>);
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;hashtable.put(<span style="font-style: italic;">"46"</span>,&#160;<span style="font-style: italic;">"&#28023;&#21335;"</span>);
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;hashtable.put(<span style="font-style: italic;">"50"</span>,&#160;<span style="font-style: italic;">"&#37325;&#24198;"</span>);
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;hashtable.put(<span style="font-style: italic;">"51"</span>,&#160;<span style="font-style: italic;">"&#22235;&#24029;"</span>);
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;hashtable.put(<span style="font-style: italic;">"52"</span>,&#160;<span style="font-style: italic;">"&#36149;&#24030;"</span>);
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;hashtable.put(<span style="font-style: italic;">"53"</span>,&#160;<span style="font-style: italic;">"&#20113;&#21335;"</span>);
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;hashtable.put(<span style="font-style: italic;">"54"</span>,&#160;<span style="font-style: italic;">"&#35199;&#34255;"</span>);
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;hashtable.put(<span style="font-style: italic;">"61"</span>,&#160;<span style="font-style: italic;">"&#38485;&#35199;"</span>);
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;hashtable.put(<span style="font-style: italic;">"62"</span>,&#160;<span style="font-style: italic;">"&#29976;&#32899;"</span>);
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;hashtable.put(<span style="font-style: italic;">"63"</span>,&#160;<span style="font-style: italic;">"&#38738;&#28023;"</span>);
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;hashtable.put(<span style="font-style: italic;">"64"</span>,&#160;<span style="font-style: italic;">"&#23425;&#22799;"</span>);
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;hashtable.put(<span style="font-style: italic;">"65"</span>,&#160;<span style="font-style: italic;">"&#26032;&#30086;"</span>);
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;hashtable.put(<span style="font-style: italic;">"71"</span>,&#160;<span style="font-style: italic;">"&#21488;&#28286;"</span>);
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;hashtable.put(<span style="font-style: italic;">"81"</span>,&#160;<span style="font-style: italic;">"&#39321;&#28207;"</span>);
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;hashtable.put(<span style="font-style: italic;">"82"</span>,&#160;<span style="font-style: italic;">"&#28595;&#38376;"</span>);
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;hashtable.put(<span style="font-style: italic;">"91"</span>,&#160;<span style="font-style: italic;">"&#22269;&#22806;"</span>);
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold;">return</span>&#160;hashtable;
+&#160;&#160;&#160;&#160;}
+
+&#160;&#160;&#160;&#160;<span style="font-style: italic;">/**</span>
+<span style="font-style: italic;">&#160;&#160;&#160;&#160;&#160;*&#160;&#21151;&#33021;&#65306;&#21028;&#26029;&#23383;&#31526;&#20018;&#26159;&#21542;&#20026;&#25968;&#23383;</span>
+<span style="font-style: italic;">&#160;&#160;&#160;&#160;&#160;*</span>
+<span style="font-style: italic;">&#160;&#160;&#160;&#160;&#160;*&#160;@param&#160;str</span>
+<span style="font-style: italic;">&#160;&#160;&#160;&#160;&#160;*&#160;@return</span>
+<span style="font-style: italic;">&#160;&#160;&#160;&#160;&#160;*/</span>
+&#160;&#160;&#160;&#160;<span style="font-weight: bold;">private</span>&#160;<span style="font-weight: bold;">static</span>&#160;<span style="font-weight: bold; text-decoration: underline;">boolean</span>&#160;isNumeric(String&#160;str)&#160;{
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;Pattern&#160;pattern&#160;=&#160;Pattern.compile(<span style="font-style: italic;">"[0-9]*"</span>);
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;Matcher&#160;isNum&#160;=&#160;pattern.matcher(str);
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold;">if</span>&#160;(isNum.matches())&#160;{
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold;">return</span>&#160;<span style="font-weight: bold; text-decoration: underline;">true</span>;
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;}&#160;<span style="font-weight: bold;">else</span>&#160;{
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold;">return</span>&#160;<span style="font-weight: bold; text-decoration: underline;">false</span>;
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;}
+&#160;&#160;&#160;&#160;}
+
+&#160;&#160;&#160;&#160;<span style="font-style: italic;">/**</span>
+<span style="font-style: italic;">&#160;&#160;&#160;&#160;&#160;*&#160;&#21151;&#33021;&#65306;&#21028;&#26029;&#23383;&#31526;&#20018;&#26159;&#21542;&#20026;&#26085;&#26399;&#26684;&#24335;</span>
+<span style="font-style: italic;">&#160;&#160;&#160;&#160;&#160;*</span>
+<span style="font-style: italic;">&#160;&#160;&#160;&#160;&#160;*&#160;@param&#160;str</span>
+<span style="font-style: italic;">&#160;&#160;&#160;&#160;&#160;*&#160;@return</span>
+<span style="font-style: italic;">&#160;&#160;&#160;&#160;&#160;*/</span>
+&#160;&#160;&#160;&#160;<span style="font-weight: bold;">public</span>&#160;<span style="font-weight: bold;">static</span>&#160;<span style="font-weight: bold; text-decoration: underline;">boolean</span>&#160;isDate(String&#160;strDate)&#160;{
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;Pattern&#160;pattern&#160;=&#160;Pattern
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;.compile(<span style="font-style: italic;">"^((\\d{2}(([02468][048])|([13579][26]))[\\-\\/\\s]?((((0?[13578])|(1[02]))[\\-\\/\\s]?((0?[1-9])|([1-2][0-9])|(3[01])))|(((0?[469])|(11))[\\-\\/\\s]?((0?[1-9])|([1-2][0-9])|(30)))|(0?2[\\-\\/\\s]?((0?[1-9])|([1-2][0-9])))))|(\\d{2}(([02468][1235679])|([13579][01345789]))[\\-\\/\\s]?((((0?[13578])|(1[02]))[\\-\\/\\s]?((0?[1-9])|([1-2][0-9])|(3[01])))|(((0?[469])|(11))[\\-\\/\\s]?((0?[1-9])|([1-2][0-9])|(30)))|(0?2[\\-\\/\\s]?((0?[1-9])|(1[0-9])|(2[0-8]))))))(\\s(((0?[0-9])|([1-2][0-3]))\\:([0-5]?[0-9])((\\s)|(\\:([0-5]?[0-9])))))?$"</span>);
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;Matcher&#160;m&#160;=&#160;pattern.matcher(strDate);
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold;">if</span>&#160;(m.matches())&#160;{
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold;">return</span>&#160;<span style="font-weight: bold; text-decoration: underline;">true</span>;
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;}&#160;<span style="font-weight: bold;">else</span>&#160;{
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold;">return</span>&#160;<span style="font-weight: bold; text-decoration: underline;">false</span>;
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;}
+&#160;&#160;&#160;&#160;}
+
+&#160;&#160;&#160;&#160;<span style="font-style: italic;">/**</span>
+<span style="font-style: italic;">&#160;&#160;&#160;&#160;&#160;*&#160;@param&#160;args</span>
+<span style="font-style: italic;">&#160;&#160;&#160;&#160;&#160;*&#160;@throws&#160;ParseException</span>
+<span style="font-style: italic;">&#160;&#160;&#160;&#160;&#160;*/</span>
+&#160;&#160;&#160;&#160;<span style="font-weight: bold; text-decoration: underline;">@SuppressWarnings</span>(<span style="font-style: italic;">"static-access"</span>)
+&#160;&#160;&#160;&#160;<span style="font-weight: bold;">public</span>&#160;<span style="font-weight: bold;">static</span>&#160;<span style="font-weight: bold; text-decoration: underline;">void</span>&#160;main(String[]&#160;args)&#160;<span style="font-weight: bold;">throws</span>&#160;Exception&#160;{
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#160;String&#160;IDCardNum="210102820826411";</span>
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#160;String&#160;IDCardNum="210102198208264114";</span>
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;String&#160;IDCardNum&#160;=&#160;<span style="font-style: italic;">"210181198807193116"</span>;
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;IDCard&#160;cc&#160;=&#160;<span style="font-weight: bold;">new</span>&#160;IDCard();
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;System.out.println(<span style="font-weight: bold; text-decoration: underline;">cc</span>.IDCardValidate(IDCardNum));
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#160;System.out.println(cc.isDate("1996-02-29"));</span>
+&#160;&#160;&#160;&#160;}
+&#160;&#160;&#160;&#160;<span style="font-style: italic;">/***********************************&#160;&#36523;&#20221;&#35777;&#39564;&#35777;&#32467;&#26463;&#160;****************************************/</span>
+
+}
+
+
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-orgb264526" class="outline-2">
+<h2 id="orgb264526">算法2</h2>
+<div class="outline-text-2" id="text-orgb264526">
+<div class="org-src-container">
+<pre class="src src-java"><span style="font-weight: bold;">public</span> <span style="font-weight: bold;">class</span> <span style="font-weight: bold; text-decoration: underline;">IDCard2</span> {
+
+      <span style="font-weight: bold;">private</span> <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">_codeError</span>;
+
+      <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">wi =2(n-1)(mod 11)</span>
+      <span style="font-weight: bold;">final</span> <span style="font-weight: bold; text-decoration: underline;">int</span>[] <span style="font-weight: bold; font-style: italic;">wi</span> = {7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2, 1};
+      <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">verify digit</span>
+      <span style="font-weight: bold;">final</span> <span style="font-weight: bold; text-decoration: underline;">int</span>[] <span style="font-weight: bold; font-style: italic;">vi</span> = {1, 0, <span style="font-style: italic;">'X'</span>, 9, 8, 7, 6, 5, 4, 3, 2};
+      <span style="font-weight: bold;">private</span> <span style="font-weight: bold; text-decoration: underline;">int</span>[] <span style="font-weight: bold; font-style: italic;">ai</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">int</span>[18];
+      <span style="font-weight: bold;">private</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold; text-decoration: underline;">String</span>[] <span style="font-weight: bold; font-style: italic;">_areaCode</span>={<span style="font-style: italic;">"11"</span>,<span style="font-style: italic;">"12"</span>,<span style="font-style: italic;">"13"</span>,<span style="font-style: italic;">"14"</span>,<span style="font-style: italic;">"15"</span>,<span style="font-style: italic;">"21"</span>,<span style="font-style: italic;">"22"</span>
+          ,<span style="font-style: italic;">"23"</span>,<span style="font-style: italic;">"31"</span>,<span style="font-style: italic;">"32"</span>,<span style="font-style: italic;">"33"</span>,<span style="font-style: italic;">"34"</span>,<span style="font-style: italic;">"35"</span>,<span style="font-style: italic;">"36"</span>,<span style="font-style: italic;">"37"</span>,<span style="font-style: italic;">"41"</span>,<span style="font-style: italic;">"42"</span>,<span style="font-style: italic;">"43"</span>,<span style="font-style: italic;">"44"</span>
+          ,<span style="font-style: italic;">"45"</span>,<span style="font-style: italic;">"46"</span>,<span style="font-style: italic;">"50"</span>,<span style="font-style: italic;">"51"</span>,<span style="font-style: italic;">"52"</span>,<span style="font-style: italic;">"53"</span>,<span style="font-style: italic;">"54"</span>,<span style="font-style: italic;">"61"</span>,<span style="font-style: italic;">"62"</span>,<span style="font-style: italic;">"63"</span>,<span style="font-style: italic;">"64"</span>,<span style="font-style: italic;">"65"</span>,<span style="font-style: italic;">"71"</span>,<span style="font-style: italic;">"81"</span>,<span style="font-style: italic;">"82"</span>,<span style="font-style: italic;">"91"</span>};
+      <span style="font-weight: bold;">private</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold; text-decoration: underline;">HashMap</span>&lt;<span style="font-weight: bold; text-decoration: underline;">String</span>,<span style="font-weight: bold; text-decoration: underline;">Integer</span>&gt; <span style="font-weight: bold; font-style: italic;">dateMap</span>;
+      <span style="font-weight: bold;">private</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold; text-decoration: underline;">HashMap</span>&lt;<span style="font-weight: bold; text-decoration: underline;">String</span>,<span style="font-weight: bold; text-decoration: underline;">String</span>&gt; <span style="font-weight: bold; font-style: italic;">areaCodeMap</span>;
+      <span style="font-weight: bold;">static</span>{
+            dateMap=<span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">HashMap</span>&lt;<span style="font-weight: bold; text-decoration: underline;">String</span>,<span style="font-weight: bold; text-decoration: underline;">Integer</span>&gt;();
+            dateMap.put(<span style="font-style: italic;">"01"</span>,31);
+            dateMap.put(<span style="font-style: italic;">"02"</span>,<span style="font-weight: bold; text-decoration: underline;">null</span>);
+            dateMap.put(<span style="font-style: italic;">"03"</span>,31);
+            dateMap.put(<span style="font-style: italic;">"04"</span>,30);
+            dateMap.put(<span style="font-style: italic;">"05"</span>,31);
+            dateMap.put(<span style="font-style: italic;">"06"</span>,30);
+            dateMap.put(<span style="font-style: italic;">"07"</span>,31);
+            dateMap.put(<span style="font-style: italic;">"08"</span>,31);
+            dateMap.put(<span style="font-style: italic;">"09"</span>,30);
+            dateMap.put(<span style="font-style: italic;">"10"</span>,31);
+            dateMap.put(<span style="font-style: italic;">"11"</span>,30);
+            dateMap.put(<span style="font-style: italic;">"12"</span>,31);
+            areaCodeMap=<span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">HashMap</span>&lt;<span style="font-weight: bold; text-decoration: underline;">String</span>,<span style="font-weight: bold; text-decoration: underline;">String</span>&gt;();
+            <span style="font-weight: bold;">for</span>(<span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">code</span>:_areaCode){
+                  areaCodeMap.put(code,<span style="font-weight: bold; text-decoration: underline;">null</span>);
+            }
+      }
+
+      <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#39564;&#35777;&#36523;&#20221;&#35777;&#20301;&#25968;,15&#20301;&#21644;18&#20301;&#36523;&#20221;&#35777;</span>
+      <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">boolean</span> <span style="font-weight: bold;">verifyLength</span>(<span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">code</span>){
+            <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">length</span>=code.length();
+            <span style="font-weight: bold;">if</span>(length==15 || length==18){
+                  <span style="font-weight: bold;">return</span> <span style="font-weight: bold; text-decoration: underline;">true</span>;
+            }<span style="font-weight: bold;">else</span>{
+                  _codeError=<span style="font-style: italic;">"&#38169;&#35823;&#65306;&#36755;&#20837;&#30340;&#36523;&#20221;&#35777;&#21495;&#19981;&#26159;15&#20301;&#21644;18&#20301;&#30340;"</span>;
+                  <span style="font-weight: bold;">return</span> <span style="font-weight: bold; text-decoration: underline;">false</span>;
+            }
+      }
+
+      <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#21028;&#26029;&#22320;&#21306;&#30721;</span>
+      <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">boolean</span> <span style="font-weight: bold;">verifyAreaCode</span>(<span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">code</span>){
+            <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">areaCode</span>=code.substring(0,2);
+<span style="font-weight: bold; font-style: italic;">//            </span><span style="font-weight: bold; font-style: italic;">Element child=  _areaCodeElement.getChild("_"+areaCode);</span>
+            <span style="font-weight: bold;">if</span>(areaCodeMap.containsKey(areaCode)){
+                  <span style="font-weight: bold;">return</span> <span style="font-weight: bold; text-decoration: underline;">true</span>;
+            }<span style="font-weight: bold;">else</span>{
+                  _codeError=<span style="font-style: italic;">"&#38169;&#35823;&#65306;&#36755;&#20837;&#30340;&#36523;&#20221;&#35777;&#21495;&#30340;&#22320;&#21306;&#30721;(1-2&#20301;)["</span>+areaCode+<span style="font-style: italic;">"]&#19981;&#31526;&#21512;&#20013;&#22269;&#34892;&#25919;&#21306;&#21010;&#20998;&#20195;&#30721;&#35268;&#23450;(GB/T2260-1999)"</span>;
+                  <span style="font-weight: bold;">return</span> <span style="font-weight: bold; text-decoration: underline;">false</span>;
+            }
+      }
+
+      <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#21028;&#26029;&#26376;&#20221;&#21644;&#26085;&#26399;</span>
+      <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">boolean</span> <span style="font-weight: bold;">verifyBirthdayCode</span>(<span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">code</span>){
+            <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#39564;&#35777;&#26376;&#20221;</span>
+            <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">month</span>=code.substring(10,12);
+            <span style="font-weight: bold; text-decoration: underline;">boolean</span> <span style="font-weight: bold; font-style: italic;">isEighteenCode</span>=(18==code.length());
+            <span style="font-weight: bold;">if</span>(!dateMap.containsKey(month)){
+                  _codeError=<span style="font-style: italic;">"&#38169;&#35823;&#65306;&#36755;&#20837;&#30340;&#36523;&#20221;&#35777;&#21495;"</span>+(isEighteenCode?<span style="font-style: italic;">"(11-12&#20301;)"</span>:<span style="font-style: italic;">"(9-10&#20301;)"</span>)+<span style="font-style: italic;">"&#19981;&#23384;&#22312;["</span>+month+<span style="font-style: italic;">"]&#26376;&#20221;,&#19981;&#31526;&#21512;&#35201;&#27714;(GB/T7408)"</span>;
+                  <span style="font-weight: bold;">return</span> <span style="font-weight: bold; text-decoration: underline;">false</span>;
+            }
+            <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#39564;&#35777;&#26085;&#26399;</span>
+            <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">dayCode</span>=code.substring(12,14);
+            <span style="font-weight: bold; text-decoration: underline;">Integer</span> <span style="font-weight: bold; font-style: italic;">day</span>=dateMap.get(month);
+            <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">yearCode</span>=code.substring(6,10);
+            <span style="font-weight: bold; text-decoration: underline;">Integer</span> <span style="font-weight: bold; font-style: italic;">year</span>=Integer.valueOf(yearCode);
+
+            <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#38750;2&#26376;&#30340;&#24773;&#20917;</span>
+            <span style="font-weight: bold;">if</span>(day!=<span style="font-weight: bold; text-decoration: underline;">null</span>){
+                  <span style="font-weight: bold;">if</span>(Integer.valueOf(dayCode)&gt;day || Integer.valueOf(dayCode)&lt;1){
+                        _codeError=<span style="font-style: italic;">"&#38169;&#35823;&#65306;&#36755;&#20837;&#30340;&#36523;&#20221;&#35777;&#21495;"</span>+(isEighteenCode?<span style="font-style: italic;">"(13-14&#20301;)"</span>:<span style="font-style: italic;">"(11-13&#20301;)"</span>)+<span style="font-style: italic;">"["</span>+dayCode+<span style="font-style: italic;">"]&#21495;&#19981;&#31526;&#21512;&#23567;&#26376;1-30&#22825;&#22823;&#26376;1-31&#22825;&#30340;&#35268;&#23450;(GB/T7408)"</span>;
+                        <span style="font-weight: bold;">return</span> <span style="font-weight: bold; text-decoration: underline;">false</span>;
+                  }
+            }
+            <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">2&#26376;&#30340;&#24773;&#20917;</span>
+            <span style="font-weight: bold;">else</span>{
+                  <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#38384;&#26376;&#30340;&#24773;&#20917;</span>
+                  <span style="font-weight: bold;">if</span>((year%4==0&amp;&amp;year%100!=0)||(year%400==0)){
+                        <span style="font-weight: bold;">if</span>(Integer.valueOf(dayCode)&gt;29 || Integer.valueOf(dayCode)&lt;1){
+                              _codeError=<span style="font-style: italic;">"&#38169;&#35823;&#65306;&#36755;&#20837;&#30340;&#36523;&#20221;&#35777;&#21495;"</span>+(isEighteenCode?<span style="font-style: italic;">"(13-14&#20301;)"</span>:<span style="font-style: italic;">"(11-13&#20301;)"</span>)+<span style="font-style: italic;">"["</span>+dayCode+<span style="font-style: italic;">"]&#21495;&#22312;"</span>+year+<span style="font-style: italic;">"&#38384;&#24180;&#30340;&#24773;&#20917;&#19979;&#26410;&#31526;&#21512;1-29&#21495;&#30340;&#35268;&#23450;(GB/T7408)"</span>;
+                              <span style="font-weight: bold;">return</span> <span style="font-weight: bold; text-decoration: underline;">false</span>;
+                        }
+                  }
+                  <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#38750;&#38384;&#26376;&#30340;&#24773;&#20917;</span>
+                  <span style="font-weight: bold;">else</span>{
+                        <span style="font-weight: bold;">if</span> (Integer.valueOf(dayCode) &gt; 28 || Integer.valueOf(dayCode) &lt; 1) {
+                              _codeError=<span style="font-style: italic;">"&#38169;&#35823;&#65306;&#36755;&#20837;&#30340;&#36523;&#20221;&#35777;&#21495;"</span>+(isEighteenCode?<span style="font-style: italic;">"(13-14&#20301;)"</span>:<span style="font-style: italic;">"(11-13&#20301;)"</span>)+<span style="font-style: italic;">"["</span>+dayCode+<span style="font-style: italic;">"]&#21495;&#22312;"</span>+year+<span style="font-style: italic;">"&#24179;&#24180;&#30340;&#24773;&#20917;&#19979;&#26410;&#31526;&#21512;1-28&#21495;&#30340;&#35268;&#23450;(GB/T7408)"</span>;
+                              <span style="font-weight: bold;">return</span> <span style="font-weight: bold; text-decoration: underline;">false</span>;
+                        }
+                  }
+            }
+            <span style="font-weight: bold;">return</span> <span style="font-weight: bold; text-decoration: underline;">true</span>;
+      }
+
+      <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#39564;&#35777;&#36523;&#20221;&#38500;&#20102;&#26368;&#21518;&#20301;&#20854;&#20182;&#30340;&#26159;&#21542;&#21253;&#21547;&#23383;&#27597;</span>
+      <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">boolean</span> <span style="font-weight: bold;">containsAllNumber</span>(<span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">code</span>) {
+            <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">str</span>=<span style="font-style: italic;">""</span>;
+            <span style="font-weight: bold;">if</span>(code.length()==15){
+                  str=code.substring(0,15);
+            }<span style="font-weight: bold;">else</span> <span style="font-weight: bold;">if</span>(code.length()==18){
+                  str=code.substring(0,17);
+            }
+            <span style="font-weight: bold; text-decoration: underline;">char</span>[] <span style="font-weight: bold; font-style: italic;">ch</span> = str.toCharArray();
+            <span style="font-weight: bold;">for</span> (<span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">i</span> = 0; i &lt; ch.<span style="font-weight: bold; text-decoration: underline;">length</span>; i++) {
+                  <span style="font-weight: bold;">if</span> (! (ch[i] &gt;= <span style="font-style: italic;">'0'</span> &amp;&amp; ch[i] &lt;= <span style="font-style: italic;">'9'</span>)) {
+                        _codeError=<span style="font-style: italic;">"&#38169;&#35823;&#65306;&#36755;&#20837;&#30340;&#36523;&#20221;&#35777;&#21495;&#31532;"</span>+(i+1)+<span style="font-style: italic;">"&#20301;&#21253;&#21547;&#23383;&#27597;"</span>;
+                        <span style="font-weight: bold;">return</span> <span style="font-weight: bold; text-decoration: underline;">false</span>;
+                  }
+            }
+            <span style="font-weight: bold;">return</span> <span style="font-weight: bold; text-decoration: underline;">true</span>;
+      }
+
+      <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold;">getCodeError</span>(){
+            <span style="font-weight: bold;">return</span> _codeError;
+      }
+
+      <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#39564;&#35777;&#36523;&#20221;&#35777;</span>
+      <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">boolean</span> <span style="font-weight: bold;">verify</span>(<span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">idcard</span>) {
+            _codeError=<span style="font-style: italic;">""</span>;
+            <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#39564;&#35777;&#36523;&#20221;&#35777;&#20301;&#25968;,15&#20301;&#21644;18&#20301;&#36523;&#20221;&#35777;</span>
+            <span style="font-weight: bold;">if</span>(!verifyLength(idcard)){
+                <span style="font-weight: bold;">return</span> <span style="font-weight: bold; text-decoration: underline;">false</span>;
+            }
+            <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#39564;&#35777;&#36523;&#20221;&#38500;&#20102;&#26368;&#21518;&#20301;&#20854;&#20182;&#30340;&#26159;&#21542;&#21253;&#21547;&#23383;&#27597;</span>
+            <span style="font-weight: bold;">if</span>(!containsAllNumber(idcard)){
+                  <span style="font-weight: bold;">return</span> <span style="font-weight: bold; text-decoration: underline;">false</span>;
+            }
+
+            <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#22914;&#26524;&#26159;15&#20301;&#30340;&#23601;&#36716;&#25104;18&#20301;&#30340;&#36523;&#20221;&#35777;</span>
+            <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">eifhteencard</span>=<span style="font-style: italic;">""</span>;
+            <span style="font-weight: bold;">if</span> (idcard.length() == 15) {
+                  eifhteencard = uptoeighteen(idcard);
+            }<span style="font-weight: bold;">else</span>{
+                  eifhteencard=idcard;
+            }
+            <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#39564;&#35777;&#36523;&#20221;&#35777;&#30340;&#22320;&#21306;&#30721;</span>
+            <span style="font-weight: bold;">if</span>(!verifyAreaCode(eifhteencard)){
+                  <span style="font-weight: bold;">return</span> <span style="font-weight: bold; text-decoration: underline;">false</span>;
+            }
+            <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#21028;&#26029;&#26376;&#20221;&#21644;&#26085;&#26399;</span>
+            <span style="font-weight: bold;">if</span>(!verifyBirthdayCode(eifhteencard)){
+                  <span style="font-weight: bold;">return</span> <span style="font-weight: bold; text-decoration: underline;">false</span>;
+            }
+            <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#39564;&#35777;18&#20301;&#26657;&#39564;&#30721;,&#26657;&#39564;&#30721;&#37319;&#29992;ISO 7064&#65306;1983&#65292;MOD 11-2 &#26657;&#39564;&#30721;&#31995;&#32479;</span>
+            <span style="font-weight: bold;">if</span>(!verifyMOD(eifhteencard)){
+                  <span style="font-weight: bold;">return</span> <span style="font-weight: bold; text-decoration: underline;">false</span>;
+            }
+            <span style="font-weight: bold;">return</span> <span style="font-weight: bold; text-decoration: underline;">true</span>;
+      }
+
+      <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#39564;&#35777;18&#20301;&#26657;&#39564;&#30721;,&#26657;&#39564;&#30721;&#37319;&#29992;ISO 7064&#65306;1983&#65292;MOD 11-2 &#26657;&#39564;&#30721;&#31995;&#32479;</span>
+      <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">boolean</span> <span style="font-weight: bold;">verifyMOD</span>(<span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">code</span>){
+            <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">verify</span> = code.substring(17, 18);
+            <span style="font-weight: bold;">if</span>(<span style="font-style: italic;">"x"</span>.equals(verify)){
+                  code=code.replaceAll(<span style="font-style: italic;">"x"</span>,<span style="font-style: italic;">"X"</span>);
+                  verify=<span style="font-style: italic;">"X"</span>;
+            }
+            <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">verifyIndex</span>=getVerify(code);
+            <span style="font-weight: bold;">if</span> (verify.equals(verifyIndex)) {
+                  <span style="font-weight: bold;">return</span> <span style="font-weight: bold; text-decoration: underline;">true</span>;
+            }
+<span style="font-weight: bold; font-style: italic;">//            </span><span style="font-weight: bold; font-style: italic;">int x=17;</span>
+<span style="font-weight: bold; font-style: italic;">//            </span><span style="font-weight: bold; font-style: italic;">if(code.length()==15){</span>
+<span style="font-weight: bold; font-style: italic;">//                  </span><span style="font-weight: bold; font-style: italic;">x=14;</span>
+<span style="font-weight: bold; font-style: italic;">//            </span><span style="font-weight: bold; font-style: italic;">}</span>
+            _codeError=<span style="font-style: italic;">"&#38169;&#35823;&#65306;&#36755;&#20837;&#30340;&#36523;&#20221;&#35777;&#21495;&#26368;&#26411;&#23614;&#30340;&#25968;&#23383;&#39564;&#35777;&#30721;&#38169;&#35823;"</span>;
+            <span style="font-weight: bold;">return</span> <span style="font-weight: bold; text-decoration: underline;">false</span>;
+      }
+
+      <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#33719;&#24471;&#26657;&#39564;&#20301;</span>
+      <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold;">getVerify</span>(<span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">eightcardid</span>) {
+            <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">remaining</span> = 0;
+
+            <span style="font-weight: bold;">if</span> (eightcardid.length() == 18) {
+                  eightcardid = eightcardid.substring(0, 17);
+            }
+
+            <span style="font-weight: bold;">if</span> (eightcardid.length() == 17) {
+                  <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">sum</span> = 0;
+                  <span style="font-weight: bold;">for</span> (<span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">i</span> = 0; i &lt; 17; i++) {
+                        <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">k</span> = eightcardid.substring(i, i + 1);
+                        ai[i] = Integer.parseInt(k);
+                  }
+
+                  <span style="font-weight: bold;">for</span> (<span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">i</span> = 0; i &lt; 17; i++) {
+                        sum = sum + wi[i] * ai[i];
+                  }
+                  remaining = sum % 11;
+            }
+
+            <span style="font-weight: bold;">return</span> remaining == 2 ? <span style="font-style: italic;">"X"</span> : String.valueOf(vi[remaining]);
+      }
+
+      <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">15&#20301;&#36716;18&#20301;&#36523;&#20221;&#35777;</span>
+      <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold;">uptoeighteen</span>(<span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">fifteencardid</span>) {
+            <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">eightcardid</span> = fifteencardid.substring(0, 6);
+            eightcardid = eightcardid + <span style="font-style: italic;">"19"</span>;
+            eightcardid = eightcardid + fifteencardid.substring(6, 15);
+            eightcardid = eightcardid + getVerify(eightcardid);
+            <span style="font-weight: bold;">return</span> eightcardid;
+      }
+}
+
+
+
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-org67878f5" class="outline-2">
+<h2 id="org67878f5">算法3</h2>
+<div class="outline-text-2" id="text-org67878f5">
+<div class="org-src-container">
+<pre class="src src-java">
+<span style="font-weight: bold;">import</span> <span style="font-weight: bold; text-decoration: underline;">java</span>.<span style="font-weight: bold; text-decoration: underline;">text</span>.<span style="font-weight: bold; text-decoration: underline;">ParseException</span>;
+<span style="font-weight: bold;">import</span> <span style="font-weight: bold; text-decoration: underline;">java</span>.<span style="font-weight: bold; text-decoration: underline;">text</span>.<span style="font-weight: bold; text-decoration: underline;">SimpleDateFormat</span>;
+<span style="font-weight: bold;">import</span> <span style="font-weight: bold; text-decoration: underline;">java</span>.<span style="font-weight: bold; text-decoration: underline;">util</span>.<span style="font-weight: bold; text-decoration: underline;">Calendar</span>;
+<span style="font-weight: bold;">import</span> <span style="font-weight: bold; text-decoration: underline;">java</span>.<span style="font-weight: bold; text-decoration: underline;">util</span>.<span style="font-weight: bold; text-decoration: underline;">Date</span>;
+<span style="font-weight: bold;">import</span> <span style="font-weight: bold; text-decoration: underline;">java</span>.<span style="font-weight: bold; text-decoration: underline;">util</span>.<span style="font-weight: bold; text-decoration: underline;">HashMap</span>;
+<span style="font-weight: bold;">import</span> <span style="font-weight: bold; text-decoration: underline;">java</span>.<span style="font-weight: bold; text-decoration: underline;">util</span>.<span style="font-weight: bold; text-decoration: underline;">Map</span>;
+
+<span style="font-weight: bold;">import</span> <span style="font-weight: bold; text-decoration: underline;">org</span>.<span style="font-weight: bold; text-decoration: underline;">apache</span>.<span style="font-weight: bold; text-decoration: underline;">commons</span>.<span style="font-weight: bold; text-decoration: underline;">lang</span>.<span style="font-weight: bold; text-decoration: underline;">StringUtils</span>;
+
+<span style="font-style: italic;">/**</span>
+<span style="font-style: italic;"> * &#36523;&#20221;&#35777;&#24037;&#20855;&#31867;</span>
+<span style="font-style: italic;"> *</span>
+<span style="font-style: italic;"> * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@author</span><span style="font-style: italic;"> June</span>
+<span style="font-style: italic;"> * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@version</span><span style="font-style: italic;"> 1.0, 2010-06-17</span>
+<span style="font-style: italic;"> */</span>
+<span style="font-weight: bold;">public</span> <span style="font-weight: bold;">class</span> <span style="font-weight: bold; text-decoration: underline;">IdcardUtils</span> <span style="font-weight: bold;">extends</span> <span style="font-weight: bold; text-decoration: underline;">StringUtils</span> {
+
+    <span style="font-style: italic;">/** &#20013;&#22269;&#20844;&#27665;&#36523;&#20221;&#35777;&#21495;&#30721;&#26368;&#23567;&#38271;&#24230;&#12290; */</span>
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold;">final</span> <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">CHINA_ID_MIN_LENGTH</span> = 15;
+
+    <span style="font-style: italic;">/** &#20013;&#22269;&#20844;&#27665;&#36523;&#20221;&#35777;&#21495;&#30721;&#26368;&#22823;&#38271;&#24230;&#12290; */</span>
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold;">final</span> <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">CHINA_ID_MAX_LENGTH</span> = 18;
+
+    <span style="font-style: italic;">/** &#30465;&#12289;&#30452;&#36758;&#24066;&#20195;&#30721;&#34920; */</span>
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold;">final</span> <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">cityCode</span>[] = {
+            <span style="font-style: italic;">"11"</span>, <span style="font-style: italic;">"12"</span>, <span style="font-style: italic;">"13"</span>, <span style="font-style: italic;">"14"</span>, <span style="font-style: italic;">"15"</span>, <span style="font-style: italic;">"21"</span>, <span style="font-style: italic;">"22"</span>, <span style="font-style: italic;">"23"</span>, <span style="font-style: italic;">"31"</span>, <span style="font-style: italic;">"32"</span>, <span style="font-style: italic;">"33"</span>, <span style="font-style: italic;">"34"</span>, <span style="font-style: italic;">"35"</span>, <span style="font-style: italic;">"36"</span>, <span style="font-style: italic;">"37"</span>, <span style="font-style: italic;">"41"</span>,
+            <span style="font-style: italic;">"42"</span>, <span style="font-style: italic;">"43"</span>, <span style="font-style: italic;">"44"</span>, <span style="font-style: italic;">"45"</span>, <span style="font-style: italic;">"46"</span>, <span style="font-style: italic;">"50"</span>, <span style="font-style: italic;">"51"</span>, <span style="font-style: italic;">"52"</span>, <span style="font-style: italic;">"53"</span>, <span style="font-style: italic;">"54"</span>, <span style="font-style: italic;">"61"</span>, <span style="font-style: italic;">"62"</span>, <span style="font-style: italic;">"63"</span>, <span style="font-style: italic;">"64"</span>, <span style="font-style: italic;">"65"</span>, <span style="font-style: italic;">"71"</span>,
+            <span style="font-style: italic;">"81"</span>, <span style="font-style: italic;">"82"</span>, <span style="font-style: italic;">"91"</span>
+    };
+
+    <span style="font-style: italic;">/** &#27599;&#20301;&#21152;&#26435;&#22240;&#23376; */</span>
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold;">final</span> <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">power</span>[] = {
+            7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2
+    };
+
+    <span style="font-style: italic;">/** &#31532;18&#20301;&#26657;&#26816;&#30721; */</span>
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold;">final</span> <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">verifyCode</span>[] = {
+            <span style="font-style: italic;">"1"</span>, <span style="font-style: italic;">"0"</span>, <span style="font-style: italic;">"X"</span>, <span style="font-style: italic;">"9"</span>, <span style="font-style: italic;">"8"</span>, <span style="font-style: italic;">"7"</span>, <span style="font-style: italic;">"6"</span>, <span style="font-style: italic;">"5"</span>, <span style="font-style: italic;">"4"</span>, <span style="font-style: italic;">"3"</span>, <span style="font-style: italic;">"2"</span>
+    };
+    <span style="font-style: italic;">/** &#26368;&#20302;&#24180;&#38480; */</span>
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold;">final</span> <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">MIN</span> = 1930;
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold; text-decoration: underline;">Map</span>&lt;<span style="font-weight: bold; text-decoration: underline;">String</span>, <span style="font-weight: bold; text-decoration: underline;">String</span>&gt; <span style="font-weight: bold; font-style: italic;">cityCodes</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">HashMap</span>&lt;<span style="font-weight: bold; text-decoration: underline;">String</span>, <span style="font-weight: bold; text-decoration: underline;">String</span>&gt;();
+    <span style="font-style: italic;">/** &#21488;&#28286;&#36523;&#20221;&#39318;&#23383;&#27597;&#23545;&#24212;&#25968;&#23383; */</span>
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold; text-decoration: underline;">Map</span>&lt;<span style="font-weight: bold; text-decoration: underline;">String</span>, <span style="font-weight: bold; text-decoration: underline;">Integer</span>&gt; <span style="font-weight: bold; font-style: italic;">twFirstCode</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">HashMap</span>&lt;<span style="font-weight: bold; text-decoration: underline;">String</span>, <span style="font-weight: bold; text-decoration: underline;">Integer</span>&gt;();
+    <span style="font-style: italic;">/** &#39321;&#28207;&#36523;&#20221;&#39318;&#23383;&#27597;&#23545;&#24212;&#25968;&#23383; */</span>
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold; text-decoration: underline;">Map</span>&lt;<span style="font-weight: bold; text-decoration: underline;">String</span>, <span style="font-weight: bold; text-decoration: underline;">Integer</span>&gt; <span style="font-weight: bold; font-style: italic;">hkFirstCode</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">HashMap</span>&lt;<span style="font-weight: bold; text-decoration: underline;">String</span>, <span style="font-weight: bold; text-decoration: underline;">Integer</span>&gt;();
+    <span style="font-weight: bold;">static</span> {
+        cityCodes.put(<span style="font-style: italic;">"11"</span>, <span style="font-style: italic;">"&#21271;&#20140;"</span>);
+        cityCodes.put(<span style="font-style: italic;">"12"</span>, <span style="font-style: italic;">"&#22825;&#27941;"</span>);
+        cityCodes.put(<span style="font-style: italic;">"13"</span>, <span style="font-style: italic;">"&#27827;&#21271;"</span>);
+        cityCodes.put(<span style="font-style: italic;">"14"</span>, <span style="font-style: italic;">"&#23665;&#35199;"</span>);
+        cityCodes.put(<span style="font-style: italic;">"15"</span>, <span style="font-style: italic;">"&#20869;&#33945;&#21476;"</span>);
+        cityCodes.put(<span style="font-style: italic;">"21"</span>, <span style="font-style: italic;">"&#36797;&#23425;"</span>);
+        cityCodes.put(<span style="font-style: italic;">"22"</span>, <span style="font-style: italic;">"&#21513;&#26519;"</span>);
+        cityCodes.put(<span style="font-style: italic;">"23"</span>, <span style="font-style: italic;">"&#40657;&#40857;&#27743;"</span>);
+        cityCodes.put(<span style="font-style: italic;">"31"</span>, <span style="font-style: italic;">"&#19978;&#28023;"</span>);
+        cityCodes.put(<span style="font-style: italic;">"32"</span>, <span style="font-style: italic;">"&#27743;&#33487;"</span>);
+        cityCodes.put(<span style="font-style: italic;">"33"</span>, <span style="font-style: italic;">"&#27993;&#27743;"</span>);
+        cityCodes.put(<span style="font-style: italic;">"34"</span>, <span style="font-style: italic;">"&#23433;&#24509;"</span>);
+        cityCodes.put(<span style="font-style: italic;">"35"</span>, <span style="font-style: italic;">"&#31119;&#24314;"</span>);
+        cityCodes.put(<span style="font-style: italic;">"36"</span>, <span style="font-style: italic;">"&#27743;&#35199;"</span>);
+        cityCodes.put(<span style="font-style: italic;">"37"</span>, <span style="font-style: italic;">"&#23665;&#19996;"</span>);
+        cityCodes.put(<span style="font-style: italic;">"41"</span>, <span style="font-style: italic;">"&#27827;&#21335;"</span>);
+        cityCodes.put(<span style="font-style: italic;">"42"</span>, <span style="font-style: italic;">"&#28246;&#21271;"</span>);
+        cityCodes.put(<span style="font-style: italic;">"43"</span>, <span style="font-style: italic;">"&#28246;&#21335;"</span>);
+        cityCodes.put(<span style="font-style: italic;">"44"</span>, <span style="font-style: italic;">"&#24191;&#19996;"</span>);
+        cityCodes.put(<span style="font-style: italic;">"45"</span>, <span style="font-style: italic;">"&#24191;&#35199;"</span>);
+        cityCodes.put(<span style="font-style: italic;">"46"</span>, <span style="font-style: italic;">"&#28023;&#21335;"</span>);
+        cityCodes.put(<span style="font-style: italic;">"50"</span>, <span style="font-style: italic;">"&#37325;&#24198;"</span>);
+        cityCodes.put(<span style="font-style: italic;">"51"</span>, <span style="font-style: italic;">"&#22235;&#24029;"</span>);
+        cityCodes.put(<span style="font-style: italic;">"52"</span>, <span style="font-style: italic;">"&#36149;&#24030;"</span>);
+        cityCodes.put(<span style="font-style: italic;">"53"</span>, <span style="font-style: italic;">"&#20113;&#21335;"</span>);
+        cityCodes.put(<span style="font-style: italic;">"54"</span>, <span style="font-style: italic;">"&#35199;&#34255;"</span>);
+        cityCodes.put(<span style="font-style: italic;">"61"</span>, <span style="font-style: italic;">"&#38485;&#35199;"</span>);
+        cityCodes.put(<span style="font-style: italic;">"62"</span>, <span style="font-style: italic;">"&#29976;&#32899;"</span>);
+        cityCodes.put(<span style="font-style: italic;">"63"</span>, <span style="font-style: italic;">"&#38738;&#28023;"</span>);
+        cityCodes.put(<span style="font-style: italic;">"64"</span>, <span style="font-style: italic;">"&#23425;&#22799;"</span>);
+        cityCodes.put(<span style="font-style: italic;">"65"</span>, <span style="font-style: italic;">"&#26032;&#30086;"</span>);
+        cityCodes.put(<span style="font-style: italic;">"71"</span>, <span style="font-style: italic;">"&#21488;&#28286;"</span>);
+        cityCodes.put(<span style="font-style: italic;">"81"</span>, <span style="font-style: italic;">"&#39321;&#28207;"</span>);
+        cityCodes.put(<span style="font-style: italic;">"82"</span>, <span style="font-style: italic;">"&#28595;&#38376;"</span>);
+        cityCodes.put(<span style="font-style: italic;">"91"</span>, <span style="font-style: italic;">"&#22269;&#22806;"</span>);
+        twFirstCode.put(<span style="font-style: italic;">"A"</span>, 10);
+        twFirstCode.put(<span style="font-style: italic;">"B"</span>, 11);
+        twFirstCode.put(<span style="font-style: italic;">"C"</span>, 12);
+        twFirstCode.put(<span style="font-style: italic;">"D"</span>, 13);
+        twFirstCode.put(<span style="font-style: italic;">"E"</span>, 14);
+        twFirstCode.put(<span style="font-style: italic;">"F"</span>, 15);
+        twFirstCode.put(<span style="font-style: italic;">"G"</span>, 16);
+        twFirstCode.put(<span style="font-style: italic;">"H"</span>, 17);
+        twFirstCode.put(<span style="font-style: italic;">"J"</span>, 18);
+        twFirstCode.put(<span style="font-style: italic;">"K"</span>, 19);
+        twFirstCode.put(<span style="font-style: italic;">"L"</span>, 20);
+        twFirstCode.put(<span style="font-style: italic;">"M"</span>, 21);
+        twFirstCode.put(<span style="font-style: italic;">"N"</span>, 22);
+        twFirstCode.put(<span style="font-style: italic;">"P"</span>, 23);
+        twFirstCode.put(<span style="font-style: italic;">"Q"</span>, 24);
+        twFirstCode.put(<span style="font-style: italic;">"R"</span>, 25);
+        twFirstCode.put(<span style="font-style: italic;">"S"</span>, 26);
+        twFirstCode.put(<span style="font-style: italic;">"T"</span>, 27);
+        twFirstCode.put(<span style="font-style: italic;">"U"</span>, 28);
+        twFirstCode.put(<span style="font-style: italic;">"V"</span>, 29);
+        twFirstCode.put(<span style="font-style: italic;">"X"</span>, 30);
+        twFirstCode.put(<span style="font-style: italic;">"Y"</span>, 31);
+        twFirstCode.put(<span style="font-style: italic;">"W"</span>, 32);
+        twFirstCode.put(<span style="font-style: italic;">"Z"</span>, 33);
+        twFirstCode.put(<span style="font-style: italic;">"I"</span>, 34);
+        twFirstCode.put(<span style="font-style: italic;">"O"</span>, 35);
+        hkFirstCode.put(<span style="font-style: italic;">"A"</span>, 1);
+        hkFirstCode.put(<span style="font-style: italic;">"B"</span>, 2);
+        hkFirstCode.put(<span style="font-style: italic;">"C"</span>, 3);
+        hkFirstCode.put(<span style="font-style: italic;">"R"</span>, 18);
+        hkFirstCode.put(<span style="font-style: italic;">"U"</span>, 21);
+        hkFirstCode.put(<span style="font-style: italic;">"Z"</span>, 26);
+        hkFirstCode.put(<span style="font-style: italic;">"X"</span>, 24);
+        hkFirstCode.put(<span style="font-style: italic;">"W"</span>, 23);
+        hkFirstCode.put(<span style="font-style: italic;">"O"</span>, 15);
+        hkFirstCode.put(<span style="font-style: italic;">"N"</span>, 14);
+    }
+
+    <span style="font-style: italic;">/**</span>
+<span style="font-style: italic;">     * &#23558;15&#20301;&#36523;&#20221;&#35777;&#21495;&#30721;&#36716;&#25442;&#20026;18&#20301;</span>
+<span style="font-style: italic;">     *</span>
+<span style="font-style: italic;">     * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@param</span><span style="font-style: italic;"> idCard</span>
+<span style="font-style: italic;">     *            15&#20301;&#36523;&#20221;&#32534;&#30721;</span>
+<span style="font-style: italic;">     * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@return</span><span style="font-style: italic;"> 18&#20301;&#36523;&#20221;&#32534;&#30721;</span>
+<span style="font-style: italic;">     */</span>
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold;">conver15CardTo18</span>(<span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">idCard</span>) {
+        <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">idCard18</span> = <span style="font-style: italic;">""</span>;
+        <span style="font-weight: bold;">if</span> (idCard.length() != CHINA_ID_MIN_LENGTH) {
+            <span style="font-weight: bold;">return</span> <span style="font-weight: bold; text-decoration: underline;">null</span>;
+        }
+        <span style="font-weight: bold;">if</span> (isNum(idCard)) {
+            <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#33719;&#21462;&#20986;&#29983;&#24180;&#26376;&#26085;</span>
+            <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">birthday</span> = idCard.substring(6, 12);
+            <span style="font-weight: bold; text-decoration: underline;">Date</span> <span style="font-weight: bold; font-style: italic;">birthDate</span> = <span style="font-weight: bold; text-decoration: underline;">null</span>;
+            <span style="font-weight: bold;">try</span> {
+                birthDate = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">SimpleDateFormat</span>(<span style="font-style: italic;">"yyMMdd"</span>).parse(birthday);
+            } <span style="font-weight: bold;">catch</span> (<span style="font-weight: bold; text-decoration: underline;">ParseException</span> <span style="font-weight: bold; font-style: italic;">e</span>) {
+                e.printStackTrace();
+            }
+            <span style="font-weight: bold; text-decoration: underline;">Calendar</span> <span style="font-weight: bold; font-style: italic;">cal</span> = Calendar.getInstance();
+            <span style="font-weight: bold;">if</span> (birthDate != <span style="font-weight: bold; text-decoration: underline;">null</span>)
+                cal.setTime(birthDate);
+            <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#33719;&#21462;&#20986;&#29983;&#24180;(&#23436;&#20840;&#34920;&#29616;&#24418;&#24335;,&#22914;&#65306;2010)</span>
+            <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">sYear</span> = String.valueOf(cal.get(<span style="font-weight: bold; text-decoration: underline;">Calendar</span>.YEAR));
+            idCard18 = idCard.substring(0, 6) + sYear + idCard.substring(8);
+            <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#36716;&#25442;&#23383;&#31526;&#25968;&#32452;</span>
+            <span style="font-weight: bold; text-decoration: underline;">char</span>[] <span style="font-weight: bold; font-style: italic;">cArr</span> = idCard18.toCharArray();
+            <span style="font-weight: bold;">if</span> (cArr != <span style="font-weight: bold; text-decoration: underline;">null</span>) {
+                <span style="font-weight: bold; text-decoration: underline;">int</span>[] <span style="font-weight: bold; font-style: italic;">iCard</span> = converCharToInt(cArr);
+                <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">iSum17</span> = getPowerSum(iCard);
+                <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#33719;&#21462;&#26657;&#39564;&#20301;</span>
+                <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">sVal</span> = getCheckCode18(iSum17);
+                <span style="font-weight: bold;">if</span> (sVal.length() &gt; 0) {
+                    idCard18 += sVal;
+                } <span style="font-weight: bold;">else</span> {
+                    <span style="font-weight: bold;">return</span> <span style="font-weight: bold; text-decoration: underline;">null</span>;
+                }
+            }
+        } <span style="font-weight: bold;">else</span> {
+            <span style="font-weight: bold;">return</span> <span style="font-weight: bold; text-decoration: underline;">null</span>;
+        }
+        <span style="font-weight: bold;">return</span> idCard18;
+    }
+
+    <span style="font-style: italic;">/**</span>
+<span style="font-style: italic;">     * &#39564;&#35777;&#36523;&#20221;&#35777;&#26159;&#21542;&#21512;&#27861;</span>
+<span style="font-style: italic;">     */</span>
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold; text-decoration: underline;">boolean</span> <span style="font-weight: bold;">validateCard</span>(<span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">idCard</span>) {
+        <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">card</span> = idCard.trim();
+        <span style="font-weight: bold;">if</span> (validateIdCard18(card)) {
+            <span style="font-weight: bold;">return</span> <span style="font-weight: bold; text-decoration: underline;">true</span>;
+        }
+        <span style="font-weight: bold;">if</span> (validateIdCard15(card)) {
+            <span style="font-weight: bold;">return</span> <span style="font-weight: bold; text-decoration: underline;">true</span>;
+        }
+        <span style="font-weight: bold; text-decoration: underline;">String</span>[] <span style="font-weight: bold; font-style: italic;">cardval</span> = validateIdCard10(card);
+        <span style="font-weight: bold;">if</span> (cardval != <span style="font-weight: bold; text-decoration: underline;">null</span>) {
+            <span style="font-weight: bold;">if</span> (cardval[2].equals(<span style="font-style: italic;">"true"</span>)) {
+                <span style="font-weight: bold;">return</span> <span style="font-weight: bold; text-decoration: underline;">true</span>;
+            }
+        }
+        <span style="font-weight: bold;">return</span> <span style="font-weight: bold; text-decoration: underline;">false</span>;
+    }
+
+    <span style="font-style: italic;">/**</span>
+<span style="font-style: italic;">     * &#39564;&#35777;18&#20301;&#36523;&#20221;&#32534;&#30721;&#26159;&#21542;&#21512;&#27861;</span>
+<span style="font-style: italic;">     *</span>
+<span style="font-style: italic;">     * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@param</span><span style="font-style: italic;"> idCard &#36523;&#20221;&#32534;&#30721;</span>
+<span style="font-style: italic;">     * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@return</span><span style="font-style: italic;"> &#26159;&#21542;&#21512;&#27861;</span>
+<span style="font-style: italic;">     */</span>
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold; text-decoration: underline;">boolean</span> <span style="font-weight: bold;">validateIdCard18</span>(<span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">idCard</span>) {
+        <span style="font-weight: bold; text-decoration: underline;">boolean</span> <span style="font-weight: bold; font-style: italic;">bTrue</span> = <span style="font-weight: bold; text-decoration: underline;">false</span>;
+        <span style="font-weight: bold;">if</span> (idCard.length() == CHINA_ID_MAX_LENGTH) {
+            <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#21069;17&#20301;</span>
+            <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">code17</span> = idCard.substring(0, 17);
+            <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#31532;18&#20301;</span>
+            <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">code18</span> = idCard.substring(17, CHINA_ID_MAX_LENGTH);
+            <span style="font-weight: bold;">if</span> (isNum(code17)) {
+                <span style="font-weight: bold; text-decoration: underline;">char</span>[] <span style="font-weight: bold; font-style: italic;">cArr</span> = code17.toCharArray();
+                <span style="font-weight: bold;">if</span> (cArr != <span style="font-weight: bold; text-decoration: underline;">null</span>) {
+                    <span style="font-weight: bold; text-decoration: underline;">int</span>[] <span style="font-weight: bold; font-style: italic;">iCard</span> = converCharToInt(cArr);
+                    <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">iSum17</span> = getPowerSum(iCard);
+                    <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#33719;&#21462;&#26657;&#39564;&#20301;</span>
+                    <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">val</span> = getCheckCode18(iSum17);
+                    <span style="font-weight: bold;">if</span> (val.length() &gt; 0) {
+                        <span style="font-weight: bold;">if</span> (val.equalsIgnoreCase(code18)) {
+                            bTrue = <span style="font-weight: bold; text-decoration: underline;">true</span>;
+                        }
+                    }
+                }
+            }
+        }
+        <span style="font-weight: bold;">return</span> bTrue;
+    }
+
+    <span style="font-style: italic;">/**</span>
+<span style="font-style: italic;">     * &#39564;&#35777;15&#20301;&#36523;&#20221;&#32534;&#30721;&#26159;&#21542;&#21512;&#27861;</span>
+<span style="font-style: italic;">     *</span>
+<span style="font-style: italic;">     * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@param</span><span style="font-style: italic;"> idCard</span>
+<span style="font-style: italic;">     *            &#36523;&#20221;&#32534;&#30721;</span>
+<span style="font-style: italic;">     * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@return</span><span style="font-style: italic;"> &#26159;&#21542;&#21512;&#27861;</span>
+<span style="font-style: italic;">     */</span>
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold; text-decoration: underline;">boolean</span> <span style="font-weight: bold;">validateIdCard15</span>(<span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">idCard</span>) {
+        <span style="font-weight: bold;">if</span> (idCard.length() != CHINA_ID_MIN_LENGTH) {
+            <span style="font-weight: bold;">return</span> <span style="font-weight: bold; text-decoration: underline;">false</span>;
+        }
+        <span style="font-weight: bold;">if</span> (isNum(idCard)) {
+            <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">proCode</span> = idCard.substring(0, 2);
+            <span style="font-weight: bold;">if</span> (cityCodes.get(proCode) == <span style="font-weight: bold; text-decoration: underline;">null</span>) {
+                <span style="font-weight: bold;">return</span> <span style="font-weight: bold; text-decoration: underline;">false</span>;
+            }
+            <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">birthCode</span> = idCard.substring(6, 12);
+            <span style="font-weight: bold; text-decoration: underline;">Date</span> <span style="font-weight: bold; font-style: italic;">birthDate</span> = <span style="font-weight: bold; text-decoration: underline;">null</span>;
+            <span style="font-weight: bold;">try</span> {
+                birthDate = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">SimpleDateFormat</span>(<span style="font-style: italic;">"yy"</span>).parse(birthCode.substring(0, 2));
+            } <span style="font-weight: bold;">catch</span> (<span style="font-weight: bold; text-decoration: underline;">ParseException</span> <span style="font-weight: bold; font-style: italic;">e</span>) {
+                e.printStackTrace();
+            }
+            <span style="font-weight: bold; text-decoration: underline;">Calendar</span> <span style="font-weight: bold; font-style: italic;">cal</span> = Calendar.getInstance();
+            <span style="font-weight: bold;">if</span> (birthDate != <span style="font-weight: bold; text-decoration: underline;">null</span>)
+                cal.setTime(birthDate);
+            <span style="font-weight: bold;">if</span> (!valiDate(cal.get(<span style="font-weight: bold; text-decoration: underline;">Calendar</span>.YEAR), Integer.valueOf(birthCode.substring(2, 4)),
+                    Integer.valueOf(birthCode.substring(4, 6)))) {
+                <span style="font-weight: bold;">return</span> <span style="font-weight: bold; text-decoration: underline;">false</span>;
+            }
+        } <span style="font-weight: bold;">else</span> {
+            <span style="font-weight: bold;">return</span> <span style="font-weight: bold; text-decoration: underline;">false</span>;
+        }
+        <span style="font-weight: bold;">return</span> <span style="font-weight: bold; text-decoration: underline;">true</span>;
+    }
+
+    <span style="font-style: italic;">/**</span>
+<span style="font-style: italic;">     * &#39564;&#35777;10&#20301;&#36523;&#20221;&#32534;&#30721;&#26159;&#21542;&#21512;&#27861;</span>
+<span style="font-style: italic;">     *</span>
+<span style="font-style: italic;">     * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@param</span><span style="font-style: italic;"> idCard &#36523;&#20221;&#32534;&#30721;</span>
+<span style="font-style: italic;">     * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@return</span><span style="font-style: italic;"> &#36523;&#20221;&#35777;&#20449;&#24687;&#25968;&#32452;</span>
+<span style="font-style: italic;">     *         </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">&lt;p&gt;</span>
+<span style="font-style: italic;">     *         [0] - &#21488;&#28286;&#12289;&#28595;&#38376;&#12289;&#39321;&#28207; [1] - &#24615;&#21035;(&#30007;M,&#22899;F,&#26410;&#30693;N) [2] - &#26159;&#21542;&#21512;&#27861;(&#21512;&#27861;true,&#19981;&#21512;&#27861;false)</span>
+<span style="font-style: italic;">     *         &#33509;&#19981;&#26159;&#36523;&#20221;&#35777;&#20214;&#21495;&#30721;&#21017;&#36820;&#22238;null</span>
+<span style="font-style: italic;">     *         </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">&lt;/p&gt;</span>
+<span style="font-style: italic;">     */</span>
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold; text-decoration: underline;">String</span>[] <span style="font-weight: bold;">validateIdCard10</span>(<span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">idCard</span>) {
+        <span style="font-weight: bold; text-decoration: underline;">String</span>[] <span style="font-weight: bold; font-style: italic;">info</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">String</span>[3];
+        <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">card</span> = idCard.replaceAll(<span style="font-style: italic;">"[\\(|\\)]"</span>, <span style="font-style: italic;">""</span>);
+        <span style="font-weight: bold;">if</span> (card.length() != 8 &amp;&amp; card.length() != 9 &amp;&amp; idCard.length() != 10) {
+            <span style="font-weight: bold;">return</span> <span style="font-weight: bold; text-decoration: underline;">null</span>;
+        }
+        <span style="font-weight: bold;">if</span> (idCard.matches(<span style="font-style: italic;">"^[a-zA-Z][0-9]{9}$"</span>)) { <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#21488;&#28286;</span>
+            info[0] = <span style="font-style: italic;">"&#21488;&#28286;"</span>;
+            System.out.println(<span style="font-style: italic;">"11111"</span>);
+            <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">char2</span> = idCard.substring(1, 2);
+            <span style="font-weight: bold;">if</span> (char2.equals(<span style="font-style: italic;">"1"</span>)) {
+                info[1] = <span style="font-style: italic;">"M"</span>;
+                System.out.println(<span style="font-style: italic;">"MMMMMMM"</span>);
+            } <span style="font-weight: bold;">else</span> <span style="font-weight: bold;">if</span> (char2.equals(<span style="font-style: italic;">"2"</span>)) {
+                info[1] = <span style="font-style: italic;">"F"</span>;
+                System.out.println(<span style="font-style: italic;">"FFFFFFF"</span>);
+            } <span style="font-weight: bold;">else</span> {
+                info[1] = <span style="font-style: italic;">"N"</span>;
+                info[2] = <span style="font-style: italic;">"false"</span>;
+                System.out.println(<span style="font-style: italic;">"NNNN"</span>);
+                <span style="font-weight: bold;">return</span> info;
+            }
+            info[2] = validateTWCard(idCard) ? <span style="font-style: italic;">"true"</span> : <span style="font-style: italic;">"false"</span>;
+        } <span style="font-weight: bold;">else</span> <span style="font-weight: bold;">if</span> (idCard.matches(<span style="font-style: italic;">"^[1|5|7][0-9]{6}\\(?[0-9A-Z]\\)?$"</span>)) { <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#28595;&#38376;</span>
+            info[0] = <span style="font-style: italic;">"&#28595;&#38376;"</span>;
+            info[1] = <span style="font-style: italic;">"N"</span>;
+            <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">TODO</span>
+        } <span style="font-weight: bold;">else</span> <span style="font-weight: bold;">if</span> (idCard.matches(<span style="font-style: italic;">"^[A-Z]{1,2}[0-9]{6}\\(?[0-9A]\\)?$"</span>)) { <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#39321;&#28207;</span>
+            info[0] = <span style="font-style: italic;">"&#39321;&#28207;"</span>;
+            info[1] = <span style="font-style: italic;">"N"</span>;
+            info[2] = validateHKCard(idCard) ? <span style="font-style: italic;">"true"</span> : <span style="font-style: italic;">"false"</span>;
+        } <span style="font-weight: bold;">else</span> {
+            <span style="font-weight: bold;">return</span> <span style="font-weight: bold; text-decoration: underline;">null</span>;
+        }
+        <span style="font-weight: bold;">return</span> info;
+    }
+
+    <span style="font-style: italic;">/**</span>
+<span style="font-style: italic;">     * &#39564;&#35777;&#21488;&#28286;&#36523;&#20221;&#35777;&#21495;&#30721;</span>
+<span style="font-style: italic;">     *</span>
+<span style="font-style: italic;">     * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@param</span><span style="font-style: italic;"> idCard</span>
+<span style="font-style: italic;">     *            &#36523;&#20221;&#35777;&#21495;&#30721;</span>
+<span style="font-style: italic;">     * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@return</span><span style="font-style: italic;"> &#39564;&#35777;&#30721;&#26159;&#21542;&#31526;&#21512;</span>
+<span style="font-style: italic;">     */</span>
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold; text-decoration: underline;">boolean</span> <span style="font-weight: bold;">validateTWCard</span>(<span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">idCard</span>) {
+        <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">start</span> = idCard.substring(0, 1);
+        <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">mid</span> = idCard.substring(1, 9);
+        <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">end</span> = idCard.substring(9, 10);
+        <span style="font-weight: bold; text-decoration: underline;">Integer</span> <span style="font-weight: bold; font-style: italic;">iStart</span> = twFirstCode.get(start);
+        <span style="font-weight: bold; text-decoration: underline;">Integer</span> <span style="font-weight: bold; font-style: italic;">sum</span> = iStart / 10 + (iStart % 10) * 9;
+        <span style="font-weight: bold; text-decoration: underline;">char</span>[] <span style="font-weight: bold; font-style: italic;">chars</span> = mid.toCharArray();
+        <span style="font-weight: bold; text-decoration: underline;">Integer</span> <span style="font-weight: bold; font-style: italic;">iflag</span> = 8;
+        <span style="font-weight: bold;">for</span> (<span style="font-weight: bold; text-decoration: underline;">char</span> <span style="font-weight: bold; font-style: italic;">c</span> : chars) {
+            sum = sum + Integer.valueOf(c + <span style="font-style: italic;">""</span>) * iflag;
+            iflag--;
+        }
+        <span style="font-weight: bold;">return</span> (sum % 10 == 0 ? 0 : (10 - sum % 10)) == Integer.valueOf(end) ? <span style="font-weight: bold; text-decoration: underline;">true</span> : <span style="font-weight: bold; text-decoration: underline;">false</span>;
+    }
+
+    <span style="font-style: italic;">/**</span>
+<span style="font-style: italic;">     * &#39564;&#35777;&#39321;&#28207;&#36523;&#20221;&#35777;&#21495;&#30721;(&#23384;&#22312;Bug&#65292;&#37096;&#20221;&#29305;&#27530;&#36523;&#20221;&#35777;&#26080;&#27861;&#26816;&#26597;)</span>
+<span style="font-style: italic;">     * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">&lt;p&gt;</span>
+<span style="font-style: italic;">     * &#36523;&#20221;&#35777;&#21069;2&#20301;&#20026;&#33521;&#25991;&#23383;&#31526;&#65292;&#22914;&#26524;&#21482;&#20986;&#29616;&#19968;&#20010;&#33521;&#25991;&#23383;&#31526;&#21017;&#34920;&#31034;&#31532;&#19968;&#20301;&#26159;&#31354;&#26684;&#65292;&#23545;&#24212;&#25968;&#23383;58 &#21069;2&#20301;&#33521;&#25991;&#23383;&#31526;A-Z&#20998;&#21035;&#23545;&#24212;&#25968;&#23383;10-35</span>
+<span style="font-style: italic;">     * &#26368;&#21518;&#19968;&#20301;&#26657;&#39564;&#30721;&#20026;0-9&#30340;&#25968;&#23383;&#21152;&#19978;&#23383;&#31526;"A"&#65292;"A"&#20195;&#34920;10</span>
+<span style="font-style: italic;">     * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">&lt;/p&gt;</span>
+<span style="font-style: italic;">     * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">&lt;p&gt;</span>
+<span style="font-style: italic;">     * &#23558;&#36523;&#20221;&#35777;&#21495;&#30721;&#20840;&#37096;&#36716;&#25442;&#20026;&#25968;&#23383;&#65292;&#20998;&#21035;&#23545;&#24212;&#20056;9-1&#30456;&#21152;&#30340;&#24635;&#21644;&#65292;&#25972;&#38500;11&#21017;&#35777;&#20214;&#21495;&#30721;&#26377;&#25928;</span>
+<span style="font-style: italic;">     * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">&lt;/p&gt;</span>
+<span style="font-style: italic;">     *</span>
+<span style="font-style: italic;">     * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@param</span><span style="font-style: italic;"> idCard &#36523;&#20221;&#35777;&#21495;&#30721;</span>
+<span style="font-style: italic;">     * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@return</span><span style="font-style: italic;"> &#39564;&#35777;&#30721;&#26159;&#21542;&#31526;&#21512;</span>
+<span style="font-style: italic;">     */</span>
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold; text-decoration: underline;">boolean</span> <span style="font-weight: bold;">validateHKCard</span>(<span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">idCard</span>) {
+        <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">card</span> = idCard.replaceAll(<span style="font-style: italic;">"[\\(|\\)]"</span>, <span style="font-style: italic;">""</span>);
+        <span style="font-weight: bold; text-decoration: underline;">Integer</span> <span style="font-weight: bold; font-style: italic;">sum</span> = 0;
+        <span style="font-weight: bold;">if</span> (card.length() == 9) {
+            sum = (Integer.valueOf(card.substring(0, 1).toUpperCase().toCharArray()[0]) - 55) * 9
+                    + (Integer.valueOf(card.substring(1, 2).toUpperCase().toCharArray()[0]) - 55) * 8;
+            card = card.substring(1, 9);
+        } <span style="font-weight: bold;">else</span> {
+            sum = 522 + (Integer.valueOf(card.substring(0, 1).toUpperCase().toCharArray()[0]) - 55) * 8;
+        }
+        <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">mid</span> = card.substring(1, 7);
+        <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">end</span> = card.substring(7, 8);
+        <span style="font-weight: bold; text-decoration: underline;">char</span>[] <span style="font-weight: bold; font-style: italic;">chars</span> = mid.toCharArray();
+        <span style="font-weight: bold; text-decoration: underline;">Integer</span> <span style="font-weight: bold; font-style: italic;">iflag</span> = 7;
+        <span style="font-weight: bold;">for</span> (<span style="font-weight: bold; text-decoration: underline;">char</span> <span style="font-weight: bold; font-style: italic;">c</span> : chars) {
+            sum = sum + Integer.valueOf(c + <span style="font-style: italic;">""</span>) * iflag;
+            iflag--;
+        }
+        <span style="font-weight: bold;">if</span> (end.toUpperCase().equals(<span style="font-style: italic;">"A"</span>)) {
+            sum = sum + 10;
+        } <span style="font-weight: bold;">else</span> {
+            sum = sum + Integer.valueOf(end);
+        }
+        <span style="font-weight: bold;">return</span> (sum % 11 == 0) ? <span style="font-weight: bold; text-decoration: underline;">true</span> : <span style="font-weight: bold; text-decoration: underline;">false</span>;
+    }
+
+    <span style="font-style: italic;">/**</span>
+<span style="font-style: italic;">     * &#23558;&#23383;&#31526;&#25968;&#32452;&#36716;&#25442;&#25104;&#25968;&#23383;&#25968;&#32452;</span>
+<span style="font-style: italic;">     *</span>
+<span style="font-style: italic;">     * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@param</span><span style="font-style: italic;"> ca</span>
+<span style="font-style: italic;">     *            &#23383;&#31526;&#25968;&#32452;</span>
+<span style="font-style: italic;">     * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@return</span><span style="font-style: italic;"> &#25968;&#23383;&#25968;&#32452;</span>
+<span style="font-style: italic;">     */</span>
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold; text-decoration: underline;">int</span>[] <span style="font-weight: bold;">converCharToInt</span>(<span style="font-weight: bold; text-decoration: underline;">char</span>[] <span style="font-weight: bold; font-style: italic;">ca</span>) {
+        <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">len</span> = ca.length;
+        <span style="font-weight: bold; text-decoration: underline;">int</span>[] <span style="font-weight: bold; font-style: italic;">iArr</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">int</span>[len];
+        <span style="font-weight: bold;">try</span> {
+            <span style="font-weight: bold;">for</span> (<span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">i</span> = 0; i &lt; <span style="font-weight: bold; text-decoration: underline;">len</span>; i++) {
+                iArr[i] = Integer.parseInt(String.valueOf(ca[i]));
+            }
+        } <span style="font-weight: bold;">catch</span> (<span style="font-weight: bold; text-decoration: underline;">NumberFormatException</span> <span style="font-weight: bold; font-style: italic;">e</span>) {
+            e.printStackTrace();
+        }
+        <span style="font-weight: bold;">return</span> iArr;
+    }
+
+    <span style="font-style: italic;">/**</span>
+<span style="font-style: italic;">     * &#23558;&#36523;&#20221;&#35777;&#30340;&#27599;&#20301;&#21644;&#23545;&#24212;&#20301;&#30340;&#21152;&#26435;&#22240;&#23376;&#30456;&#20056;&#20043;&#21518;&#65292;&#20877;&#24471;&#21040;&#21644;&#20540;</span>
+<span style="font-style: italic;">     *</span>
+<span style="font-style: italic;">     * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@param</span><span style="font-style: italic;"> iArr</span>
+<span style="font-style: italic;">     * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@return</span><span style="font-style: italic;"> &#36523;&#20221;&#35777;&#32534;&#30721;&#12290;</span>
+<span style="font-style: italic;">     */</span>
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold;">getPowerSum</span>(<span style="font-weight: bold; text-decoration: underline;">int</span>[] <span style="font-weight: bold; font-style: italic;">iArr</span>) {
+        <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">iSum</span> = 0;
+        <span style="font-weight: bold;">if</span> (power.length == iArr.length) {
+            <span style="font-weight: bold;">for</span> (<span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">i</span> = 0; i &lt; iArr.<span style="font-weight: bold; text-decoration: underline;">length</span>; i++) {
+                <span style="font-weight: bold;">for</span> (<span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">j</span> = 0; j &lt; power.<span style="font-weight: bold; text-decoration: underline;">length</span>; j++) {
+                    <span style="font-weight: bold;">if</span> (i == j) {
+                        iSum = iSum + iArr[i] * power[j];
+                    }
+                }
+            }
+        }
+        <span style="font-weight: bold;">return</span> iSum;
+    }
+
+    <span style="font-style: italic;">/**</span>
+<span style="font-style: italic;">     * &#23558;power&#21644;&#20540;&#19982;11&#21462;&#27169;&#33719;&#24471;&#20313;&#25968;&#36827;&#34892;&#26657;&#39564;&#30721;&#21028;&#26029;</span>
+<span style="font-style: italic;">     *</span>
+<span style="font-style: italic;">     * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@param</span><span style="font-style: italic;"> iSum</span>
+<span style="font-style: italic;">     * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@return</span><span style="font-style: italic;"> &#26657;&#39564;&#20301;</span>
+<span style="font-style: italic;">     */</span>
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold;">getCheckCode18</span>(<span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">iSum</span>) {
+        <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">sCode</span> = <span style="font-style: italic;">""</span>;
+        <span style="font-weight: bold;">switch</span> (iSum % 11) {
+        <span style="font-weight: bold;">case</span> 10:
+            sCode = <span style="font-style: italic;">"2"</span>;
+            <span style="font-weight: bold;">break</span>;
+        <span style="font-weight: bold;">case</span> 9:
+            sCode = <span style="font-style: italic;">"3"</span>;
+            <span style="font-weight: bold;">break</span>;
+        <span style="font-weight: bold;">case</span> 8:
+            sCode = <span style="font-style: italic;">"4"</span>;
+            <span style="font-weight: bold;">break</span>;
+        <span style="font-weight: bold;">case</span> 7:
+            sCode = <span style="font-style: italic;">"5"</span>;
+            <span style="font-weight: bold;">break</span>;
+        <span style="font-weight: bold;">case</span> 6:
+            sCode = <span style="font-style: italic;">"6"</span>;
+            <span style="font-weight: bold;">break</span>;
+        <span style="font-weight: bold;">case</span> 5:
+            sCode = <span style="font-style: italic;">"7"</span>;
+            <span style="font-weight: bold;">break</span>;
+        <span style="font-weight: bold;">case</span> 4:
+            sCode = <span style="font-style: italic;">"8"</span>;
+            <span style="font-weight: bold;">break</span>;
+        <span style="font-weight: bold;">case</span> 3:
+            sCode = <span style="font-style: italic;">"9"</span>;
+            <span style="font-weight: bold;">break</span>;
+        <span style="font-weight: bold;">case</span> 2:
+            sCode = <span style="font-style: italic;">"x"</span>;
+            <span style="font-weight: bold;">break</span>;
+        <span style="font-weight: bold;">case</span> 1:
+            sCode = <span style="font-style: italic;">"0"</span>;
+            <span style="font-weight: bold;">break</span>;
+        <span style="font-weight: bold;">case</span> 0:
+            sCode = <span style="font-style: italic;">"1"</span>;
+            <span style="font-weight: bold;">break</span>;
+        }
+        <span style="font-weight: bold;">return</span> sCode;
+    }
+
+    <span style="font-style: italic;">/**</span>
+<span style="font-style: italic;">     * &#26681;&#25454;&#36523;&#20221;&#32534;&#21495;&#33719;&#21462;&#24180;&#40836;</span>
+<span style="font-style: italic;">     *</span>
+<span style="font-style: italic;">     * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@param</span><span style="font-style: italic;"> idCard</span>
+<span style="font-style: italic;">     *            &#36523;&#20221;&#32534;&#21495;</span>
+<span style="font-style: italic;">     * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@return</span><span style="font-style: italic;"> &#24180;&#40836;</span>
+<span style="font-style: italic;">     */</span>
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold;">getAgeByIdCard</span>(<span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">idCard</span>) {
+        <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">iAge</span> = 0;
+        <span style="font-weight: bold;">if</span> (idCard.length() == CHINA_ID_MIN_LENGTH) {
+            idCard = conver15CardTo18(idCard);
+        }
+        <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">year</span> = idCard.substring(6, 10);
+        <span style="font-weight: bold; text-decoration: underline;">Calendar</span> <span style="font-weight: bold; font-style: italic;">cal</span> = Calendar.getInstance();
+        <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">iCurrYear</span> = cal.get(<span style="font-weight: bold; text-decoration: underline;">Calendar</span>.YEAR);
+        iAge = iCurrYear - Integer.valueOf(year);
+        <span style="font-weight: bold;">return</span> iAge;
+    }
+
+    <span style="font-style: italic;">/**</span>
+<span style="font-style: italic;">     * &#26681;&#25454;&#36523;&#20221;&#32534;&#21495;&#33719;&#21462;&#29983;&#26085;</span>
+<span style="font-style: italic;">     *</span>
+<span style="font-style: italic;">     * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@param</span><span style="font-style: italic;"> idCard &#36523;&#20221;&#32534;&#21495;</span>
+<span style="font-style: italic;">     * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@return</span><span style="font-style: italic;"> &#29983;&#26085;(yyyyMMdd)</span>
+<span style="font-style: italic;">     */</span>
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold;">getBirthByIdCard</span>(<span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">idCard</span>) {
+        <span style="font-weight: bold; text-decoration: underline;">Integer</span> <span style="font-weight: bold; font-style: italic;">len</span> = idCard.length();
+        <span style="font-weight: bold;">if</span> (len &lt; <span style="font-weight: bold; text-decoration: underline;">CHINA_ID_MIN_LENGTH</span>) {
+            <span style="font-weight: bold;">return</span> <span style="font-weight: bold; text-decoration: underline;">null</span>;
+        } <span style="font-weight: bold;">else</span> <span style="font-weight: bold;">if</span> (len == CHINA_ID_MIN_LENGTH) {
+            idCard = conver15CardTo18(idCard);
+        }
+        <span style="font-weight: bold;">return</span> idCard.substring(6, 14);
+    }
+
+    <span style="font-style: italic;">/**</span>
+<span style="font-style: italic;">     * &#26681;&#25454;&#36523;&#20221;&#32534;&#21495;&#33719;&#21462;&#29983;&#26085;&#24180;</span>
+<span style="font-style: italic;">     *</span>
+<span style="font-style: italic;">     * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@param</span><span style="font-style: italic;"> idCard &#36523;&#20221;&#32534;&#21495;</span>
+<span style="font-style: italic;">     * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@return</span><span style="font-style: italic;"> &#29983;&#26085;(yyyy)</span>
+<span style="font-style: italic;">     */</span>
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold; text-decoration: underline;">Short</span> <span style="font-weight: bold;">getYearByIdCard</span>(<span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">idCard</span>) {
+        <span style="font-weight: bold; text-decoration: underline;">Integer</span> <span style="font-weight: bold; font-style: italic;">len</span> = idCard.length();
+        <span style="font-weight: bold;">if</span> (len &lt; <span style="font-weight: bold; text-decoration: underline;">CHINA_ID_MIN_LENGTH</span>) {
+            <span style="font-weight: bold;">return</span> <span style="font-weight: bold; text-decoration: underline;">null</span>;
+        } <span style="font-weight: bold;">else</span> <span style="font-weight: bold;">if</span> (len == CHINA_ID_MIN_LENGTH) {
+            idCard = conver15CardTo18(idCard);
+        }
+        <span style="font-weight: bold;">return</span> Short.valueOf(idCard.substring(6, 10));
+    }
+
+    <span style="font-style: italic;">/**</span>
+<span style="font-style: italic;">     * &#26681;&#25454;&#36523;&#20221;&#32534;&#21495;&#33719;&#21462;&#29983;&#26085;&#26376;</span>
+<span style="font-style: italic;">     *</span>
+<span style="font-style: italic;">     * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@param</span><span style="font-style: italic;"> idCard</span>
+<span style="font-style: italic;">     *            &#36523;&#20221;&#32534;&#21495;</span>
+<span style="font-style: italic;">     * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@return</span><span style="font-style: italic;"> &#29983;&#26085;(MM)</span>
+<span style="font-style: italic;">     */</span>
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold; text-decoration: underline;">Short</span> <span style="font-weight: bold;">getMonthByIdCard</span>(<span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">idCard</span>) {
+        <span style="font-weight: bold; text-decoration: underline;">Integer</span> <span style="font-weight: bold; font-style: italic;">len</span> = idCard.length();
+        <span style="font-weight: bold;">if</span> (len &lt; <span style="font-weight: bold; text-decoration: underline;">CHINA_ID_MIN_LENGTH</span>) {
+            <span style="font-weight: bold;">return</span> <span style="font-weight: bold; text-decoration: underline;">null</span>;
+        } <span style="font-weight: bold;">else</span> <span style="font-weight: bold;">if</span> (len == CHINA_ID_MIN_LENGTH) {
+            idCard = conver15CardTo18(idCard);
+        }
+        <span style="font-weight: bold;">return</span> Short.valueOf(idCard.substring(10, 12));
+    }
+
+    <span style="font-style: italic;">/**</span>
+<span style="font-style: italic;">     * &#26681;&#25454;&#36523;&#20221;&#32534;&#21495;&#33719;&#21462;&#29983;&#26085;&#22825;</span>
+<span style="font-style: italic;">     *</span>
+<span style="font-style: italic;">     * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@param</span><span style="font-style: italic;"> idCard</span>
+<span style="font-style: italic;">     *            &#36523;&#20221;&#32534;&#21495;</span>
+<span style="font-style: italic;">     * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@return</span><span style="font-style: italic;"> &#29983;&#26085;(dd)</span>
+<span style="font-style: italic;">     */</span>
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold; text-decoration: underline;">Short</span> <span style="font-weight: bold;">getDateByIdCard</span>(<span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">idCard</span>) {
+        <span style="font-weight: bold; text-decoration: underline;">Integer</span> <span style="font-weight: bold; font-style: italic;">len</span> = idCard.length();
+        <span style="font-weight: bold;">if</span> (len &lt; <span style="font-weight: bold; text-decoration: underline;">CHINA_ID_MIN_LENGTH</span>) {
+            <span style="font-weight: bold;">return</span> <span style="font-weight: bold; text-decoration: underline;">null</span>;
+        } <span style="font-weight: bold;">else</span> <span style="font-weight: bold;">if</span> (len == CHINA_ID_MIN_LENGTH) {
+            idCard = conver15CardTo18(idCard);
+        }
+        <span style="font-weight: bold;">return</span> Short.valueOf(idCard.substring(12, 14));
+    }
+
+    <span style="font-style: italic;">/**</span>
+<span style="font-style: italic;">     * &#26681;&#25454;&#36523;&#20221;&#32534;&#21495;&#33719;&#21462;&#24615;&#21035;</span>
+<span style="font-style: italic;">     *</span>
+<span style="font-style: italic;">     * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@param</span><span style="font-style: italic;"> idCard &#36523;&#20221;&#32534;&#21495;</span>
+<span style="font-style: italic;">     * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@return</span><span style="font-style: italic;"> &#24615;&#21035;(M-&#30007;&#65292;F-&#22899;&#65292;N-&#26410;&#30693;)</span>
+<span style="font-style: italic;">     */</span>
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold;">getGenderByIdCard</span>(<span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">idCard</span>) {
+        <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">sGender</span> = <span style="font-style: italic;">"N"</span>;
+        <span style="font-weight: bold;">if</span> (idCard.length() == CHINA_ID_MIN_LENGTH) {
+            idCard = conver15CardTo18(idCard);
+        }
+        <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">sCardNum</span> = idCard.substring(16, 17);
+        <span style="font-weight: bold;">if</span> (Integer.parseInt(sCardNum) % 2 != 0) {
+            sGender = <span style="font-style: italic;">"M"</span>;
+        } <span style="font-weight: bold;">else</span> {
+            sGender = <span style="font-style: italic;">"F"</span>;
+        }
+        <span style="font-weight: bold;">return</span> sGender;
+    }
+
+    <span style="font-style: italic;">/**</span>
+<span style="font-style: italic;">     * &#26681;&#25454;&#36523;&#20221;&#32534;&#21495;&#33719;&#21462;&#25143;&#31821;&#30465;&#20221;</span>
+<span style="font-style: italic;">     *</span>
+<span style="font-style: italic;">     * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@param</span><span style="font-style: italic;"> idCard &#36523;&#20221;&#32534;&#30721;</span>
+<span style="font-style: italic;">     * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@return</span><span style="font-style: italic;"> &#30465;&#32423;&#32534;&#30721;&#12290;</span>
+<span style="font-style: italic;">     */</span>
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold;">getProvinceByIdCard</span>(<span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">idCard</span>) {
+        <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">len</span> = idCard.length();
+        <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">sProvince</span> = <span style="font-weight: bold; text-decoration: underline;">null</span>;
+        <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">sProvinNum</span> = <span style="font-style: italic;">""</span>;
+        <span style="font-weight: bold;">if</span> (len == CHINA_ID_MIN_LENGTH || len == CHINA_ID_MAX_LENGTH) {
+            sProvinNum = idCard.substring(0, 2);
+        }
+        sProvince = cityCodes.get(sProvinNum);
+        <span style="font-weight: bold;">return</span> sProvince;
+    }
+
+    <span style="font-style: italic;">/**</span>
+<span style="font-style: italic;">     * &#25968;&#23383;&#39564;&#35777;</span>
+<span style="font-style: italic;">     *</span>
+<span style="font-style: italic;">     * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@param</span><span style="font-style: italic;"> val</span>
+<span style="font-style: italic;">     * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@return</span><span style="font-style: italic;"> &#25552;&#21462;&#30340;&#25968;&#23383;&#12290;</span>
+<span style="font-style: italic;">     */</span>
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold; text-decoration: underline;">boolean</span> <span style="font-weight: bold;">isNum</span>(<span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">val</span>) {
+        <span style="font-weight: bold;">return</span> val == <span style="font-weight: bold; text-decoration: underline;">null</span> || <span style="font-style: italic;">""</span>.equals(val) ? <span style="font-weight: bold; text-decoration: underline;">false</span> : val.matches(<span style="font-style: italic;">"^[0-9]*$"</span>);
+    }
+
+    <span style="font-style: italic;">/**</span>
+<span style="font-style: italic;">     * &#39564;&#35777;&#23567;&#20110;&#24403;&#21069;&#26085;&#26399; &#26159;&#21542;&#26377;&#25928;</span>
+<span style="font-style: italic;">     *</span>
+<span style="font-style: italic;">     * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@param</span><span style="font-style: italic;"> iYear</span>
+<span style="font-style: italic;">     *            &#24453;&#39564;&#35777;&#26085;&#26399;(&#24180;)</span>
+<span style="font-style: italic;">     * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@param</span><span style="font-style: italic;"> iMonth</span>
+<span style="font-style: italic;">     *            &#24453;&#39564;&#35777;&#26085;&#26399;(&#26376; 1-12)</span>
+<span style="font-style: italic;">     * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@param</span><span style="font-style: italic;"> iDate</span>
+<span style="font-style: italic;">     *            &#24453;&#39564;&#35777;&#26085;&#26399;(&#26085;)</span>
+<span style="font-style: italic;">     * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@return</span><span style="font-style: italic;"> &#26159;&#21542;&#26377;&#25928;</span>
+<span style="font-style: italic;">     */</span>
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold; text-decoration: underline;">boolean</span> <span style="font-weight: bold;">valiDate</span>(<span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">iYear</span>, <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">iMonth</span>, <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">iDate</span>) {
+        <span style="font-weight: bold; text-decoration: underline;">Calendar</span> <span style="font-weight: bold; font-style: italic;">cal</span> = Calendar.getInstance();
+        <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">year</span> = cal.get(<span style="font-weight: bold; text-decoration: underline;">Calendar</span>.YEAR);
+        <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">datePerMonth</span>;
+        <span style="font-weight: bold;">if</span> (iYear &lt; <span style="font-weight: bold; text-decoration: underline;">MIN</span> || iYear &gt;= year) {
+            <span style="font-weight: bold;">return</span> <span style="font-weight: bold; text-decoration: underline;">false</span>;
+        }
+        <span style="font-weight: bold;">if</span> (iMonth &lt; 1 || iMonth &gt; 12) {
+            <span style="font-weight: bold;">return</span> <span style="font-weight: bold; text-decoration: underline;">false</span>;
+        }
+        <span style="font-weight: bold;">switch</span> (iMonth) {
+        <span style="font-weight: bold;">case</span> 4:
+        <span style="font-weight: bold;">case</span> 6:
+        <span style="font-weight: bold;">case</span> 9:
+        <span style="font-weight: bold;">case</span> 11:
+            datePerMonth = 30;
+            <span style="font-weight: bold;">break</span>;
+        <span style="font-weight: bold;">case</span> 2:
+            <span style="font-weight: bold; text-decoration: underline;">boolean</span> <span style="font-weight: bold; font-style: italic;">dm</span> = ((iYear % 4 == 0 &amp;&amp; iYear % 100 != 0) || (iYear % 400 == 0))
+                    &amp;&amp; (iYear &gt; MIN &amp;&amp; iYear &lt; <span style="font-weight: bold; text-decoration: underline;">year</span>);
+            datePerMonth = dm ? 29 : 28;
+            <span style="font-weight: bold;">break</span>;
+        <span style="font-weight: bold;">default</span>:
+            datePerMonth = 31;
+        }
+        <span style="font-weight: bold;">return</span> (iDate &gt;= 1) &amp;&amp; (iDate &lt;= datePerMonth);
+    }
+}
+
+
+</pre>
+</div>
+</div>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

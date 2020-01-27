@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>Alpine-Linux使用简介</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">Alpine-Linux使用简介</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#linux"><div class="category">linux</div></a> <a href="https://bruceasu.github.io/tags.html#docker"><div class="category">docker</div></a> </div>
+<div class="char-counter">2016-05-09</div>
+        <div id="content">
+<nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#org8ca72a4">一、 Alpine 简要介绍</a></li>
+<li><a href="#org960f581">二、 Alpine 本地安装</a></li>
+<li><a href="#orge024278">三、 Alpine 在 Docker 下运行</a>
+<ul>
+<li><a href="#org6bc0408">1. Docker 下的运行</a></li>
+<li><a href="#org828fe33">2. 作为 Docker 容器的基础镜像</a></li>
+</ul>
+</li>
+<li><a href="#org0f7869b">四、 Alpine 的配置和使用</a>
+<ul>
+<li><a href="#org1b71095">4.1网络相关文件</a></li>
+<li><a href="#org870952a">4.2更新国内源</a></li>
+<li><a href="#org3958c6e">4.3 软件包管理工具 apk 的基本使用</a></li>
+<li><a href="#org9397175">4.4 开启 SSH 服务</a></li>
+<li><a href="#orgeec6bd6">4.5 安装 nginx</a></li>
+</ul>
+</li>
+<li><a href="#org6a98cf3">【附图】</a></li>
+<li><a href="#orgf0900c8">【注意事项】:</a></li>
+<li><a href="#orgaf52de9">【心得体会】：</a></li>
+<li><a href="#org04813f2">【参考链接】：</a></li>
+</ul>
+</div>
+</nav>
+
+<div id="outline-container-org8ca72a4" class="outline-2">
+<h2 id="org8ca72a4">一、 Alpine 简要介绍</h2>
+<div class="outline-text-2" id="text-org8ca72a4">
+<p>
+Alpine 的意思是“高山的”，比如 lpine plants高山植物，Alpine skiing高山滑雪、the
+alpine resort阿尔卑斯山胜地。
+</p>
+
+<p>
+Alpine Linux 网站首页注明“Small！Simple！Secure！Alpine Linux is a
+security-oriented, lightweight Linux distribution based on musl libc and
+busybox.”概括了以下特点：
+</p>
+<p class="verse">
+<br>
+1. <b>小巧：</b> 基于Musl libc和busybox，和busybox一样小巧，最小的Docker镜像只有5MB；<br>
+2. <b>安全：</b> 面向安全的轻量发行版；<br>
+3. <b>简单：</b> 提供APK包管理工具，软件的搜索、安装、删除、升级都非常方便。<br>
+4. 适合 <b>容器使用：</b> 由于小巧、功能完备，非常适合作为容器的基础镜像。<br>
+</p>
+</div>
+</div>
+<div id="outline-container-org960f581" class="outline-2">
+<h2 id="org960f581">二、 Alpine 本地安装</h2>
+<div class="outline-text-2" id="text-org960f581">
+<p>
+Alpine Linux 是一个完整的操作系统，像其他操作系统一样，可以将 Alpine 安装到本地
+硬盘中。我们可以创建一个 VirtualBox 虚拟机，在 VirtualBox 下安装该系统，以便进行
+测试使用。具体安装过程，参见我写的另一篇文章《Alpine linux硬盘安装》，地址：
+<a href="http://blog.csdn.net/csdn_duomaomao/article/details/76053229">http://blog.csdn.net/csdn_duomaomao/article/details/76053229</a>。
+</p>
+
+<p>
+主要是在安装过程中，指定一些电脑的基本设置，比如键盘布局、主机名、网卡、IP地址、
+root口令修改、时区设置、软件仓库地址、SSH服务器、NTP客户端、系统安装方式、磁盘格
+式化等。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orge024278" class="outline-2">
+<h2 id="orge024278">三、 Alpine 在 Docker 下运行</h2>
+<div class="outline-text-2" id="text-orge024278">
+</div>
+<div id="outline-container-org6bc0408" class="outline-3">
+<h3 id="org6bc0408">1. Docker 下的运行</h3>
+<div class="outline-text-3" id="text-org6bc0408">
+<p>
+官方Alpine镜像的文档：<a href="http://gliderlabs.viewdocs.io/docker-alpine/">http://gliderlabs.viewdocs.io/docker-alpine/</a>
+</p>
+
+<p>
+可以使用 Docker Toolbox，创建一台 Docker 虚拟主机，在该主机的 Docker 环境下运行
+alpine 的 Docker容器。该容器就是一个 Alpine Linux 系统，
+</p>
+<pre class="example">
+docker pull alpine
+docker run -it --name myalpine alpine
+</pre>
+</div>
+</div>
+<div id="outline-container-org828fe33" class="outline-3">
+<h3 id="org828fe33">2. 作为 Docker 容器的基础镜像</h3>
+<div class="outline-text-3" id="text-org828fe33">
+<p>
+以Alpine为基础镜像，创建一个MySQL容器，镜像大小只有36.5MB，Ubuntu系统作为基础镜
+像，镜像大小有184MB，
+</p>
+
+<p>
+Dockerfile文件的内容：
+</p>
+<pre class="example">
+FROM alpine:3.6
+RUN apk add --no-cache mysql-client
+ENTRYPOINT [&amp;quot;mysql&amp;quot;]
+
+</pre>
+<p>
+创建一个test/mysqlclient:1.0镜像
+</p>
+<pre class="example">
+docker build -t test/mysqlclient:1.0
+
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org0f7869b" class="outline-2">
+<h2 id="org0f7869b">四、 Alpine 的配置和使用</h2>
+<div class="outline-text-2" id="text-org0f7869b">
+</div>
+<div id="outline-container-org1b71095" class="outline-3">
+<h3 id="org1b71095">4.1网络相关文件</h3>
+<div class="outline-text-3" id="text-org1b71095">
+<pre class="example">
+#主机名文件
+/etc/hostname
+#使用新设置的主机名立刻生效,执行如下命令：
+hostname -F /etc/hostname
+#主机IP和域名映射文件
+/etc/hosts
+#文件内容为：
+
+192.168.99.100 alpine.csdn.net
+
+#DNS服务器配置文件
+/etc/resolv.conf
+#文件内容为：
+
+nameserver 218.2.135.1
+nameserver 202.102.24.35
+
+#网卡配置文件
+/etc/network/interfaces
+#文件内容为：
+
+auto lo
+iface lo inet loopback
+auto eth0
+iface eth0 inet static
+address 192.168.3.166
+netmask 255.255.255.0
+gateway 192.168.3.254
+
+#修改完相关配置以后，重新启动网络服务：
+`/etc/init.d/networking restart`
+网络相关的文档，详细参见：https://wiki.alpinelinux.org/wiki/Configure_Networking
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org870952a" class="outline-3">
+<h3 id="org870952a">4.2更新国内源</h3>
+<div class="outline-text-3" id="text-org870952a">
+<pre class="example">
+#Alpine的源文件为：
+/etc/apk/repositories，
+#默认的源地址为：
+http://dl-cdn.alpinelinux.org/
+#可以编辑源文件
+/etc/apk/repositories，
+#采用国内阿里云的源，文件内容为：
+
+https://mirrors.aliyun.com/alpine/v3.6/main/
+https://mirrors.aliyun.com/alpine/v3.6/community/
+
+#如果采用中国科技大学的源，文件内容为：
+
+https://mirrors.ustc.edu.cn/alpine/v3.6/main/
+https://mirrors.ustc.edu.cn/alpine/v3.6/community/
+
+
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org3958c6e" class="outline-3">
+<h3 id="org3958c6e">4.3 软件包管理工具 apk 的基本使用</h3>
+<div class="outline-text-3" id="text-org3958c6e">
+<p>
+alpine 提供了非常好用的apk软件包管理工具，可以方便地安装、删除、更新软件。
+</p>
+<pre class="example">
+#查询openssh相关的软件包
+apk search openssh
+#安装一个软件包
+apk add xxx
+#删除已安装的xxx软件包
+apk del xxx
+#获取更多apk包管理的命令参数
+apk --help
+#比如安装常用的网络相关工具：
+#更新软件包索引文件
+apk update
+#用于文本方式查看网页，用于测试http协议
+apk add curl
+#提供了查看网络连接的协议端口的命令ss，可以替代netstat命令
+apk add iproute2
+#drill命令可以替代dig和nslookup DNS查询命令
+apk add drill
+#测试192.168.3.166的80端口，查看web服务是否能正常访问。
+curl 192.168.3.166
+#查看建立的TCP连接
+ss -ta
+#查询域名的信息
+drill blog.csdn.net @8.8.8.8
+#根据IP地址，反向查找域名
+drill -x 8.8.8.8 @47.94.71.34
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org9397175" class="outline-3">
+<h3 id="org9397175">4.4 开启 SSH 服务</h3>
+<div class="outline-text-3" id="text-org9397175">
+<pre class="example">
+#安装openssh-server服务器
+apk add openssh-server
+#修改配置文件/etc/ssh/sshd_config，
+#如果要想使用root用户远程管理，需要修改参数为：
+PermitRootLogin yes
+#将ssh服务配置为开机自动启动
+rc-update add sshd
+#如果你想立刻生效，可以执行命令：
+/etc/init.d/sshd restart
+</pre>
+</div>
+</div>
+
+
+<div id="outline-container-orgeec6bd6" class="outline-3">
+<h3 id="orgeec6bd6">4.5 安装 nginx</h3>
+<div class="outline-text-3" id="text-orgeec6bd6">
+<pre class="example">
+#安装Nginx软件并更新到最新，
+apk add --update nginx
+#手工启动Nginx
+/etc/init.d/nginx
+#将Nginx添加到启动服务中，下次开机自动运行
+rc-update add nginx
+#测试Nginx服务是否正常,使用curl访问，
+#默认配置会返回nginx的404页面错误，标明服务已正常：
+curl 192.168.3.166
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org6a98cf3" class="outline-2">
+<h2 id="org6a98cf3">【附图】</h2>
+<div class="outline-text-2" id="text-org6a98cf3">
+<ol>
+  <li>在Docker主机中，下载alpine镜像</li>
+  <img width=737 height=483 id="图片 19" src="images/2016-05-09-linux-alpinelinux/image001.png" alt="http://img.blog.csdn.net/20170726162515097">
+  <li>查看镜像信息，运行alpine容器，查看容器信息</li>
+  <img width=735 height=485 id="图片 18" src="images/2016-05-09-linux-alpinelinux/image002.png" alt="http://img.blog.csdn.net/20170726162518656">
+  <li>在Alpine容器系统中安装常用网络工具-完成部分安装</li>
+  <img width=739 height=483 id="图片 17" src="images/2016-05-09-linux-alpinelinux/image003.png" alt="http://img.blog.csdn.net/20170726162522069">
+  <li>完成常用网络工具的安装</li>
+  <img width=737 height=482 id="图片 16" src="images/2016-05-09-linux-alpinelinux/image004.png" alt="http://img.blog.csdn.net/20170726162526341">
+  <li>在容器中，查看Alpine容器的IP地址</li>
+  <img width=735 height=482 id="图片 15" src="images/2016-05-09-linux-alpinelinux/image005.png" alt="http://img.blog.csdn.net/20170726162530497">
+  <li>在Docker虚拟主机中使用docker build生成Docker镜像的过程</li>
+  <img width=735 height=483 id="图片 14" src="images/2016-05-09-linux-alpinelinux/image006.png" alt="http://img.blog.csdn.net/20170726162534661">
+  <li>生成Docker镜像的大小，只有36.5MB</li>
+  <img width=738 height=485 id="图片 13" src="images/2016-05-09-linux-alpinelinux/image007.png" alt="http://img.blog.csdn.net/20170726162538313">
+  <li>网络相关配置文件及内容</li>
+  <img width=738 height=496 id="图片 12" src="images/2016-05-09-linux-alpinelinux/image008.png" alt="http://img.blog.csdn.net/20170726162542430">
+  <li>重启网络服务networkingrestart</li>
+  <img width=738 height=496 id="图片 11" src="images/2016-05-09-linux-alpinelinux/image009.png" alt="http://img.blog.csdn.net/20170726162546449">
+  <li>软件仓库源的文件内容</li>
+  <img width=738 height=496 id="图片 10" src="images/2016-05-09-linux-alpinelinux/image010.png" alt="http://img.blog.csdn.net/20170726162553035">
+  <li>apk软件包管理常用命令-updae-search-add-del</li>
+  <img width=738 height=496 id="图片 9" src="images/2016-05-09-linux-alpinelinux/image011.png" alt="http://img.blog.csdn.net/20170726162559807">
+  <li>使用curl查看Nginx网站的页面反馈-查看TCP网络状态</li>
+  <img width=738 height=496 id="图片 8" src="images/2016-05-09-linux-alpinelinux/image012.png" alt="http://img.blog.csdn.net/20170726162605151">
+  <li>使用drill查询blog.csdn.net网站域名信息1</li>
+  <img width=737 height=139 id="图片 7" src="images/2016-05-09-linux-alpinelinux/image013.png" alt="http://img.blog.csdn.net/20170726162612917">
+  <li>使用drill查询blog.csdn.net网站域名信息2</li>
+  <img width=738 height=496 id="图片 6" src="images/2016-05-09-linux-alpinelinux/image014.png" alt="http://img.blog.csdn.net/20170726162618681">
+  <li>修改ssh配置文件，运行Root用户使用ssh登录</li>
+  <img width=738 height=496 id="图片 5" src="images/2016-05-09-linux-alpinelinux/image015.png" alt="http://img.blog.csdn.net/20170726162625596">
+  <li>使用Xshell客户端工具，ssh登录到3.166的Alpine机器上</li>
+  <img width=777 height=715 id="图片 4" src="images/2016-05-09-linux-alpinelinux/image016.png" alt="http://img.blog.csdn.net/20170726162631933">
+  <li>更新APK软件包仓库的索引文件</li>
+  <img width=746 height=158 id="图片 3" src="images/2016-05-09-linux-alpinelinux/image017.png" alt="http://img.blog.csdn.net/20170726162641891">
+  <li>安装Nginx</li>
+  <img width=708 height=158 id="图片 2" src="images/2016-05-09-linux-alpinelinux/image018.png" alt="http://img.blog.csdn.net/20170726162655133">
+  <li>重启Nginx服务-将Nginx设置为开机自动启动</li>
+  <img width=892 height=160 id="图片 1" src="images/2016-05-09-linux-alpinelinux/image019.png" alt="http://img.blog.csdn.net/20170726162702323">
+</ol>
+</div>
+</div>
+
+
+<div id="outline-container-orgf0900c8" class="outline-2">
+<h2 id="orgf0900c8">【注意事项】:</h2>
+<div class="outline-text-2" id="text-orgf0900c8">
+<p>
+因为Alpine采用的是musl libc，不是通常用的glibc，在使用DNS时，Alpine（musl libc）
+在DNS解析文件/etc/resolv.conf中，不使用domain或search选项。在使用DNS作为服务发现
+时，要查看相应的文档来解决。相关链接：
+<a href="http://gliderlabs.viewdocs.io/docker-alpine/caveats/">http://gliderlabs.viewdocs.io/docker-alpine/caveats/</a>
+</p>
+</div>
+</div>
+<div id="outline-container-orgaf52de9" class="outline-2">
+<h2 id="orgaf52de9">【心得体会】：</h2>
+<div class="outline-text-2" id="text-orgaf52de9">
+<p>
+<a href="http://wiki.alpinelinux.org">http://wiki.alpinelinux.org</a>
+</p>
+
+<p>
+网站上内容非常丰富，英文也非常简单，几乎所有的问题都能在该网站上找到答案，强烈推
+荐该网站。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org04813f2" class="outline-2">
+<h2 id="org04813f2">【参考链接】：</h2>
+<div class="outline-text-2" id="text-org04813f2">
+<p>
+Alpine Linux package management
+</p>
+<pre class="example">
+http://wiki.alpinelinux.org/wiki/Alpine_Linux_package_management
+
+</pre>
+<p>
+Alpine Linux，一个只有5M的Docker镜像
+</p>
+<pre class="example">
+http://www.infoq.com/cn/news/2016/01/Alpine-Linux-5M-Docker
+
+</pre>
+<p>
+Alpine Linux源使用帮助
+</p>
+<pre class="example">
+http://mirrors.ustc.edu.cn/help/alpine.html
+
+</pre>
+<p>
+Alpine Linux配置使用技巧【一个只有5M的操作系统（转）】
+</p>
+<pre class="example">
+http://www.cnblogs.com/zhangmingcheng/p/7122386.html
+
+</pre>
+<p>
+docker（10）：virtualbox安装使用alpinelinux
+</p>
+<pre class="example">
+http://blog.csdn.net/freewebsys/article/details/53638227
+
+</pre>
+</div>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

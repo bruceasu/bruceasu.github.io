@@ -1,0 +1,46 @@
+# -*- coding: utf-8-unix; -*-
+#+TITLE:       git rebase -i
+#+AUTHOR:      Bruce Asu
+#+EMAIL:       bruceasu@163.com
+#+DATE:        <2017-03-08 20:48>
+#+filetags:        git
+
+#+LANGUAGE:    en
+#+OPTIONS:     H:7 num:nil toc:t \n:nil ::t |:t ^:nil -:nil f:t *:t <:nil
+
+我们进入 stepup-tutorial/tutorial5 目录。本地端的历史记录的状态如下图显示。在这里
+汇合「添加 commit 的讲解」和「添加 pull 的讲解」的修改，然后合并到一个提交。
+
+[[./images/git-rebase-i-2017-03-08/capture_stepup7_5_1.png]]
+
+
+若要汇合过去的提交，请用 =rebase -i= 。
+
+: $ git rebase -i HEAD~~
+打开文本编辑器，将看到从HEAD到HEAD~~的提交如下图显示。
+#+BEGIN_VERSE
+pick 9a54fd4 添加commit的说明
+pick 0d4a808 添加pull的说明
+
+    # Rebase 326fc9f..0d4a808 onto d286baa
+    #
+    # Commands:
+    #  p, pick = use commit
+    #  r, reword = use commit, but edit the commit message
+    #  e, edit = use commit, but stop for amending
+    #  s, squash = use commit, but meld into previous commit
+    #  f, fixup = like "squash", but discard this commit's log message
+    #  x, exec = run command (the rest of the line) using shell
+    #
+    # If you remove a line here THAT COMMIT WILL BE LOST.
+    # However, if you remove everything, the rebase will be aborted.
+    #
+
+#+END_VERSE
+
+将第二行的“pick”改成“squash”，然后保存并退出。由于合并后要提交，所以接着会显示提
+交信息的编辑器，请编辑信息后保存并退出。
+
+这样，两个提交就合并成一个提交了。请用log命令确认历史记录。
+
+[[./images/git-rebase-i-2017-03-08/capture_stepup7_5_1.png]]

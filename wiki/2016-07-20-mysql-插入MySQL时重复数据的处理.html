@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>插入MySQL时重复数据的处理</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">插入MySQL时重复数据的处理</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#mysql"><div class="category">mysql</div></a> </div>
+<div class="char-counter">2016-07-20</div>
+        <div id="content">
+<p>
+程序运行了一段时间后，发现有很多用户的数据是重复的，因此需要在插入重复用户数据的
+时候做处理。处理方案如下：
+</p>
+
+<ol class="org-ol">
+<li>插入数据库之前检查数据是否已经存在数据库；</li>
+<li>添加唯一索引，插入时使用 INSERT INTO &amp;#x2026; ON DUPLICATE KEY UPDATE&amp;#x2026;</li>
+<li>添加唯一索引，插入时使用 INSERT INGNORE INTO&amp;#x2026;</li>
+<li>添加唯一索引，插入时使用 REPLACE INTO&amp;#x2026;</li>
+</ol>
+
+<p>
+第一种方案是最简单但也是效率最差的方案，因此不采取。
+</p>
+
+<p>
+二和四方案的执行结果是一样的，不同的是，在遇到相同的数据时，INSERT INTO … ON
+DUPLICATE KEY UPDATE 是直接更新的，而 REPLACE INTO 是先删除旧的数据然后插入新的，
+在这个过程中，还需要重新维护索引，所以速度慢。所以在二和四两者间选择了第二种方案。
+</p>
+
+<p>
+而第三种方案， INSERT INGNORE 会忽略执行INSERT语句出现的错误，不会忽略语法问题，
+但是忽略主键存在的情况。这样一来，使用 INSERT INGNORE 就更好了。最终，考虑到要在
+数据库中记录重复数据的条数，因此在程序中采用了第二种方案。
+</p>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

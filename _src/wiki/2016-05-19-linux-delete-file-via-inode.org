@@ -1,0 +1,14 @@
+# -*- coding: utf-8-unix; -*-
+#+TITLE:       直接删除INODE
+#+AUTHOR:      Bruce Asu
+#+EMAIL:       bruceasu@163.com
+#+DATE:        <2016-05-19 20:48>
+#+filetags:    linux
+#+DESCRIPTION: 文件名过长而且乱码，无法删除：直接删除inode
+
+#+LANGUAGE:    en
+#+OPTIONS:     H:7 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:nil
+
+文件名过长而且乱码，无法删除：直接删除inode：
+: $ ls -li # 找到乱码文件的inode
+: $ find . -inum inodeNumber -exec rm -i {} \;

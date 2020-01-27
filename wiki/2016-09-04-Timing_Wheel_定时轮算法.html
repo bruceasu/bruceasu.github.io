@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>TIMING WHEEL 定时轮算法</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">TIMING WHEEL 定时轮算法</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#reprint"><div class="category">reprint</div></a> </div>
+<div class="char-counter">2016-09-04</div>
+        <div id="content">
+<p>
+最近自己在写一个网络服务程序时需要管理大量客户端连接的，其中每个客户端连接都需要
+管理它的 timeout 时间。通常连接的超时管理一般设置为30~60秒不等，并不需要太精确的
+时间控制。另外由于服务端管理着多达数万到数十万不等的连接数，因此我们没法为每个连
+接使用一个Timer，那样太消耗资源不现实。
+</p>
+
+
+<p>
+最早面临类似问题的应该是在操作系统和网络协议栈的实现中，以TCP协议为例：其可靠传
+输依赖超时重传机制，因此每个通过TCP传输的 packet 都需要一个 timer 来调度 timeout
+事件。根据George Varghese 和 Tony Lauck 1996 年的论文&lt;Hashed and Hierarchical
+Timing Wheels: data structures to efficiently implement a timer
+facility&gt;（<a href="http://cseweb.ucsd.edu/users/varghese/PAPERS/twheel.ps.Z%EF%BC%89%E6%8F%90%E5%87%BA%E4%BA%86%E4%B8%80%E7%A7%8D">http://cseweb.ucsd.edu/users/varghese/PAPERS/twheel.ps.Z）提出了一种</a>
+定时轮的方式来管理和维护大量的 timer 调度，本文主要根据该论文讨论下实现一种定时
+轮的要点。
+</p>
+
+
+<p>
+定时轮是一种数据结构，其主体是一个循环列表（circular buffer），每个列表中包含一
+个称之为槽（slot）的结构（附图）。至于 slot 的具体结构依赖具体应用场景。
+</p>
+
+<p>
+以本文开头所述的管理大量连接 timeout 的场景为例，描述一下 timing wheel的具体实现
+细节。
+</p>
+
+<p>
+定时轮的工作原理可以类比于始终，如上图箭头（指针）按某一个方向按固定频率轮动，每
+一次跳动称为一个 tick。这样可以看出定时轮由个3个重要的属性参数，
+ticksPerWheel（一轮的tick数），tickDuration（一个tick的持续时间）以及
+timeUnit（时间单位），例如 当ticksPerWheel=60，tickDuration=1，timeUnit=秒，这就
+和现实中的始终的秒针走动完全类似了。
+</p>
+
+
+<p>
+这里给出一种简单的实现方式，指针按 tickDuration 的设置进行固定频率的转动，其中的
+必要约定如下：
+</p>
+
+<ol class="org-ol">
+<li>新加入的对象总是保存在当前指针转动方向上一个位置</li>
+<li>相等的对象仅存在于一个 slot 中</li>
+<li>指针转动到当前位置对应的 slot 中保存的对象就意味着 timeout 了</li>
+</ol>
+
+<p>
+在 Timing Wheel 模型中包含4种操作：
+Client invoke：
+</p>
+<ol class="org-ol">
+<li>START_TIMER(Interval, Request_ID, Expiry_Action)</li>
+</ol>
+<p>
+2. STOP_TIMER(Request_ID)
+Timer tick invoke：
+3. PER_TICK_BOOKKEEPING
+</p>
+<ol class="org-ol">
+<li>EXPIRY_PROCESSING</li>
+</ol>
+
+
+<p>
+Timing Wheel 实现中主要考察的是前3种操作的时间和空间复杂度，而第4种属于超时处理
+通常实现为回调方法，由调用方的实现决定其效率，下面看一个用 java 实现的 Timing
+Wheel 的具体例子：
+</p>
+
+<ul class="org-ul">
+<li>TimingWheel.java</li>
+</ul>
+<div class="org-src-container">
+<pre class="src src-java"><span style="font-style: italic;">/**</span>
+<span style="font-style: italic;"> * A timing-wheel optimized for approximated I/O timeout scheduling.</span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">&lt;br&gt;</span>
+<span style="font-style: italic;"> * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">{@link TimingWheel}</span><span style="font-style: italic;"> creates a new thread whenever it is instantiated and started, so don't create many instances.</span>
+<span style="font-style: italic;"> * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">&lt;p&gt;</span>
+<span style="font-style: italic;"> * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">&lt;b&gt;</span><span style="font-style: italic;">The classic usage as follows:</span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">&lt;/b&gt;&lt;br&gt;</span>
+<span style="font-style: italic;"> * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">&lt;li&gt;</span><span style="font-style: italic;">using timing-wheel manage any object timeout</span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">&lt;/li&gt;</span>
+<span style="font-style: italic;"> * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">&lt;pre&gt;</span>
+<span style="font-style: italic;"> *    // Create a timing-wheel with 60 ticks, and every tick is 1 second.</span>
+<span style="font-style: italic;"> *    private static final TimingWheel</span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">&lt;CometChannel&gt;</span><span style="font-style: italic;"> TIMING_WHEEL = new TimingWheel</span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">&lt;CometChannel&gt;</span><span style="font-style: italic;">(1, 60, TimeUnit.SECONDS);</span>
+<span style="font-style: italic;"> *</span>
+<span style="font-style: italic;"> *    // Add expiration listener and start the timing-wheel.</span>
+<span style="font-style: italic;"> *    static {</span>
+<span style="font-style: italic;"> *      TIMING_WHEEL.addExpirationListener(new YourExpirationListener());</span>
+<span style="font-style: italic;"> *      TIMING_WHEEL.start();</span>
+<span style="font-style: italic;"> *    }</span>
+<span style="font-style: italic;"> *</span>
+<span style="font-style: italic;"> *    // Add one element to be timeout approximated after 60 seconds</span>
+<span style="font-style: italic;"> *    TIMING_WHEEL.add(e);</span>
+<span style="font-style: italic;"> *</span>
+<span style="font-style: italic;"> *    // Anytime you can cancel count down timer for element e like this</span>
+<span style="font-style: italic;"> *    TIMING_WHEEL.remove(e);</span>
+<span style="font-style: italic;"> * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">&lt;/pre&gt;</span>
+<span style="font-style: italic;"> *</span>
+<span style="font-style: italic;"> * After expiration occurs, the </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">{@link ExpirationListener}</span><span style="font-style: italic;"> interface will be invoked and the expired object will be</span>
+<span style="font-style: italic;"> * the argument for callback method </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">{@link ExpirationListener#expired(Object)}</span>
+<span style="font-style: italic;"> * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">&lt;p&gt;</span>
+<span style="font-style: italic;"> * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">{@link TimingWheel}</span><span style="font-style: italic;"> is based on </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">&lt;a href="http://cseweb.ucsd.edu/users/varghese/"&gt;</span><span style="font-style: italic;">George Varghese</span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">&lt;/a&gt;</span><span style="font-style: italic;"> and Tony Lauck's paper,</span>
+<span style="font-style: italic;"> * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">&lt;a href="http://cseweb.ucsd.edu/users/varghese/PAPERS/twheel.ps.Z"&gt;</span><span style="font-style: italic;">'Hashed and Hierarchical Timing Wheels: data structures</span>
+<span style="font-style: italic;"> * to efficiently implement a timer facility'</span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">&lt;/a&gt;</span><span style="font-style: italic;">.  More comprehensive slides are located </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">&lt;a href="http://www.cse.wustl.edu/~cdgill/courses/cs6874/TimingWheels.ppt"&gt;</span><span style="font-style: italic;">here</span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">&lt;/a&gt;</span><span style="font-style: italic;">.</span>
+<span style="font-style: italic;"> *</span>
+<span style="font-style: italic;"> * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@author</span><span style="font-style: italic;"> mindwind</span>
+<span style="font-style: italic;"> * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@version</span><span style="font-style: italic;"> 1.0, Sep 20, 2012</span>
+<span style="font-style: italic;"> */</span>
+<span style="font-weight: bold;">public</span> <span style="font-weight: bold;">class</span> <span style="font-weight: bold; text-decoration: underline;">TimingWheel</span>&lt;<span style="font-weight: bold; text-decoration: underline;">E</span>&gt; {
+
+    <span style="font-weight: bold;">private</span> <span style="font-weight: bold;">final</span> <span style="font-weight: bold; text-decoration: underline;">long</span> <span style="font-weight: bold; font-style: italic;">tickDuration</span>;
+    <span style="font-weight: bold;">private</span> <span style="font-weight: bold;">final</span> <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">ticksPerWheel</span>;
+    <span style="font-weight: bold;">private</span> <span style="font-weight: bold;">volatile</span> <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">currentTickIndex</span> = 0;
+
+    <span style="font-weight: bold;">private</span> <span style="font-weight: bold;">final</span> <span style="font-weight: bold; text-decoration: underline;">CopyOnWriteArrayList</span>&lt;<span style="font-weight: bold; text-decoration: underline;">ExpirationListener</span>&lt;<span style="font-weight: bold; text-decoration: underline;">E</span>&gt;&gt; <span style="font-weight: bold; font-style: italic;">expirationListeners</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">CopyOnWriteArrayList</span>&lt;<span style="font-weight: bold; text-decoration: underline;">ExpirationListener</span>&lt;<span style="font-weight: bold; text-decoration: underline;">E</span>&gt;&gt;();
+    <span style="font-weight: bold;">private</span> <span style="font-weight: bold;">final</span> <span style="font-weight: bold; text-decoration: underline;">ArrayList</span>&lt;<span style="font-weight: bold; text-decoration: underline;">Slot</span>&lt;<span style="font-weight: bold; text-decoration: underline;">E</span>&gt;&gt; <span style="font-weight: bold; font-style: italic;">wheel</span>;
+    <span style="font-weight: bold;">private</span> <span style="font-weight: bold;">final</span> <span style="font-weight: bold; text-decoration: underline;">Map</span>&lt;<span style="font-weight: bold; text-decoration: underline;">E</span>, <span style="font-weight: bold; text-decoration: underline;">Slot</span>&lt;<span style="font-weight: bold; text-decoration: underline;">E</span>&gt;&gt; <span style="font-weight: bold; font-style: italic;">indicator</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">ConcurrentHashMap</span>&lt;<span style="font-weight: bold; text-decoration: underline;">E</span>, <span style="font-weight: bold; text-decoration: underline;">Slot</span>&lt;<span style="font-weight: bold; text-decoration: underline;">E</span>&gt;&gt;();
+
+    <span style="font-weight: bold;">private</span> <span style="font-weight: bold;">final</span> <span style="font-weight: bold; text-decoration: underline;">AtomicBoolean</span> <span style="font-weight: bold; font-style: italic;">shutdown</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">AtomicBoolean</span>(<span style="font-weight: bold; text-decoration: underline;">false</span>);
+    <span style="font-weight: bold;">private</span> <span style="font-weight: bold;">final</span> <span style="font-weight: bold; text-decoration: underline;">ReadWriteLock</span> <span style="font-weight: bold; font-style: italic;">lock</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">ReentrantReadWriteLock</span>();
+    <span style="font-weight: bold;">private</span> <span style="font-weight: bold; text-decoration: underline;">Thread</span> <span style="font-weight: bold; font-style: italic;">workerThread</span>;
+
+    <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">~ -------------------------------------------------------------------------------------------------------------</span>
+
+    <span style="font-style: italic;">/**</span>
+<span style="font-style: italic;">     * Construct a timing wheel.</span>
+<span style="font-style: italic;">     *</span>
+<span style="font-style: italic;">     * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@param</span><span style="font-style: italic;"> tickDuration</span>
+<span style="font-style: italic;">     *            tick duration with specified time unit.</span>
+<span style="font-style: italic;">     * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@param</span><span style="font-style: italic;"> ticksPerWheel</span>
+<span style="font-style: italic;">     * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@param</span><span style="font-style: italic;"> timeUnit</span>
+<span style="font-style: italic;">     */</span>
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">TimingWheel</span>(<span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">tickDuration</span>, <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">ticksPerWheel</span>, <span style="font-weight: bold; text-decoration: underline;">TimeUnit</span> <span style="font-weight: bold; font-style: italic;">timeUnit</span>) {
+        <span style="font-weight: bold;">if</span> (timeUnit == <span style="font-weight: bold; text-decoration: underline;">null</span>) {
+            <span style="font-weight: bold;">throw</span> <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">NullPointerException</span>(<span style="font-style: italic;">"unit"</span>);
+        }
+        <span style="font-weight: bold;">if</span> (tickDuration &lt;= 0) {
+            <span style="font-weight: bold;">throw</span> <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">IllegalArgumentException</span>(<span style="font-style: italic;">"tickDuration must be greater than 0: "</span> + tickDuration);
+        }
+        <span style="font-weight: bold;">if</span> (ticksPerWheel &lt;= 0) {
+            <span style="font-weight: bold;">throw</span> <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">IllegalArgumentException</span>(<span style="font-style: italic;">"ticksPerWheel must be greater than 0: "</span> + ticksPerWheel);
+        }
+
+        <span style="font-weight: bold;">this</span>.wheel = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">ArrayList</span>&lt;<span style="font-weight: bold; text-decoration: underline;">Slot</span>&lt;<span style="font-weight: bold; text-decoration: underline;">E</span>&gt;&gt;();
+        <span style="font-weight: bold;">this</span>.tickDuration = <span style="font-weight: bold; text-decoration: underline;">TimeUnit</span>.MILLISECONDS.convert(tickDuration, timeUnit);
+        <span style="font-weight: bold;">this</span>.ticksPerWheel = ticksPerWheel + 1;
+
+        <span style="font-weight: bold;">for</span> (<span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">i</span> = 0; i &lt; <span style="font-weight: bold;">this</span>.ticksPerWheel; i++) {
+            wheel.add(<span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">Slot</span>&lt;<span style="font-weight: bold; text-decoration: underline;">E</span>&gt;(i));
+        }
+        wheel.trimToSize();
+
+        workerThread = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">Thread</span>(<span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">TickWorker</span>(), <span style="font-style: italic;">"Timing-Wheel"</span>);
+    }
+
+    <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">~ -------------------------------------------------------------------------------------------------------------</span>
+
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">start</span>() {
+        <span style="font-weight: bold;">if</span> (shutdown.get()) {
+            <span style="font-weight: bold;">throw</span> <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">IllegalStateException</span>(<span style="font-style: italic;">"Cannot be started once stopped"</span>);
+        }
+
+        <span style="font-weight: bold;">if</span> (!workerThread.isAlive()) {
+            workerThread.start();
+        }
+    }
+
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">boolean</span> <span style="font-weight: bold;">stop</span>() {
+        <span style="font-weight: bold;">if</span> (!shutdown.compareAndSet(<span style="font-weight: bold; text-decoration: underline;">false</span>, <span style="font-weight: bold; text-decoration: underline;">true</span>)) {
+            <span style="font-weight: bold;">return</span> <span style="font-weight: bold; text-decoration: underline;">false</span>;
+        }
+
+        <span style="font-weight: bold; text-decoration: underline;">boolean</span> <span style="font-weight: bold; font-style: italic;">interrupted</span> = <span style="font-weight: bold; text-decoration: underline;">false</span>;
+        <span style="font-weight: bold;">while</span> (workerThread.isAlive()) {
+            workerThread.interrupt();
+            <span style="font-weight: bold;">try</span> {
+                workerThread.join(100);
+            } <span style="font-weight: bold;">catch</span> (<span style="font-weight: bold; text-decoration: underline;">InterruptedException</span> <span style="font-weight: bold; font-style: italic;">e</span>) {
+                interrupted = <span style="font-weight: bold; text-decoration: underline;">true</span>;
+            }
+        }
+        <span style="font-weight: bold;">if</span> (interrupted) {
+            Thread.currentThread().interrupt();
+        }
+
+        <span style="font-weight: bold;">return</span> <span style="font-weight: bold; text-decoration: underline;">true</span>;
+    }
+
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">addExpirationListener</span>(<span style="font-weight: bold; text-decoration: underline;">ExpirationListener</span>&lt;<span style="font-weight: bold; text-decoration: underline;">E</span>&gt; <span style="font-weight: bold; font-style: italic;">listener</span>) {
+        expirationListeners.add(listener);
+    }
+
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">removeExpirationListener</span>(<span style="font-weight: bold; text-decoration: underline;">ExpirationListener</span>&lt;<span style="font-weight: bold; text-decoration: underline;">E</span>&gt; <span style="font-weight: bold; font-style: italic;">listener</span>) {
+        expirationListeners.remove(listener);
+    }
+
+    <span style="font-style: italic;">/**</span>
+<span style="font-style: italic;">     * Add a element to </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">{@link TimingWheel}</span><span style="font-style: italic;"> and start to count down its life-time.</span>
+<span style="font-style: italic;">     *</span>
+<span style="font-style: italic;">     * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@param</span><span style="font-style: italic;"> e</span>
+<span style="font-style: italic;">     * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@return</span><span style="font-style: italic;"> remain time to be expired in millisecond.</span>
+<span style="font-style: italic;">     */</span>
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">long</span> <span style="font-weight: bold;">add</span>(<span style="font-weight: bold; text-decoration: underline;">E</span> <span style="font-weight: bold; font-style: italic;">e</span>) {
+        <span style="font-weight: bold;">synchronized</span>(e) {
+            checkAdd(e);
+
+            <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">previousTickIndex</span> = getPreviousTickIndex();
+            <span style="font-weight: bold; text-decoration: underline;">Slot</span>&lt;<span style="font-weight: bold; text-decoration: underline;">E</span>&gt; <span style="font-weight: bold; font-style: italic;">slot</span> = wheel.get(previousTickIndex);
+            slot.add(e);
+            indicator.put(e, slot);
+
+            <span style="font-weight: bold;">return</span> (ticksPerWheel - 1) * tickDuration;
+        }
+    }
+
+    <span style="font-weight: bold;">private</span> <span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">checkAdd</span>(<span style="font-weight: bold; text-decoration: underline;">E</span> <span style="font-weight: bold; font-style: italic;">e</span>) {
+        <span style="font-weight: bold; text-decoration: underline;">Slot</span>&lt;<span style="font-weight: bold; text-decoration: underline;">E</span>&gt; <span style="font-weight: bold; font-style: italic;">slot</span> = indicator.get(e);
+        <span style="font-weight: bold;">if</span> (slot != <span style="font-weight: bold; text-decoration: underline;">null</span>) {
+            slot.remove(e);
+        }
+    }
+
+    <span style="font-weight: bold;">private</span> <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold;">getPreviousTickIndex</span>() {
+        lock.readLock().lock();
+        <span style="font-weight: bold;">try</span> {
+            <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">cti</span> = currentTickIndex;
+            <span style="font-weight: bold;">if</span> (cti == 0) {
+                <span style="font-weight: bold;">return</span> ticksPerWheel - 1;
+            }
+
+            <span style="font-weight: bold;">return</span> cti - 1;
+        } <span style="font-weight: bold;">finally</span> {
+            lock.readLock().unlock();
+        }
+    }
+
+    <span style="font-style: italic;">/**</span>
+<span style="font-style: italic;">     * Removes the specified element from timing wheel.</span>
+<span style="font-style: italic;">     *</span>
+<span style="font-style: italic;">     * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@param</span><span style="font-style: italic;"> e</span>
+<span style="font-style: italic;">     * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@return</span><span style="font-style: italic;"> </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">&lt;tt&gt;</span><span style="font-style: italic;">true</span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">&lt;/tt&gt;</span><span style="font-style: italic;"> if this timing wheel contained the specified</span>
+<span style="font-style: italic;">     *         element</span>
+<span style="font-style: italic;">     */</span>
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">boolean</span> <span style="font-weight: bold;">remove</span>(<span style="font-weight: bold; text-decoration: underline;">E</span> <span style="font-weight: bold; font-style: italic;">e</span>) {
+        <span style="font-weight: bold;">synchronized</span> (e) {
+            <span style="font-weight: bold; text-decoration: underline;">Slot</span>&lt;<span style="font-weight: bold; text-decoration: underline;">E</span>&gt; <span style="font-weight: bold; font-style: italic;">slot</span> = indicator.get(e);
+            <span style="font-weight: bold;">if</span> (slot == <span style="font-weight: bold; text-decoration: underline;">null</span>) {
+                <span style="font-weight: bold;">return</span> <span style="font-weight: bold; text-decoration: underline;">false</span>;
+            }
+
+            indicator.remove(e);
+            <span style="font-weight: bold;">return</span> slot.remove(e) != <span style="font-weight: bold; text-decoration: underline;">null</span>;
+        }
+    }
+
+    <span style="font-weight: bold;">private</span> <span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">notifyExpired</span>(<span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">idx</span>) {
+        <span style="font-weight: bold; text-decoration: underline;">Slot</span>&lt;<span style="font-weight: bold; text-decoration: underline;">E</span>&gt; <span style="font-weight: bold; font-style: italic;">slot</span> = wheel.get(idx);
+        <span style="font-weight: bold; text-decoration: underline;">Set</span>&lt;<span style="font-weight: bold; text-decoration: underline;">E</span>&gt; <span style="font-weight: bold; font-style: italic;">elements</span> = slot.elements();
+        <span style="font-weight: bold;">for</span> (<span style="font-weight: bold; text-decoration: underline;">E</span> <span style="font-weight: bold; font-style: italic;">e</span> : elements) {
+            slot.remove(e);
+            <span style="font-weight: bold;">synchronized</span> (e) {
+                <span style="font-weight: bold; text-decoration: underline;">Slot</span>&lt;<span style="font-weight: bold; text-decoration: underline;">E</span>&gt; <span style="font-weight: bold; font-style: italic;">latestSlot</span> = indicator.get(e);
+                <span style="font-weight: bold;">if</span> (latestSlot.equals(slot)) {
+                    indicator.remove(e);
+                }
+            }
+            <span style="font-weight: bold;">for</span> (<span style="font-weight: bold; text-decoration: underline;">ExpirationListener</span>&lt;<span style="font-weight: bold; text-decoration: underline;">E</span>&gt; <span style="font-weight: bold; font-style: italic;">listener</span> : expirationListeners) {
+                listener.expired(e);
+            }
+        }
+    }
+
+    <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">~ -------------------------------------------------------------------------------------------------------------</span>
+
+    <span style="font-weight: bold;">private</span> <span style="font-weight: bold;">class</span> <span style="font-weight: bold; text-decoration: underline;">TickWorker</span> <span style="font-weight: bold;">implements</span> <span style="font-weight: bold; text-decoration: underline;">Runnable</span> {
+
+        <span style="font-weight: bold;">private</span> <span style="font-weight: bold; text-decoration: underline;">long</span> <span style="font-weight: bold; font-style: italic;">startTime</span>;
+        <span style="font-weight: bold;">private</span> <span style="font-weight: bold; text-decoration: underline;">long</span> <span style="font-weight: bold; font-style: italic;">tick</span>;
+
+        <span style="font-weight: bold; text-decoration: underline;">@Override</span>
+        <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">run</span>() {
+            startTime = System.currentTimeMillis();
+            tick = 1;
+
+            <span style="font-weight: bold;">for</span> (<span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">i</span> = 0; !shutdown.get(); i++) {
+                <span style="font-weight: bold;">if</span> (i == wheel.size()) {
+                    i = 0;
+                }
+                lock.writeLock().lock();
+                <span style="font-weight: bold;">try</span> {
+                    currentTickIndex = i;
+                } <span style="font-weight: bold;">finally</span> {
+                    lock.writeLock().unlock();
+                }
+                notifyExpired(currentTickIndex);
+                waitForNextTick();
+            }
+        }
+
+        <span style="font-weight: bold;">private</span> <span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">waitForNextTick</span>() {
+            <span style="font-weight: bold;">for</span> (;;) {
+                <span style="font-weight: bold; text-decoration: underline;">long</span> <span style="font-weight: bold; font-style: italic;">currentTime</span> = System.currentTimeMillis();
+                <span style="font-weight: bold; text-decoration: underline;">long</span> <span style="font-weight: bold; font-style: italic;">sleepTime</span> = tickDuration * tick - (currentTime - startTime);
+
+                <span style="font-weight: bold;">if</span> (sleepTime &lt;= 0) {
+                    <span style="font-weight: bold;">break</span>;
+                }
+
+                <span style="font-weight: bold;">try</span> {
+                    Thread.sleep(sleepTime);
+                } <span style="font-weight: bold;">catch</span> (<span style="font-weight: bold; text-decoration: underline;">InterruptedException</span> <span style="font-weight: bold; font-style: italic;">e</span>) {
+                    <span style="font-weight: bold;">return</span>;
+                }
+            }
+
+            tick++;
+        }
+    }
+
+    <span style="font-weight: bold;">private</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold;">class</span> <span style="font-weight: bold; text-decoration: underline;">Slot</span>&lt;<span style="font-weight: bold; text-decoration: underline;">E</span>&gt; {
+
+        <span style="font-weight: bold;">private</span> <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">id</span>;
+        <span style="font-weight: bold;">private</span> <span style="font-weight: bold; text-decoration: underline;">Map</span>&lt;<span style="font-weight: bold; text-decoration: underline;">E</span>, <span style="font-weight: bold; text-decoration: underline;">E</span>&gt; <span style="font-weight: bold; font-style: italic;">elements</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">ConcurrentHashMap</span>&lt;<span style="font-weight: bold; text-decoration: underline;">E</span>, <span style="font-weight: bold; text-decoration: underline;">E</span>&gt;();
+
+        <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">Slot</span>(<span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">id</span>) {
+            <span style="font-weight: bold;">this</span>.id = id;
+        }
+
+        <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">add</span>(<span style="font-weight: bold; text-decoration: underline;">E</span> <span style="font-weight: bold; font-style: italic;">e</span>) {
+            elements.put(e, e);
+        }
+
+        <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">E</span> <span style="font-weight: bold;">remove</span>(<span style="font-weight: bold; text-decoration: underline;">E</span> <span style="font-weight: bold; font-style: italic;">e</span>) {
+            <span style="font-weight: bold;">return</span> elements.remove(e);
+        }
+
+        <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">Set</span>&lt;<span style="font-weight: bold; text-decoration: underline;">E</span>&gt; <span style="font-weight: bold;">elements</span>() {
+            <span style="font-weight: bold;">return</span> elements.keySet();
+        }
+
+        <span style="font-weight: bold; text-decoration: underline;">@Override</span>
+        <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold;">hashCode</span>() {
+            <span style="font-weight: bold;">final</span> <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">prime</span> = 31;
+            <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">result</span> = 1;
+            result = prime * result + id;
+            <span style="font-weight: bold;">return</span> result;
+        }
+
+        <span style="font-weight: bold; text-decoration: underline;">@Override</span>
+        <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">boolean</span> <span style="font-weight: bold;">equals</span>(<span style="font-weight: bold; text-decoration: underline;">Object</span> <span style="font-weight: bold; font-style: italic;">obj</span>) {
+            <span style="font-weight: bold;">if</span> (<span style="font-weight: bold;">this</span> == obj)
+                <span style="font-weight: bold;">return</span> <span style="font-weight: bold; text-decoration: underline;">true</span>;
+            <span style="font-weight: bold;">if</span> (obj == <span style="font-weight: bold; text-decoration: underline;">null</span>)
+                <span style="font-weight: bold;">return</span> <span style="font-weight: bold; text-decoration: underline;">false</span>;
+            <span style="font-weight: bold;">if</span> (getClass() != obj.getClass())
+                <span style="font-weight: bold;">return</span> <span style="font-weight: bold; text-decoration: underline;">false</span>;
+            <span style="font-weight: bold; text-decoration: underline;">@SuppressWarnings</span>(<span style="font-style: italic;">"rawtypes"</span>)
+            <span style="font-weight: bold; text-decoration: underline;">Slot</span> <span style="font-weight: bold; font-style: italic;">other</span> = (<span style="font-weight: bold; text-decoration: underline;">Slot</span>) obj;
+            <span style="font-weight: bold;">if</span> (id != other.id)
+                <span style="font-weight: bold;">return</span> <span style="font-weight: bold; text-decoration: underline;">false</span>;
+            <span style="font-weight: bold;">return</span> <span style="font-weight: bold; text-decoration: underline;">true</span>;
+        }
+
+        <span style="font-weight: bold; text-decoration: underline;">@Override</span>
+        <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold;">toString</span>() {
+            <span style="font-weight: bold;">return</span> <span style="font-style: italic;">"Slot [id="</span> + id + <span style="font-style: italic;">", elements="</span> + elements + <span style="font-style: italic;">"]"</span>;
+        }
+
+    }
+
+}
+
+
+</pre>
+</div>
+
+<ul class="org-ul">
+<li>ExpirationListener.java</li>
+</ul>
+<div class="org-src-container">
+<pre class="src src-java"><span style="font-style: italic;">/**</span>
+<span style="font-style: italic;"> * A listener for expired object events.</span>
+<span style="font-style: italic;"> *</span>
+<span style="font-style: italic;"> * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@author</span><span style="font-style: italic;"> mindwind</span>
+<span style="font-style: italic;"> * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@version</span><span style="font-style: italic;"> 1.0, Sep 20, 2012</span>
+<span style="font-style: italic;"> * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@see</span><span style="font-style: italic;"> TimingWheel</span>
+<span style="font-style: italic;"> */</span>
+<span style="font-weight: bold;">public</span> <span style="font-weight: bold;">interface</span> <span style="font-weight: bold; text-decoration: underline;">ExpirationListener</span>&lt;<span style="font-weight: bold; text-decoration: underline;">E</span>&gt; {
+
+    <span style="font-style: italic;">/**</span>
+<span style="font-style: italic;">     * Invoking when a expired event occurs.</span>
+<span style="font-style: italic;">     *</span>
+<span style="font-style: italic;">     * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@param</span><span style="font-style: italic;"> expiredObject</span>
+<span style="font-style: italic;">     */</span>
+    <span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">expired</span>(<span style="font-weight: bold; text-decoration: underline;">E</span> <span style="font-weight: bold; font-style: italic;">expiredObject</span>);
+
+}
+
+</pre>
+</div>
+
+
+<p>
+我们分析一下这个简化版本  TimingWheel 实现中的 4 个主要操作的实现：
+</p>
+
+
+<p>
+START_TIMER(Interval, Request_ID, Expiry_Action) ，这段伪代码的实现对应于
+TimingWheel的 add(E e) 方法。
+</p>
+
+<ul class="org-ul">
+<li>首先检查同样的元素是否已添加到 TimingWheel 中，若已存在则删除旧的引用，重新安
+置元素在wheel中位置。这个检查是为了满足约束条件2（相等的对象仅存在于一个 slot
+中，重新加入相同的元素相当于重置了该元素的 Timer）</li>
+<li>获取当前 tick 指针位置的前一个 slot 槽位，放置新加入的元素，并在内部记录下该位
+置</li>
+<li>返回新加入元素的 timeout 时间，以毫秒计算（一般的应用级程序到毫秒这个精度已经
+足够了）</li>
+<li>显然，时间复杂度为O(1)
+STOP_TIMER(Request_ID)，这段伪代码的实现对应于TimingWheel 的 remove(E e) 方法。</li>
+<li>获取元素在 TimingWheel 中对应 slot 位置</li>
+<li>从中 slot 中删除</li>
+<li>显然，时间复杂度也为O(1)
+ PER_TICK_BOOKKEEPING，伪代码对应于 TimingWheel 中 TickerWorker 中的  run() 方法。</li>
+<li>获取当前 tick 指针的 slot</li>
+<li>对当前 slot 的所有元素进行 timeout 处理（notifyExpired()）</li>
+<li>ticker 不需要针对每个元素去判断其 timeout 时间，故时间复杂度也为 O(1)</li>
+</ul>
+<p>
+  EXPIRY_PROCESSING，伪代码对应于TimingWheel 中的 notifyExpired() 方法
+</p>
+<ul class="org-ul">
+<li>实现了对每个 timeout 元素的 Expiry_Action 处理</li>
+<li>这里时间复杂度显然 是 O(n)的。</li>
+</ul>
+
+<p>
+在维护大量连接的例子中：
+</p>
+<ul class="org-ul">
+<li>连接建立时，把一个连接放入 TimingWheel 中进入 timeout 倒计时</li>
+<li>每次收到长连接心跳时，重新加入一次TimingWheel 相当于重置了 timer</li>
+<li>timeout 时间到达时触发 EXPIRY_PROCESSING</li>
+<li>EXPIRY_PROCESSING 实际就是关闭超时的连接。</li>
+</ul>
+
+<p>
+这个简化版的 TimingWheel 实现一个实例只能支持一个固定的 timeout 时长调度，不能支
+持对于每个元素特定的 timeout 时长。一种改进的做法是设计一个函数，计算每个元素特
+定的deadline，并根据deadline计算放置在wheel中的特定位置，这个以后再完善。
+</p>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

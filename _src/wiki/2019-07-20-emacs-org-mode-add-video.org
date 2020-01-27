@@ -1,0 +1,27 @@
+# -*- coding: utf-8-unix; -*-
+#+TITLE:       在 org-mode 中插入本地视频并导出 HTML
+#+AUTHOR:      Bruce Asu
+#+EMAIL:       bruceasu@163.com
+#+DATE:        <2019-07-20 20:00>
+#+filetags: emacs
+
+#+LANGUAGE:    en
+#+OPTIONS:     H:7 num:nil toc:t \n:nil ::t |:t ^:nil -:nil f:t *:t <:nil
+
+
+* 第一步：准备视频
+  视频必须是 mp4、ogg、或者 webm 格式的。可以通过
+  #+BEGIN_EXAMPLE
+  ffmpeg -i input_video.avi output_video.mp4
+  #+END_EXAMPLE
+  实现视频转换（如果有必要的话）
+
+* 第二步：在 org 文件中插入
+  #+BEGIN_SRC emacs-lisp
+    #+BEGIN_EXPORT HTML
+      <video width="640" height="480" controls>
+        <source src="/path/to/output_video.mp4" type="video/mp4">
+      </video>
+    #+END_EXPORT
+  #+END_SRC
+  即可

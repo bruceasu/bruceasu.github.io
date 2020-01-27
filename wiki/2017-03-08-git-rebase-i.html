@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>git rebase -i</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">git rebase -i</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#git"><div class="category">git</div></a> </div>
+<div class="char-counter">2017-03-08</div>
+        <div id="content">
+<p>
+我们进入 stepup-tutorial/tutorial5 目录。本地端的历史记录的状态如下图显示。在这里
+汇合「添加 commit 的讲解」和「添加 pull 的讲解」的修改，然后合并到一个提交。
+</p>
+
+
+<figure>
+<img src="./images/git-rebase-i-2017-03-08/capture_stepup7_5_1.png" alt="capture_stepup7_5_1.png">
+
+</figure>
+
+
+<p>
+若要汇合过去的提交，请用 <code>rebase -i</code> 。
+</p>
+
+<pre class="example">
+$ git rebase -i HEAD~~
+
+</pre>
+<p>
+打开文本编辑器，将看到从HEAD到HEAD~~的提交如下图显示。
+</p>
+<p class="verse">
+pick 9a54fd4 添加commit的说明<br>
+pick 0d4a808 添加pull的说明<br>
+<br>
+&#xa0;&#xa0;&#xa0;&#xa0;# Rebase 326fc9f..0d4a808 onto d286baa<br>
+&#xa0;&#xa0;&#xa0;&#xa0;#<br>
+&#xa0;&#xa0;&#xa0;&#xa0;# Commands:<br>
+&#xa0;&#xa0;&#xa0;&#xa0;#  p, pick = use commit<br>
+&#xa0;&#xa0;&#xa0;&#xa0;#  r, reword = use commit, but edit the commit message<br>
+&#xa0;&#xa0;&#xa0;&#xa0;#  e, edit = use commit, but stop for amending<br>
+&#xa0;&#xa0;&#xa0;&#xa0;#  s, squash = use commit, but meld into previous commit<br>
+&#xa0;&#xa0;&#xa0;&#xa0;#  f, fixup = like "squash", but discard this commit's log message<br>
+&#xa0;&#xa0;&#xa0;&#xa0;#  x, exec = run command (the rest of the line) using shell<br>
+&#xa0;&#xa0;&#xa0;&#xa0;#<br>
+&#xa0;&#xa0;&#xa0;&#xa0;# If you remove a line here THAT COMMIT WILL BE LOST.<br>
+&#xa0;&#xa0;&#xa0;&#xa0;# However, if you remove everything, the rebase will be aborted.<br>
+&#xa0;&#xa0;&#xa0;&#xa0;#<br>
+<br>
+</p>
+
+<p>
+将第二行的“pick”改成“squash”，然后保存并退出。由于合并后要提交，所以接着会显示提
+交信息的编辑器，请编辑信息后保存并退出。
+</p>
+
+<p>
+这样，两个提交就合并成一个提交了。请用log命令确认历史记录。
+</p>
+
+
+<figure>
+<img src="./images/git-rebase-i-2017-03-08/capture_stepup7_5_1.png" alt="capture_stepup7_5_1.png">
+
+</figure>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

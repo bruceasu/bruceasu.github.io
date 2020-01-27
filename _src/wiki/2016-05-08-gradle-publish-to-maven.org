@@ -1,0 +1,42 @@
+# -*- coding: utf-8-unix; -*-
+#+TITLE:       gradle publish to maven repository
+#+AUTHOR:      Bruce Asu
+#+EMAIL:       bruceasu@163.com
+#+DATE:        <2016-05-08 20:48>
+#+filetags:    gradle maven
+#+LANGUAGE:    en
+#+OPTIONS:     H:7 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:nil
+
+#+BEGIN_SRC groovy
+apply plugin: 'maven-publish'
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            //指定group/artifact/version信息，可以不填。默认使用项目group/name/version作为groupId/artifactId/version
+            groupId project.group
+            artifactId project.name
+            version project.version
+            //如果是war包填写components.web，如果是jar包填写components.java
+            from components.java
+
+            //配置上传源码
+            artifact sourceJar {
+                classifier "sources"
+            }
+
+        }
+    }
+    repositories {
+        maven {
+            //指定要上传的maven私服仓库
+            url = "http://localhost:8080/repository/internal/"
+            //认证用户和密码
+            credentials {
+                username 'developer'
+                password 'password123'
+            }
+        }
+    }
+}
+#+END_SRC

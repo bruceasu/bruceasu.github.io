@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>用java实现blowfish-cbc编码解码算法</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">用java实现blowfish-cbc编码解码算法</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#java"><div class="category">java</div></a> </div>
+<div class="char-counter">2016-07-05</div>
+        <div id="content">
+<nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#orgcb69210">前言</a></li>
+<li><a href="#orga8ae6a4">Java代码</a></li>
+<li><a href="#orgc34dea6">其他语言同类实现方法介绍</a>
+<ul>
+<li><a href="#org666bf67">Php：</a></li>
+<li><a href="#org4f49c32">C*：</a></li>
+</ul>
+</li>
+<li><a href="#orgc164195">DES加密算法介绍</a></li>
+<li><a href="#org1c4708d">基本原理</a>
+<ul>
+<li><a href="#org9611df1">常见加密模式介绍：</a>
+<ul>
+<li><a href="#orgd88bfad">ECB(Electronic Code Book:电码本)</a></li>
+<li><a href="#org5945a2e">CBC(Cipher Block Chaining:密码分组链接)</a></li>
+<li><a href="#orgb7ff316">CFB(Cipher FeedBack:密码反馈)</a></li>
+<li><a href="#orgb4cfd8a">OFB(Output FeedBack:输出反馈)</a></li>
+</ul>
+</li>
+<li><a href="#org56f33ef">本文采用的是CBC(Cipher Block Chaining:密码分组链接)的模式。</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</nav>
+
+<div id="outline-container-orgcb69210" class="outline-2">
+<h2 id="orgcb69210">前言</h2>
+<div class="outline-text-2" id="text-orgcb69210">
+<p>
+在平时运用中，往往会遇到不同语言之间的通讯，比如php中实现一种加密传输算法，需要
+用Java进行解码，这时就要保持不同语言加密解密的一致性，才能正常通信。本文就通过
+Java实现php中mcrypt进行des加密相同的效果。其中引入了不太被人关注的“初始化向量”，
+并对主要代码进行了注释。
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-orga8ae6a4" class="outline-2">
+<h2 id="orga8ae6a4">Java代码</h2>
+<div class="outline-text-2" id="text-orga8ae6a4">
+<div class="org-src-container">
+<pre class="src src-java">
+<span style="font-style: italic;">/**</span>
+<span style="font-style: italic;">&#160;* &#29992;java&#23436;&#25104;DES&#23545;&#31216;&#21152;&#23494;</span>
+<span style="font-style: italic;">&#160;* BlowFish &#31639;&#27861;&#29992;&#26469;&#21152;&#23494; 64Bit &#38271;&#24230;&#30340;&#23383;&#31526;&#20018;</span>
+<span style="font-style: italic;">&#160;* &#29992; BlowFish &#31639;&#27861;&#21152;&#23494;&#20449;&#24687;,&#38656;&#35201;&#20004;&#20010;&#36807;&#31243;:</span>
+<span style="font-style: italic;">&#160;* 1.&#23494;&#38053;&#39044;&#22788;&#29702;</span>
+<span style="font-style: italic;">&#160;* 2.&#20449;&#24687;&#21152;&#23494;</span>
+<span style="font-style: italic;">&#160;*</span>
+<span style="font-style: italic;">&#160;* by&#160;tester&#160;2010-11-04</span>
+<span style="font-style: italic;">&#160;*/</span>
+<span style="font-weight: bold;">public</span>&#160;<span style="font-weight: bold;">class</span>&#160;BlowfishTest {
+&#160;&#160;&#160;&#160;&#160;&#160; <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#23494;&#38053;</span>
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold;">public</span>&#160;<span style="font-weight: bold;">static</span>&#160;<span style="font-weight: bold;">final</span>&#160;String&#160;ENCRYPT_KEY&#160;= <span style="font-style: italic;">"WkoxWT0kJik="</span>;
+&#160;&#160;&#160;&#160;&#160;&#160; <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#21021;&#22987;&#21270;&#21521;&#37327;</span>
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold;">public</span>&#160;<span style="font-weight: bold;">static</span>&#160;<span style="font-weight: bold;">final</span>&#160;String&#160;INITIALIZATION_VECTOR&#160;= <span style="font-style: italic;">"cnBHdE9F"</span>;
+&#160;&#160;&#160;&#160;&#160;&#160; <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#36716;&#25442;&#27169;&#24335;</span>
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold;">public</span>&#160;<span style="font-weight: bold;">static</span>&#160;<span style="font-weight: bold;">final</span>&#160;String&#160;TRANSFORMATION&#160;= <span style="font-style: italic;">"Blowfish/CBC/PKCS5Padding"</span>;
+&#160;&#160;&#160;&#160;&#160;&#160; <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#23494;&#38053;&#31639;&#27861;&#21517;&#31216;</span>
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold;">public</span>&#160;<span style="font-weight: bold;">static</span>&#160;<span style="font-weight: bold;">final</span>&#160;String&#160;BLOWFISH&#160;= <span style="font-style: italic;">"Blowfish"</span>;
+&#160;&#160;&#160;&#160;&#160;&#160; <span style="font-style: italic;">/**</span>
+<span style="font-style: italic;">&#160;&#160;&#160;&#160;&#160;&#160; &#160;* &#21152;&#23494;</span>
+<span style="font-style: italic;">&#160;&#160;&#160;&#160;&#160;&#160; &#160;*</span>
+<span style="font-style: italic;">&#160;&#160;&#160;&#160;&#160;&#160; &#160;*&#160;@param&#160;key</span>
+<span style="font-style: italic;">&#160;&#160;&#160;&#160;&#160;&#160; &#160;*&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; &#23494;&#38053;</span>
+<span style="font-style: italic;">&#160;&#160;&#160;&#160;&#160;&#160; &#160;*&#160;@param&#160;text</span>
+<span style="font-style: italic;">&#160;&#160;&#160;&#160;&#160;&#160; &#160;*&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; &#21152;&#23494;&#25991;&#26412;</span>
+<span style="font-style: italic;">&#160;&#160;&#160;&#160;&#160;&#160; &#160;*&#160;@param&#160;initializationVector</span>
+<span style="font-style: italic;">&#160;&#160;&#160;&#160;&#160;&#160; &#160;*&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; &#21021;&#22987;&#21270;&#21521;&#37327;</span>
+<span style="font-style: italic;">&#160;&#160;&#160;&#160;&#160;&#160; &#160;*/</span>
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold;">public</span>&#160;<span style="font-weight: bold;">static</span>&#160;String encrypt(<span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">key</span>, <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">text</span>, <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">initializationVector</span>)
+&#160;&#160;&#160;&#160;&#160;&#160; &#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold;">throws</span>&#160;Exception {
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#26681;&#25454;&#32473;&#23450;&#30340;&#23383;&#33410;&#25968;&#32452;&#26500;&#36896;&#19968;&#20010;&#23494;&#38053;&#160; Blowfish-&#19982;&#32473;&#23450;&#30340;&#23494;&#38053;&#20869;&#23481;&#30456;&#20851;&#32852;&#30340;&#23494;&#38053;&#31639;&#27861;&#30340;&#21517;&#31216;</span>
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; SecretKeySpec sksSpec =&#160;<span style="font-weight: bold;">new</span>&#160;SecretKeySpec(key.getBytes(),&#160;BLOWFISH);
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#20351;&#29992; initializationVector &#20013;&#30340;&#23383;&#33410;&#20316;&#20026; IV &#26469;&#26500;&#36896;&#19968;&#20010; IvParameterSpec &#23545;&#35937;</span>
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; AlgorithmParameterSpec iv =&#160;<span style="font-weight: bold;">new</span>&#160;IvParameterSpec(initializationVector.getBytes());
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#36820;&#22238;&#23454;&#29616;&#25351;&#23450;&#36716;&#25442;&#30340; Cipher &#23545;&#35937;</span>
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; Cipher cipher = Cipher.getInstance(TRANSFORMATION);
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#29992;&#23494;&#38053;&#21644;&#38543;&#26426;&#28304;&#21021;&#22987;&#21270;&#27492; Cipher</span>
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; cipher.init(<span style="font-weight: bold; text-decoration: underline;">Cipher</span>.ENCRYPT_MODE, sksSpec, iv);
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#21152;&#23494;&#25991;&#26412;</span>
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold; text-decoration: underline;">byte</span>[] encrypted = cipher.doFinal(text.getBytes());
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold;">return</span>&#160;<span style="font-weight: bold;">new</span>&#160;String(Hex.encodeHex(encrypted));
+&#160;&#160;&#160;&#160;&#160;&#160; }
+&#160;&#160;&#160;&#160;&#160;&#160; <span style="font-style: italic;">/**</span>
+<span style="font-style: italic;">&#160;&#160;&#160;&#160;&#160;&#160; &#160;* &#35299;&#23494;</span>
+<span style="font-style: italic;">&#160;&#160;&#160;&#160;&#160;&#160; &#160;*</span>
+<span style="font-style: italic;">&#160;&#160;&#160;&#160;&#160;&#160; &#160;*&#160;@param&#160;key</span>
+<span style="font-style: italic;">&#160;&#160;&#160;&#160;&#160;&#160; &#160;*&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; &#23494;&#38053;</span>
+<span style="font-style: italic;">&#160;&#160;&#160;&#160;&#160;&#160; &#160;*&#160;@param&#160;text</span>
+<span style="font-style: italic;">&#160;&#160;&#160;&#160;&#160;&#160; &#160;*&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; &#21152;&#23494;&#25991;&#26412;</span>
+<span style="font-style: italic;">&#160;&#160;&#160;&#160;&#160;&#160; &#160;*&#160;@param&#160;initializationVector</span>
+<span style="font-style: italic;">&#160;&#160;&#160;&#160;&#160;&#160; &#160;*&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; &#21021;&#22987;&#21270;&#21521;&#37327;</span>
+<span style="font-style: italic;">&#160;&#160;&#160;&#160;&#160;&#160; &#160;*/</span>
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold;">public</span>&#160;<span style="font-weight: bold;">static</span>&#160;String decrypt(<span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">key</span>, <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">text</span>, <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">initializationVector</span>)
+&#160;&#160;&#160;&#160;&#160;&#160; &#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold;">throws</span>&#160;Exception {
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold; text-decoration: underline;">byte</span>[] encrypted =&#160;<span style="font-weight: bold; text-decoration: underline;">null</span>;
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold;">try</span>{
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; encrypted = Hex.decodeHex(text.toCharArray());
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; }&#160;<span style="font-weight: bold;">catch</span>&#160;(<span style="font-weight: bold; text-decoration: underline;">Exception</span> <span style="font-weight: bold; font-style: italic;">e</span>)
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; {
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; e.printStackTrace();
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; }
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; SecretKeySpec skeSpect =&#160;<span style="font-weight: bold;">new</span>&#160;SecretKeySpec(key.getBytes(),&#160;BLOWFISH);
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; AlgorithmParameterSpec iv =&#160;<span style="font-weight: bold;">new</span>&#160;IvParameterSpec(initializationVector.getBytes());
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; Cipher cipher = Cipher.getInstance(TRANSFORMATION);
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; cipher.init(<span style="font-weight: bold; text-decoration: underline;">Cipher</span>.DECRYPT_MODE, skeSpect, iv);
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold; text-decoration: underline;">byte</span>[] decrypted = cipher.doFinal(encrypted);
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold;">return</span>&#160;<span style="font-weight: bold;">new</span>&#160;String(decrypted);
+&#160;&#160;&#160;&#160;&#160;&#160; }
+&#160;&#160;&#160;&#160;&#160;&#160; <span style="font-style: italic;">/**</span>
+<span style="font-style: italic;">&#160;&#160;&#160;&#160;&#160;&#160; &#160;* Base64&#23383;&#31526;&#35299;&#30721;</span>
+<span style="font-style: italic;">&#160;&#160;&#160;&#160;&#160;&#160; &#160;*</span>
+<span style="font-style: italic;">&#160;&#160;&#160;&#160;&#160;&#160; &#160;*&#160;@param&#160;base64String</span>
+<span style="font-style: italic;">&#160;&#160;&#160;&#160;&#160;&#160; &#160;*&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; -- &#34987;&#35299;&#30721;&#23383;&#31526;</span>
+<span style="font-style: italic;">&#160;&#160;&#160;&#160;&#160;&#160; &#160;*&#160;@return&#160;&#35299;&#30721;&#21518;&#23383;&#31526;</span>
+<span style="font-style: italic;">&#160;&#160;&#160;&#160;&#160;&#160; &#160;*/</span>
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold;">public</span>&#160;<span style="font-weight: bold;">static</span>&#160;String base64Decoder(<span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">base64String</span>) {
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold;">if</span>(StringUtils.isEmpty(base64String))
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; {
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold;">return</span>&#160;base64String;
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; }
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold;">else</span>
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; {
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold;">return</span>&#160;<span style="font-weight: bold;">new</span>&#160;String(Base64.decodeBase64(base64String));
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; }
+&#160;&#160;&#160;&#160;&#160;&#160; }
+&#160;&#160;&#160;&#160;&#160;&#160; <span style="font-style: italic;">/**</span>
+<span style="font-style: italic;">&#160;&#160;&#160;&#160;&#160;&#160; &#160;* Base64&#23383;&#31526;&#32534;&#30721;</span>
+<span style="font-style: italic;">&#160;&#160;&#160;&#160;&#160;&#160; &#160;*</span>
+<span style="font-style: italic;">&#160;&#160;&#160;&#160;&#160;&#160; &#160;*&#160;@param&#160;sourceString</span>
+<span style="font-style: italic;">&#160;&#160;&#160;&#160;&#160;&#160; &#160;*&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; -- &#23383;&#31526;</span>
+<span style="font-style: italic;">&#160;&#160;&#160;&#160;&#160;&#160; &#160;*&#160;@return&#160;&#32534;&#30721;&#21518;&#23383;&#31526;</span>
+<span style="font-style: italic;">&#160;&#160;&#160;&#160;&#160;&#160; &#160;*/</span>
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold;">public</span>&#160;<span style="font-weight: bold;">static</span>&#160;String base64Encoder(<span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">sourceString</span>) {
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold;">if</span>(StringUtils.isEmpty(sourceString))
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; {
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold;">return</span>&#160;sourceString;
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; }
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold;">else</span>
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; {
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold;">return</span>&#160;Base64.encodeBase64String(sourceString.getBytes());
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; }
+&#160;&#160;&#160;&#160;&#160;&#160; }
+&#160;&#160;&#160;&#160;&#160;&#160; <span style="font-style: italic;">/**</span>
+<span style="font-style: italic;">&#160;&#160;&#160;&#160;&#160;&#160; &#160;*&#160;@param&#160;&#27979;&#35797;&#26041;&#27861;</span>
+<span style="font-style: italic;">&#160;&#160;&#160;&#160;&#160;&#160; &#160;*/</span>
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold;">public</span>&#160;<span style="font-weight: bold;">static</span>&#160;<span style="font-weight: bold; text-decoration: underline;">void</span>&#160;main(<span style="font-weight: bold; text-decoration: underline;">String</span>[] <span style="font-weight: bold; font-style: italic;">args</span>) {
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#160;TODO&#160;Auto-generated method stub</span>
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold;">try</span>&#160;{
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; String encryptStr =&#160;base64Encoder(encrypt(ENCRYPT_KEY, <span style="font-style: italic;">"&#160;tester&#160;"</span>,INITIALIZATION_VECTOR));
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; System.out.print(<span style="font-style: italic;">"tester&#21152;&#23494;&#21518;&#24471;&#21040;&#65306;"</span> + encryptStr +<span style="font-style: italic;">""</span>n<span style="font-weight: bold;">"</span><span style="font-style: italic;">);</span>
+<span style="font-style: italic;">&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; String decryptStr =&#160;decrypt(ENCRYPT_KEY,&#160;base64Decoder(encryptStr),&#160;INITIALIZATION_VECTOR);</span>
+<span style="font-style: italic;">&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; System.out.print(encryptStr+"</span>&#35299;&#23494;&#21518;&#24471;&#21040;&#65306;<span style="font-weight: bold;">"</span><span style="font-style: italic;">+decryptStr);</span>
+<span style="font-style: italic;">&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; }&#160;catch&#160;(Exception e) {</span>
+<span style="font-style: italic;">&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; //&#160;TODO&#160;Auto-generated catch block</span>
+<span style="font-style: italic;">&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; e.printStackTrace();</span>
+<span style="font-style: italic;">&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; }</span>
+<span style="font-style: italic;">&#160;&#160;&#160;&#160;&#160;&#160; }</span>
+<span style="font-style: italic;">}</span>
+</pre>
+</div>
+
+
+<p>
+实行结果：
+</p>
+<pre class="example">
+
+tester加密后得到：MzA2YThlZDFlNjI2MmYwYTc2Y2VlZTc5M2ZjMDQ0YjI=
+MzA2YThlZDFlNjI2MmYwYTc2Y2VlZTc5M2ZjMDQ0YjI=解密后得到：tester
+
+
+</pre>
+</div>
+</div>
+
+<div id="outline-container-orgc34dea6" class="outline-2">
+<h2 id="orgc34dea6">其他语言同类实现方法介绍</h2>
+<div class="outline-text-2" id="text-orgc34dea6">
+</div>
+<div id="outline-container-org666bf67" class="outline-3">
+<h3 id="org666bf67">Php：</h3>
+<div class="outline-text-3" id="text-org666bf67">
+<pre class="example">
+string mcrypt\_cbc ( int $cipher , string $key , string $data , int $mode [, string$iv ] )
+
+</pre>
+</div>
+</div>
+<div id="outline-container-org4f49c32" class="outline-3">
+<h3 id="org4f49c32">C*：</h3>
+<div class="outline-text-3" id="text-org4f49c32">
+<pre class="example">
+CryptoStream cs = new CryptoStream(ms, des.CreateEncryptor(), CryptoStreamMode.Write)
+
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgc164195" class="outline-2">
+<h2 id="orgc164195">DES加密算法介绍</h2>
+<div class="outline-text-2" id="text-orgc164195">
+<p>
+DES算法为密码体制中的对称密码体制，又被成为美国数据加密标准，是1972年美国IBM公司
+研制的对称密码体制加密算法。其密钥长度为56位，明文按64位进行分组，将分组后的明文
+组和56位的密钥按位替代或交换的方法形成密文组的加密方法。
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-org1c4708d" class="outline-2">
+<h2 id="org1c4708d">基本原理</h2>
+<div class="outline-text-2" id="text-org1c4708d">
+<p>
+入口参数有三个:key、data、mode。 key为加密解密使用的密钥，data为加密解密的数据，
+mode为其工作模式。当模式为加密模式时，明文按照64位进行分组，形成明文组，key用于
+对数据加密，当模式为解密模式时，key用于对数据解密。实际运用中，密钥只用到了64位
+中的56位，这样才具有高的安全性。
+</p>
+
+<p>
+DES( Data Encryption Standard)算法，于1977年得到美国政府的正式许可，是一种用56位
+密钥来加密64位数据的方法。虽然56位密钥的DES算法已经风光不在,而且常有用Des加密的
+明文被破译的报道,但是了解一下昔日美国的标准加密算法总是有益的,而且目前DES算法得
+到了广泛的应用,在某些场合,仍然发挥着余热。
+</p>
+</div>
+
+
+<div id="outline-container-org9611df1" class="outline-3">
+<h3 id="org9611df1">常见加密模式介绍：</h3>
+<div class="outline-text-3" id="text-org9611df1">
+</div>
+<div id="outline-container-orgd88bfad" class="outline-4">
+<h4 id="orgd88bfad">ECB(Electronic Code Book:电码本)</h4>
+<div class="outline-text-4" id="text-orgd88bfad">
+<p>
+ECB是最简单的模式，同样的明文分组总是加密成相同的密文分组。这对于发送单一的块数
+据来说是非常好的，如密钥。但对执行一个加密的信息流来说不是很好，因为如果相同的明
+文多次发送以后，同样的密文也会被多次发送。
+</p>
+
+<p>
+ECB最大的弱点是对每一个块用相同的方式进行加密。如果我们的密钥或者数据不断发生变
+化，ECB是完全安全的。但是如果类似的块经过同样的密钥加密发出以后，攻击者可能获得
+一些我们并不想让别人知道的信息。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org5945a2e" class="outline-4">
+<h4 id="org5945a2e">CBC(Cipher Block Chaining:密码分组链接)</h4>
+<div class="outline-text-4" id="text-org5945a2e">
+<p>
+CBC模式改变了加密方式，同样的明文分组不一定加密或解密同样的密文块，因此解决了ECB
+存在的主要问题。CBC使用前一分组的信息加密当前分组。因此和ECB模式大不相同。这个方
+法依然存在问题，那就是相同的信息仍然加密成相同的密文，因为所有的分组是同时变成密
+文分组的。为了解决这个问题，我们引入一个Initial ization Vector(初始化向量)，也就
+是前不久有人问到的IV问题。IV仅仅是一个初始化加密程序的随机数。它无需秘密保存，但
+队每一个信息来说它都是不同的，通过这个方式，即使有两条相同的信息，只要他们有不同
+的IV，那么他们加密后的密文也是不同的。从这个意义上来说，初始化向量无疑就和口令加
+密过程中使用的盐值是一样的。
+</p>
+
+<p>
+CBC很适合文本传输，但它每一次都需要传送一个完整的数据块，一般选8个字符。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgb7ff316" class="outline-4">
+<h4 id="orgb7ff316">CFB(Cipher FeedBack:密码反馈)</h4>
+<div class="outline-text-4" id="text-orgb7ff316">
+<p>
+CFB的工作方式与CBC类似，但它可以执行更小的数据块，典型的有8位，这非常适合加密像
+聊天对话这样的信息，因为每次可以发送单一的字节数据块。和CBC一样，C FB也需要一个
+IV，且相同及钥发送的每条信息的IV都必须是唯一的。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgb4cfd8a" class="outline-4">
+<h4 id="orgb4cfd8a">OFB(Output FeedBack:输出反馈)</h4>
+<div class="outline-text-4" id="text-orgb4cfd8a">
+<p>
+OFB除了在传输中能给数据提供更好的保护，防止数据丢失外，其他和CFB类似。密文中一位
+出错，也只造成明文中的一位出错，其他的方式会造成整个块丢失。
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org56f33ef" class="outline-3">
+<h3 id="org56f33ef">本文采用的是CBC(Cipher Block Chaining:密码分组链接)的模式。</h3>
+</div>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>maven tips</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">maven tips</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#maven"><div class="category">maven</div></a> </div>
+<div class="char-counter">2016-07-11</div>
+        <div id="content">
+
+<div id="outline-container-org470dbe2" class="outline-2">
+<h2 id="org470dbe2">导出到默认目录</h2>
+<div class="outline-text-2" id="text-org470dbe2">
+<pre class="example">
+mvn dependency:copy-dependencies
+
+</pre>
+</div>
+</div>
+
+<div id="outline-container-orgea36f16" class="outline-2">
+<h2 id="orgea36f16">导出到自定义目录中</h2>
+<div class="outline-text-2" id="text-orgea36f16">
+<pre class="example">
+mvn dependencies:copy-dependencies -DoutputDirectory=lib
+
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org1c4aa95" class="outline-2">
+<h2 id="org1c4aa95">同时可以设置依赖级别，通常使用compile级别</h2>
+<div class="outline-text-2" id="text-org1c4aa95">
+<pre class="example">
+mvn dependency:copy-dependencies -DoutputDirectory=lib -DincludeScope=compile
+mvn dependency:copy-dependencies -DoutputDirectory=lib -DincludeScope=runtime
+
+</pre>
+</div>
+</div>
+
+<div id="outline-container-orgdca4b66" class="outline-2">
+<h2 id="orgdca4b66">跳过测试</h2>
+<div class="outline-text-2" id="text-orgdca4b66">
+<pre class="example">
+mvn package -Dmaven.test.skip=true
+
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org979e33c" class="outline-2">
+<h2 id="org979e33c">maven打包时的文件拷贝</h2>
+<div class="outline-text-2" id="text-org979e33c">
+<p>
+通常打包外部资源文件时，都使用maven-dependency-plugin或是maven-resources-plugin
+插件。但是项目中遇见一个问题，在打包jnotify的动态链接库时，使用上面两个插件进行
+文件拷贝时，程序会无法识别到打包后dll文件。多次尝试后使用了maven-antrun-plugin进
+行拷贝，问题得到解决。其拷贝配置如下:
+</p>
+<div class="org-src-container">
+<pre class="src src-xml">&lt;<span style="font-weight: bold;">plugin</span>&gt;
+  &lt;<span style="font-weight: bold;">groupId</span>&gt;org.apache.maven.plugins&lt;/<span style="font-weight: bold;">groupId</span>&gt;
+  &lt;<span style="font-weight: bold;">artifactId</span>&gt;maven-antrun-plugin&lt;/<span style="font-weight: bold;">artifactId</span>&gt;
+  &lt;<span style="font-weight: bold;">version</span>&gt;1.7&lt;/<span style="font-weight: bold;">version</span>&gt;
+  &lt;<span style="font-weight: bold;">executions</span>&gt;
+    &lt;<span style="font-weight: bold;">execution</span>&gt;
+      &lt;<span style="font-weight: bold;">id</span>&gt;copy-native-libraries&lt;/<span style="font-weight: bold;">id</span>&gt;
+      &lt;<span style="font-weight: bold;">phase</span>&gt;package&lt;/<span style="font-weight: bold;">phase</span>&gt;
+      &lt;<span style="font-weight: bold;">goals</span>&gt;
+        &lt;<span style="font-weight: bold;">goal</span>&gt;run&lt;/<span style="font-weight: bold;">goal</span>&gt;
+      &lt;/<span style="font-weight: bold;">goals</span>&gt;
+      &lt;<span style="font-weight: bold;">configuration</span>&gt;
+        &lt;<span style="font-weight: bold;">target</span>&gt;
+          &lt;<span style="font-weight: bold;">echo</span> <span style="font-weight: bold; font-style: italic;">message</span>=<span style="font-style: italic;">"copy native libraries"</span> /&gt;
+          &lt;<span style="font-weight: bold;">copy</span> <span style="font-weight: bold; font-style: italic;">todir</span>=<span style="font-style: italic;">"${project.build.directory}/lib"</span>&gt;
+            &lt;<span style="font-weight: bold;">fileset</span> <span style="font-weight: bold; font-style: italic;">dir</span>=<span style="font-style: italic;">"${basedir}/lib"</span>&gt;&lt;/<span style="font-weight: bold;">fileset</span>&gt;
+          &lt;/<span style="font-weight: bold;">copy</span>&gt;
+        &lt;/<span style="font-weight: bold;">target</span>&gt;
+      &lt;/<span style="font-weight: bold;">configuration</span>&gt;
+    &lt;/<span style="font-weight: bold;">execution</span>&gt;
+  &lt;/<span style="font-weight: bold;">executions</span>&gt;
+&lt;/<span style="font-weight: bold;">plugin</span>&gt;
+
+</pre>
+</div>
+
+<p>
+使用assembly插件，或者执行shell都可以。
+</p>
+</div>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

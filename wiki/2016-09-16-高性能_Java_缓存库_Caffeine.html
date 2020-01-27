@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>高性能 Java 缓存库 — Caffeine</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">高性能 Java 缓存库 — Caffeine</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#java"><div class="category">java</div></a> <a href="https://bruceasu.github.io/tags.html#reprint"><div class="category">reprint</div></a> </div>
+<div class="char-counter">2016-09-16</div>
+        <div id="content">
+<nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#org31cb805">高性能 Java 缓存库 — Caffeine</a>
+<ul>
+<li><a href="#orgd3beed8">1、介绍</a></li>
+<li><a href="#orgb9cae71">2、依赖</a></li>
+<li><a href="#org95667d9">3、填充缓存</a>
+<ul>
+<li><a href="#orgd0ec211">3.1、手动填充</a></li>
+<li><a href="#org2b64749">3.2、同步加载</a></li>
+<li><a href="#org5f95e7c">3.3、异步加载</a></li>
+</ul>
+</li>
+<li><a href="#orgc90bf26">4、值回收</a>
+<ul>
+<li><a href="#orgcb9a409">4.1、基于大小回收</a></li>
+<li><a href="#org68eeb12">4.2、基于时间回收</a></li>
+<li><a href="#org2ec34a8">4.3、基于引用回收</a></li>
+</ul>
+</li>
+<li><a href="#orgdfe78ab">5、刷新</a></li>
+<li><a href="#orgb2ec990">6、统计</a></li>
+<li><a href="#orgdd75d70">7、结论</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</nav>
+
+<div id="outline-container-org31cb805" class="outline-2">
+<h2 id="org31cb805">高性能 Java 缓存库 — Caffeine</h2>
+<div class="outline-text-2" id="text-org31cb805">
+<p>
+<a href="http://www.baeldung.com/java-caching-caffeine">http://www.baeldung.com/java-caching-caffeine</a>
+作者：baeldung
+译者：oopsguy.com
+</p>
+</div>
+
+<div id="outline-container-orgd3beed8" class="outline-3">
+<h3 id="orgd3beed8">1、介绍</h3>
+<div class="outline-text-3" id="text-orgd3beed8">
+<p>
+在本文中，我们来看看 Caffeine — 一个高性能的 Java 缓存库。
+</p>
+
+<p>
+缓存和 Map 之间的一个根本区别在于缓存可以回收存储的 item。
+</p>
+
+<p>
+回收策略为在指定时间删除哪些对象。此策略直接影响缓存的命中率 — 缓存库的一个重要
+特征。
+</p>
+
+<p>
+Caffeine 因使用 Window TinyLfu 回收策略，提供了一个近乎最佳的命中率。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgb9cae71" class="outline-3">
+<h3 id="orgb9cae71">2、依赖</h3>
+<div class="outline-text-3" id="text-orgb9cae71">
+<p>
+我们需要在 pom.xml 中添加 caffeine 依赖：
+</p>
+<div class="org-src-container">
+<pre class="src src-xml">&lt;<span style="font-weight: bold;">dependency</span>&gt;
+    &lt;<span style="font-weight: bold;">groupId</span>&gt;com.github.ben-manes.caffeine&lt;/<span style="font-weight: bold;">groupId</span>&gt;
+    &lt;<span style="font-weight: bold;">artifactId</span>&gt;caffeine&lt;/<span style="font-weight: bold;">artifactId</span>&gt;
+    &lt;<span style="font-weight: bold;">version</span>&gt;2.5.5&lt;/<span style="font-weight: bold;">version</span>&gt;
+&lt;/<span style="font-weight: bold;">dependency</span>&gt;
+
+</pre>
+</div>
+
+<p>
+您可以在 Maven Central 上找到最新版本的 caffeine。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org95667d9" class="outline-3">
+<h3 id="org95667d9">3、填充缓存</h3>
+<div class="outline-text-3" id="text-org95667d9">
+<p>
+让我们来了解一下 Caffeine 的三种缓存填充策略：手动、同步加载和异步加载。
+</p>
+
+<p>
+首先，我们为要缓存中存储的值类型写一个类：
+</p>
+<div class="org-src-container">
+<pre class="src src-java"><span style="font-weight: bold;">class</span> <span style="font-weight: bold; text-decoration: underline;">DataObject</span> {
+    <span style="font-weight: bold;">private</span> <span style="font-weight: bold;">final</span> <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">data</span>;
+
+    <span style="font-weight: bold;">private</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">objectCounter</span> = 0;
+    <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">standard constructors/getters</span>
+
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold; text-decoration: underline;">DataObject</span> <span style="font-weight: bold;">get</span>(<span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">data</span>) {
+        objectCounter++;
+        <span style="font-weight: bold;">return</span> <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">DataObject</span>(data);
+    }
+}
+</pre>
+</div>
+</div>
+
+<div id="outline-container-orgd0ec211" class="outline-4">
+<h4 id="orgd0ec211">3.1、手动填充</h4>
+<div class="outline-text-4" id="text-orgd0ec211">
+<p>
+在此策略中，我们手动将值放入缓存之后再检索。
+</p>
+
+<p>
+让我们初始化缓存：
+</p>
+<div class="org-src-container">
+<pre class="src src-java"><span style="font-weight: bold; text-decoration: underline;">Cache</span>&lt;<span style="font-weight: bold; text-decoration: underline;">String</span>, <span style="font-weight: bold; text-decoration: underline;">DataObject</span>&gt; <span style="font-weight: bold; font-style: italic;">cache</span> = Caffeine.newBuilder()
+  .expireAfterWrite(1, <span style="font-weight: bold; text-decoration: underline;">TimeUnit</span>.MINUTES)
+  .maximumSize(100)
+  .build();
+</pre>
+</div>
+
+<p>
+现在，我们可以使用 getIfPresent 方法从缓存中获取一些值。 如果缓存中不存在此值，
+则此方法将返回 null：
+</p>
+<pre class="example">
+String key = "A";
+DataObject dataObject = cache.getIfPresent(key);
+
+assertNull(dataObject);
+</pre>
+
+<p>
+我们可以使用 put 方法手动填充缓存：
+</p>
+<pre class="example">
+cache.put(key, dataObject);
+dataObject = cache.getIfPresent(key);
+
+assertNotNull(dataObject);
+
+</pre>
+
+<p>
+我们也可以使用 get 方法获取值，该方法将一个参数为 key 的 Function 作为参数传入。
+如果缓存中不存在该键，则该函数将用于提供回退值，该值在计算后插入缓存中：
+</p>
+<pre class="example">
+dataObject = cache
+  .get(key, k -&gt; DataObject.get("Data for A"));
+
+assertNotNull(dataObject);
+assertEquals("Data for A", dataObject.getData())
+
+</pre>
+
+<p>
+get 方法可以原子方式执行计算。这意味着您只进行一次计算 — 即使多个线程同时请求该
+值。这就是为什么使用 get 优于 getIfPresent。
+</p>
+
+<p>
+有时我们需要手动使一些缓存的值失效：
+</p>
+<pre class="example">
+cache.invalidate(key);
+dataObject = cache.getIfPresent(key);
+
+assertNull(dataObject);
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org2b64749" class="outline-4">
+<h4 id="org2b64749">3.2、同步加载</h4>
+<div class="outline-text-4" id="text-org2b64749">
+<p>
+这种加载缓存的方法使用了与用于初始化值的 Function 相似的手动策略的 get 方法。让
+我们看看如何使用它。
+</p>
+
+<p>
+首先，我们需要初始化缓存：
+</p>
+<pre class="example">
+LoadingCache&lt;String, DataObject&gt; cache = Caffeine.newBuilder()
+  .maximumSize(100)
+  .expireAfterWrite(1, TimeUnit.MINUTES)
+  .build(k -&gt; DataObject.get("Data for " + k));
+
+</pre>
+
+<p>
+现在我们可以使用 get 方法检索值：
+</p>
+<pre class="example">
+DataObject dataObject = cache.get(key);
+
+assertNotNull(dataObject);
+assertEquals("Data for " + key, dataObject.getData());
+
+</pre>
+
+<p>
+我们也可以使用 getAll 方法获取一组值：
+</p>
+<pre class="example">
+Map&lt;String, DataObject&gt; dataObjectMap
+  = cache.getAll(Arrays.asList("A", "B", "C"));
+
+assertEquals(3, dataObjectMap.size());
+
+</pre>
+
+<p>
+从传递给 build 方法的底层后端初始化函数检索值。 这使得可以使用缓存作为访问值的主
+要门面（Facade）。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org5f95e7c" class="outline-4">
+<h4 id="org5f95e7c">3.3、异步加载</h4>
+<div class="outline-text-4" id="text-org5f95e7c">
+<p>
+此策略的作用与之前相同，但是以异步方式执行操作，并返回一个包含值的
+CompletableFuture：
+</p>
+<pre class="example">
+AsyncLoadingCache&lt;String, DataObject&gt; cache = Caffeine.newBuilder()
+  .maximumSize(100)
+  .expireAfterWrite(1, TimeUnit.MINUTES)
+  .buildAsync(k -&gt; DataObject.get("Data for " + k));
+
+</pre>
+<p>
+我们可以以相同的方式使用 get 和 getAll 方法，同时考虑到他们返回的是
+CompletableFuture：
+</p>
+<pre class="example">
+String key = "A";
+
+cache.get(key).thenAccept(dataObject -&gt; {
+    assertNotNull(dataObject);
+    assertEquals("Data for " + key, dataObject.getData());
+});
+
+cache.getAll(Arrays.asList("A", "B", "C"))
+  .thenAccept(dataObjectMap -&gt; assertEquals(3, dataObjectMap.size()));
+
+</pre>
+<p>
+CompletableFuture 有许多有用的 API，您可以在此文中获取更多内容。
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgc90bf26" class="outline-3">
+<h3 id="orgc90bf26">4、值回收</h3>
+<div class="outline-text-3" id="text-orgc90bf26">
+<p>
+Caffeine 有三个值回收策略：基于大小，基于时间和参考。
+</p>
+</div>
+
+<div id="outline-container-orgcb9a409" class="outline-4">
+<h4 id="orgcb9a409">4.1、基于大小回收</h4>
+<div class="outline-text-4" id="text-orgcb9a409">
+<p>
+这种回收方式假定当超过配置的缓存大小限制时会发生回收。 获取大小有两种方法：缓存
+中计数对象，或获取权重。
+</p>
+
+<p>
+让我们看看如何计算缓存中的对象。当缓存初始化时，其大小等于零：
+</p>
+<pre class="example">
+LoadingCache&lt;String, DataObject&gt; cache = Caffeine.newBuilder()
+  .maximumSize(1)
+  .build(k -&gt; DataObject.get("Data for " + k));
+
+assertEquals(0, cache.estimatedSize());
+
+</pre>
+<p>
+当我们添加一个值时，大小明显增加：
+</p>
+<pre class="example">
+cache.get("A");
+
+assertEquals(1, cache.estimatedSize());
+
+</pre>
+<p>
+我们可以将第二个值添加到缓存中，这导致第一个值被删除：
+</p>
+<pre class="example">
+cache.get("B");
+cache.cleanUp();
+
+assertEquals(1, cache.estimatedSize());
+
+</pre>
+<p>
+值得一提的是，在获取缓存大小之前，我们调用了 cleanUp 方法。 这是因为缓存回收被异
+步执行，这种方法有助于等待回收的完成。
+</p>
+
+<p>
+我们还可以传递一个 weigher Function 来获取缓存的大小：
+</p>
+<pre class="example">
+LoadingCache&lt;String, DataObject&gt; cache = Caffeine.newBuilder()
+  .maximumWeight(10)
+  .weigher((k,v) -&gt; 5)
+  .build(k -&gt; DataObject.get("Data for " + k));
+
+assertEquals(0, cache.estimatedSize());
+
+cache.get("A");
+assertEquals(1, cache.estimatedSize());
+
+cache.get("B");
+assertEquals(2, cache.estimatedSize());
+
+</pre>
+<p>
+当 weight 超过 10 时，值将从缓存中删除：
+</p>
+<pre class="example">
+cache.get("C");
+cache.cleanUp();
+
+assertEquals(2, cache.estimatedSize());
+
+</pre>
+</div>
+</div>
+<div id="outline-container-org68eeb12" class="outline-4">
+<h4 id="org68eeb12">4.2、基于时间回收</h4>
+<div class="outline-text-4" id="text-org68eeb12">
+<p>
+这种回收策略是基于条目的到期时间，有三种类型：
+</p>
+<p class="verse">
+访问后到期 — 从上次读或写发生后，条目即过期。<br>
+写入后到期 — 从上次写入发生之后，条目即过期<br>
+自定义策略 — 到期时间由 Expiry 实现独自计算<br>
+</p>
+
+<p>
+让我们使用 expireAfterAccess 方法配置访问后过期策略：
+</p>
+<pre class="example">
+LoadingCache&lt;String, DataObject&gt; cache = Caffeine.newBuilder()
+  .expireAfterAccess(5, TimeUnit.MINUTES)
+  .build(k -&gt; DataObject.get("Data for " + k));
+
+</pre>
+
+<p>
+要配置写入后到期策略，我们使用 expireAfterWrite 方法：
+</p>
+<pre class="example">
+cache = Caffeine.newBuilder()
+  .expireAfterWrite(10, TimeUnit.SECONDS)
+  .weakKeys()
+  .weakValues()
+  .build(k -&gt; DataObject.get("Data for " + k));
+
+</pre>
+<p>
+要初始化自定义策略，我们需要实现 Expiry 接口：
+</p>
+<pre class="example">
+cache = Caffeine.newBuilder().expireAfter(new Expiry&lt;String, DataObject&gt;() {
+    @Override
+    public long expireAfterCreate(
+      String key, DataObject value, long currentTime) {
+        return value.getData().length() * 1000;
+    }
+    @Override
+    public long expireAfterUpdate(
+      String key, DataObject value, long currentTime, long currentDuration) {
+        return currentDuration;
+    }
+    @Override
+    public long expireAfterRead(
+      String key, DataObject value, long currentTime, long currentDuration) {
+        return currentDuration;
+    }
+}).build(k -&gt; DataObject.get("Data for " + k));
+
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org2ec34a8" class="outline-4">
+<h4 id="org2ec34a8">4.3、基于引用回收</h4>
+<div class="outline-text-4" id="text-org2ec34a8">
+<p>
+我们可以将缓存配置为启用缓存键值的垃圾回收。为此，我们将 key 和 value 配置为 弱
+引用，并且我们可以仅配置软引用以进行垃圾回收。
+</p>
+
+<p>
+当没有任何对对象的强引用时，使用 WeakRefence 可以启用对象的垃圾收回收。
+SoftReference 允许对象根据 JVM 的全局最近最少使用（Least-Recently-Used）的策略进
+行垃圾回收。有关 Java 引用的更多详细信息，请参见此处。
+</p>
+
+<p>
+我们应该使用 Caffeine.weakKeys()、Caffeine.weakValues() 和 Caffeine.softValues()
+来启用每个选项：
+</p>
+<pre class="example">
+LoadingCache&lt;String, DataObject&gt; cache = Caffeine.newBuilder()
+  .expireAfterWrite(10, TimeUnit.SECONDS)
+  .weakKeys()
+  .weakValues()
+  .build(k -&gt; DataObject.get("Data for " + k));
+
+cache = Caffeine.newBuilder()
+  .expireAfterWrite(10, TimeUnit.SECONDS)
+  .softValues()
+  .build(k -&gt; DataObject.get("Data for " + k));
+
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgdfe78ab" class="outline-3">
+<h3 id="orgdfe78ab">5、刷新</h3>
+<div class="outline-text-3" id="text-orgdfe78ab">
+<p>
+可以将缓存配置为在定义的时间段后自动刷新条目。让我们看看如何使用 refreshAfterWrite 方法：
+</p>
+<pre class="example">
+Caffeine.newBuilder()
+  .refreshAfterWrite(1, TimeUnit.MINUTES)
+  .build(k -&gt; DataObject.get("Data for " + k));
+
+</pre>
+<p>
+这里我们应该要明白 expireAfter 和 refreshAfter 之间的区别。 当请求过期条目时，执
+行将发生阻塞，直到 build Function 计算出新值为止。
+</p>
+
+<p>
+但是，如果条目可以刷新，则缓存将返回一个旧值，并异步重新加载该值。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgb2ec990" class="outline-3">
+<h3 id="orgb2ec990">6、统计</h3>
+<div class="outline-text-3" id="text-orgb2ec990">
+<p>
+Caffeine 有一种记录缓存使用情况的统计方式：
+</p>
+<pre class="example">
+LoadingCache&lt;String, DataObject&gt; cache = Caffeine.newBuilder()
+  .maximumSize(100)
+  .recordStats()
+  .build(k -&gt; DataObject.get("Data for " + k));
+cache.get("A");
+cache.get("A");
+
+assertEquals(1, cache.stats().hitCount());
+assertEquals(1, cache.stats().missCount());
+
+</pre>
+<p>
+我们也可能会传入 recordStats supplier，创建一个 StatsCounter 的实现。每次与统计
+相关的更改将推送此对象。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgdd75d70" class="outline-3">
+<h3 id="orgdd75d70">7、结论</h3>
+<div class="outline-text-3" id="text-orgdd75d70">
+<p>
+在本文中，我们熟悉了 Java 的 Caffeine 缓存库。 我们看到了如何配置和填充缓存，以
+及如何根据我们的需要选择适当的到期或刷新策略。
+</p>
+
+<p>
+文中示例的源代码可以在 Github 上找到。
+</p>
+</div>
+</div>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

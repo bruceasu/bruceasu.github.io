@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>如何实现“返回顶部”的页面效果（转）</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">如何实现“返回顶部”的页面效果（转）</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#web"><div class="category">web</div></a> <a href="https://bruceasu.github.io/tags.html#reprint"><div class="category">reprint</div></a> </div>
+<div class="char-counter">2016-06-01</div>
+        <div id="content">
+<div class="org-center">
+<p>
+如何实现“返回顶部”的页面效果
+</p>
+</div>
+
+<div class="org-center">
+<p>
+廖雪峰
+</p>
+</div>
+
+<p>
+在很多网站中，如果滚动到页面下方，会在右下角一个固定位置出现“返回顶部”的按钮，点
+一下浏览器滚动条就自动回到顶部了，今天研究了一下，实现的效果如图：
+</p>
+
+<p>
+首先必须感谢知乎，因为这个按钮的样式就是照抄他们的，纯CSS实现，无图片，我只改了
+颜色。关于如何用CSS画三角形，参考纯CSS气泡效果一文。
+</p>
+
+<p>
+首先，在body中添加“返回顶部”按钮：
+</p>
+<div class="org-src-container">
+<pre class="src src-html">&lt;<span style="font-weight: bold;">body</span>&gt;
+    &lt;<span style="font-weight: bold;">div</span> <span style="font-weight: bold; font-style: italic;">class</span>=<span style="font-style: italic;">"go-top"</span>&gt;
+        &lt;<span style="font-weight: bold;">div</span> <span style="font-weight: bold; font-style: italic;">class</span>=<span style="font-style: italic;">"arrow"</span>&gt;&lt;/<span style="font-weight: bold;">div</span>&gt;
+        &lt;<span style="font-weight: bold;">div</span> <span style="font-weight: bold; font-style: italic;">class</span>=<span style="font-style: italic;">"stick"</span>&gt;&lt;/<span style="font-weight: bold;">div</span>&gt;
+    &lt;/<span style="font-weight: bold;">div</span>&gt;
+    ...
+&lt;/<span style="font-weight: bold;">body</span>&gt;
+
+</pre>
+</div>
+
+<p>
+重点是go-top的CSS定义：
+</p>
+<div class="org-src-container">
+<pre class="src src-css"><span style="font-weight: bold;">div.go-top </span>{
+  <span style="font-weight: bold;">display</span>: none;
+  <span style="font-weight: bold;">opacity</span>: 0.6;
+  <span style="font-weight: bold;">z-index</span>: 999999;
+  <span style="font-weight: bold;">position</span>: fixed;
+  <span style="font-weight: bold;">bottom</span>: 113px;
+  <span style="font-weight: bold;">left</span>: 90%;
+  <span style="font-weight: bold;">margin-left</span>: 40px;
+  <span style="font-weight: bold;">border</span>: 1px solid <span style="color: #000000; background-color: #a38a54;">#a38a54</span>;
+  <span style="font-weight: bold;">width</span>: 38px;
+  <span style="font-weight: bold;">height</span>: 38px;
+  <span style="font-weight: bold;">background-color</span>: <span style="color: #000000; background-color: #eddec2;">#eddec2</span>;
+  <span style="font-weight: bold;">border-radius</span>: 3px;
+  <span style="font-weight: bold;">cursor</span>: pointer;
+}
+
+<span style="font-weight: bold;">div.go-top:hover </span>{
+  <span style="font-weight: bold;">opacity</span>: 1;
+  <span style="font-weight: bold;">filter</span>: alpha(opacity=100);
+}
+
+<span style="font-weight: bold;">div.go-top div.arrow </span>{
+  <span style="font-weight: bold;">position</span>: absolute;
+  <span style="font-weight: bold;">left</span>: 10px;
+  <span style="font-weight: bold;">top</span>: -1px;
+  <span style="font-weight: bold;">width</span>: 0;
+  <span style="font-weight: bold;">height</span>: 0;
+  <span style="font-weight: bold;">border</span>: 9px solid transparent;
+  <span style="font-weight: bold;">border-bottom-color</span>: <span style="color: #ffffff; background-color: #cc3333;">#cc3333</span>;
+}
+
+<span style="font-weight: bold;">div.go-top div.stick </span>{
+  <span style="font-weight: bold;">position</span>: absolute;
+  <span style="font-weight: bold;">left</span>: 15px;
+  <span style="font-weight: bold;">top</span>: 15px;
+  <span style="font-weight: bold;">width</span>: 8px;
+  <span style="font-weight: bold;">height</span>: 14px;
+  <span style="font-weight: bold;">display</span>: block;
+  <span style="font-weight: bold;">background-color</span>: <span style="color: #ffffff; background-color: #cc3333;">#cc3333</span>;
+  <span style="font-weight: bold; font-style: italic;">-webkit-border-radius</span>: 1px;
+  <span style="font-weight: bold; font-style: italic;">-moz-border-radius</span>: 1px;
+  <span style="font-weight: bold;">border-radius</span>: 1px;
+}
+</pre>
+</div>
+
+
+<p>
+使用fixed定位，让按钮始终出现在右下角，通过设定left:90%可以使按钮在右方出现，但
+又不会太紧贴滚动条。按钮默认不可见，当滚动页面到一定高度后，按钮出现，这里用
+jQuery实现，代码相当简单：
+</p>
+<div class="org-src-container">
+<pre class="src src-javascript">$(<span style="font-weight: bold;">function</span>() {
+    $(window).scroll(<span style="font-weight: bold;">function</span>() {
+        <span style="font-weight: bold;">if</span> ($(window).scrollTop() &gt; 1000)
+            $(<span style="font-style: italic;">'div.go-top'</span>).show();
+        <span style="font-weight: bold;">else</span>
+            $(<span style="font-style: italic;">'div.go-top'</span>).hide();
+    });
+    $(<span style="font-style: italic;">'div.go-top'</span>).click(<span style="font-weight: bold;">function</span>() {
+        $(<span style="font-style: italic;">'html, body'</span>).animate({scrollTop: 0}, 1000);
+    });
+});
+
+</pre>
+</div>
+
+<p>
+当按下按钮时，有动画效果返回顶部。
+</p>
+
+<p>
+jQuery实在是太强大了，以至于如果你还不会jQuery那你永远都不可能成为一个真正的前端
+工程师！
+</p>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>使用共享内存查询纯真IP库(微秒级)</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">使用共享内存查询纯真IP库(微秒级)</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#c"><div class="category">c</div></a> </div>
+<div class="char-counter">2016-05-26</div>
+        <div id="content">
+<p>
+纯真IP库是网上一种比较完整的常用的ip库，基本上每5天更新一次。我写了个程序通过把
+ip库加载到共享内存里，在42万条数据下，单次查询能够达到微秒级。
+</p>
+
+<div class="org-src-container">
+<pre class="src src-C"><span style="font-weight: bold; font-style: italic;">/*</span>
+<span style="font-weight: bold; font-style: italic;">iplocation.c</span>
+<span style="font-weight: bold; font-style: italic;">&#21151;&#33021;&#65306;&#26412;&#31243;&#24207;&#26159;&#25226;qq&#32431;&#30495;ip&#25968;&#25454;&#24211;&#25991;&#20214;&#21152;&#36733;&#21040;&#20849;&#20139;&#20869;&#23384;&#37324;&#65292;&#36890;&#36807;&#21442;&#25968;&#26597;&#25214;&#20986;&#23545;&#24212;&#30340;&#25152;&#23646;&#30340;ip&#27573;&#65292;&#21644;&#22320;&#29702;&#20301;&#32622;&#65292;&#20351;&#29992;&#20849;&#20139;&#20869;&#23384;&#21487;&#20197;&#20351;&#26597;&#35810;&#19968;&#27425;&#22312;&#32435;&#31186;&#32423;&#12290;</span>
+<span style="font-weight: bold; font-style: italic;">      qq&#32431;&#30495;ip&#25968;&#25454;&#24211;&#25991;&#20214;&#26684;&#24335;&#21487;&#20197;&#26597;&#30475;&#65306;http://lumaqq.linuxsir.org/article/qqwry_format_detail.html</span>
+<span style="font-weight: bold; font-style: italic;">      qq&#32431;&#30495;ip&#25968;&#25454;&#24211;&#23448;&#32593;&#19979;&#36733;&#22320;&#22336;&#65306;http://www.cz88.net/fox/ipdat.shtml,&#38656;&#35201;&#23433;&#35013;&#65292;&#23433;&#35013;&#23436;&#21518;&#25226;qqwry.dat&#25335;&#20986;&#21363;&#21487;&#65292;&#20063;&#21487;&#20174;&#32593;&#19978;&#25214;&#12290;</span>
+
+<span style="font-weight: bold; font-style: italic;">&#20316;&#32773;&#65306;yifangyou</span>
+
+<span style="font-weight: bold; font-style: italic;">&#25104;&#21151;&#36816;&#34892;&#29615;&#22659;:</span>
+<span style="font-weight: bold; font-style: italic;">CentOS 5 i386</span>
+<span style="font-weight: bold; font-style: italic;">gcc version 4.1.2 20071124 (Red Hat 4.1.2-42)</span>
+
+<span style="font-weight: bold; font-style: italic;">&#26412;&#27425;&#27979;&#35797;&#20351;&#29992;&#30340;ip&#24211;&#26159;</span>
+<span style="font-weight: bold; font-style: italic;">-------------------------</span>
+<span style="font-weight: bold; font-style: italic;">&#35760;&#24405;&#24635;&#25968;&#65306;429555&#26465;</span>
+<span style="font-weight: bold; font-style: italic;">&#26356;&#26032;&#26085;&#26399;&#65306;2011&#24180;06&#26376;05&#26085;</span>
+<span style="font-weight: bold; font-style: italic;">&#25968;&#25454;&#24211;&#29256;&#26412;&#65306;&#32431;&#30495;</span>
+
+<span style="font-weight: bold; font-style: italic;">&#36755;&#20837;&#21442;&#25968;&#65306;ip</span>
+<span style="font-weight: bold; font-style: italic;">    &#24403;&#36755;&#20837;255.255.255.255&#26174;&#31034;&#25968;&#25454;&#24211;&#29256;&#26412;</span>
+
+<span style="font-weight: bold; font-style: italic;">ubuntu :</span>
+<span style="font-weight: bold; font-style: italic;">    apt-get install build-essential</span>
+
+<span style="font-weight: bold; font-style: italic;">&#32534;&#35793;&#65306;</span>
+<span style="font-weight: bold; font-style: italic;">    gcc -o iplocation iplocation.c</span>
+
+<span style="font-weight: bold; font-style: italic;">&#36816;&#34892;&#65306;</span>
+<span style="font-weight: bold; font-style: italic;">    [root@localhost ~]# ./iplocation 58.62.69.255</span>
+<span style="font-weight: bold; font-style: italic;">    ip=58.62.69.255 is between 58.62.64.0,58.62.69.255</span>
+<span style="font-weight: bold; font-style: italic;">    location:&#24191;&#19996;&#30465;&#24191;&#24030;&#24066;&#30058;&#31162;&#21306; &#30005;&#20449;</span>
+<span style="font-weight: bold; font-style: italic;">    [root@localhost ~]# ./iplocation 184.73.255.255</span>
+<span style="font-weight: bold; font-style: italic;">    ip=184.73.255.255 is between 184.72.0.0,184.73.255.255</span>
+<span style="font-weight: bold; font-style: italic;">    location:&#32654;&#22269; &#24343;&#21513;&#23612;&#20122;&#24030;AmazonEC2&#19996;&#28023;&#23736;&#25968;&#25454;&#20013;&#24515;</span>
+<span style="font-weight: bold; font-style: italic;">    [root@localhost ~]# ./iplocation 255.255.255.255</span>
+<span style="font-weight: bold; font-style: italic;">    ip=255.255.255.255 is between 255.255.255.0,255.255.255.255</span>
+<span style="font-weight: bold; font-style: italic;">    location:&#32431;&#30495;&#32593;&#32476; 2011&#24180;06&#26376;05&#26085;IP&#25968;&#25454;</span>
+<span style="font-weight: bold; font-style: italic;">    [root@localhost ~]# ./iplocation 0.0.0.0</span>
+<span style="font-weight: bold; font-style: italic;">    ip=0.0.0.0 is between 0.0.0.0,0.255.255.255</span>
+<span style="font-weight: bold; font-style: italic;">    location:IANA&#20445;&#30041;&#22320;&#22336; CZ88.NET</span>
+<span style="font-weight: bold; font-style: italic;">*/</span>
+<span style="font-weight: bold;">#include</span> <span style="font-style: italic;">&lt;sys/mman.h&gt;</span>
+<span style="font-weight: bold;">#include</span> <span style="font-style: italic;">&lt;fcntl.h&gt;</span>
+<span style="font-weight: bold;">#include</span> <span style="font-style: italic;">&lt;sys/types.h&gt;</span>
+<span style="font-weight: bold;">#include</span> <span style="font-style: italic;">&lt;math.h&gt;</span>
+<span style="font-weight: bold;">#include</span> <span style="font-style: italic;">&lt;unistd.h&gt;</span>
+<span style="font-weight: bold;">#include</span> <span style="font-style: italic;">&lt;stdio.h&gt;</span>
+<span style="font-weight: bold;">#include</span> <span style="font-style: italic;">&lt;string.h&gt;</span>
+<span style="font-weight: bold;">#include</span> <span style="font-style: italic;">&lt;sys/stat.h&gt;</span>
+<span style="font-weight: bold;">#include</span> <span style="font-style: italic;">&lt;netinet/in.h&gt;</span>
+<span style="font-weight: bold;">#include</span> <span style="font-style: italic;">&lt;errno.h&gt;</span>
+<span style="font-weight: bold;">#define</span> <span style="font-weight: bold; font-style: italic;">SHARE_MEMORY_FILE</span> <span style="font-style: italic;">"/tmp/qqwry.dat"</span> <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#20849;&#20139;&#20869;&#23384;&#36335;&#24452;.ip&#24211;&#36335;&#24452;</span>
+<span style="font-weight: bold;">#define</span> <span style="font-weight: bold; font-style: italic;">UNKNOWN</span> <span style="font-style: italic;">"Unknown"</span>
+<span style="font-weight: bold;">#define</span> <span style="font-weight: bold; font-style: italic;">SHARE_MEMORY_SIZE</span> 10485760 <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#24517;&#39035;&#27604;ip&#24211;&#25991;&#20214;&#22823;</span>
+<span style="font-weight: bold;">#define</span> <span style="font-weight: bold; font-style: italic;">INET6_ADDRSTRLEN</span> 46
+<span style="font-weight: bold;">#define</span> <span style="font-weight: bold; font-style: italic;">RECORD_LEN</span> 7 <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#21333;&#26465;&#35760;&#24405;&#38271;&#24230;</span>
+<span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#20849;&#20139;&#20869;&#23384;&#25351;&#38024;</span>
+<span style="font-weight: bold; text-decoration: underline;">char</span> *<span style="font-weight: bold; font-style: italic;">p_share</span>;
+<span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#31532;&#19968;&#26465;&#35760;&#24405;&#25351;&#38024;</span>
+<span style="font-weight: bold; text-decoration: underline;">char</span> *<span style="font-weight: bold; font-style: italic;">p_begin</span>;
+<span style="font-weight: bold; text-decoration: underline;">char</span> *<span style="font-weight: bold; font-style: italic;">p_end</span>;
+<span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#24635;&#35760;&#24405;&#25968;</span>
+<span style="font-weight: bold; text-decoration: underline;">long</span> <span style="font-weight: bold; font-style: italic;">total_record</span>;
+
+<span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#32467;&#26524;&#38598;</span>
+<span style="font-weight: bold;">typedef</span> <span style="font-weight: bold;">struct</span>
+{
+    <span style="font-weight: bold; text-decoration: underline;">char</span> *<span style="font-weight: bold; font-style: italic;">p_country</span>;
+    <span style="font-weight: bold; text-decoration: underline;">char</span> *<span style="font-weight: bold; font-style: italic;">p_area</span>;
+    <span style="font-weight: bold; text-decoration: underline;">char</span> <span style="font-weight: bold; font-style: italic;">beginip</span>[INET6_ADDRSTRLEN]; <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#29992;&#25143;IP&#25152;&#22312;&#33539;&#22260;&#30340;&#24320;&#22987;&#22320;&#22336;</span>
+    <span style="font-weight: bold; text-decoration: underline;">char</span> <span style="font-weight: bold; font-style: italic;">endip</span>[INET6_ADDRSTRLEN]; <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#29992;&#25143;IP&#25152;&#22312;&#33539;&#22260;&#30340;&#32467;&#26463;&#22320;&#22336;</span>
+}<span style="font-weight: bold; text-decoration: underline;">location</span>;
+<span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#25226;4&#23383;&#33410;&#36716;&#20026;&#25972;&#25968;</span>
+<span style="font-weight: bold; text-decoration: underline;">unsigned</span> <span style="font-weight: bold; text-decoration: underline;">long</span> <span style="font-weight: bold;">getlong4</span>(<span style="font-weight: bold; text-decoration: underline;">char</span> *<span style="font-weight: bold; font-style: italic;">pos</span>) <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#23558;&#35835;&#21462;&#30340;4&#20010;&#23383;&#33410;&#36716;&#21270;&#20026;&#38271;&#25972;&#22411;&#25968;</span>
+{
+    <span style="font-weight: bold; text-decoration: underline;">unsigned</span> <span style="font-weight: bold; text-decoration: underline;">long</span> <span style="font-weight: bold; font-style: italic;">result</span>=(((<span style="font-weight: bold; text-decoration: underline;">unsigned</span> <span style="font-weight: bold; text-decoration: underline;">char</span> )(*(pos+3)))&lt;&lt;24)
+        +(((<span style="font-weight: bold; text-decoration: underline;">unsigned</span> <span style="font-weight: bold; text-decoration: underline;">char</span> )(*(pos+2)))&lt;&lt;16)
+        +(((<span style="font-weight: bold; text-decoration: underline;">unsigned</span> <span style="font-weight: bold; text-decoration: underline;">char</span> )(*(pos+1)))&lt;&lt;8)
+        +((<span style="font-weight: bold; text-decoration: underline;">unsigned</span> <span style="font-weight: bold; text-decoration: underline;">char</span> )(*(pos)));
+    <span style="font-weight: bold;">return</span> result;
+}
+<span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#25226;3&#23383;&#33410;&#36716;&#20026;&#25972;&#25968;</span>
+<span style="font-weight: bold; text-decoration: underline;">unsigned</span> <span style="font-weight: bold; text-decoration: underline;">long</span> <span style="font-weight: bold;">getlong3</span>(<span style="font-weight: bold; text-decoration: underline;">char</span> *<span style="font-weight: bold; font-style: italic;">pos</span>) <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#23558;&#35835;&#21462;&#30340;3&#20010;&#23383;&#33410;&#36716;&#21270;&#20026;&#38271;&#25972;&#22411;&#25968;</span>
+{
+    <span style="font-weight: bold; text-decoration: underline;">unsigned</span> <span style="font-weight: bold; text-decoration: underline;">long</span> <span style="font-weight: bold; font-style: italic;">result</span>=(((<span style="font-weight: bold; text-decoration: underline;">unsigned</span> <span style="font-weight: bold; text-decoration: underline;">char</span> )(*(pos+2)))&lt;&lt;16)
+        +(((<span style="font-weight: bold; text-decoration: underline;">unsigned</span> <span style="font-weight: bold; text-decoration: underline;">char</span> )(*(pos+1)))&lt;&lt;8)
+        +((<span style="font-weight: bold; text-decoration: underline;">unsigned</span> <span style="font-weight: bold; text-decoration: underline;">char</span> )(*(pos)));
+    <span style="font-weight: bold;">return</span> result;
+}
+
+<span style="font-style: italic;">/**</span>
+<span style="font-style: italic;"> * &#21019;&#24314;&#20849;&#20139;&#20869;&#23384;&#65292;&#24182;&#21152;&#36733;ip&#24211;&#36827;&#21435;</span>
+<span style="font-style: italic;"> *</span>
+<span style="font-style: italic;"> * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@return</span><span style="font-style: italic;"> void</span>
+<span style="font-style: italic;"> */</span>
+<span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">createshare</span>()
+{
+    <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">fd</span>;
+    <span style="font-weight: bold; text-decoration: underline;">long</span> <span style="font-weight: bold; font-style: italic;">filesize</span>=0;
+    <span style="font-weight: bold; text-decoration: underline;">FILE</span> *<span style="font-weight: bold; font-style: italic;">fp</span>=fopen(SHARE_MEMORY_FILE,<span style="font-style: italic;">"rb"</span>);
+    <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#35835;&#21462;&#25991;&#20214;&#38271;&#24230;</span>
+    fseek(fp,0,SEEK_END);
+    filesize=ftell(fp);
+    <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#24402;&#38646;</span>
+    fseek(fp,0,SEEK_SET);
+    <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#33719;&#24471;&#25991;&#20214;&#25551;&#36848;&#31526;&#65292;&#29992;&#20110;&#29983;&#25104;&#20849;&#20139;&#20869;&#23384;</span>
+    fd=open(SHARE_MEMORY_FILE,O_CREAT|O_RDWR|O_TRUNC,00777);
+    p_share = (<span style="font-weight: bold; text-decoration: underline;">char</span>*) mmap(<span style="font-weight: bold; text-decoration: underline;">NULL</span>,SHARE_MEMORY_SIZE,PROT_READ|PROT_WRITE,MAP_SHARED,fd,0 );
+    lseek(fd,0,SEEK_SET);
+    <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#25226;&#25991;&#20214;&#20869;&#23481;&#35835;&#20837;&#20849;&#20139;&#20869;&#23384;</span>
+    fread(p_share,filesize,1,fp);
+    fclose(fp);
+    close(fd);
+}
+
+<span style="font-style: italic;">/**</span>
+<span style="font-style: italic;"> * &#25171;&#24320;&#20849;&#20139;&#20869;&#23384;&#25351;&#38024;</span>
+<span style="font-style: italic;"> *</span>
+<span style="font-style: italic;"> * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@return</span><span style="font-style: italic;"> void</span>
+<span style="font-style: italic;"> */</span>
+<span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">openshare</span>() <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">map a normal file as shared mem:</span>
+{
+    <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">fd</span>;
+    fd=open(SHARE_MEMORY_FILE,O_RDWR,00777);
+    <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#25171;&#24320;&#20849;&#20139;&#20869;&#23384;</span>
+    p_share = (<span style="font-weight: bold; text-decoration: underline;">char</span>*)mmap(<span style="font-weight: bold; text-decoration: underline;">NULL</span>,SHARE_MEMORY_SIZE,PROT_READ,MAP_SHARED,fd,0);
+    <span style="font-weight: bold;">if</span>(p_share==MAP_FAILED)
+    {
+        <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#33509;&#26159;&#19981;&#23384;&#22312;&#21017;&#21019;&#24314;</span>
+        createshare();
+    }
+    close(fd);
+    <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#31532;&#19968;&#26465;&#35760;&#24405;&#20301;&#32622;</span>
+    p_begin=p_share+getlong4(p_share);
+    <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#26368;&#21518;&#19968;&#26465;&#35760;&#24405;&#20301;&#32622;</span>
+    p_end=p_share+getlong4(p_share+4);
+    <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#35760;&#24405;&#24635;&#25968;</span>
+    total_record=(getlong4(p_share+4)-getlong4(p_share))/RECORD_LEN;
+}
+
+<span style="font-style: italic;">/**</span>
+<span style="font-style: italic;"> * &#20851;&#38381;&#20849;&#20139;&#20869;&#23384;&#25351;&#38024;</span>
+<span style="font-style: italic;"> *</span>
+<span style="font-style: italic;"> * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@return</span><span style="font-style: italic;"> void</span>
+<span style="font-style: italic;"> */</span>
+<span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">closeshare</span>()
+{
+    munmap( p_share, SHARE_MEMORY_SIZE);
+}
+
+<span style="font-style: italic;">/**</span>
+<span style="font-style: italic;"> * &#36820;&#22238;&#22320;&#21306;&#20449;&#24687;</span>
+<span style="font-style: italic;"> *</span>
+<span style="font-style: italic;"> * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@char</span><span style="font-style: italic;"> *pos &#22320;&#21306;&#30340;&#25351;&#38024;</span>
+<span style="font-style: italic;"> * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@return</span><span style="font-style: italic;"> char *</span>
+<span style="font-style: italic;"> */</span>
+<span style="font-weight: bold; text-decoration: underline;">char</span> *<span style="font-weight: bold;">getarea</span>(<span style="font-weight: bold; text-decoration: underline;">char</span> *<span style="font-weight: bold; font-style: italic;">pos</span>) {
+    <span style="font-weight: bold; text-decoration: underline;">char</span> *<span style="font-weight: bold; font-style: italic;">byte</span>=pos; <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#26631;&#24535;&#23383;&#33410;</span>
+    pos++;
+    <span style="font-weight: bold;">switch</span> (*byte) {
+    <span style="font-weight: bold;">case</span> 0: <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#27809;&#26377;&#21306;&#22495;&#20449;&#24687;</span>
+        <span style="font-weight: bold;">return</span> UNKNOWN;
+        <span style="font-weight: bold;">break</span>;
+    <span style="font-weight: bold;">case</span> 1:
+    <span style="font-weight: bold;">case</span> 2: <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#26631;&#24535;&#23383;&#33410;&#20026;1&#25110;2&#65292;&#34920;&#31034;&#21306;&#22495;&#20449;&#24687;&#34987;&#37325;&#23450;&#21521;</span>
+        <span style="font-weight: bold;">return</span> p_share+getlong3(pos);
+        <span style="font-weight: bold;">break</span>;
+    <span style="font-weight: bold;">default</span>: <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#21542;&#21017;&#65292;&#34920;&#31034;&#21306;&#22495;&#20449;&#24687;&#27809;&#26377;&#34987;&#37325;&#23450;&#21521;</span>
+        <span style="font-weight: bold;">return</span> byte;
+        <span style="font-weight: bold;">break</span>;
+    }
+}
+<span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#33719;&#24471;ip&#25152;&#23646;&#22320;&#29702;&#20449;&#24687;,isp</span>
+<span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">getipinfo</span>(<span style="font-weight: bold; text-decoration: underline;">char</span> *<span style="font-weight: bold; font-style: italic;">ipstr</span>,<span style="font-weight: bold; text-decoration: underline;">location</span> *<span style="font-weight: bold; font-style: italic;">p_loc</span>)
+{
+    <span style="font-weight: bold; text-decoration: underline;">char</span> *<span style="font-weight: bold; font-style: italic;">pos</span> = p_share;
+    <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">record_len</span>=10;
+    <span style="font-weight: bold; text-decoration: underline;">char</span> *<span style="font-weight: bold; font-style: italic;">firstip</span>=0; <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">first record position</span>
+    <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#25226;ip&#36716;&#20026;&#25972;&#25968;</span>
+    <span style="font-weight: bold; text-decoration: underline;">unsigned</span> <span style="font-weight: bold; text-decoration: underline;">long</span> <span style="font-weight: bold; font-style: italic;">ip</span>=htonl(inet_addr(ipstr));
+    firstip=p_begin;
+
+    <span style="font-weight: bold; text-decoration: underline;">long</span> <span style="font-weight: bold; font-style: italic;">l</span>=0;
+    <span style="font-weight: bold; text-decoration: underline;">long</span> <span style="font-weight: bold; font-style: italic;">u</span>=total_record;
+    <span style="font-weight: bold; text-decoration: underline;">long</span> <span style="font-weight: bold; font-style: italic;">i</span>=0;
+    <span style="font-weight: bold; text-decoration: underline;">char</span>* <span style="font-weight: bold; font-style: italic;">findip</span>=firstip;
+    <span style="font-weight: bold; text-decoration: underline;">unsigned</span> <span style="font-weight: bold; text-decoration: underline;">long</span> <span style="font-weight: bold; font-style: italic;">beginip</span>=0;
+    <span style="font-weight: bold; text-decoration: underline;">unsigned</span> <span style="font-weight: bold; text-decoration: underline;">long</span> <span style="font-weight: bold; font-style: italic;">endip</span>=0;
+    <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#20108;&#20998;&#27861;&#26597;&#25214;</span>
+    <span style="font-weight: bold;">while</span>(l &lt;= u)
+    {
+        i=(l+u)/2;
+        pos=firstip+i*RECORD_LEN;
+        beginip = getlong4(pos);
+        pos+=4;
+        <span style="font-weight: bold;">if</span>(ip&lt;beginip)
+        {
+            u=i-1;
+        }
+        <span style="font-weight: bold;">else</span>
+        {
+            endip=getlong4(p_share+getlong3(pos));
+            <span style="font-weight: bold;">if</span>(ip&gt;endip)
+            {
+                l=i+1;
+            }
+            <span style="font-weight: bold;">else</span>
+            {
+                findip=firstip+i*RECORD_LEN;
+                <span style="font-weight: bold;">break</span>;
+            }
+        }
+    }
+    <span style="font-weight: bold; text-decoration: underline;">long</span> <span style="font-weight: bold; font-style: italic;">offset</span> = getlong3(findip+4);
+    pos=p_share+offset;
+    endip= getlong4(pos); <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#29992;&#25143;IP&#25152;&#22312;&#33539;&#22260;&#30340;&#32467;&#26463;&#22320;&#22336;</span>
+    pos+=4;
+
+    <span style="font-weight: bold; text-decoration: underline;">unsigned</span> <span style="font-weight: bold; text-decoration: underline;">long</span> <span style="font-weight: bold; font-style: italic;">j</span>=ntohl(beginip);
+    inet_ntop(AF_INET,&amp;j,p_loc-&gt;beginip, INET6_ADDRSTRLEN);<span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#33719;&#24471;&#24320;&#22987;&#22320;&#22336;&#30340;IP&#23383;&#31526;&#20018;&#31867;&#22411;</span>
+    j=ntohl(endip);
+    inet_ntop(AF_INET,&amp;j,p_loc-&gt;endip, INET6_ADDRSTRLEN);<span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#33719;&#24471;&#32467;&#26463;&#22320;&#22336;&#30340;IP&#23383;&#31526;&#20018;&#31867;&#22411;</span>
+
+    <span style="font-weight: bold; text-decoration: underline;">char</span> *<span style="font-weight: bold; font-style: italic;">byte</span> = pos; <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#26631;&#24535;&#23383;&#33410;</span>
+    pos++;
+    <span style="font-weight: bold;">switch</span> (*byte) {
+    <span style="font-weight: bold;">case</span> 1:{ <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#26631;&#24535;&#23383;&#33410;&#20026;1&#65292;&#34920;&#31034;&#22269;&#23478;&#21644;&#21306;&#22495;&#20449;&#24687;&#37117;&#34987;&#21516;&#26102;&#37325;&#23450;&#21521;</span>
+        <span style="font-weight: bold; text-decoration: underline;">long</span> <span style="font-weight: bold; font-style: italic;">countryOffset</span> = getlong3(pos); <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#37325;&#23450;&#21521;&#22320;&#22336;</span>
+        pos+=3;
+        pos=p_share+countryOffset;
+        byte = pos; <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#26631;&#24535;&#23383;&#33410;</span>
+        pos++;
+        <span style="font-weight: bold;">switch</span> (*byte) {
+        <span style="font-weight: bold;">case</span> 2: <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#26631;&#24535;&#23383;&#33410;&#20026;2&#65292;&#34920;&#31034;&#22269;&#23478;&#20449;&#24687;&#21448;&#34987;&#37325;&#23450;&#21521;</span>
+        {
+            p_loc-&gt;p_country=p_share+getlong3(pos);
+            pos=p_share+countryOffset+4;
+            p_loc-&gt;p_area = getarea(pos);
+        }
+        <span style="font-weight: bold;">break</span>;
+        <span style="font-weight: bold;">default</span>: <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#21542;&#21017;&#65292;&#34920;&#31034;&#22269;&#23478;&#20449;&#24687;&#27809;&#26377;&#34987;&#37325;&#23450;&#21521;</span>
+        {
+            p_loc-&gt;p_country=byte;
+            p_loc-&gt;p_area = getarea(p_loc-&gt;p_country+strlen(p_loc-&gt;p_country)+1);
+        }
+        <span style="font-weight: bold;">break</span>;
+        }
+    }
+        <span style="font-weight: bold;">break</span>;
+    <span style="font-weight: bold;">case</span> 2: <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#26631;&#24535;&#23383;&#33410;&#20026;2&#65292;&#34920;&#31034;&#22269;&#23478;&#20449;&#24687;&#34987;&#37325;&#23450;&#21521;</span>
+    {
+        p_loc-&gt;p_country=p_share+getlong3(pos);
+        p_loc-&gt;p_area=p_share+offset+8;
+    }
+    <span style="font-weight: bold;">break</span>;
+    <span style="font-weight: bold;">default</span>:{ <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#21542;&#21017;&#65292;&#34920;&#31034;&#22269;&#23478;&#20449;&#24687;&#27809;&#26377;&#34987;&#37325;&#23450;&#21521;</span>
+        p_loc-&gt;p_country=byte;
+        p_loc-&gt;p_area=getarea(p_loc-&gt;p_country+strlen(p_loc-&gt;p_country)+1);
+    }
+        <span style="font-weight: bold;">break</span>;
+    }
+
+}
+<span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold;">main</span>(<span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">argc</span>, <span style="font-weight: bold; text-decoration: underline;">char</span>** <span style="font-weight: bold; font-style: italic;">argv</span>)
+{
+    <span style="font-weight: bold;">if</span>(argc&lt;2)
+    {
+        printf(<span style="font-style: italic;">"please enter the checked ip.\n"</span>);
+    }
+    <span style="font-weight: bold; text-decoration: underline;">location</span> <span style="font-weight: bold; font-style: italic;">loc</span>={0};
+    <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#25171;&#24320;&#20849;&#20139;&#20869;&#23384;</span>
+    openshare();
+    getipinfo(argv[1],&amp;loc);
+    printf(<span style="font-style: italic;">"ip=%s is between %s,%s\n"</span>,argv[1],loc.beginip,loc.endip);
+    printf(<span style="font-style: italic;">"location:%s %s\n"</span>,loc.p_country,loc.p_area);
+    <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#20851;&#38381;&#20849;&#20139;&#20869;&#23384;</span>
+    <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">closeshare();</span>
+    <span style="font-weight: bold;">return</span> 0;
+}
+</pre>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

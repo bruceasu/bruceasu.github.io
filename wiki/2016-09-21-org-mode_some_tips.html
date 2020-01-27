@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>org-mode some tips</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">org-mode some tips</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#emacs"><div class="category">emacs</div></a> <a href="https://bruceasu.github.io/tags.html#org-mode"><div class="category">org-mode</div></a> </div>
+<div class="char-counter">2016-09-21</div>
+        <div id="content">
+<nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#orga383d68">纯文本的例子</a></li>
+<li><a href="#org2b44fd6">包含文件</a></li>
+<li><a href="#org2d3057d">段落、分行和引用</a></li>
+</ul>
+</div>
+</nav>
+
+<div id="outline-container-orga383d68" class="outline-2">
+<h2 id="orga383d68">纯文本的例子</h2>
+<div class="outline-text-2" id="text-orga383d68">
+<p>
+你可以包含进来一些纯文本的例子，这不属于准备的范畴。这些例子会等宽排版，所以适用
+于代码以及其他类似的情况：
+</p>
+<div class="org-src-container">
+<pre class="src src-org-mode">
+#+BEGIN_EXAMPLE
+Some example from a text file.
+#+END_EXAMPLE
+
+</pre>
+</div>
+
+<p>
+为了简单化，一些小型的例子也可以将各行以冒号开头。冒号前面可以有空格：
+</p>
+<pre class="example">
+Here is an example
+   : Some example from a text file.
+
+</pre>
+
+<p>
+对于一些程序设计语言的源代码以及一些其他的文本，可以被 Emacs 的字体锁（font-lock）
+特殊标记，你也可以让它们像在Emacs的缓冲区中那样显示：
+</p>
+<pre class="example">
+#+BEGIN_SRC emacs-lisp
+(defun org-xor (a b)
+   "Exclusive or."
+   (if a (not b) b))
+#+END_SRC
+
+</pre>
+
+<p>
+为了能在支持这种语言的专门的缓冲区中编辑例子，可以用 C-c , 启动和退出编辑缓冲区。
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-org2b44fd6" class="outline-2">
+<h2 id="org2b44fd6">包含文件</h2>
+<div class="outline-text-2" id="text-org2b44fd6">
+<p>
+当导出文档时，你可以包含其他文件中的内容。比如，想包含你的“.emacs”文件，你可以用：
+</p>
+<pre class="example">
+#+INCLUDE: "~/.emacs" src emacs-lisp
+
+</pre>
+
+<p>
+可选的第二个第三个参数是组织方式（例如，“quote”，“example”，或者“src”），如果是
+“src”，语言用来格式化内容。组织方式是可选的，如果不给出，文本会被当作 Org 模式的
+正常处理。用 C-c ,可以访问包含的文件。
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-org2d3057d" class="outline-2">
+<h2 id="org2d3057d">段落、分行和引用</h2>
+<div class="outline-text-2" id="text-org2d3057d">
+<p>
+段落之间至少要有一空行。如果你想实现段内分行，可以在行后加上“\\”。
+</p>
+
+<p>
+要想在一个区域内实现分行，而其他地方使用正常格式，你可以使用下面的构造，它也可以
+用来实现诗歌的格式：
+</p>
+<pre class="example">
+#+BEGIN_VERSE
+ Great clouds overhead
+ Tiny black birds rise and fall
+ Snow covers Emacs
+
+     -- AlexSchroeder
+#+END_VERSE
+
+</pre>
+
+<p>
+当从另外一个文档中引用一段话时通过会让它左右都缩进。在 Org 文档中可以这样作引用：
+</p>
+<pre class="example">
+#+BEGIN_QUOTE
+Everything should be made as simple as possible,
+but not any simpler -- Albert Einstein
+#+END_QUOTE
+
+</pre>
+
+<p>
+如果你想让某些文本居中，可以这样：
+</p>
+<pre class="example">
+#+BEGIN_CENTER
+Everything should be made as simple as possible, \\
+but not any simpler
+#+END_CENTER
+</pre>
+</div>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

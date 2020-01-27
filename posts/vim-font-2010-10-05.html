@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>如何在VIM使用非等寬字體</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">如何在VIM使用非等寬字體</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#vim"><div class="category">vim</div></a> </div>
+<div class="char-counter">2010-10-05</div>
+        <div id="content">
+<p>
+VIM嘅行列。
+</p>
+
+<p>
+VIM是一個Programmer喜愛嘅編輯器，隨著對更高輸入效率嘅要求，一啲普通人士亦加
+入咗VIM嘅行列。我哋對字體美感嘅要求，vim卻未必可以滿足到。比如我好中意使用歐
+陽詢嘅字體作為標準字體，但系字體嘅選擇框內冇得選，直接寫配置文件，vim就直接
+報錯。
+</p>
+
+<p>
+GUI已經成為我哋嘅桌面標準，ttf字體成為咗最常用嘅字體。VIM亦跟隨潮流，支持使
+用ttf字體。鑒于其Coding Editor嘅考量，依然僅僅支持等寬字體。我哋作為一般嘅用
+戶，希望使用其作為輕巧嘅文本編輯器，尤其是中文文本編輯器時，要求其能夠使用其
+他好睇嘅字體。長時間睇宋體，明體會產生審美疲勞。但系，vim唔支持其他字體，點
+算？世界有大把Hacker，請佢哋Hack下。嗯……，唔使指望國人了，用google搜咗全世界
+都搵唔到方案。本來對某個島國抱有一絲希望，畢竟其領導著一部分開源項目，國際化
+嘅領頭羊，只不過，下咗個所謂日版vim，一樣都系咁。
+</p>
+
+<p>
+既然求唔到人，唯有靠自己。本人唔系Hacker，自然唔會去改期源代碼，使其支持其他
+可變寬度嘅ttf字體。本人嘅方式就是死馬當活馬醫。佢既然要求等寬，我哋就提供等
+寬嘅字體——我哋漢字本省就是等寬字體，而且冇單寬和倍寬嘅區別。
+</p>
+
+<p>
+方式有兩種，一種是配置字體分類信息，一種是修改字體信息。唔道vim系讀取系統嘅
+字體分類信息，定系自己去讀取字體信息。linux下配置字體分類信息系font.conf，
+windows下系修改注冊表（未測試過）。linux下修改字體信息嘅軟件為fontforge，
+windows下嘅系Font Creator Program。
+</p>
+
+<p>
+配置分類信息的方式沒有測試過，有興趣嘅筒子可以自行試試。本人用修改字體信息嘅
+方式，直覺上認為vim會自己去讀取字體嘅信息。我使用FCP4來做呢件事。
+</p>
+
+<blockquote>
+<p>
+Font Creator Program 4
+</p>
+
+<p>
+To change a proportional spaced font into a monospaced font, follow these steps:
+</p>
+
+<p>
+Select the AutoMetrics command (Tools menu) to force the advance width to be the
+same for all glyphs (except for the second glyph normally called .null - this
+glyphs advance width should be zero).
+【可以省略，漢字本身就是等寬，漢字字體入邊嘅英文又唔好睇，我哋使用獨立嘅英文字體。】
+</p>
+
+<p>
+If necessary, change the outlines of glyphs that are too wide.
+</p>
+
+<p>
+In the Settings command (Format menu) on the Classification tab set Proportion
+to Monospaced.
+</p>
+
+<p>
+In the Settings command (Format menu) on the Header tab make sure the check box
+Instructions may alter advance width is not checked.
+</p>
+
+<p>
+In the Settings command (Format menu) on the Post tab set Fixed Pitch to a
+non-zero value (e.g. 1).
+</p>
+
+<p>
+Finally in the Tables command (Format menu) you might have to remove two
+internal tables (if available) hdmx and LTSH. If the font seems to be changed
+you could also remove the hinting related data, although this will result in a
+quality decrease.
+</p>
+</blockquote>
+
+<p>
+為了唔好同原來嘅字體名稱沖突，最好亦修改字體名稱，如果有中文描述，佢系用
+\uXXXX呢種十六進制嘅unicode碼表示，修改麻煩，干脆直接刪除中文描述，只保留英
+文描述。修改為另一個名稱，通常在后面加上Mono就好了。修改好后，另存為另一個字
+體名，建議在后面加上Mono。
+</p>
+
+<p>
+然后把字體安裝到系統中。
+</p>
+
+<p>
+配置vim
+</p>
+
+<p>
+vim在本地編碼下并不啟用其他類型的字體——我嘅版本系咁（7.2），需要將其將其設置
+為utf-8。
+</p>
+
+<p>
+例:
+</p>
+<pre class="example">
+"解决consle输出乱码, set enc=utf-8后，windows下會系亂碼
+language messages zh_CN.utf-8
+"解決菜單亂碼——windows下未有方案，不看菜單吧。
+"linux下，gb編碼環境估計都系咁。如果系utf8環境，唔知會唔會亂碼？
+
+let &amp;termencoding=&amp;encoding
+"新建文件嘅編碼，windows下為gbk（cp936），可以設置為想用的編碼
+set fenc=cp936
+"顯示編碼，只有設置為utf8，自己設置的等寬中文字體才有效，
+"否則（如設為cp936）還是宋體。
+set encoding=utf-8
+"自動探測文件編碼
+set fileencodings=gb2312,gbk,cp936,gb18030,utf-8,utf-16,big5,cp932
+"設置終端編碼
+set tenc=utf-8
+"設置幫助文檔語言
+set helplang=cn
+
+if has('win32')
+ "設置中文字體為歐陽詢體，字號比英文大2號比較好。
+ set guifontwide=AuYoengSeon\ mono:h14
+ "設置英文字體。
+ set guifont=Consolas:h12
+elseif has('mac')
+ set guifont=Osaka:h14
+ set linespace=0
+elseif has('xfontset')
+ set guifontset=AuYoengSeon\ mono\ 14
+ set linespace=0
+else
+ set guifontset=AuYoengSeon\ mono\ 14
+ set linespace=0
+endif
+
+
+
+
+</pre>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

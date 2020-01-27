@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>SIMHASH 简介以及 JAVA 实现</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">SIMHASH 简介以及 JAVA 实现</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#reprint"><div class="category">reprint</div></a> </div>
+<div class="char-counter">2016-09-03</div>
+        <div id="content">
+<nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#orgdb91936">1、Simhash 算法简介</a></li>
+<li><a href="#org875f776">2、算法几何意义和原理</a></li>
+<li><a href="#orgacd3fa7">3、比较相似度</a></li>
+<li><a href="#orgf1e0abc">4、示例代码：</a></li>
+<li><a href="#org0e50d95">5、适用场景：</a></li>
+<li><a href="#org24bb009">REF：</a></li>
+</ul>
+</div>
+</nav>
+<p>
+传统的 hash 算法只负责将原始内容尽量均匀随机地映射为一个签名值，原理上相当于伪随
+机数产生算法。产生的两个签名，如果相等，说明原始内容在一定概率下是相等的；如果不
+相等，除了说明原始内容不相等外，不再提供任何信息，因为即使原始内容只相差一个字节，
+所产生的签名也很可能差别极大。从这个意义上来说，要设计一个 hash 算法，对相似的内
+容产生的签名也相近，是更为艰难的任务，因为它的签名值除了提供原始内容是否相等的信
+息外，还能额外提供不相等的 原始内容的差异程度的信息。而 Google 的 simhash 算法产
+生的签名，可以满足上述要求。出人意料，这个算法并不深奥，其思想是非常清澈美妙的。
+</p>
+
+
+<div id="outline-container-orgdb91936" class="outline-2">
+<h2 id="orgdb91936">1、Simhash 算法简介</h2>
+<div class="outline-text-2" id="text-orgdb91936">
+<p>
+simhash算法的输入是一个向量，输出是一个 f 位的签名值。为了陈述方便，假设输入的是
+一个文档的特征集合，每个特征有一定的权重。比如特征可以是文档中的词，其权重可以是
+这个词出现的次数。 simhash 算法如下：
+</p>
+
+<ol class="org-ol">
+<li>将一个 f 维的向量 V 初始化为 0 ； f 位的二进制数 S 初始化为 0 ；</li>
+<li>对每一个特征：用传统的 hash 算法对该特征产生一个 f 位的签名 b 。
+对 i=1 到 f ：如果b 的第 i 位为 1 ，则 V 的第 i 个元素加上该特征的权重；
+否则，V 的第 i 个元素减去该特征的权重。</li>
+<li>如果 V 的第 i 个元素大于 0 ，则 S 的第 i 位为 1 ，否则为 0 ；</li>
+<li>输出 S 作为签名。</li>
+</ol>
+</div>
+</div>
+
+<div id="outline-container-org875f776" class="outline-2">
+<h2 id="org875f776">2、算法几何意义和原理</h2>
+<div class="outline-text-2" id="text-org875f776">
+<p>
+这个算法的几何意义非常明了。它首先将每一个特征映射为f维空间的一个向量，这个映射
+规则 具体是怎样并不重要，只要对很多不同的特征来说，它们对所对应的向量是均匀随机
+分布的，并且对相同的特征来说对应的向量是唯一的就行。比如一个特征的4位 hash签名的
+二进制表示为1010，那么这个特征对应的 4维向量就是(1, -1, 1, -1)T，即hash签名的某
+一位为1，映射到的向量的对应位就为1，否则为-1。然后，将一个文档中所包含的各个特征
+对应的向量加权求和，加权的系数等 于该特征的权重。得到的和向量即表征了这个文档，
+我们可以用向量之间的夹角来衡量对应文档之间的相似度。最后，为了得到一个f位的签名，
+需要进一步将其压 缩，如果和向量的某一维大于0，则最终签名的对应位为1，否则为0。这
+样的压缩相当于只留下了和向量所在的象限这个信息，而64位的签名可以表示多达 264个象
+限，因此只保存所在象限的信息也足够表征一个文档了。
+</p>
+
+
+<p>
+明确了算法了几何意义，使这个算法直观上看来是合理的。但是，为何最终得到的签名相
+近的程度，可以衡量原始文档的相似程度呢？这需要一个清晰的思路和证明。在simhash的
+发明人Charikar的论文中[2]并没有给出具体的 simhash算法和证明，以下列出我自己得出
+的证明思路。Simhash是由随机超平面hash算法演变而来的，随机超平面hash算法非常简单，
+对于一个n维向量v，要得到一个f位的签名(f&lt;
+</p>
+
+<ol class="org-ol">
+<li>随机产生f个n维的向量r1,…rf；</li>
+<li>对每一个向量ri，如果v与ri的点积大于0，则最终签名的第i位为1，否则为0.</li>
+</ol>
+
+
+<p>
+这个算法相当于随机产生了f个n维超平面，每个超平面将向量v所在的空间一分为 二，v在
+这个超平面上方则得到一个1，否则得到一个0，然后将得到的 f个0或1组合起来成为一个f
+维的签名。如果两个向量u, v的夹角为θ，则一个随机超平面将它们分开的概率为θ/π，因此
+u, v的签名的对应位不同的概率等于θ/π。所以，我们可以用两个向量的签名的不同的对应
+位的数量，即汉明距离，来衡量这两个向量的差异程度。
+</p>
+
+<p>
+Simhash算法与随机超平面hash是怎么联系起来的呢？在simhash算法中，并 没有直接产生
+用于分割空间的随机向量，而是间接产生的：第 k个特征的hash签名的第i位拿出来，如果
+为0，则改为-1，如果为1则不变，作为第i个随机向量的第k维。由于hash签名是f位的，因
+此这样能产生 f个随机向量，对应f个随机超平面。下面举个例子：
+</p>
+
+<p>
+假设用5个特征w1,…,w5来表示所有文档，现要得到任意文档的一个3维签名。假设这5个特征
+对应的3维向量分别为：
+</p>
+
+<p class="verse">
+h(w1) = (1, -1, 1)T<br>
+h(w2) = (-1, 1, 1)T<br>
+h(w3) = (1, -1, -1)T<br>
+h(w4) = (-1, -1, 1)T<br>
+h(w5) = (1, 1, -1)T<br>
+<br>
+</p>
+
+
+<p>
+按simhash算法，要得到一个文档向量d=(w1=1, w2=2, w3=0, w4=3, w5=0) T的签名，先要
+计算向量m = 1*h(w1) + 2*h(w2) + 0*h(w3) + 3*h(w4) + 0*h(w5) = (-4, -2, 6) T，然
+后根据simhash算法的步骤3，得到最终的签名s=001。
+</p>
+
+
+<p>
+上面的计算步骤其实相当于，先得到3个5维的向量，第1个向量由h(w1),…,h(w5)的第1维组成：
+</p>
+<pre class="example">
+r1=(1,-1,1,-1,1) T；
+
+</pre>
+
+<p>
+第2个5维向量由h(w1),…,h(w5)的第2维组成：
+</p>
+<pre class="example">
+r2=(-1,1,-1,-1,1) T；
+
+</pre>
+<p>
+同理，第3个5维向量为：
+</p>
+<pre class="example">
+r3=(1,1,-1,1,-1) T.
+
+</pre>
+<p>
+按随机超平面算法的步骤2，分别求向量d与r1,r2,r3的点积:
+</p>
+<p class="verse">
+d T r1=-4 &lt; 0，所以s1=0;<br>
+d T r2=-2 &lt; 0，所以s2=0;<br>
+d T r3=6 &gt; 0，所以s3=1.<br>
+</p>
+
+<p>
+故最终的签名s=001，与simhash算法产生的结果是一致的。
+</p>
+
+
+<p>
+从上面的计算过程可以看出，simhash算法其实与随机超平面hash算法是相同 的，simhash
+算法得到的两个签名的汉明距离，可以用来衡量原始向量的夹角。这其实是一种降维技术，
+将高维的向量用较低维度的签名来表征。衡量两个内 容相似度，需要计算汉明距离，这对
+给定签名查找相似内容的应用来说带来了一些计算上的困难；我想，是否存在更为理想的
+simhash算法，原始内容的差异 度，可以直接由签名值的代数差来表示呢？
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgacd3fa7" class="outline-2">
+<h2 id="orgacd3fa7">3、比较相似度</h2>
+<div class="outline-text-2" id="text-orgacd3fa7">
+<p>
+海明距离： 两个码字的对应比特取值不同的比特数称为这两个码字的海明距离。一个有效
+编码集中, 任意两个码字的海明距离的最小值称为该编码集的海明距离。举例如下： 10101
+和 00110 从第一位开始依次有第一位、第四、第五位不同，则海明距离为 3.
+</p>
+
+
+<p>
+异或： 只有在两个比较的位不同时其结果是1 ，否则结果为 0
+</p>
+
+<p>
+对每篇文档根据SimHash 算出签名后，再计算两个签名的海明距离（两个二进制异或后 1
+的个数）即可。根据经验值，对 64 位的 SimHash ，海明距离在 3 以内的可以认为相似度
+比较高。假设对64 位的 SimHash ，我们要找海明距离在 3 以内的所有签名。我们可以把
+64 位的二进制签名均分成 4块，每块 16 位。根据鸽巢原理（也成抽屉原理，见组合数学），
+如果两个签名的海明距离在 3 以内，它们必有一块完全相同。我们把上面分成的4 块中的
+每一个块分别作为前 16 位来进行查找。 建立倒排索引。
+</p>
+
+<p>
+如果库中有2^34 个（大概 10 亿）签名，那么匹配上每个块的结果最多有
+ 2^(34-16)=262144 个候选结果 (假设数据是均匀分布， 16 位的数据，产生的像限为 2^16
+个，则平均每个像限分布的文档数则 2^34/2^16 = 2^(34-16)) ，四个块返回的总结果数为
+ 4* 262144 （大概 100 万）。原本需要比较 10 亿次，经过索引，大概就只需要处理
+ 100 万次了。由此可见，确实大大减少了计算量。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgf1e0abc" class="outline-2">
+<h2 id="orgf1e0abc">4、示例代码：</h2>
+<div class="outline-text-2" id="text-orgf1e0abc">
+<div class="org-src-container">
+<pre class="src src-java"><span style="font-style: italic;">/**</span>
+<span style="font-style: italic;"> * Function: &#27880;&#65306;&#35813;&#31034;&#20363;&#31243;&#24207;&#26242;&#19981;&#25903;&#25345;&#20013;&#25991;</span>
+
+<span style="font-style: italic;"> * Date:     2013-8-4 &#19979;&#21320;11:01:45</span>
+
+<span style="font-style: italic;"> * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@author</span><span style="font-style: italic;">   june: decli@qq.com</span>
+<span style="font-style: italic;"> */</span>
+<span style="font-weight: bold;">import</span> <span style="font-weight: bold; text-decoration: underline;">java</span>.<span style="font-weight: bold; text-decoration: underline;">math</span>.<span style="font-weight: bold; text-decoration: underline;">BigInteger</span>;
+<span style="font-weight: bold;">import</span> <span style="font-weight: bold; text-decoration: underline;">java</span>.<span style="font-weight: bold; text-decoration: underline;">util</span>.<span style="font-weight: bold; text-decoration: underline;">ArrayList</span>;
+<span style="font-weight: bold;">import</span> <span style="font-weight: bold; text-decoration: underline;">java</span>.<span style="font-weight: bold; text-decoration: underline;">util</span>.<span style="font-weight: bold; text-decoration: underline;">HashMap</span>;
+<span style="font-weight: bold;">import</span> <span style="font-weight: bold; text-decoration: underline;">java</span>.<span style="font-weight: bold; text-decoration: underline;">util</span>.<span style="font-weight: bold; text-decoration: underline;">List</span>;
+<span style="font-weight: bold;">import</span> <span style="font-weight: bold; text-decoration: underline;">java</span>.<span style="font-weight: bold; text-decoration: underline;">util</span>.<span style="font-weight: bold; text-decoration: underline;">StringTokenizer</span>;
+
+<span style="font-weight: bold;">public</span> <span style="font-weight: bold;">class</span> <span style="font-weight: bold; text-decoration: underline;">SimHash</span> {
+
+    <span style="font-weight: bold;">private</span> <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">tokens</span>;
+
+    <span style="font-weight: bold;">private</span> <span style="font-weight: bold; text-decoration: underline;">BigInteger</span> <span style="font-weight: bold; font-style: italic;">intSimHash</span>;
+
+    <span style="font-weight: bold;">private</span> <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">strSimHash</span>;
+
+    <span style="font-weight: bold;">private</span> <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">hashbits</span> = 64;
+
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">SimHash</span>(<span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">tokens</span>) {
+        <span style="font-weight: bold;">this</span>.tokens = tokens;
+        <span style="font-weight: bold;">this</span>.intSimHash = <span style="font-weight: bold;">this</span>.simHash();
+    }
+
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">SimHash</span>(<span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">tokens</span>, <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">hashbits</span>) {
+        <span style="font-weight: bold;">this</span>.tokens = tokens;
+        <span style="font-weight: bold;">this</span>.hashbits = hashbits;
+        <span style="font-weight: bold;">this</span>.intSimHash = <span style="font-weight: bold;">this</span>.simHash();
+    }
+
+    HashMap&lt;<span style="font-weight: bold; text-decoration: underline;">string</span>, <span style="font-weight: bold; text-decoration: underline;">integer</span>=<span style="font-style: italic;">""</span>&gt; wordMap = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">HashMap</span>&lt;<span style="font-weight: bold; text-decoration: underline;">string</span>, <span style="font-weight: bold; text-decoration: underline;">integer</span>=<span style="font-style: italic;">""</span>&gt;();
+
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">BigInteger</span> <span style="font-weight: bold;">simHash</span>() {
+        <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#23450;&#20041;&#29305;&#24449;&#21521;&#37327;/&#25968;&#32452;</span>
+        <span style="font-weight: bold; text-decoration: underline;">int</span>[] <span style="font-weight: bold; font-style: italic;">v</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">int</span>[<span style="font-weight: bold;">this</span>.hashbits];
+        <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">1&#12289;&#23558;&#25991;&#26412;&#21435;&#25481;&#26684;&#24335;&#21518;, &#20998;&#35789;.</span>
+        <span style="font-weight: bold; text-decoration: underline;">StringTokenizer</span> <span style="font-weight: bold; font-style: italic;">stringTokens</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">StringTokenizer</span>(<span style="font-weight: bold;">this</span>.tokens);
+        <span style="font-weight: bold;">while</span> (stringTokens.hasMoreTokens()) {
+            <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">temp</span> = stringTokens.nextToken();
+            <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">2&#12289;&#23558;&#27599;&#19968;&#20010;&#20998;&#35789;hash&#20026;&#19968;&#32452;&#22266;&#23450;&#38271;&#24230;&#30340;&#25968;&#21015;.&#27604;&#22914; 64bit &#30340;&#19968;&#20010;&#25972;&#25968;.</span>
+            <span style="font-weight: bold; text-decoration: underline;">BigInteger</span> <span style="font-weight: bold; font-style: italic;">t</span> = <span style="font-weight: bold;">this</span>.hash(temp);
+            <span style="font-weight: bold;">for</span> (<span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">i</span> = 0; i &lt; <span style="font-weight: bold;">this</span>.hashbits; i++) {
+                <span style="font-weight: bold; text-decoration: underline;">BigInteger</span> <span style="font-weight: bold; font-style: italic;">bitmask</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">BigInteger</span>(<span style="font-style: italic;">"1"</span>).shiftLeft(i);
+                <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">3&#12289;&#24314;&#31435;&#19968;&#20010;&#38271;&#24230;&#20026;64&#30340;&#25972;&#25968;&#25968;&#32452;(&#20551;&#35774;&#35201;&#29983;&#25104;64&#20301;&#30340;&#25968;&#23383;&#25351;&#32441;,&#20063;&#21487;&#20197;&#26159;&#20854;&#23427;&#25968;&#23383;),</span>
+                <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#23545;&#27599;&#19968;&#20010;&#20998;&#35789;hash&#21518;&#30340;&#25968;&#21015;&#36827;&#34892;&#21028;&#26029;,&#22914;&#26524;&#26159;1000...1,&#37027;&#20040;&#25968;&#32452;&#30340;&#31532;&#19968;&#20301;&#21644;&#26411;&#23614;&#19968;&#20301;&#21152;1,</span>
+                <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#20013;&#38388;&#30340;62&#20301;&#20943;&#19968;,&#20063;&#23601;&#26159;&#35828;,&#36898;1&#21152;1,&#36898;0&#20943;1.&#19968;&#30452;&#21040;&#25226;&#25152;&#26377;&#30340;&#20998;&#35789;hash&#25968;&#21015;&#20840;&#37096;&#21028;&#26029;&#23436;&#27605;.</span>
+                <span style="font-weight: bold;">if</span> (t.and(bitmask).signum() != 0) {
+                    <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#36825;&#37324;&#26159;&#35745;&#31639;&#25972;&#20010;&#25991;&#26723;&#30340;&#25152;&#26377;&#29305;&#24449;&#30340;&#21521;&#37327;&#21644;</span>
+                    <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#36825;&#37324;&#23454;&#38469;&#20351;&#29992;&#20013;&#38656;&#35201; +- &#26435;&#37325;&#65292;&#32780;&#19981;&#26159;&#31616;&#21333;&#30340; +1/-1&#65292;</span>
+                    v[i] += 1;
+                } <span style="font-weight: bold;">else</span> {
+                    v[i] -= 1;
+                }
+            }
+        }
+        <span style="font-weight: bold; text-decoration: underline;">BigInteger</span> <span style="font-weight: bold; font-style: italic;">fingerprint</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">BigInteger</span>(<span style="font-style: italic;">"0"</span>);
+        <span style="font-weight: bold; text-decoration: underline;">StringBuffer</span> <span style="font-weight: bold; font-style: italic;">simHashBuffer</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">StringBuffer</span>();
+        <span style="font-weight: bold;">for</span> (<span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">i</span> = 0; i &lt; <span style="font-weight: bold;">this</span>.hashbits; i++) {
+            <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">4&#12289;&#26368;&#21518;&#23545;&#25968;&#32452;&#36827;&#34892;&#21028;&#26029;,&#22823;&#20110;0&#30340;&#35760;&#20026;1,&#23567;&#20110;&#31561;&#20110;0&#30340;&#35760;&#20026;0,&#24471;&#21040;&#19968;&#20010; 64bit &#30340;&#25968;&#23383;&#25351;&#32441;/&#31614;&#21517;.</span>
+            <span style="font-weight: bold;">if</span> (v[i] &gt;= 0) {
+                fingerprint = fingerprint.add(<span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">BigInteger</span>(<span style="font-style: italic;">"1"</span>).shiftLeft(i));
+                simHashBuffer.append(<span style="font-style: italic;">"1"</span>);
+            } <span style="font-weight: bold;">else</span> {
+                simHashBuffer.append(<span style="font-style: italic;">"0"</span>);
+            }
+        }
+        <span style="font-weight: bold;">this</span>.strSimHash = simHashBuffer.toString();
+        System.out.println(<span style="font-weight: bold;">this</span>.strSimHash + <span style="font-style: italic;">" length "</span> + <span style="font-weight: bold;">this</span>.strSimHash.length());
+        <span style="font-weight: bold;">return</span> fingerprint;
+    }
+
+    <span style="font-weight: bold;">private</span> <span style="font-weight: bold; text-decoration: underline;">BigInteger</span> <span style="font-weight: bold;">hash</span>(<span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">source</span>) {
+        <span style="font-weight: bold;">if</span> (source == <span style="font-weight: bold; text-decoration: underline;">null</span> || source.length() == 0) {
+            <span style="font-weight: bold;">return</span> <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">BigInteger</span>(<span style="font-style: italic;">"0"</span>);
+        } <span style="font-weight: bold;">else</span> {
+            <span style="font-weight: bold; text-decoration: underline;">char</span>[] <span style="font-weight: bold; font-style: italic;">sourceArray</span> = source.toCharArray();
+            <span style="font-weight: bold; text-decoration: underline;">BigInteger</span> <span style="font-weight: bold; font-style: italic;">x</span> = BigInteger.valueOf(((<span style="font-weight: bold; text-decoration: underline;">long</span>) sourceArray[0]) &lt;&lt; 7);
+            <span style="font-weight: bold; text-decoration: underline;">BigInteger</span> <span style="font-weight: bold; font-style: italic;">m</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">BigInteger</span>(<span style="font-style: italic;">"1000003"</span>);
+            <span style="font-weight: bold; text-decoration: underline;">BigInteger</span> <span style="font-weight: bold; font-style: italic;">mask</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">BigInteger</span>(<span style="font-style: italic;">"2"</span>).pow(<span style="font-weight: bold;">this</span>.hashbits).subtract(<span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">BigInteger</span>(<span style="font-style: italic;">"1"</span>));
+            <span style="font-weight: bold;">for</span> (<span style="font-weight: bold; text-decoration: underline;">char</span> <span style="font-weight: bold; font-style: italic;">item</span> : sourceArray) {
+                <span style="font-weight: bold; text-decoration: underline;">BigInteger</span> <span style="font-weight: bold; font-style: italic;">temp</span> = BigInteger.valueOf((<span style="font-weight: bold; text-decoration: underline;">long</span>) item);
+                x = x.multiply(m).xor(temp).and(mask);
+            }
+            x = x.xor(<span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">BigInteger</span>(String.valueOf(source.length())));
+            <span style="font-weight: bold;">if</span> (x.equals(<span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">BigInteger</span>(<span style="font-style: italic;">"-1"</span>))) {
+                x = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">BigInteger</span>(<span style="font-style: italic;">"-2"</span>);
+            }
+            <span style="font-weight: bold;">return</span> x;
+        }
+    }
+
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold;">hammingDistance</span>(<span style="font-weight: bold; text-decoration: underline;">SimHash</span> <span style="font-weight: bold; font-style: italic;">other</span>) {
+
+        <span style="font-weight: bold; text-decoration: underline;">BigInteger</span> <span style="font-weight: bold; font-style: italic;">x</span> = <span style="font-weight: bold;">this</span>.intSimHash.xor(other.intSimHash);
+        <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">tot</span> = 0;
+
+        <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#32479;&#35745;x&#20013;&#20108;&#36827;&#21046;&#20301;&#25968;&#20026;1&#30340;&#20010;&#25968;</span>
+        <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#25105;&#20204;&#24819;&#24819;&#65292;&#19968;&#20010;&#20108;&#36827;&#21046;&#25968;&#20943;&#21435;1&#65292;&#37027;&#20040;&#65292;&#20174;&#26368;&#21518;&#37027;&#20010;1&#65288;&#21253;&#25324;&#37027;&#20010;1&#65289;&#21518;&#38754;&#30340;&#25968;&#23383;&#20840;&#37117;&#21453;&#20102;&#65292;&#23545;&#21543;&#65292;&#28982;&#21518;&#65292;n&amp;(n-1)&#23601;&#30456;&#24403;&#20110;&#25226;&#21518;&#38754;&#30340;&#25968;&#23383;&#28165;0&#65292;</span>
+        <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#25105;&#20204;&#30475;n&#33021;&#20570;&#22810;&#23569;&#27425;&#36825;&#26679;&#30340;&#25805;&#20316;&#23601;OK&#20102;&#12290;</span>
+
+        <span style="font-weight: bold;">while</span> (x.signum() != 0) {
+            tot += 1;
+            x = x.and(x.subtract(<span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">BigInteger</span>(<span style="font-style: italic;">"1"</span>)));
+        }
+        <span style="font-weight: bold;">return</span> tot;
+    }
+
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold;">getDistance</span>(<span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">str1</span>, <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">str2</span>) {
+        <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">distance</span>;
+        <span style="font-weight: bold;">if</span> (str1.length() != str2.length()) {
+            distance = -1;
+        } <span style="font-weight: bold;">else</span> {
+            distance = 0;
+            <span style="font-weight: bold;">for</span> (<span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">i</span> = 0; i &lt; str1.<span style="font-weight: bold; text-decoration: underline;">length</span>(); i++) {
+                <span style="font-weight: bold;">if</span> (str1.charAt(i) != str2.charAt(i)) {
+                    distance++;
+                }
+            }
+        }
+        <span style="font-weight: bold;">return</span> distance;
+    }
+
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">List</span> <span style="font-weight: bold;">subByDistance</span>(<span style="font-weight: bold; text-decoration: underline;">SimHash</span> <span style="font-weight: bold; font-style: italic;">simHash</span>, <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">distance</span>) {
+        <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#20998;&#25104;&#20960;&#32452;&#26469;&#26816;&#26597;</span>
+        <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">numEach</span> = <span style="font-weight: bold;">this</span>.hashbits / (distance + 1);
+        <span style="font-weight: bold; text-decoration: underline;">List</span> <span style="font-weight: bold; font-style: italic;">characters</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">ArrayList</span>();
+
+        <span style="font-weight: bold; text-decoration: underline;">StringBuffer</span> <span style="font-weight: bold; font-style: italic;">buffer</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">StringBuffer</span>();
+
+        <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">k</span> = 0;
+        <span style="font-weight: bold;">for</span> (<span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">i</span> = 0; i &lt; <span style="font-weight: bold;">this</span>.intSimHash.bitLength(); i++) {
+            <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#24403;&#19988;&#20165;&#24403;&#35774;&#32622;&#20102;&#25351;&#23450;&#30340;&#20301;&#26102;&#65292;&#36820;&#22238; true</span>
+            <span style="font-weight: bold; text-decoration: underline;">boolean</span> <span style="font-weight: bold; font-style: italic;">sr</span> = simHash.intSimHash.testBit(i);
+
+            <span style="font-weight: bold;">if</span> (sr) {
+                buffer.append(<span style="font-style: italic;">"1"</span>);
+            } <span style="font-weight: bold;">else</span> {
+                buffer.append(<span style="font-style: italic;">"0"</span>);
+            }
+
+            <span style="font-weight: bold;">if</span> ((i + 1) % numEach == 0) {
+                <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#23558;&#20108;&#36827;&#21046;&#36716;&#20026;BigInteger</span>
+                <span style="font-weight: bold; text-decoration: underline;">BigInteger</span> <span style="font-weight: bold; font-style: italic;">eachValue</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">BigInteger</span>(buffer.toString(), 2);
+                System.out.println(<span style="font-style: italic;">"----"</span> + eachValue);
+                buffer.delete(0, buffer.length());
+                characters.add(eachValue);
+            }
+        }
+
+        <span style="font-weight: bold;">return</span> characters;
+    }
+
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">main</span>(<span style="font-weight: bold; text-decoration: underline;">String</span>[] <span style="font-weight: bold; font-style: italic;">args</span>) {
+        <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">s</span> = <span style="font-style: italic;">"This is a test string for testing"</span>;
+        <span style="font-weight: bold; text-decoration: underline;">SimHash</span> <span style="font-weight: bold; font-style: italic;">hash1</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">SimHash</span>(s, 64);
+        System.out.println(hash1.intSimHash + <span style="font-style: italic;">"  "</span> + hash1.intSimHash.bitLength());
+        hash1.subByDistance(hash1, 3);
+
+        s = <span style="font-style: italic;">"This is a test string for testing, This is a test string for testing abcdef"</span>;
+        <span style="font-weight: bold; text-decoration: underline;">SimHash</span> <span style="font-weight: bold; font-style: italic;">hash2</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">SimHash</span>(s, 64);
+        System.out.println(hash2.intSimHash + <span style="font-style: italic;">"  "</span> + hash2.intSimHash.bitCount());
+        hash1.subByDistance(hash2, 3);
+
+        s = <span style="font-style: italic;">"This is a test string for testing als"</span>;
+        <span style="font-weight: bold; text-decoration: underline;">SimHash</span> <span style="font-weight: bold; font-style: italic;">hash3</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">SimHash</span>(s, 64);
+        System.out.println(hash3.intSimHash + <span style="font-style: italic;">"  "</span> + hash3.intSimHash.bitCount());
+        hash1.subByDistance(hash3, 4);
+
+        System.out.println(<span style="font-style: italic;">"============================"</span>);
+
+        <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">dis</span> = hash1.getDistance(hash1.strSimHash, hash2.strSimHash);
+        System.out.println(hash1.hammingDistance(hash2) + <span style="font-style: italic;">" "</span> + dis);
+
+        <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">dis2</span> = hash1.getDistance(hash1.strSimHash, hash3.strSimHash);
+        System.out.println(hash1.hammingDistance(hash3) + <span style="font-style: italic;">" "</span> + dis2);
+
+        <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#36890;&#36807;Unicode&#32534;&#30721;&#26469;&#21028;&#26029;&#20013;&#25991;</span>
+        <span style="font-weight: bold; font-style: italic;">/*</span><span style="font-weight: bold; font-style: italic;">String str = "&#20013;&#22269;chinese";</span>
+<span style="font-weight: bold; font-style: italic;">        for (int i = 0; i &lt; str.length(); i++) {</span>
+<span style="font-weight: bold; font-style: italic;">            System.out.println(str.substring(i, i + 1).matches("[\\u4e00-\\u9fbb]+"));</span>
+<span style="font-weight: bold; font-style: italic;">        }*/</span>
+
+    }
+}
+
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org0e50d95" class="outline-2">
+<h2 id="org0e50d95">5、适用场景：</h2>
+<div class="outline-text-2" id="text-org0e50d95">
+<p>
+simHash在短文本的可行性：
+</p>
+
+<p>
+测试相似文本的相似度与汉明距离
+</p>
+
+<p>
+测试文本：
+</p>
+
+<p>
+20个城市名作为词串：
+</p>
+
+<p>
+北京,上海,香港,深圳,广州,台北,南京,大连,苏州,青岛,无锡,佛山,重庆,宁波,杭州,成都,武汉,澳门,天津,沈阳
+</p>
+
+<p>
+相似度矩阵：
+</p>
+
+<p>
+simHash码：
+</p>
+
+<p>
+勘误：0.667, Hm:13 是对比的msg 1与2。
+</p>
+
+<p>
+可见：相似度在0.8左右的Hamming距离为7，只有相似度高到0.9412，Hamming距离才近到4，
+此时，反观Google对此算法的应用场景：网页近重复。
+</p>
+
+<p>
+镜像网站、内容复制、嵌入广告、计数改变、少量修改。以上原因对于长文本来说造成的相
+似度都会比较高，而对于短文本来说，如何处理海量数据的相似度文本更为合适的？测试短
+文本（长度在8个中文字符～45个中文字符之间）相似性的误判率如下图所示：
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-org24bb009" class="outline-2">
+<h2 id="org24bb009">REF：</h2>
+<div class="outline-text-2" id="text-org24bb009">
+<ol class="org-ol">
+<li>simHash 简介以及java实现
+<ul class="org-ul">
+<li><a href="http://blog.sina.com.cn/s/blog_4f27dbd501013ysm.html">http://blog.sina.com.cn/s/blog_4f27dbd501013ysm.html</a></li>
+</ul></li>
+<li>对simhash算法的一些思考
+<ul class="org-ul">
+<li><a href="http://2588084.blog.51cto.com/2578084/558873">http://2588084.blog.51cto.com/2578084/558873</a></li>
+</ul></li>
+<li>Simhash算法原理和网页查重应用
+<ul class="org-ul">
+<li><a href="http://blog.sina.com.cn/s/blog_72995dcc010145ti.html">http://blog.sina.com.cn/s/blog_72995dcc010145ti.html</a></li>
+</ul></li>
+<li>其它
+<ul class="org-ul">
+<li><a href="http://www.cnblogs.com/zhengyun_ustc/archive/2012/06/12/sim.html">http://www.cnblogs.com/zhengyun_ustc/archive/2012/06/12/sim.html</a></li>
+<li><a href="http://tech.uc.cn/?p=1086">http://tech.uc.cn/?p=1086</a></li>
+<li><a href="http://jacoxu.com/?p=369%C2%A0%C2%A0simHash%E6%98%AF%E5%90%A6%E9%80%82%E5%90%88%E7%9F%AD%E6%96%87%E6%9C%AC%E7%9A%84%E7%9B%B8%E4%BC%BC%E6%96%87%E6%9C%AC%E5%8C%B9%E9%85%8D">http://jacoxu.com/?p=369  simHash是否适合短文本的相似文本匹配</a></li>
+<li><a href="https://github.com/sing1ee/simhash-java">https://github.com/sing1ee/simhash-java</a></li>
+</ul></li>
+</ol>
+</div>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

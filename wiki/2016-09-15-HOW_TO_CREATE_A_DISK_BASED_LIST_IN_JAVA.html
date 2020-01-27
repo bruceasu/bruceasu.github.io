@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>HOW TO CREATE A DISK BASED LIST IN JAVA</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">HOW TO CREATE A DISK BASED LIST IN JAVA</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#java"><div class="category">java</div></a> </div>
+<div class="char-counter">2016-09-15</div>
+        <div id="content">
+<nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#org7f09486">HOW TO CREATE A DISK BASED LIST IN JAVA</a>
+<ul>
+<li><a href="#org9046798">Creating a Disk Based List in Java</a></li>
+<li><a href="#orgf2733a9">Reading a Disk Based List in Java</a></li>
+<li><a href="#org1ec4c42">MapDB Maven Dependency</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</nav>
+
+<div id="outline-container-org7f09486" class="outline-2">
+<h2 id="org7f09486">HOW TO CREATE A DISK BASED LIST IN JAVA</h2>
+<div class="outline-text-2" id="text-org7f09486">
+<p>
+Occasionally when programming in Java you will need a List too large to hold in
+memory. MapDB is an open source Java library that allows you to create a disk
+based List (and other Java Collections) very easily.
+</p>
+
+<p>
+MapDB is a hybrid of an embedded database engine and the Java Collections
+framework. It provides Maps, Sets, Lists, Queues, etc. that can be stored in
+off-heap memory or on disk. MapDB is available via Maven central so it can be
+easily included in your project. Visit the MapDB home page for more information.
+</p>
+</div>
+
+<div id="outline-container-org9046798" class="outline-3">
+<h3 id="org9046798">Creating a Disk Based List in Java</h3>
+<div class="outline-text-3" id="text-org9046798">
+<p>
+Below is an example of creating a disk based ArrayList (IndexTreeList is an
+ArrayList type object backed by a tree). You can see in the example that DB and
+DBMaker objects are used to create the List. Each instance of DBrepresents a
+single transaction session, so commit() is needed to actually save the data to
+disk. Note that multiple Lists, Sets, etc. can be written to the same file.
+</p>
+<div class="org-src-container">
+<pre class="src src-java"><span style="font-weight: bold;">import</span> <span style="font-weight: bold; text-decoration: underline;">org</span>.<span style="font-weight: bold; text-decoration: underline;">mapdb</span>.<span style="font-weight: bold; text-decoration: underline;">DB</span>;
+<span style="font-weight: bold;">import</span> <span style="font-weight: bold; text-decoration: underline;">org</span>.<span style="font-weight: bold; text-decoration: underline;">mapdb</span>.<span style="font-weight: bold; text-decoration: underline;">DBMaker</span>;
+<span style="font-weight: bold;">import</span> <span style="font-weight: bold; text-decoration: underline;">org</span>.<span style="font-weight: bold; text-decoration: underline;">mapdb</span>.<span style="font-weight: bold; text-decoration: underline;">Serializer</span>;
+<span style="font-weight: bold;">import</span> <span style="font-weight: bold; text-decoration: underline;">java</span>.<span style="font-weight: bold; text-decoration: underline;">util</span>.<span style="font-weight: bold; text-decoration: underline;">Map</span>;
+
+<span style="font-weight: bold;">public</span> <span style="font-weight: bold;">class</span> <span style="font-weight: bold; text-decoration: underline;">MapDbTest</span> {
+
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">writeListToDisk</span>() {
+        <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">use DBMaker to create a DB object stored on disk</span>
+        <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">provide output location of list</span>
+        <span style="font-weight: bold; text-decoration: underline;">DB</span> <span style="font-weight: bold; font-style: italic;">db</span> = DBMaker.fileDB(<span style="font-style: italic;">"/tmp/testMapDB.db"</span>).make();
+
+        <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">use the DB object to create the "myList" ArrayList</span>
+        <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">set the specific serializer for better performance</span>
+        <span style="font-weight: bold; text-decoration: underline;">List</span>&lt;<span style="font-weight: bold; text-decoration: underline;">String</span>&gt; <span style="font-weight: bold; font-style: italic;">list</span> = db.indexTreeList(<span style="font-style: italic;">"myList"</span>, <span style="font-weight: bold; text-decoration: underline;">Serializer</span>.STRING).createOrOpen();
+
+        <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">populate list</span>
+        <span style="font-weight: bold;">for</span> (<span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">i</span> = 0; i &lt; 1000; i++) {
+            list.add(<span style="font-style: italic;">"item"</span> + i);
+        }
+
+        <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">persist changes on disk</span>
+        db.commit();
+
+        <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">close to protect from data corruption</span>
+        db.close();
+    }
+
+}
+
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgf2733a9" class="outline-3">
+<h3 id="orgf2733a9">Reading a Disk Based List in Java</h3>
+<div class="outline-text-3" id="text-orgf2733a9">
+<p>
+Reading a List that has been previously serialized to disk is very similar to
+creating a List for writes. We simply have to specify file containing the List,
+as well as the name of the List to deserialize. Also, there is no need to
+commit() since we are just reading the data.
+</p>
+<div class="org-src-container">
+<pre class="src src-java"><span style="font-weight: bold;">import</span> <span style="font-weight: bold; text-decoration: underline;">org</span>.<span style="font-weight: bold; text-decoration: underline;">mapdb</span>.<span style="font-weight: bold; text-decoration: underline;">DB</span>;
+<span style="font-weight: bold;">import</span> <span style="font-weight: bold; text-decoration: underline;">org</span>.<span style="font-weight: bold; text-decoration: underline;">mapdb</span>.<span style="font-weight: bold; text-decoration: underline;">DBMaker</span>;
+<span style="font-weight: bold;">import</span> <span style="font-weight: bold; text-decoration: underline;">org</span>.<span style="font-weight: bold; text-decoration: underline;">mapdb</span>.<span style="font-weight: bold; text-decoration: underline;">Serializer</span>;
+<span style="font-weight: bold;">import</span> <span style="font-weight: bold; text-decoration: underline;">java</span>.<span style="font-weight: bold; text-decoration: underline;">util</span>.<span style="font-weight: bold; text-decoration: underline;">Map</span>;
+
+<span style="font-weight: bold;">public</span> <span style="font-weight: bold;">class</span> <span style="font-weight: bold; text-decoration: underline;">MapDbTest</span> {
+
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">readListFromDisk</span>() {
+        <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">use DBMaker to create a DB object of List stored on disk</span>
+        <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">provide location</span>
+        <span style="font-weight: bold; text-decoration: underline;">DB</span> <span style="font-weight: bold; font-style: italic;">db</span> = DBMaker.fileDB(<span style="font-style: italic;">"/tmp/testMapDB.db"</span>).make();
+
+        <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">use the DB object to open the "myList" ArrayList</span>
+        <span style="font-weight: bold; text-decoration: underline;">List</span>&lt;<span style="font-weight: bold; text-decoration: underline;">String</span>&gt; <span style="font-weight: bold; font-style: italic;">list</span> = db.indexTreeList(<span style="font-style: italic;">"myList"</span>, <span style="font-weight: bold; text-decoration: underline;">Serializer</span>.STRING).createOrOpen();
+
+        <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">read from list</span>
+        <span style="font-weight: bold;">for</span> (<span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">i</span> = 0; i &lt; 1000; i++) {
+            System.out.println(list.get(i));
+        }
+
+        <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">close to protect from data corruption</span>
+        db.close();
+    }
+
+}
+
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org1ec4c42" class="outline-3">
+<h3 id="org1ec4c42">MapDB Maven Dependency</h3>
+<div class="outline-text-3" id="text-org1ec4c42">
+<p>
+Sample MapDB Maven dependency in pom.xml:
+</p>
+<div class="org-src-container">
+<pre class="src src-xml">&lt;<span style="font-weight: bold;">dependency</span>&gt;
+  &lt;<span style="font-weight: bold;">groupId</span>&gt;org.mapdb&lt;/<span style="font-weight: bold;">groupId</span>&gt;
+  &lt;<span style="font-weight: bold;">artifactId</span>&gt;mapdb&lt;/<span style="font-weight: bold;">artifactId</span>&gt;
+  &lt;<span style="font-weight: bold;">version</span>&gt;3.0.5&lt;/<span style="font-weight: bold;">version</span>&gt;
+&lt;/<span style="font-weight: bold;">dependency</span>&gt;
+</pre>
+</div>
+</div>
+</div>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

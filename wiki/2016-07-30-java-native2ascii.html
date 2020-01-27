@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>java native2ascii</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">java native2ascii</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#java"><div class="category">java</div></a> </div>
+<div class="char-counter">2016-07-30</div>
+        <div id="content">
+<nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#orgb2e0614">1、native2ascii简介：</a></li>
+<li><a href="#org893dd7b">2、获取native2ascii：</a></li>
+<li><a href="#org2a2abf6">3、native2ascii的命令行的命名格式：</a></li>
+<li><a href="#org93fe79b">4、最佳实践：</a></li>
+<li><a href="#orge858dd2">5、总结：</a></li>
+</ul>
+</div>
+</nav>
+<p>
+在做Java开发的时候，常常会出现一些乱码，或者无法正确识别或读取的文件，比如常见的
+validator验证用的消息资源（properties）文件就需要进行Unicode重新编码。原因是java
+默认的编码方式为Unicode，而我们的计算机系统编码常常是GBK等编码。需要将系统的编码
+转换为java正确识别的编码问题就解决了。
+</p>
+
+<div id="outline-container-orgb2e0614" class="outline-2">
+<h2 id="orgb2e0614">1、native2ascii简介：</h2>
+<div class="outline-text-2" id="text-orgb2e0614">
+<p>
+native2ascii 是 sun java sdk 提供的一个工具。用来将别的文本类文件（比如
+<b>.txt,</b>.ini,*.properties,*.java等等）编码转为Unicode编码。为什么要进行转码，原因在
+于程序的国际化。Unicode编码的定义：Unicode（统一码、万国码、单一码）是一种在计算
+机上使用的字符编码。它为每种语言中的每个字符设定了统一并且唯一的二进制编码，以满
+足跨语言、跨平台进行文本转换、处理的要求。1990年开始研发，1994年正式公布。随着计
+算机工作能力的增强，Unicode也在面世以来的十多年里得到普及。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org893dd7b" class="outline-2">
+<h2 id="org893dd7b">2、获取native2ascii：</h2>
+<div class="outline-text-2" id="text-org893dd7b">
+<p>
+安装了 jdk 后，假如你是在 windows 上安装，那么在 jdk 的安装目录下，会有一个bin目录，其
+中 native2ascii.exe 正是。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org2a2abf6" class="outline-2">
+<h2 id="org2a2abf6">3、native2ascii的命令行的命名格式：</h2>
+<div class="outline-text-2" id="text-org2a2abf6">
+<p class="verse">
+native2ascii -[options] [inputfile [outputfile]]<br>
+&#xa0;&#xa0;说明：<br>
+&#xa0;&#xa0;-[options]：表示命令开关，有两个选项可供选择<br>
+&#xa0;&#xa0;-reverse：将Unicode编码转为本地或者指定编码，不指定编码情况下，将转为本地编码。<br>
+&#xa0;&#xa0;-encoding encoding_name：转换为指定编码，encoding_name为编码名称。<br>
+<br>
+&#xa0;[inputfile [outputfile]]<br>
+&#xa0;inputfile：表示输入文件全名。<br>
+&#xa0;outputfile：输出文件名。如果缺少此参数，将输出到控制台。<br>
+<br>
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-org93fe79b" class="outline-2">
+<h2 id="org93fe79b">4、最佳实践：</h2>
+<div class="outline-text-2" id="text-org93fe79b">
+<p>
+首先将 JDK 的 bin 目录加入系统变量 path。在盘下建立一个 test 目录，在 test 目录
+里建立一个 zh.txt 文件，文件内容为：“熔岩”，打开 “命令行提示符”，并进入 C:\test
+目录下。下面就可以按照说明一步一步来操作，注意观察其中编码的变化。
+</p>
+<p class="verse">
+A：将zh.txt转换为Unicode编码，输出文件到u.txt<br>
+&#xa0;&#xa0;native2ascii zh.txt u.txt<br>
+&#xa0;&#xa0;打开u.txt，内容为“\u7194\u5ca9”。<br>
+<br>
+&#xa0;&#xa0;B：将zh.txt转换为Unicode编码，输出到控制台<br>
+&#xa0;&#xa0;C:\test&gt;native2ascii zh.txt<br>
+&#xa0;&#xa0;\u7194\u5ca9<br>
+&#xa0;&#xa0;可以看到，控制台输出了“\u7194\u5ca9”。<br>
+<br>
+&#xa0;&#xa0;C：将zh.txt转换为ISO8859-1编码，输出文件到i.txt<br>
+&#xa0;&#xa0;native2ascii -encoding ISO8859-1 zh.txt i.txt<br>
+&#xa0;&#xa0;打开i.txt文件，内容为“\u00c8\u00db\u00d1\u00d2”。<br>
+<br>
+&#xa0;&#xa0;D：将u.txt转换为本地编码，输出到文件u_nv.txt<br>
+&#xa0;&#xa0;native2ascii -reverse u.txt u_nv.txt<br>
+&#xa0;&#xa0;打开u_nv.txt文件，内容为“熔岩”。<br>
+<br>
+&#xa0;&#xa0;E：将u.txt转换为本地编码，输出到控制台<br>
+&#xa0;&#xa0;C:\test&gt;native2ascii -reverse u.txt<br>
+&#xa0;&#xa0;熔岩<br>
+&#xa0;&#xa0;可以看到，控制台输出了“熔岩”。<br>
+<br>
+&#xa0;&#xa0;F：将i.txt转换为本地编码，输出到i_nv.txt<br>
+&#xa0;&#xa0;native2ascii -reverse i.txt i_nv.txt<br>
+&#xa0;&#xa0;打开i_nv.txt文件，内容为“\u00c8\u00db\u00d1\u00d2”。发现转码前后完全一样的。也就是说，等于没有转，或者说思想糊涂，对命名没有理解。<br>
+<br>
+&#xa0;&#xa0;G：将i.txt转换为GBK编码，输出到i_gbk.txt<br>
+&#xa0;&#xa0;native2ascii -reverse -encoding GBK i.txt i_gbk.txt<br>
+&#xa0;&#xa0;打开i_gbk.txt文件，内容为“\u00c8\u00db\u00d1\u00d2”。发现转码前后完全一样的。也就是说，等于没有转，或者说思想糊涂，对命名没有理解。<br>
+<br>
+&#xa0;&#xa0;H：将u_nv.txt转码到本地编码GBK，输出到控制台<br>
+&#xa0;&#xa0;C:\test&gt;native2ascii -reverse -encoding ISO8859-1 i.txt<br>
+&#xa0;&#xa0;熔岩<br>
+&#xa0;&#xa0;从这个结果看，目标达到到了，编码i.txt为ISO8859-1，转为本地编码后内容为“熔岩”。从这里应该意识到，native2ascii -reverse命令中-encoding指定的编码为源文件的编码格式。而在native2ascii 命令中-encoding指定的编码为（生成的）目标文件的编码格式。这一点非常的重要！切记！！<br>
+<br>
+&#xa0;&#xa0;继续探索，新建文件12a.txt，内容“12axyz”。看看纯字母数字的编码又如何。<br>
+<br>
+&#xa0;&#xa0;I：将纯字母数字的文本文件12a.txt转换为Unicode编码<br>
+&#xa0;&#xa0;native2ascii 12a.txt 12a_nv.txt<br>
+&#xa0;&#xa0;打开12a_nv.txt文件，内容为“12axyz”。<br>
+&#xa0;&#xa0;继续测试，转为ISO8859-1编码看看<br>
+&#xa0;&#xa0;C:\test&gt;native2ascii -encoding ISO8859-1 12a.txt<br>
+&#xa0;&#xa0;12axyz<br>
+&#xa0;&#xa0;结果还是没有转码。<br>
+<br>
+&#xa0;&#xa0;从结果可以得出结论：对于纯数字和字母的文本类型文件（只有ASCII码），转码前后的内容是一样的。<br>
+</p>
+</div>
+</div>
+
+<div id="outline-container-orge858dd2" class="outline-2">
+<h2 id="orge858dd2">5、总结：</h2>
+<div class="outline-text-2" id="text-orge858dd2">
+<p>
+native2ascii 是一个非常的好转码工具，并且转码是可逆的！而其真正的含义并非本地编
+码——&gt;转码为 ASCII 码，而是一个通用的文本文件编码转换工具。在做编码转换的时候有两
+类指定编码的情形，分别指输出文件编码和输入文件编码，具体可以看看最佳实践部分。
+</p>
+</div>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

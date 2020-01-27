@@ -1,0 +1,117 @@
+# -*- coding: utf-8-unix; -*-
+#+TITLE:       如何在VIM使用非等寬字體
+#+AUTHOR:      Bruce Asu
+#+EMAIL:       bruceasu@163.com
+#+DATE:        <2010-10-05 20:00>
+#+filetags:    vim
+#+DESCRIPTION: VIM是一個Programmer喜愛嘅編輯器，隨著對更高輸入效率嘅要求，一啲普通人士亦加入咗
+VIM嘅行列。
+
+#+LANGUAGE:    en
+#+OPTIONS:     H:7 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:nil
+
+VIM是一個Programmer喜愛嘅編輯器，隨著對更高輸入效率嘅要求，一啲普通人士亦加
+入咗VIM嘅行列。我哋對字體美感嘅要求，vim卻未必可以滿足到。比如我好中意使用歐
+陽詢嘅字體作為標準字體，但系字體嘅選擇框內冇得選，直接寫配置文件，vim就直接
+報錯。
+
+GUI已經成為我哋嘅桌面標準，ttf字體成為咗最常用嘅字體。VIM亦跟隨潮流，支持使
+用ttf字體。鑒于其Coding Editor嘅考量，依然僅僅支持等寬字體。我哋作為一般嘅用
+戶，希望使用其作為輕巧嘅文本編輯器，尤其是中文文本編輯器時，要求其能夠使用其
+他好睇嘅字體。長時間睇宋體，明體會產生審美疲勞。但系，vim唔支持其他字體，點
+算？世界有大把Hacker，請佢哋Hack下。嗯……，唔使指望國人了，用google搜咗全世界
+都搵唔到方案。本來對某個島國抱有一絲希望，畢竟其領導著一部分開源項目，國際化
+嘅領頭羊，只不過，下咗個所謂日版vim，一樣都系咁。
+
+既然求唔到人，唯有靠自己。本人唔系Hacker，自然唔會去改期源代碼，使其支持其他
+可變寬度嘅ttf字體。本人嘅方式就是死馬當活馬醫。佢既然要求等寬，我哋就提供等
+寬嘅字體——我哋漢字本省就是等寬字體，而且冇單寬和倍寬嘅區別。
+
+方式有兩種，一種是配置字體分類信息，一種是修改字體信息。唔道vim系讀取系統嘅
+字體分類信息，定系自己去讀取字體信息。linux下配置字體分類信息系font.conf，
+windows下系修改注冊表（未測試過）。linux下修改字體信息嘅軟件為fontforge，
+windows下嘅系Font Creator Program。
+
+配置分類信息的方式沒有測試過，有興趣嘅筒子可以自行試試。本人用修改字體信息嘅
+方式，直覺上認為vim會自己去讀取字體嘅信息。我使用FCP4來做呢件事。
+
+#+BEGIN_QUOTE
+Font Creator Program 4
+
+To change a proportional spaced font into a monospaced font, follow these steps:
+
+Select the AutoMetrics command (Tools menu) to force the advance width to be the
+same for all glyphs (except for the second glyph normally called .null - this
+glyphs advance width should be zero).
+【可以省略，漢字本身就是等寬，漢字字體入邊嘅英文又唔好睇，我哋使用獨立嘅英文字體。】
+
+If necessary, change the outlines of glyphs that are too wide.
+
+In the Settings command (Format menu) on the Classification tab set Proportion
+to Monospaced.
+
+In the Settings command (Format menu) on the Header tab make sure the check box
+Instructions may alter advance width is not checked.
+
+In the Settings command (Format menu) on the Post tab set Fixed Pitch to a
+non-zero value (e.g. 1).
+
+Finally in the Tables command (Format menu) you might have to remove two
+internal tables (if available) hdmx and LTSH. If the font seems to be changed
+you could also remove the hinting related data, although this will result in a
+quality decrease.
+
+#+END_QUOTE
+
+為了唔好同原來嘅字體名稱沖突，最好亦修改字體名稱，如果有中文描述，佢系用
+\uXXXX呢種十六進制嘅unicode碼表示，修改麻煩，干脆直接刪除中文描述，只保留英
+文描述。修改為另一個名稱，通常在后面加上Mono就好了。修改好后，另存為另一個字
+體名，建議在后面加上Mono。
+
+然后把字體安裝到系統中。
+
+配置vim
+
+vim在本地編碼下并不啟用其他類型的字體——我嘅版本系咁（7.2），需要將其將其設置
+為utf-8。
+
+例:
+#+BEGIN_EXAMPLE
+"解决consle输出乱码, set enc=utf-8后，windows下會系亂碼
+language messages zh_CN.utf-8
+"解決菜單亂碼——windows下未有方案，不看菜單吧。
+"linux下，gb編碼環境估計都系咁。如果系utf8環境，唔知會唔會亂碼？
+
+let &termencoding=&encoding
+"新建文件嘅編碼，windows下為gbk（cp936），可以設置為想用的編碼
+set fenc=cp936
+"顯示編碼，只有設置為utf8，自己設置的等寬中文字體才有效，
+"否則（如設為cp936）還是宋體。
+set encoding=utf-8
+"自動探測文件編碼
+set fileencodings=gb2312,gbk,cp936,gb18030,utf-8,utf-16,big5,cp932
+"設置終端編碼
+set tenc=utf-8
+"設置幫助文檔語言
+set helplang=cn
+
+if has('win32')
+ "設置中文字體為歐陽詢體，字號比英文大2號比較好。
+ set guifontwide=AuYoengSeon\ mono:h14
+ "設置英文字體。
+ set guifont=Consolas:h12
+elseif has('mac')
+ set guifont=Osaka:h14
+ set linespace=0
+elseif has('xfontset')
+ set guifontset=AuYoengSeon\ mono\ 14
+ set linespace=0
+else
+ set guifontset=AuYoengSeon\ mono\ 14
+ set linespace=0
+endif
+
+
+
+
+#+END_EXAMPLE

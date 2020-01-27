@@ -1,0 +1,211 @@
+#+title: QQWry data 格式
+#+date: <2016-05-27 20:00>
+#+filetags: ip
+#+description: 解读 QQWry.Data ------IP地址库文件数据.
+
+解读 QQWry.Data ------IP地址库文件数据。
+
+按项目计划，最近要实现用户IP地址到所在地址区域的转换，这里不仅只是解读出地区文字，
+还需要对应原有的地区数据；所以要把地区代码（机构组织码）与IP地址建立对应关系。我
+选择纯真版IP地址库来建立对应关系表。
+
+从网上下载了最新的 QQWry.Data 库文件，首先碰到的一个问题是解析这个文件。根据网上
+的资料（LuamaQQ作者写的日志），根据自己的摸索，总结出了此文件的内容结构，以及解
+读方式。
+
+* 文件结构
+
+文件主要分三个结构
+
+1. 文件头，8个字节；
+2. 数据记录区，不定长度；
+3. 索引区，长度为 7 的整数倍；
+
+* 文件头
+
+文件头的8个字节分两部分，每个部分4个字节，分别指定了索引区的开始地址和结束地址。
+所以可以通过两个地址的差值 除 7 后 加 1 可以计算出总的记录数。
+
+* 记录区
+
+记录区的数据需要通过索引区的数据来获得各个数据的起始位置；本区数据记录了IP地址的
+结束地址和地区字符串；所有地区字符串都以 0x00 为结束。
+
+* 索引区
+
+检索IP对应的地区，关键就是找到IP起始地址对应的索引内容。一个IP索引数据包含7个字
+节，前4个字节是IP地址起始值，后3个字节是对应的IP数据记录在文件内的偏移地址；IP数
+据记录中，前 4 个字节是IP结束地址；紧跟的数据有两种模式: 0x01 模式 和 0x02 模式。
+
+0x01模式，即在IP数据的第5个字节是 0x01，则在后面的 3 个字节是国家地区数据的偏移
+地址；国家地区数据包括国家和地区这两个字符串。即
+
+#+BEGIN_HTML
+  <p class="verse">
+#+END_HTML
+
+---------------------------------------------------------------
+4字节 |  3字节 重定向 0x NN NN NN -> 国家地区数据的文件偏移地址
+---------------------------------------------------------------
+
+#+BEGIN_HTML
+  </p>
+#+END_HTML
+
+0x02模式，即在IP数据的第5个字节是 0x02，则在后面的 3 个字节是国家数据的偏移地址，
+地区数据是再往后的字符串，以 0x00 截至。即
+
+#+BEGIN_HTML
+  <p class="verse">
+#+END_HTML
+
+-----------------------------------------------------------------------------
+4字节 | 3字节 重定向 0x NN NN NN -> 国家数据的文件偏移地址 | 地区字符串 | 0x00
+-----------------------------------------------------------------------------
+
+#+BEGIN_HTML
+  </p>
+#+END_HTML
+
+对于 0x01 模式所得到的 国家地区数据中，它可能又带有一个重定向结构，即
+
+#+BEGIN_HTML
+  <p class="verse">
+#+END_HTML
+
+--------------------------------------
+国家字符串 | 0x00 | 地区字符串 | 0x00
+--------------------------------------
+
+#+BEGIN_HTML
+  </p>
+#+END_HTML
+
+或
+
+#+BEGIN_HTML
+  <p class="verse">
+#+END_HTML
+
+-------------------------------------------------------------------------
+国家字符串 | 0x00 | 0x02 | 3字节 0x NN NN NN -> 地区字符串的文件偏移地址
+-------------------------------------------------------------------------
+
+#+BEGIN_HTML
+  </p>
+#+END_HTML
+
+对于前一种情况，比较简单，直接读出两个字符串数据就可以了；对于后一种情况，需要再
+次重定向到地区字符串的偏移地址，然后读取到 0x00 为字符串结尾。
+
+对于这种采取地址映射实际字符串值的方式，主要作用是避免重复记录字符串值。在整个IP
+地址库文件中，有太多相同字符串记录了，采用 3 字节的映射地址要比重复记录字符串值
+节省太多空间了。
+
+这里附上PHP版的解读代码： 复制PHP内容到剪贴板 PHP代码:
+
+#+BEGIN_EXAMPLE
+    <?php
+    function bin2ip($bin)
+    {
+        $ip = '';
+        $bd = str_split($bin, 1);
+        for($i = 4; $i > 0; $i--){
+            $ip .= "." . sprintf("%03d", implode('', unpack('s', $bd[$i-1] . chr(0))));
+        }
+        return substr($ip, 1);
+    }
+
+    //--------------------------------------------------
+
+    $f = fopen('QQWry.Dat', 'r');
+
+    $c = fread($f, 4);
+    $d = fread($f, 4);
+
+    $index_begin = implode('', unpack('L', $c));
+    $index_end   = implode('', unpack('L', $d));
+    if($index_begin < 0) $index_begin += pow(2, 32);
+    if($index_end   < 0) $index_end   += pow(2, 32);
+
+    $ip_num = ($index_end - $index_begin) / 7 + 1;
+
+    echo "index begin at: $index_begin\n";
+    echo "index end   at: $index_end\n";
+    echo "ip data count : $ip_num\n";
+
+    $output = '';
+
+    for($i = 0; $i < $ip_num; $i++){
+
+        //文件指针指到每个IP数据文件的索引取得索引数据(7字节)上
+        fseek($f, $i * 7 + $index_begin);
+        $ip4 = fread($f, 4);                //IP起始地址
+        if(strlen($ip4) < 4) exit('data file error');
+
+        $ip3 = fread($f, 3);                //IP记录偏移地址
+        if(strlen($ip3) < 3) exit('data file error');
+
+        $dataseek = implode('', unpack('L', $ip3 . chr(0)));
+        if($dataseek < 0) $index_ip_record += pow(2, 32);
+
+        //指向记录区 $dataseek 位置查找记录
+        fseek($f, $dataseek);
+        $ipdata = fread($f, 4);                //IP结束地址
+        if(strlen($ipdata) < 4) exit('data file error');
+
+        $area = '';
+        $country = '';
+
+        //读一个标记位
+        $flag = fread($f, 1);
+        if($flag == chr(1)){                //国家名偏移标记位    模式一 0x01
+            $area1seek = fread($f, 3);
+            if(strlen($area1seek) < 3) exit('data file error');
+            $area1seek = implode('', unpack('L', $area1seek . chr(0)));
+            fseek($f, $area1seek);
+
+            $flag = fread($f, 1);            //可能又是标记位
+
+
+        }
+        if($flag == chr(2)){                //国家地区 重定向
+            $area1seek = fread($f, 3);
+            if(strlen($area1seek) < 3) exit('data file error');
+            $area1seek = implode('', unpack('L', $area1seek . chr(0)));
+
+            $flag = fread($f, 1);
+            if($flag == chr(2)){
+                $area2seek = fread($f, 3);
+                $area2seek = implode('', unpack('L', $area2seek . chr(0)));
+                fseek($f, $area2seek);
+            }else{
+                fseek($f, -1, SEEK_CUR);
+            }
+            while(($c = fread($f, 1)) != chr(0)) $area .= $c;
+
+            fseek($f, $area1seek);
+            while(($c = fread($f, 1)) != chr(0)) $country .= $c;
+        }else{
+            fseek($f, -1, SEEK_CUR);
+            while(($c = fread($f, 1)) != chr(0)) $country .= $c;
+
+            $flag = fread($f, 1);        //如果地区是重定向的
+            if($flag == chr(2)){
+                $area2seek = fread($f, 3);
+                $area2seek = implode('', unpack('L', $area2seek . chr(0)));
+                fseek($f, $area2seek);
+            }else{
+                fseek($f, -1, SEEK_CUR);
+            }
+
+            while(($c = fread($f, 1)) != chr(0)) $area .= $c;
+        }
+        $adata = trim($country) . trim($area); //$country是国家字符串 , $area 是地区字符串
+
+    }
+
+
+    fclose($f);
+    ?>
+#+END_EXAMPLE

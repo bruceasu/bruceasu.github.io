@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>ant</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">ant</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#java"><div class="category">java</div></a> <a href="https://bruceasu.github.io/tags.html#ant"><div class="category">ant</div></a> </div>
+<div class="char-counter">2010-11-04</div>
+        <div id="content">
+<nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#orgaa57452">前期准备</a></li>
+<li><a href="#org0248d1a">下面正式开始我们的ANT配置。</a></li>
+<li><a href="#orgcd36d52">附录：Proguard简介绍及下载</a></li>
+</ul>
+</div>
+</nav>
+
+
+
+<div id="outline-container-orgaa57452" class="outline-2">
+<h2 id="orgaa57452">前期准备</h2>
+<div class="outline-text-2" id="text-orgaa57452">
+<p>
+由于涉及到打包签名,所以在开始全部工作之前,我们先做好签名的准备工作。那就是建立密
+钥库（keystore）。只有建立好了密码库，才能在签名工具中顺利地实现签名。这里建立密
+钥库要用到j2SDK提供的工具keytool,我们通过命令行来运行就行了。关于这个工具的详细
+用法请见j2SDK官方文档的%JAVA_DOC%\tooldocs\windows\keytool.html目录下。
+</p>
+
+<pre class="example">
+keytool -genkey -dname "cn=Wuxing, ou=Gdyj, o=Geoway, c=CN" -alias geoway -keypass geoway -keystore d:\keystore -storepass geoway
+
+</pre>
+
+<p>
+这个命令在D盘根目录下创建了一个名为keystore的密钥库文件。密码是geoway,它为“通用
+名为Wuxing,组织部门为Gdyj,组织为Geoway,国家代码为CN”实体生成了一个公有/私有的密
+钥对。它用默认的“DSA”密钥产生算法来创建密码，达1024位长。
+</p>
+
+<p>
+注意：为了顺利地调用上述命令，请将%JAVA_HOME%\bin目录加入你的系统环境变量path中。
+</p>
+
+<p>
+说明：下面的ANT配置文件build.xml中，出现中文的地方，请根据实际情况进行修改。
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-org0248d1a" class="outline-2">
+<h2 id="org0248d1a">下面正式开始我们的ANT配置。</h2>
+<div class="outline-text-2" id="text-org0248d1a">
+<div class="org-src-container">
+<pre class="src src-xml"><span style="font-style: italic;">&lt;!</span><span style="font-style: italic;">&#8212;&#24314;&#31435;&#24037;&#31243;&#21517;&#20026;Client&#65292;&#40664;&#35748;&#30340;&#20219;&#21153;&#26159;compile --&gt;</span>
+  &lt;<span style="font-weight: bold;">project</span> <span style="font-weight: bold; font-style: italic;">name</span>=<span style="font-style: italic;">"Client"</span> <span style="font-weight: bold; font-style: italic;">default</span>=<span style="font-style: italic;">"compile"</span> <span style="font-weight: bold; font-style: italic;">basedir</span>=<span style="font-style: italic;">"."</span>&gt;
+    <span style="font-style: italic;">&lt;!</span><span style="font-style: italic;">&#8212; &#35774;&#32622;&#20840;&#23616;&#23646;&#24615; --&gt;</span>
+  &#160; &lt;<span style="font-weight: bold;">property</span> <span style="font-weight: bold; font-style: italic;">name</span>=<span style="font-style: italic;">"src"</span> <span style="font-weight: bold; font-style: italic;">value</span>=<span style="font-style: italic;">"&#28304;&#20195;&#30446;&#24405;"</span>/&gt;
+    &lt;<span style="font-weight: bold;">property</span> <span style="font-weight: bold; font-style: italic;">name</span>=<span style="font-style: italic;">"classes"</span> <span style="font-weight: bold; font-style: italic;">value</span>=<span style="font-style: italic;">"&#31867;&#30446;&#24405;"</span>/&gt;
+    &lt;<span style="font-weight: bold;">property</span> <span style="font-weight: bold; font-style: italic;">name</span>=<span style="font-style: italic;">"docs"</span> <span style="font-weight: bold; font-style: italic;">value</span>=<span style="font-style: italic;">"API&#25991;&#26723;&#30446;&#24405;"</span>/&gt;
+    &lt;<span style="font-weight: bold;">property</span> <span style="font-weight: bold; font-style: italic;">name</span>=<span style="font-style: italic;">"version"</span> <span style="font-weight: bold; font-style: italic;">value</span>=<span style="font-style: italic;">"&#29256;&#26412;&#21495;"</span>/&gt;
+    &lt;<span style="font-weight: bold;">property</span> <span style="font-weight: bold; font-style: italic;">name</span>=<span style="font-style: italic;">"lib"</span> <span style="font-weight: bold; font-style: italic;">value</span>=<span style="font-style: italic;">"&#32534;&#35793;&#26102;&#35201;&#35843;&#29992;&#30340;&#24211;&#30446;&#24405;"</span>/&gt;
+    &lt;<span style="font-weight: bold;">property</span> <span style="font-weight: bold; font-style: italic;">name</span>=<span style="font-style: italic;">"clientjar"</span> <span style="font-weight: bold; font-style: italic;">value</span>=<span style="font-style: italic;">"&#25171;&#21253;&#30446;&#24405;"</span>/&gt;
+    &lt;<span style="font-weight: bold;">property</span> <span style="font-weight: bold; font-style: italic;">name</span>=<span style="font-style: italic;">"profile"</span> <span style="font-weight: bold; font-style: italic;">value</span>=<span style="font-style: italic;">"proguard&#37197;&#32622;&#25991;&#20214;&#36335;&#24452;"</span>/&gt;
+  &#160; &lt;<span style="font-weight: bold;">property</span> <span style="font-weight: bold; font-style: italic;">name</span>=<span style="font-style: italic;">"proguardhome"</span> <span style="font-weight: bold; font-style: italic;">value</span>=<span style="font-style: italic;">" proguard3.0.7&#30446;&#24405;"</span>/&gt;
+    <span style="font-style: italic;">&lt;!</span><span style="font-style: italic;">&#8212;</span>
+<span style="font-style: italic;">  &#160; &#20026;&#20102;&#26356;&#36827;&#19968;&#27493;&#20307;&#29616;Ant&#24378;&#22823;&#30340;&#21151;&#33021;&#65292;&#25105;&#20204;&#25226;&#31614;&#21517;&#36807;&#31243;&#20889;&#22312;&#25209;&#22788;&#29702;&#25991;&#20214;&#20013;&#65292;&#20379;ANT&#35843;&#29992;.</span>
+<span style="font-style: italic;">    &#31614;&#21517;&#20195;&#30721;&#22914;&#19979;:</span>
+<span style="font-style: italic;">  jarsigner -keystore d:\keystore -storepass geoway -keypass geoway -signedjar Client.jar Client_1.jar geoway</span>
+<span style="font-style: italic;">    &#27880;&#24847;&#65306;&#24471;&#20808;&#23450;&#20301;&#30446;&#24405;&#21040;&#31614;&#21517;&#21253;&#25152;&#22312;&#30446;&#24405;</span>
+<span style="font-style: italic;">    --&gt;</span>
+<span style="font-style: italic;">  &#160;&#160;</span><span style="font-style: italic;">&lt;</span><span style="font-weight: bold; font-style: italic;">property</span><span style="font-style: italic;"> </span><span style="font-weight: bold; font-style: italic;">name</span><span style="font-style: italic;">="sign" </span><span style="font-weight: bold; font-style: italic;">value</span><span style="font-style: italic;">="&#31614;&#21517;&#25209;&#22788;&#29702;&#25991;&#20214;&#36335;&#24452;"</span><span style="font-style: italic;">/</span><span style="font-style: italic;">&gt;</span>
+<span style="font-style: italic;">  &#160;&#160;</span><span style="font-style: italic;">&lt;</span><span style="font-weight: bold; font-style: italic;">property</span><span style="font-style: italic;"> </span><span style="font-weight: bold; font-style: italic;">name</span><span style="font-style: italic;">="IALOC" </span><span style="font-weight: bold; font-style: italic;">value</span><span style="font-style: italic;">="InstallAnywhere&#23433;&#35013;&#30446;&#24405;"</span><span style="font-style: italic;">/</span><span style="font-style: italic;">&gt;</span>
+<span style="font-style: italic;">  &#160;&#160;</span><span style="font-style: italic;">&lt;</span><span style="font-weight: bold; font-style: italic;">property</span><span style="font-style: italic;"> </span><span style="font-weight: bold; font-style: italic;">name</span><span style="font-style: italic;">="INSTALLLOC" </span><span style="font-weight: bold; font-style: italic;">value</span><span style="font-style: italic;">="IA&#37197;&#32622;&#25991;&#20214;&#36335;&#24452;"</span><span style="font-style: italic;">/</span><span style="font-style: italic;">&gt;</span>
+<span style="font-style: italic;">  &#160;&#160;</span><span style="font-style: italic;">&lt;</span>!&#8212;- &#20219;&#21153;1&#65306;&#28165;&#31354; --&gt;
+  &#160; &lt;<span style="font-weight: bold;">target</span> <span style="font-weight: bold; font-style: italic;">name</span>=<span style="font-style: italic;">"clean"</span>&gt;
+  &#160; &lt;<span style="font-weight: bold;">delete</span> <span style="font-weight: bold; font-style: italic;">failonerror</span>=<span style="font-style: italic;">"false"</span> <span style="font-weight: bold; font-style: italic;">includeemptydirs</span>=<span style="font-style: italic;">"true"</span>&gt;
+  &#160;&#160;  &lt;<span style="font-weight: bold;">fileset</span> <span style="font-weight: bold; font-style: italic;">dir</span>=<span style="font-style: italic;">"${classes}"</span>/&gt;
+  &#160;&#160;&lt;/<span style="font-weight: bold;">delete</span>&gt;
+  &#160; &lt;<span style="font-weight: bold;">delete</span> <span style="font-weight: bold; font-style: italic;">failonerror</span>=<span style="font-style: italic;">"false"</span> <span style="font-weight: bold; font-style: italic;">includeemptydirs</span>=<span style="font-style: italic;">"true"</span>&gt;
+  &#160;   &lt;<span style="font-weight: bold;">fileset</span> <span style="font-weight: bold; font-style: italic;">dir</span>=<span style="font-style: italic;">"${clientjar}\com"</span>/&gt;
+  &#160; &#160;&lt;/<span style="font-weight: bold;">delete</span>&gt;
+  &#160;&#160; &lt;<span style="font-weight: bold;">mkdir</span> <span style="font-weight: bold; font-style: italic;">dir</span>=<span style="font-style: italic;">"${classes}"</span> /&gt;
+  &#160; &lt;/<span style="font-weight: bold;">target</span>&gt;
+    <span style="font-style: italic;">&lt;!</span><span style="font-style: italic;">&#8212; &#20219;&#21153;2&#65306;&#32534;&#35793; --&gt;</span>
+  &#160; &lt;<span style="font-weight: bold;">target</span> <span style="font-weight: bold; font-style: italic;">name</span>=<span style="font-style: italic;">"compile"</span>&gt;
+  &#160;&#160;&#160; &lt;<span style="font-weight: bold;">javac</span> <span style="font-weight: bold; font-style: italic;">srcdir</span>=<span style="font-style: italic;">"${src}"</span> <span style="font-weight: bold; font-style: italic;">destdir</span>=<span style="font-style: italic;">"${classes}"</span> <span style="font-weight: bold; font-style: italic;">debug</span>=<span style="font-style: italic;">"true"</span>
+  &#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold; font-style: italic;">optimize</span>=<span style="font-style: italic;">"false"</span> <span style="font-weight: bold; font-style: italic;">deprecation</span>=<span style="font-style: italic;">"true"</span>&gt;
+    &#160;&#160;&#160;&#160;&lt;<span style="font-weight: bold;">classpath</span>&gt;
+    &#160;&#160;    &lt;<span style="font-weight: bold;">fileset</span> <span style="font-weight: bold; font-style: italic;">dir</span>=<span style="font-style: italic;">"${lib}"</span>&gt;
+    &#160;&#160; &#160;    &lt;<span style="font-weight: bold;">include</span> <span style="font-weight: bold; font-style: italic;">name</span>=<span style="font-style: italic;">"**/*.jar"</span>/&gt;
+    &#160;&#160;    &lt;/<span style="font-weight: bold;">fileset</span>&gt;
+    &#160;&#160;&#160;&#160;&lt;/<span style="font-weight: bold;">classpath</span>&gt;
+  &#160;&#160;&#160; &lt;/<span style="font-weight: bold;">javac</span>&gt;
+  &#160; &#160; &lt;<span style="font-weight: bold;">copy</span> <span style="font-weight: bold; font-style: italic;">todir</span>=<span style="font-style: italic;">"${classes}"</span>&gt;
+  &#160;&#160;&#160;&#160;&#160; &lt;<span style="font-weight: bold;">fileset</span> <span style="font-weight: bold; font-style: italic;">dir</span>=<span style="font-style: italic;">"${src}"</span>&gt;
+  &#160; &#160;&#160;&#160; &lt;<span style="font-weight: bold;">include</span> <span style="font-weight: bold; font-style: italic;">name</span>=<span style="font-style: italic;">"**/*.properties"</span>/&gt;
+  &#160; &#160;&#160;&#160; &lt;<span style="font-weight: bold;">include</span> <span style="font-weight: bold; font-style: italic;">name</span>=<span style="font-style: italic;">"**/*.xml"</span>/&gt;
+  &#160; &#160;&#160;&#160; &lt;<span style="font-weight: bold;">include</span> <span style="font-weight: bold; font-style: italic;">name</span>=<span style="font-style: italic;">"**/*.gif"</span>/&gt;
+  &#160; &#160;&#160;&#160; &lt;<span style="font-weight: bold;">include</span> <span style="font-weight: bold; font-style: italic;">name</span>=<span style="font-style: italic;">"**/*.png"</span>/&gt;
+  &#160;&#160; &#160; &lt;/<span style="font-weight: bold;">fileset</span>&gt;
+  &#160;&#160;  &lt;/<span style="font-weight: bold;">copy</span>&gt;
+  &#160;   <span style="font-style: italic;">&lt;!</span><span style="font-style: italic;">&#8212;-&#160; &#20219;&#21153;3&#65306;&#23558;&#25991;&#20214;&#20840;&#23616;&#22797;&#21046;&#21040;&#25171;&#21253;&#30446;&#24405; --&gt;</span>
+  &#160;   &lt;<span style="font-weight: bold;">copy</span> <span style="font-weight: bold; font-style: italic;">todir</span>=<span style="font-style: italic;">"${clientjar}"</span>&gt;
+  &#160; &#160;&#160;  &lt;<span style="font-weight: bold;">fileset</span> <span style="font-weight: bold; font-style: italic;">dir</span>=<span style="font-style: italic;">"${classes}"</span>&gt;
+  &#160; &#160;&#160;&#160;&#160;  &lt;<span style="font-weight: bold;">include</span> <span style="font-weight: bold; font-style: italic;">name</span>=<span style="font-style: italic;">"**/*.*"</span>/&gt;
+  &#160; &#160;&#160;&#160;&#160;&lt;/<span style="font-weight: bold;">fileset</span>&gt;
+  &#160; &#160;&#160;&lt;/<span style="font-weight: bold;">copy</span>&gt;
+  &#160; &lt;/<span style="font-weight: bold;">target</span>&gt;
+  &#160; <span style="font-style: italic;">&lt;!-</span><span style="font-style: italic;">&#8212; &#20219;&#21153;4&#65306; &#35843;&#29992;&#31614;&#21517;&#25209;&#22788;&#29702;&#25991;&#20214; --&gt;</span>
+  &#160; &lt;<span style="font-weight: bold;">target</span> <span style="font-weight: bold; font-style: italic;">name</span>=<span style="font-style: italic;">"run"</span>&gt;
+  &#160; &#160;&lt;<span style="font-weight: bold;">exec</span> <span style="font-weight: bold; font-style: italic;">executable</span>=<span style="font-style: italic;">"${sign}"</span>&gt;
+  &#160; &#160;&lt;/<span style="font-weight: bold;">exec</span>&gt;
+  &#160;&#160; &lt;/<span style="font-weight: bold;">target</span>&gt;
+  &#160;&#160; <span style="font-style: italic;">&lt;!</span><span style="font-style: italic;">&#8212;- &#20219;&#21153;5&#65306; &#28151;&#28102;</span>
+<span style="font-style: italic;">     &#27880;&#24847;:&#35201;&#20808;&#23433;&#35013;Proguard,&#24182;&#29992;&#22270;&#24418;&#30028;&#38754;&#20570;&#22909;&#37197;&#32622;&#25991;&#20214;,&#26412;&#25991;&#38468;&#24405;&#25552;&#20379;&#20102;&#31616;&#21333;&#20171;&#32461;&#21644;&#19979;&#36733;&#22320;&#22336;&#12290;</span>
+<span style="font-style: italic;">      --&gt;</span>
+    &lt;<span style="font-weight: bold;">target</span> <span style="font-weight: bold; font-style: italic;">name</span>=<span style="font-style: italic;">"obfuscate"</span>&gt;
+  &#160;&#160;  &lt;<span style="font-weight: bold;">taskdef</span> <span style="font-weight: bold; font-style: italic;">resource</span>=<span style="font-style: italic;">"proguard/ant/task.properties"</span>
+  &#160;&#160; &#160;    <span style="font-weight: bold; font-style: italic;">classpath</span>=<span style="font-style: italic;">"${proguardhome}/lib/proguard.jar"</span> /&gt;
+  &#160;&#160; &#160;&lt;<span style="font-weight: bold;">proguard</span> <span style="font-weight: bold; font-style: italic;">configuration</span>=<span style="font-style: italic;">"${profile}"</span> /&gt;
+  &#160;&#160;&#160;&#160;  <span style="font-style: italic;">&lt;!</span><span style="font-style: italic;">&#8212;- &#28151;&#28102;&#23436;&#25104;&#20043;&#21518;&#35201;&#36827;&#34892;&#31614;&#21517; --&gt;</span>
+  &#160;&#160;&#160;&#160;&#160; &lt;<span style="font-weight: bold;">exec</span> <span style="font-weight: bold; font-style: italic;">executable</span>=<span style="font-style: italic;">"${sign}"</span>&gt;&lt;/<span style="font-weight: bold;">exec</span>&gt;
+  &#160; &lt;/<span style="font-weight: bold;">target</span>&gt;
+    <span style="font-style: italic;">&lt;!-</span><span style="font-style: italic;">&#8212; &#20219;&#21153;6&#65306; &#29992;InstallAnywhere&#26500;&#36896;&#23433;&#35013;&#21253;</span>
+<span style="font-style: italic;">    &#27880;&#24847;:&#35201;&#20808;&#23433;&#35013;InstallAnywhere,&#24182;&#29992;&#20854;&#20570;&#22909;&#37197;&#32622;&#25991;&#20214;&#12290;</span>
+<span style="font-style: italic;">    --&gt;</span>
+  &#160; &lt;<span style="font-weight: bold;">target</span> <span style="font-weight: bold; font-style: italic;">name</span>=<span style="font-style: italic;">"buildInstaller"</span>&gt;
+  &#160;   &lt;<span style="font-weight: bold;">taskdef</span> <span style="font-weight: bold; font-style: italic;">name</span>=<span style="font-style: italic;">"buildinstaller"</span> <span style="font-weight: bold; font-style: italic;">classname</span>=<span style="font-style: italic;">"com.zerog.ia.integration.ant.InstallAnywhereAntTask"</span>/&gt;
+    &#160; &#160; &lt;<span style="font-weight: bold;">buildfullinstaller</span>
+    &#160;&#160;     <span style="font-weight: bold; font-style: italic;">IAlocation</span>=<span style="font-style: italic;">"${IALOC}"</span>
+    &#160;&#160;     <span style="font-weight: bold; font-style: italic;">IAProjectFile</span>=<span style="font-style: italic;">"${INSTALLLOC}"</span>
+    &#160;&#160;     <span style="font-weight: bold; font-style: italic;">BuildWindowsWithVM</span>=<span style="font-style: italic;">"true"</span>
+    &#160;&#160;&#160;&#160;&#160;  <span style="font-weight: bold; font-style: italic;">OptimizeWebInstaller</span>=<span style="font-style: italic;">"true"</span>
+    &#160;&#160;     <span style="font-weight: bold; font-style: italic;">InstallerStdErrRedirect</span>=<span style="font-style: italic;">"C:\console.txt"</span>/&gt;
+  &#160;&#160;&lt;/<span style="font-weight: bold;">target</span>&gt;
+  &#160;&#160;<span style="font-style: italic;">&lt;!-</span><span style="font-style: italic;">&#8212;&#20219;&#21153;7&#65306; &#21033;&#29992;Javadoc&#24037;&#20855;&#29983;&#25104;API&#25991;&#26723; --&gt;</span>
+  &#160; &lt;<span style="font-weight: bold;">target</span> <span style="font-weight: bold; font-style: italic;">name</span>=<span style="font-style: italic;">"docs"</span> <span style="font-weight: bold; font-style: italic;">depends</span>=<span style="font-style: italic;">"compile"</span>&gt;
+    &#160; &lt;<span style="font-weight: bold;">delete</span>&gt;
+  &#160;&#160;  &#160; &lt;<span style="font-weight: bold;">fileset</span> <span style="font-weight: bold; font-style: italic;">dir</span>=<span style="font-style: italic;">"${docs}/api"</span> <span style="font-weight: bold; font-style: italic;">includes</span>=<span style="font-style: italic;">"**/*.*"</span> /&gt;
+  &#160;&#160;&#160;&#160;&lt;/<span style="font-weight: bold;">delete</span>&gt;
+  &#160;&#160;&#160;&#160;&lt;<span style="font-weight: bold;">javadoc</span> <span style="font-weight: bold; font-style: italic;">packagenames</span>=<span style="font-style: italic;">"&#29983;&#25104;&#30340;API&#25991;&#26723;&#35201;&#29992;&#30340;&#28304;&#20195;&#30721;&#21253;&#21517;"</span>
+  &#160;&#160;&#160;&#160;    <span style="font-weight: bold; font-style: italic;">sourcepath</span>=<span style="font-style: italic;">"${src}"</span>
+  &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold; font-style: italic;">destdir</span>=<span style="font-style: italic;">"${docs}/api"</span>
+  &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold; font-style: italic;">author</span>=<span style="font-style: italic;">"true"</span>
+  &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold; font-style: italic;">version</span>=<span style="font-style: italic;">"true"</span>
+  &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold; font-style: italic;">use</span>=<span style="font-style: italic;">"true"</span>
+  &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold; font-style: italic;">windowtitle</span>=<span style="font-style: italic;">"Geoway Client API version ${version}"</span>&gt;
+  &#160;&#160;&#160;&#160;&#160;&#160;&lt;<span style="font-weight: bold;">doctitle</span>&gt;&#25991;&#26723;&#22836;&#20869;&#23481;&#65292;&#21487;&#29992;HTML&#20195;&#30721;&lt;/<span style="font-weight: bold;">doctitle</span>&gt;
+  &#160;&#160;&#160;&#160;&#160;&#160;&lt;<span style="font-weight: bold;">bottom</span>&gt;&#25991;&#26723;&#24213;&#37096;&#20869;&#23481;&#65292;&#21487;&#29992;HTML&#20195;&#30721;&lt;/<span style="font-weight: bold;">bottom</span>&gt;
+  &#160;&#160;&#160;&#160;&#160;&#160;&lt;<span style="font-weight: bold;">classpath</span>&gt;
+  &#160;&#160;&#160;&#160;&#160;&#160;  &lt;<span style="font-weight: bold;">fileset</span> <span style="font-weight: bold; font-style: italic;">dir</span>=<span style="font-style: italic;">"${lib}"</span>&gt;
+  &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;  &lt;<span style="font-weight: bold;">include</span> <span style="font-weight: bold; font-style: italic;">name</span>=<span style="font-style: italic;">"**/*.jar"</span>/&gt;
+  &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&lt;/<span style="font-weight: bold;">fileset</span>&gt;
+  &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&lt;<span style="font-weight: bold;">pathelement</span> <span style="font-weight: bold; font-style: italic;">location</span>=<span style="font-style: italic;">"${classes}"</span>/&gt;
+  &#160;&#160;&#160;&#160;&#160;&#160;&lt;/<span style="font-weight: bold;">classpath</span>&gt;
+  &#160;&#160;&#160;&#160;&lt;/<span style="font-weight: bold;">javadoc</span>&gt;
+  &#160;&#160;&#160;&#160;&lt;/<span style="font-weight: bold;">target</span>&gt;
+  &lt;/<span style="font-weight: bold;">project</span>&gt;
+
+
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgcd36d52" class="outline-2">
+<h2 id="orgcd36d52">附录：Proguard简介绍及下载</h2>
+<div class="outline-text-2" id="text-orgcd36d52">
+<p>
+ProGuard是一个开源的混淆和优化工具,不但能在类内部的代码段内部对代码进行混淆,更能
+将类名、各种类型方法、变量进行混淆（其实如果建立的代码包不要作为库在外部调用的话，
+其实进行全混淆是一种很不错的选择）。
+下载地址为:<a href="http://easynews.dl.sourceforge.net/sourceforge/proguard/proguard3.0.7.zip">http://easynews.dl.sourceforge.net/sourceforge/proguard/proguard3.0.7.zip</a>
+</p>
+</div>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

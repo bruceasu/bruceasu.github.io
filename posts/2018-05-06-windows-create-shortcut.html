@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>Windows create shortcut</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">Windows create shortcut</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#windows"><div class="category">windows</div></a> </div>
+<div class="char-counter">2018-05-06</div>
+        <div id="content">
+
+
+<div id="outline-container-org090a03b" class="outline-2">
+<h2 id="org090a03b">一、示例为创建记事本的快捷方式到桌面</h2>
+<div class="outline-text-2" id="text-org090a03b">
+<pre class="example">
+set path=%WINDIR%\notepad.exe
+set topath="%USERPROFILE%\桌面\记事本.url"
+echo [InternetShortcut] &gt;&gt; %topath%
+echo URL="%path%" &gt;&gt; %topath%
+echo IconIndex=0 &gt;&gt; %topath%
+echo IconFile=%path% &gt;&gt; %topath%
+</pre>
+</div>
+</div>
+
+
+<div id="outline-container-org10619a1" class="outline-2">
+<h2 id="org10619a1">二、利用批处理创建桌面快捷方式</h2>
+<div class="outline-text-2" id="text-org10619a1">
+<div class="org-src-container">
+<pre class="src src-bat"><span style="font-weight: bold;">goto</span> <span style="font-weight: bold; text-decoration: underline;">:eof</span>
+<span style="font-weight: bold; font-style: italic;">Rem </span><span style="font-weight: bold; font-style: italic;">&#20197;&#19979;&#20026;VbScript&#33050;&#26412;</span>
+<span style="font-weight: bold;">Set</span> <span style="font-weight: bold; font-style: italic;">WshShell</span> = WScript.CreateObject(<span style="font-style: italic;">"WScript.Shell"</span>)
+strDesktop = WshShell.SpecialFolders(<span style="font-style: italic;">"Desktop"</span>) :'&#29305;&#27530;&#25991;&#20214;&#22841;&#8220;&#26700;&#38754;&#8221;
+
+<span style="font-weight: bold; font-style: italic;">Rem </span><span style="font-weight: bold; font-style: italic;">&#22312;&#26700;&#38754;&#21019;&#24314;&#19968;&#20010;&#35760;&#20107;&#26412;&#24555;&#25463;&#26041;&#24335;</span>
+<span style="font-weight: bold;">set</span> <span style="font-weight: bold; font-style: italic;">oShellLink</span> = WshShell.CreateShortcut(strDesktop &amp; <span style="font-style: italic;">"\&#35760;&#20107;&#26412;.lnk"</span>)
+oShellLink.TargetPath = <span style="font-style: italic;">"notepad.exe"</span> : '&#30446;&#26631;
+oShellLink.WindowStyle = 3 :'&#21442;&#25968;1&#40664;&#35748;&#31383;&#21475;&#28608;&#27963;&#65292;&#21442;&#25968;3&#26368;&#22823;&#21270;&#28608;&#27963;&#65292;&#21442;&#25968;7&#26368;&#23567;&#21270;
+oShellLink.Hotkey = <span style="font-style: italic;">"Ctrl+Alt+e"</span> : '&#24555;&#25463;&#38190;
+oShellLink.Ic : '&#22270;&#26631;
+oShellLink.Description = <span style="font-style: italic;">"&#35760;&#20107;&#26412;&#24555;&#25463;&#26041;&#24335;"</span> : '&#22791;&#27880;
+oShellLink.WorkingDirectory = strDesktop : '&#36215;&#22987;&#20301;&#32622;
+oShellLink.Save : '&#21019;&#24314;&#20445;&#23384;&#24555;&#25463;&#26041;&#24335;
+
+<span style="font-weight: bold; font-style: italic;">Rem </span><span style="font-weight: bold; font-style: italic;">&#22312;&#26700;&#38754;&#21019;&#24314;&#19968;&#20010; &#33150;&#35759;QQ 2007</span>
+<span style="font-weight: bold;">set</span> <span style="font-weight: bold; font-style: italic;">oShellLink</span> = WshShell.CreateShortcut(strDesktop &amp; <span style="font-style: italic;">"\&#33150;&#35759;QQ 2007 .lnk"</span>)
+oShellLink.TargetPath = <span style="font-style: italic;">"D:\Tencent\QQ\QQ.exe"</span> : '&#30446;&#26631;
+oShellLink.WindowStyle = 3 :'&#21442;&#25968;1&#40664;&#35748;&#31383;&#21475;&#28608;&#27963;&#65292;&#21442;&#25968;3&#26368;&#22823;&#21270;&#28608;&#27963;&#65292;&#21442;&#25968;7&#26368;&#23567;&#21270;
+oShellLink.Hotkey = <span style="font-style: italic;">"Ctrl+Alt+q"</span> : '&#24555;&#25463;&#38190;
+oShellLink.Ic : '&#22270;&#26631;
+oShellLink.Description = <span style="font-style: italic;">"&#33150;&#35759;QQ 2007"</span> : '&#22791;&#27880;
+oShellLink.WorkingDirectory = strDesktop : '&#36215;&#22987;&#20301;&#32622;
+oShellLink.Save : '&#21019;&#24314;&#20445;&#23384;&#24555;&#25463;&#26041;&#24335;
+
+<span style="font-weight: bold; font-style: italic;">Rem </span><span style="font-weight: bold; font-style: italic;">&#22312;&#26700;&#38754;&#21019;&#24314;&#19968;&#20010;&#8220;&#24494;&#36719;&#20013;&#22269;&#8221;&#30340;Url&#24555;&#25463;&#26041;&#24335;</span>
+<span style="font-weight: bold;">set</span> <span style="font-weight: bold; font-style: italic;">oUrlLink</span> = WshShell.CreateShortcut(strDesktop &amp; <span style="font-style: italic;">"\&#30334;&#24230;&#25628;&#32034;.url"</span>)
+oUrlLink.TargetPath = <span style="font-style: italic;">"http://www.baidu.com/"</span>
+oUrlLink.Save
+
+</pre>
+</div>
+</div>
+</div>
+
+
+<div id="outline-container-org1460a78" class="outline-2">
+<h2 id="org1460a78">三、批处理桌面创建快捷方式</h2>
+<div class="outline-text-2" id="text-org1460a78">
+</div>
+<div id="outline-container-org285ec62" class="outline-3">
+<h3 id="org285ec62">EXE型</h3>
+<div class="outline-text-3" id="text-org285ec62">
+<div class="org-src-container">
+<pre class="src src-bat">S bat
+<span style="font-weight: bold;">echo</span> off &amp; <span style="font-weight: bold;">cls</span>
+<span style="font-weight: bold;">echo</span> create_shortcut
+<span style="font-weight: bold;">start</span> wscript -<span style="font-weight: bold; text-decoration: underline;">e</span>:vbs <span style="font-style: italic;">"%~f0"</span>
+<span style="font-weight: bold;">Exit</span> S
+End S
+
+<span style="font-weight: bold;">Set</span> <span style="font-weight: bold; font-style: italic;">WshShell</span> = WScript.CreateObject(<span style="font-style: italic;">"WScript.Shell"</span>)
+strDesktop = WshShell.SpecialFolders(<span style="font-style: italic;">"Desktop"</span>)
+<span style="font-weight: bold;">set</span> <span style="font-weight: bold; font-style: italic;">oShellLink</span> = WshShell.CreateShortcut(strDesktop &amp; <span style="font-style: italic;">"\QQ.lnk"</span>)
+oShellLink.TargetPath = <span style="font-style: italic;">"d:\QQ\QQ.exe"</span>
+oShellLink.WindowStyle = 3
+oShellLink.Hotkey = <span style="font-style: italic;">"Ctrl+Alt+e"</span>
+oShellLink.IconLocation = <span style="font-style: italic;">"d:\QQ\QQ.exe, 0"</span>
+oShellLink.Description = <span style="font-style: italic;">"&#24555;&#25463;&#26041;&#24335;"</span>
+oShellLink.WorkingDirectory = <span style="font-style: italic;">"d:\QQ"</span>
+oShellLink.Save
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgb7df1c0" class="outline-3">
+<h3 id="orgb7df1c0">IP型</h3>
+<div class="outline-text-3" id="text-orgb7df1c0">
+<div class="org-src-container">
+<pre class="src src-bat">S bat
+<span style="font-weight: bold;">echo</span> off &amp; <span style="font-weight: bold;">cls</span>
+<span style="font-weight: bold;">echo</span> create_shortcut
+<span style="font-weight: bold;">start</span> wscript -<span style="font-weight: bold; text-decoration: underline;">e</span>:vbs <span style="font-style: italic;">"%~f0"</span>
+<span style="font-weight: bold;">Exit</span> S
+End S
+
+<span style="font-weight: bold;">Set</span> <span style="font-weight: bold; font-style: italic;">WshShell</span> = WScript.CreateObject(<span style="font-style: italic;">"WScript.Shell"</span>)
+strDesktop = WshShell.SpecialFolders(<span style="font-style: italic;">"Desktop"</span>)
+<span style="font-weight: bold;">set</span> <span style="font-weight: bold; font-style: italic;">oShellLink</span> = WshShell.CreateShortcut(strDesktop &amp; <span style="font-style: italic;">"\&#23398;&#20064;&#22825;&#22320;.lnk"</span>)
+oShellLink.TargetPath = <span style="font-style: italic;">"http://localhost:81"</span>
+oShellLink.WindowStyle = 3
+oShellLink.Hotkey = <span style="font-style: italic;">"Ctrl+Alt+e"</span>
+oShellLink.IconLocation = <span style="font-style: italic;">"%SystemRoot%\system32\url.dll, 0"</span>
+oShellLink.Description = <span style="font-style: italic;">"&#24555;&#25463;&#26041;&#24335;"</span>
+oShellLink.WorkingDirectory = <span style="font-style: italic;">"C:\Program Files\Internet Explorer"</span>
+oShellLink.Save
+
+</pre>
+</div>
+</div>
+</div>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>Redis 如何清除所有的 key</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">Redis 如何清除所有的 key</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#redis"><div class="category">redis</div></a> </div>
+<div class="char-counter">2017-03-04</div>
+        <div id="content">
+<p>
+redis比memcache好的地方之一，如果memcache，恐怕就得关掉重启了。
+</p>
+
+<ol class="org-ol">
+<li>使用cli
+<code>FLUSHDB</code> 清除一个数据库，
+<code>FLUSHALL</code> 清除整个redis数据。</li>
+
+<li><p>
+使用shell
+</p>
+<div class="org-src-container">
+<pre class="src src-sh">redis-cli keys  <span style="font-style: italic;">"*"</span> | <span style="font-weight: bold;">while </span><span style="font-weight: bold;">read</span> LINE ; <span style="font-weight: bold;">do</span>
+    <span style="font-weight: bold; font-style: italic;">TTL</span>=<span style="font-weight: bold;">`redis-cli ttl $LINE`</span>;
+    <span style="font-weight: bold;">if</span> [ $<span style="font-weight: bold; font-style: italic;">TTL</span> -eq -1 ]; <span style="font-weight: bold;">then</span>
+        <span style="font-weight: bold;">echo</span> <span style="font-style: italic;">"Del $LINE"</span>;
+        <span style="font-weight: bold; font-style: italic;">RES</span>=<span style="font-weight: bold;">`redis-cli del $LINE`</span>;
+    <span style="font-weight: bold;">fi</span>;
+<span style="font-weight: bold;">done</span>;
+<span style="font-weight: bold; font-style: italic;"># </span><span style="font-weight: bold; font-style: italic;">&#21024;&#38500; 3600&#31186;&#20043;&#21518;&#36807;&#26399;&#30340;</span>
+redis-cli keys  <span style="font-style: italic;">"*"</span> | <span style="font-weight: bold;">while </span><span style="font-weight: bold;">read</span> LINE ;
+<span style="font-weight: bold;">do</span> <span style="font-weight: bold; font-style: italic;">TTL</span>=<span style="font-weight: bold;">`redis-cli ttl $LINE`</span>;
+   <span style="font-weight: bold;">if</span> [ $<span style="font-weight: bold; font-style: italic;">TTL</span> -ge  3600 ]; <span style="font-weight: bold;">then</span>
+       <span style="font-weight: bold;">echo</span> <span style="font-style: italic;">"Del $LINE"</span>;
+       <span style="font-weight: bold; font-style: italic;">RES</span>=<span style="font-weight: bold;">`redis-cli del $LINE`</span>;
+   <span style="font-weight: bold;">fi</span>;
+<span style="font-weight: bold;">done</span>;
+
+<span style="font-weight: bold; font-style: italic;"># </span><span style="font-weight: bold; font-style: italic;">&#21024;&#38500;&#26576;&#20123;&#21069;&#32512;&#30340;</span>
+redis-cli KEYS <span style="font-style: italic;">"126.com*"</span> | xargs redis-cli DEL
+</pre>
+</div></li>
+
+<li><p>
+使用lua脚本
+</p>
+<div class="org-src-container">
+<pre class="src src-lua">// 删除所有key
+EVAL "return redis.call('del', unpack(redis.call('keys', ARGV[1])))" 0 *
+
+// 删除某些key
+EVAL "return redis.call('del', unpack(redis.call('keys', ARGV[1])))" 0 126.com*
+</pre>
+</div></li>
+</ol>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

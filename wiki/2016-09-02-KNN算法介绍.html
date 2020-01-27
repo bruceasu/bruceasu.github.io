@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>KNN算法介绍</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">KNN算法介绍</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#reprint"><div class="category">reprint</div></a> </div>
+<div class="char-counter">2016-09-02</div>
+        <div id="content">
+<nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#orgb31b2d3">KNN算法介绍</a></li>
+</ul>
+</div>
+</nav>
+
+<div id="outline-container-orgb31b2d3" class="outline-2">
+<h2 id="orgb31b2d3">KNN算法介绍</h2>
+<div class="outline-text-2" id="text-orgb31b2d3">
+<p>
+KNN算法是机器学习里面比较简单的一个分类算法了，整体思想比较简单：计算一个点A与其
+他所有点之间的距离，取出与该点最近的k个点，然后统计这k个点里面所属分类比例最大的，
+则点A属于该分类。这样讲可能还有点迷糊，下面用一个例子来说明一下：
+</p>
+
+<table>
+
+
+<colgroup>
+<col  class="org-left">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-left">
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">点击这里</th>
+<th scope="col" class="org-right">点击这里</th>
+<th scope="col" class="org-right">点击这里</th>
+<th scope="col" class="org-left">点击这里</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">电影名称</td>
+<td class="org-right">打斗次数</td>
+<td class="org-right">接吻次数</td>
+<td class="org-left">电影类型</td>
+</tr>
+
+<tr>
+<td class="org-left">California Man  </td>
+<td class="org-right">3</td>
+<td class="org-right">104</td>
+<td class="org-left">Romance</td>
+</tr>
+
+<tr>
+<td class="org-left">He’s Not Really into Dudes  </td>
+<td class="org-right">2</td>
+<td class="org-right">100</td>
+<td class="org-left">Romance</td>
+</tr>
+
+<tr>
+<td class="org-left">Beautiful Woman  </td>
+<td class="org-right">1</td>
+<td class="org-right">81</td>
+<td class="org-left">Romance</td>
+</tr>
+
+<tr>
+<td class="org-left">Kevin Longblade  </td>
+<td class="org-right">101</td>
+<td class="org-right">10</td>
+<td class="org-left">Action</td>
+</tr>
+
+<tr>
+<td class="org-left">Robo Slayer 3000  </td>
+<td class="org-right">99</td>
+<td class="org-right">5</td>
+<td class="org-left">Action</td>
+</tr>
+
+<tr>
+<td class="org-left">Amped II  </td>
+<td class="org-right">98</td>
+<td class="org-right">2</td>
+<td class="org-left">Action</td>
+</tr>
+
+<tr>
+<td class="org-left">未知</td>
+<td class="org-right">18</td>
+<td class="org-right">90</td>
+<td class="org-left">Unknown</td>
+</tr>
+</tbody>
+</table>
+
+
+<p>
+简单说一下这个数据的意思：这里用打斗次数和接吻次数来界定电影类型，如上，接吻多的
+是Romance类型的，而打斗多的是动作电影。还有一部名字 未知（这里名字未知是为了防止
+能从名字中猜出电影类型），打斗次数为18次，接吻次数为90次的电影，它到底属于哪种类
+型的电影呢？
+</p>
+
+<p>
+KNN算法要做的，就是先用打斗次数和接吻次数作为电影的坐标，然后计算其他六部电影与
+未知电影之间的距离，取得前K个距离最近的电影，然后统计这k个距离最近的电影里，属于
+哪种类型的电影最多，比如Action最多，则说明未知的这部电影属于动作片类型。在实际使
+用中，有几个问题是值得注意的：K值的选取，选多大合适呢？计算两者间距离，用哪种距
+离会更好呢（欧几里得距离等等几个）？计算量太大怎么办？假设样本中，类型分布非常不
+均，比如Action的电影有200部，但是Romance的电影只有20部，这样计算起来，即使不是
+Action的电 影，也会因为Action的样本太多，导致k个最近邻居里有不少Action的电影，这
+样该怎么办呢？
+</p>
+
+<p>
+没有万能的算法，只有在一定使用环境中最优的算法，所以，要懂得合适利用算法。光是介
+绍算法，没有实现出来也没有意思。我这里用的是scikit-learn这个Python的机器学习包，
+感觉它的文档写得特别好，对于文档写得好的开源软件就是有爱呀。下面是简单的代码：
+</p>
+
+<div class="org-src-container">
+<pre class="src src-python"><span style="font-weight: bold;">import</span> numpy <span style="font-weight: bold;">as</span> np
+<span style="font-weight: bold;">from</span> sklearn <span style="font-weight: bold;">import</span> neighbors
+
+<span style="font-weight: bold; font-style: italic;">knn</span> = neighbors.KNeighborsClassifier() <span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">&#21462;&#24471;knn&#20998;&#31867;&#22120;</span>
+<span style="font-weight: bold; font-style: italic;">data</span> = np.array([[3,104],[2,100],[1,81],[101,10],[99,5],[98,2]])
+<span style="font-weight: bold; font-style: italic;">labels</span> = np.array([1,1,1,2,2,2])
+knn.fit(data,labels)
+ <span style="font-weight: bold; font-style: italic;"># </span><span style="font-weight: bold; font-style: italic;">&#23548;&#20837;&#25968;&#25454;&#36827;&#34892;&#35757;&#32451;&#65292;data&#23545;&#24212;&#30528;&#25171;&#26007;&#27425;&#25968;&#21644;&#25509;&#21563;&#27425;&#25968;&#65292;</span>
+ <span style="font-weight: bold; font-style: italic;"># </span><span style="font-weight: bold; font-style: italic;">&#32780;labels&#21017;&#26159;&#23545;&#24212;Romance&#21644;Action&#65292;&#22240;&#20026;&#36825;&#37324;&#21482;&#33021;&#25509;&#21463;&#25972;&#25968;&#31867;&#22411;&#30340;&#25968;&#32452;</span>
+knn.predict([18,90])
+
+</pre>
+</div>
+
+<p>
+上面的代码这里简单解释一下：
+</p>
+
+<p>
+首先，我用labels数组中的1和2代表Romance和Aciton，因为sklearn不接受字符数组作为标
+志，只能用1,2这样的int型数据来表示，后面处理可以将1和2映射到Romance和Action上来。
+fit则是用data和labels进行训练，data对应的是打斗次数和接吻次数构成的向量，称之为
+特征向量。labels则是这个数据所代表的电影所属的类型。predict则是进行预测了，将未
+知电影的特征向量代入，则能分析出该未知电影所属的类型。这里的结果是1,也就是该未知
+电影属于Romance。
+</p>
+</div>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

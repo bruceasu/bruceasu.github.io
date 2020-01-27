@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>单点系统架构的可用性与性能优化</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">单点系统架构的可用性与性能优化</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#reprint"><div class="category">reprint</div></a> </div>
+<div class="char-counter">2017-03-13</div>
+        <div id="content">
+<nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#orge37ce52">一、需求缘起</a></li>
+<li><a href="#org3d8be4b">二、单点架构存在的问题</a></li>
+<li><a href="#org1acbfdb">三、shadow-master解决单点高可用问题</a></li>
+<li><a href="#orgb51fdd5">四、减少与单点的交互，是存在单点的系统优化的核心方向</a>
+<ul>
+<li><a href="#orgde212ff">批量写</a></li>
+<li><a href="#orgfa234c3">客户端缓存</a></li>
+</ul>
+</li>
+<li><a href="#orgcb41f0f">五、水平扩展是提升单点系统性能的好方案</a></li>
+<li><a href="#org7bda7d6">六、总结</a></li>
+</ul>
+</div>
+</nav>
+
+<div id="outline-container-orge37ce52" class="outline-2">
+<h2 id="orge37ce52">一、需求缘起</h2>
+<div class="outline-text-2" id="text-orge37ce52">
+<p>
+明明架构要求高可用，为何系统中还会存在单点？
+</p>
+
+<p>
+回答：单点master的设计，会大大简化系统设计，何况有时候避免不了单点
+</p>
+
+<p>
+在哪些场景中会存在单点？先来看一下一个典型互联网高可用架构。
+</p>
+
+<p>
+<a href="./images/2017-03-13-sa/640-1.webp">./images/2017-03-13-sa/640-1.webp</a>
+典型互联网高可用架构： - （1）*客户端层*，这一层是浏览器或者
+APP，第一步先访问 DNS-server， 由域名拿到 nginx 的外网IP -
+（2）*负载均衡层*，nginx是整个服务端的入口，负责反向代理与负载均衡工作 -
+（3）*站点层*，web-server层，典型的是tomcat或者apache -
+（4）*服务层*，service层，典型的是dubbo或者thrift等提供RPC调用的后端服务
+</p>
+<ul class="org-ul">
+<li>（5）*数据层*，包含cache和db，典型的是主从复制读写分离的db架构</li>
+</ul>
+
+<p>
+在这个互联网架构中，站点层、服务层、数据库的从库都可以通过冗余的方式来保证高可
+用，但至少 - （1）/nginx 层/是一个潜在的单点 - （2）数据库写库 <i>master</i>
+也是一个潜在的单点
+</p>
+
+<p>
+再举一个GFS（Google File System）架构的例子。 <a href="./images/2017-03-13-sa/640-2.webp">./images/2017-03-13-sa/640-2.webp</a>
+</p>
+
+<p>
+GFS的系统架构里主要有这么几种角色： -
+（1）*client*，就是发起文件读写的调用端 -
+（2）*master*，这是一个单点服务，它有全局事业，掌握文件元信息 -
+（3）*chunk-server*，实际存储文件额服务器
+</p>
+
+<p>
+这个系统里，master 也是一个单点的服务，Map-reduce
+系统里也有类似的全局协调的 master 单点角色。
+</p>
+
+<p>
+系统架构设计中，像 nginx，db-master，gfs-master
+这样的单点服务，会存在什么问题，
+有什么方案来优化呢，这是本文要讨论的问题。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org3d8be4b" class="outline-2">
+<h2 id="org3d8be4b">二、单点架构存在的问题</h2>
+<div class="outline-text-2" id="text-org3d8be4b">
+<p>
+单点系统一般来说存在/两个很大的问题/： -
+（1）*非高可用*：既然是单点，master一旦发生故障，服务就会受到影响 -
+（2）*性能瓶颈*：既然是单点，不具备良好的扩展性，服务性能总有一个上限，这个单点的性能
+上限往往就是整个系统的性能上限
+</p>
+
+<p>
+接下来，就看看有什么优化手段可以优化上面提到的两个问题
+</p>
+</div>
+</div>
+
+<div id="outline-container-org1acbfdb" class="outline-2">
+<h2 id="org1acbfdb">三、shadow-master解决单点高可用问题</h2>
+<div class="outline-text-2" id="text-org1acbfdb">
+<p>
+<i>shadow-master是一种很常见的解决单点高可用问题的技术方案。</i>
+</p>
+
+<p>
+<b>“影子master”，顾名思义，服务正常时，它只是单点master的一个影子，在master出现故障时，shadow-master会自动变成master，继续提供服务。</b>
+</p>
+
+<p>
+shadow-master
+它能够解决高可用的问题，并且故障的转移是自动的，不需要人工介入，但
+不足是它使服务资源的利用率降为了 50%，业内经常使用 keepalived + vip
+的方式实现这类 单点的高可用。
+</p>
+
+<p>
+<a href="./images/2017-03-13-sa/640-3.webp">./images/2017-03-13-sa/640-3.webp</a>
+以GFS的master为例，master正常时： - （1）client 会连接正常的
+master，shadow-master 不对外提供服务 - （2）master 与 shadow-master
+之间有一种存活探测机制 - （3）master 与 shadow-master
+有相同的虚IP（virtual-IP）
+</p>
+
+<p>
+<a href="./images/2017-03-13-sa/640-4.webp">./images/2017-03-13-sa/640-4.webp</a>
+当发现master异常时：
+</p>
+
+<p>
+shadow-master会自动顶上成为master，虚IP机制可以保证/这个过程对调用方是透明的/。
+</p>
+
+<p>
+除了 GFS 与 MapReduce 系统中的主控 master，nginx
+亦可用类似的方式保证高可用，数据库的 主库
+master（主库）亦可用类似的方式来保证高可用，只是细节上有些地方要注意：
+</p>
+
+<p>
+<a href="./images/2017-03-13-sa/640-5.webp">./images/2017-03-13-sa/640-5.webp</a>
+传统的一主多从，读写分离的 db
+架构，只能保证读库的高可用，是无法保证写库的高可用
+的，要想保证写库的高可用，也可以使用上述的 shadow-master 机制：
+<a href="./images/2017-03-13-sa/640-6.webp">./images/2017-03-13-sa/640-6.webp</a>
+</p>
+
+<ul class="org-ul">
+<li>（1）两个主库设置*相互同步的双主模式*</li>
+<li>（2）平时只有一个主库提供服务，言下之意，shadow-master 不会往 master
+同步数据</li>
+<li>（3）异常时，虚IP漂移到另一个主库，shadow-master 变成主库继续提供服务</li>
+</ul>
+
+<p>
+需要说明的是，由于数据库的特殊性，数据同步需要时延，如果数据还没有同步完成，流量
+就切到了 shadow-master，可能引起小部分数据的不一致。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgb51fdd5" class="outline-2">
+<h2 id="orgb51fdd5">四、减少与单点的交互，是存在单点的系统优化的核心方向</h2>
+<div class="outline-text-2" id="text-orgb51fdd5">
+<p>
+既然知道单点存在性能上限，单点的性能（例如GFS中的master）有可能成为系统的瓶颈，那
+么，/减少与单点的交互，便成了存在单点的系统优化的核心方向/。
+</p>
+
+<p>
+怎么来减少与单点的交互，这里提两种常见的方法。
+</p>
+</div>
+
+<div id="outline-container-orgde212ff" class="outline-3">
+<h3 id="orgde212ff">批量写</h3>
+<div class="outline-text-3" id="text-orgde212ff">
+<p>
+<i>批量写是一种常见的提升单点性能的方式。</i>
+</p>
+
+<p>
+例如一个利用数据库写单点生成做“ID生成器”的例子： <a href="./images/2017-03-13-sa/640-7.webp">./images/2017-03-13-sa/640-7.webp</a>
+</p>
+
+<ul class="org-ul">
+<li>（1）业务方需要ID</li>
+<li>（2）利用数据库写单点的 auto increament id 来生成和返回 ID</li>
+</ul>
+
+<p>
+这是一个很常见的例子，很多公司也就是这么生成 ID
+的，它利用了数据库写单点的特性，
+方便快捷，无额外开发成本，是一个非常帅气的方案。
+</p>
+
+<p>
+潜在的问题是：生成 ID 的并发上限，取决于单点数据库的写性能上限。
+</p>
+
+<p>
+如何提升性能呢？批量写 <a href="./images/2017-03-13-sa/640-8.webp">./images/2017-03-13-sa/640-8.webp</a>
+</p>
+
+<ul class="org-ul">
+<li>（1）中间加一个服务，每次从数据库拿出 100 个 id</li>
+<li>（2）业务方需要 ID</li>
+<li>（3）服务直接返回 100 个 id 中的 1 个，100 个分配完，再访问数据库</li>
+</ul>
+
+<p>
+这样一来，每分配100个才会写数据库一次，分配id的性能可以认为提升了100倍。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgfa234c3" class="outline-3">
+<h3 id="orgfa234c3">客户端缓存</h3>
+<div class="outline-text-3" id="text-orgfa234c3">
+<p>
+<i>客户端缓存也是一种降低与单点交互次数，提升系统整体性能的方法。</i>
+</p>
+
+<p>
+还是以GFS文件系统为例： <a href="./images/2017-03-13-sa/640-9.webp">./images/2017-03-13-sa/640-9.webp</a>
+</p>
+
+<ul class="org-ul">
+<li>（1）GFS 的调用客户端client要访问 shenjian.txt，先查询本地缓存，miss
+了</li>
+<li>（2）client 访问 master 问说文件在哪里，master 告诉 client 在 chunk3
+上</li>
+<li>（3）client 把 shenjian.txt 存放在 chunk3
+上记录到本地的缓存，然后进行文件的读写操作</li>
+<li>（4）未来 client
+要访问文件，从本地缓存中查找到对应的记录，就不用再请求 master
+了，可以直 接访问 chunk-server。如果文件发生了转移，chunk3 返回
+client 说“文件不在我这儿了”， client 再访问
+master，询问文件所在的服务器。</li>
+</ul>
+
+<p>
+根据经验，这类缓存的命中非常非常高，可能在 99.9%
+以上（因为文件的自动迁移是小概率 事件），这样与 master
+的交互次数就降低了 1000 倍。
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgcb41f0f" class="outline-2">
+<h2 id="orgcb41f0f">五、水平扩展是提升单点系统性能的好方案</h2>
+<div class="outline-text-2" id="text-orgcb41f0f">
+<p>
+无论怎么批量写，客户端缓存，单点毕竟是单机，还是有性能上限的。
+</p>
+
+<p>
+<i>想方设法水平扩展，消除系统单点，理论上才能够无限的提升系统系统。</i>
+</p>
+
+<p>
+以nginx为例，如何来进行水平扩展呢？
+</p>
+
+<p>
+<a href="./images/2017-03-13-sa/640-10.webp">./images/2017-03-13-sa/640-10.webp</a>
+第一步的 DNS 解析，只能返回一个 nginx 外网 IP
+么？答案显然是否定的，*“DNS轮询”技术* 支持 DNS-server 返回不同的 nginx
+外网 IP，这样就能实现 nginx 负载均衡层的水平扩展。
+</p>
+
+<p>
+<a href="./images/2017-03-13-sa/640-11.webp">./images/2017-03-13-sa/640-11.webp</a>
+DNS-server 部分，一个域名可以配置多个
+IP，每次DNS解析请求，轮询返回不同的 IP，就 能实现 nginx
+的水平扩展，扩充负载均衡层的整体性能。
+</p>
+
+<p>
+数据库单点写库也是同样的道理，在数据量很大的情况下，可以通过水平拆分，来提升写入性能。
+</p>
+
+<p>
+遗憾的是，*并不是所有的业务场景都可以水平拆分*，例如秒杀业务，商品的条数可能不多，数据库的数据量不大，就不能通过水平拆分来提升秒杀系统的整体写性能（总不能一个库100条记录吧？）。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org7bda7d6" class="outline-2">
+<h2 id="org7bda7d6">六、总结</h2>
+<div class="outline-text-2" id="text-org7bda7d6">
+<p>
+今天的话题就讨论到这里，内容很多，占用大家宝贵的时间深表内疚，估计大部分都记不住，
+至少记住这几个点吧：
+</p>
+
+<ul class="org-ul">
+<li>（1）单点系统存在的问题：可用性问题，性能瓶颈问题</li>
+<li>（2）shadow-master是一种常见的解决单点系统可用性问题的方案</li>
+<li>（3）减少与单点的交互，是存在单点的系统优化的核心方向，常见方法有批量写，客户端缓存</li>
+<li>（4）水平扩展也是提升单点系统性能的好方案</li>
+</ul>
+
+<p>
+如果有收获，帮忙随手转发哟。
+</p>
+
+<p>
+<code>=【完】=</code>
+</p>
+</div>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

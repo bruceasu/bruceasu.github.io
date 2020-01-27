@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>函数可变参数定义及其参数传递方式详解</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">函数可变参数定义及其参数传递方式详解</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#python"><div class="category">python</div></a> </div>
+<div class="char-counter">2016-06-16</div>
+        <div id="content">
+<nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#org61d6d3a">func(\*args)</a></li>
+<li><a href="#org92f13dc">func( \*\*kwargs)</a></li>
+<li><a href="#org7c8083e">也可以两者混用 func(\*args, \*\*kwargs)</a></li>
+</ul>
+</div>
+</nav>
+<p>
+Python函数可变参数定义及其参数传递方式详解
+</p>
+
+<p>
+python中 函数不定参数的定义形式如下
+</p>
+
+<div id="outline-container-org61d6d3a" class="outline-2">
+<h2 id="org61d6d3a">func(\*args)</h2>
+<div class="outline-text-2" id="text-org61d6d3a">
+<p>
+传入的参数为以元组形式存在args中，如：
+#+BEGIN_VERSE
+def func(*args):
+  print args
+&gt;&gt;&gt; func(1,2,3)
+(1, 2, 3)
+&gt;&gt;&gt; func(*[1,2,3])   #这个方式可以直接将一个列表的所有元素当作不定参数
+传入(1, 2, 3)
+</p>
+
+<p>
+#+END_BERSE
+</p>
+</div>
+</div>
+
+<div id="outline-container-org92f13dc" class="outline-2">
+<h2 id="org92f13dc">func( \*\*kwargs)</h2>
+<div class="outline-text-2" id="text-org92f13dc">
+<p>
+传入的参数为以字典形式存在args中，如：
+</p>
+<p class="verse">
+def func(**kwargs):<br>
+&#xa0;&#xa0;print kwargs<br>
+&gt;&gt;&gt; func(a = 1,b = 2, c = 3)<br>
+{'a': 1, 'c': 3, 'b': 2}<br>
+&gt;&gt;&gt; func(**{'a':1, 'b':2, 'c':3})     #这个方式可以直接将一个字典的所有键值对当作关键字参数传入<br>
+{'a': 1, 'c': 3, 'b': 2}<br>
+<br>
+</p>
+</div>
+</div>
+
+<div id="outline-container-org7c8083e" class="outline-2">
+<h2 id="org7c8083e">也可以两者混用 func(\*args, \*\*kwargs)</h2>
+<div class="outline-text-2" id="text-org7c8083e">
+<p>
+传入的顺序必须和定义顺序相同，这里是先不定参数列表，再是关键字参数字典，如：
+</p>
+<p class="verse">
+def func(*args, **kwargs):<br>
+&#xa0;&#xa0;print args<br>
+&#xa0;&#xa0;print kwargs<br>
+&#xa0;&gt;&gt;&gt; func(1,2,3)<br>
+(1, 2, 3)<br>
+{}<br>
+&#xa0;&gt;&gt;&gt; func(*[1,2,3])<br>
+(1, 2, 3)<br>
+{}<br>
+&#xa0;&gt;&gt;&gt; func(a = 1, b = 2, c = 3)<br>
+()<br>
+{'a': 1, 'c': 3, 'b': 2}<br>
+&#xa0;&gt;&gt;&gt; func(**{'a':1, 'b':2, 'c':3})<br>
+()<br>
+{'a': 1, 'c': 3, 'b': 2}<br>
+&#xa0;&gt;&gt;&gt; func(1,2,3, a = 4, b=5, c=6)<br>
+(1, 2, 3)<br>
+{'a': 4, 'c': 6, 'b': 5}&lt;/span&gt;<br>
+&#xa0;#这样跳跃传递是不行的<br>
+&gt;&gt;&gt; func(1,2,3, a=4, b=5, c=6, 7)<br>
+SyntaxError: non-keyword arg after keyword arg<br>
+<br>
+</p>
+</div>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

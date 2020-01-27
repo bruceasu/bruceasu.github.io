@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>Google_Guava官方教程（中文版）5.1-ListenableFuture解析.org</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">Google_Guava官方教程（中文版）5.1-ListenableFuture解析.org</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#reprint"><div class="category">reprint</div></a> </div>
+<div class="char-counter">2010-10-01</div>
+        <div id="content">
+<nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#orga4381f4">接口</a></li>
+<li><a href="#org92f9ebe">添加回调（Callbacks）</a></li>
+<li><a href="#org4cf8682">ListenableFuture的创建</a></li>
+<li><a href="#org33df850">Application</a></li>
+<li><a href="#org51ec836">CheckedFuture</a></li>
+</ul>
+</div>
+</nav>
+<p>
+ListenableFuture解析
+</p>
+
+<p>
+并发编程是一个难题，但是一个强大而简单的抽象可以显著的简化并发的编写。出于这样的
+考虑，Guava 定义了 ListenableFuture接口并继承了JDK concurrent包下的Future 接口。
+</p>
+
+<p>
+我们强烈地建议你在代码中多使用ListenableFuture来代替JDK的 Future, 因为：
+</p>
+<ul class="org-ul">
+<li>大多数Futures 方法中需要它。</li>
+<li>转到ListenableFuture 编程比较容易。</li>
+<li>Guava提供的通用公共类封装了公共的操作方方法，不需要提供Future和ListenableFuture的扩展方法。</li>
+</ul>
+
+
+<div id="outline-container-orga4381f4" class="outline-2">
+<h2 id="orga4381f4">接口</h2>
+<div class="outline-text-2" id="text-orga4381f4">
+<p>
+传统JDK中的Future通过异步的方式计算返回结果:在多线程运算中可能或者可能在没有结束
+返回结果，Future是运行中的多线程的一个引用句柄，确保在服务执行返回一个Result。
+</p>
+
+<p>
+ListenableFuture可以允许你注册回调方法(callbacks)，在运算（多线程执行）完成的时
+候进行调用,  或者在运算（多线程执行）完成后立即执行。这样简单的改进，使得可以明
+显的支持更多的操作，这样的功能在JDK concurrent中的Future是不支持的。
+</p>
+
+<p>
+ListenableFuture 中的基础方法是addListener(Runnable, Executor), 该方法会在多线程
+运算完的时候，指定的Runnable参数传入的对象会被指定的Executor执行。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org92f9ebe" class="outline-2">
+<h2 id="org92f9ebe">添加回调（Callbacks）</h2>
+<div class="outline-text-2" id="text-org92f9ebe">
+<p>
+多数用户喜欢使用 Futures.addCallback(ListenableFuture&lt;V&gt;, FutureCallback&lt;V&gt;,
+Executor)的方式, 或者 另外一个版本version（译者注：
+addCallback(ListenableFuture&lt;V&gt; future,FutureCallback&lt;? super V&gt; callback)），默
+认是采用 MoreExecutors.sameThreadExecutor()线程池, 为了简化使用，Callback采用轻
+量级的设计.  FutureCallback&lt;V&gt; 中实现了两个方法:
+</p>
+<ul class="org-ul">
+<li>onSuccess(V),在Future成功的时候执行，根据Future结果来判断。</li>
+<li>onFailure(Throwable), 在Future失败的时候执行，根据Future结果来判断。</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-org4cf8682" class="outline-2">
+<h2 id="org4cf8682">ListenableFuture的创建</h2>
+<div class="outline-text-2" id="text-org4cf8682">
+<p>
+对应JDK中的 ExecutorService.submit(Callable) 提交多线程异步运算的方式，Guava 提
+供了ListeningExecutorService 接口, 该接口返回 ListenableFuture 而相应的
+ ExecutorService 返回普通的 Future。将 ExecutorService 转为
+ ListeningExecutorService，可以使用
+MoreExecutors.listeningDecorator(ExecutorService)进行装饰。
+</p>
+<pre class="example">
+ListeningExecutorService service = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(10));
+ListenableFuture explosion = service.submit(new Callable() {
+   public Explosion call() {
+     return pushBigRedButton();
+   }
+});
+
+Futures.addCallback(explosion, new FutureCallback() {
+   // we want this handler to run immediately after we push the big red button!
+   public void onSuccess(Explosion explosion) {
+     walkAwayFrom(explosion);
+   }
+   public void onFailure(Throwable thrown) {
+     battleArchNemesis(); // escaped the explosion!
+   }
+});
+</pre>
+
+<p>
+另外, 假如你是从 FutureTask转换而来的, Guava 提供
+ListenableFutureTask.create(Callable&lt;V&gt;) 和ListenableFutureTask.create(Runnable,
+V). 和 JDK不同的是, ListenableFutureTask 不能随意被继承（译者注：
+ListenableFutureTask中的done方法实现了调用listener的操作）。假如你喜欢抽象的方式
+来设置future的值，而不是想实现接口中的方法，可以考虑继承抽象类AbstractFuture&lt;V&gt;
+或者直接使用 SettableFuture 。假如你必须将其他API提供的Future转换成
+ ListenableFuture，你没有别的方法只能采用硬编码的方式
+JdkFutureAdapters.listenInPoolThread(Future) 来将 Future 转换成 ListenableFuture。
+尽可能地采用修改原生的代码返回 ListenableFuture会更好一些。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org33df850" class="outline-2">
+<h2 id="org33df850">Application</h2>
+<div class="outline-text-2" id="text-org33df850">
+<p>
+使用ListenableFuture 最重要的理由是它可以进行一系列的复杂链式的异步操作。
+</p>
+<pre class="example">
+ListenableFuture rowKeyFuture = indexService.lookUp(query);
+AsyncFunction&lt;RowKey, QueryResult&gt; queryFunction =
+    new AsyncFunction&lt;RowKey, QueryResult&gt;() {
+      public ListenableFuture apply(RowKey rowKey) {
+        return dataService.read(rowKey);
+      }
+    };
+
+ListenableFuture queryFuture = Futures.transform(rowKeyFuture, queryFunction, queryExecutor);
+</pre>
+
+<p>
+其他更多的操作可以更加有效的支持而JDK中的Future是没法支持的.
+</p>
+
+<p>
+不同的操作可以在不同的Executors中执行，单独的ListenableFuture 可以有多个操作等待。
+</p>
+
+<p>
+当一个操作开始的时候其他的一些操作也会尽快开始执行–“fan-out”–ListenableFuture 能
+够满足这样的场景：促发所有的回调（callbacks）。反之更简单的工作是，同样可以满足
+“fan-in”场景，促发ListenableFuture 获取（get）计算结果，同时其它的Futures也会尽
+快执行：可以参考 the implementation of Futures.allAsList 。（译者注：fan-in和
+fan-out是软件设计的一个术语，可以参考这里：
+<a href="http://baike.baidu.com/view/388892.htm#1%E6%88%96%E8%80%85%E7%9C%8B%E8%BF%99%E9%87%8C%E7%9A%84%E8%A7%A3%E6%9E%90Design">http://baike.baidu.com/view/388892.htm#1或者看这里的解析Design</a> Principles:
+Fan-In vs Fan-Out，这里fan-out的实现就是封装的ListenableFuture通过回调，调用其它
+代码片段。fan-in的意义是可以调用其它Future）
+</p>
+
+<table>
+
+
+<colgroup>
+<col  class="org-left">
+
+<col  class="org-left">
+
+<col  class="org-left">
+</colgroup>
+<tbody>
+<tr>
+<td class="org-left">方法</td>
+<td class="org-left">描述</td>
+<td class="org-left">参考</td>
+</tr>
+
+<tr>
+<td class="org-left">transform(ListenableFuture&lt;A&gt;, AsyncFunction&lt;A, B&gt;, Executor)*</td>
+<td class="org-left">返回一个新的ListenableFuture ，该ListenableFuture 返回的result是由传入的AsyncFunction 参数指派到传入的 ListenableFuture中.</td>
+<td class="org-left">transform(ListenableFuture&lt;A&gt;, AsyncFunction&lt;A, B&gt;)</td>
+</tr>
+
+<tr>
+<td class="org-left">transform(ListenableFuture&lt;A&gt;, Function&lt;A, B&gt;, Executor)</td>
+<td class="org-left">返回一个新的ListenableFuture ，该ListenableFuture 返回的result是由传入的Function 参数指派到传入的 ListenableFuture中.</td>
+<td class="org-left">transform(ListenableFuture&lt;A&gt;, Function&lt;A, B&gt;)</td>
+</tr>
+
+<tr>
+<td class="org-left">allAsList(Iterable&lt;ListenableFuture&lt;V&gt;&gt;)</td>
+<td class="org-left">返回一个ListenableFuture ，该ListenableFuture 返回的result是一个List，List中的值是每个ListenableFuture的返回值，假如传入的其中之一fails或者cancel，这个Future fails 或者canceled</td>
+<td class="org-left">allAsList(ListenableFuture&lt;V&gt;&#x2026;)</td>
+</tr>
+
+<tr>
+<td class="org-left">successfulAsList(Iterable&lt;ListenableFuture&lt;V&gt;&gt;)</td>
+<td class="org-left">返回一个ListenableFuture ，该Future的结果包含所有成功的Future，按照原来的顺序，当其中之一Failed或者cancel，则用null替代</td>
+<td class="org-left">successfulAsList(ListenableFuture&lt;V&gt;&#x2026;)</td>
+</tr>
+</tbody>
+</table>
+
+<p>
+AsyncFunction&lt;A, B&gt; 中提供一个方法ListenableFuture&lt;B&gt; apply(A input)，它可以被用于异步变换值。
+</p>
+<pre class="example">
+List&lt;ListenableFuture&gt; queries;
+// The queries go to all different data centers, but we want to wait until they're all done or failed.
+ListenableFuture&lt;List&gt; successfulQueries = Futures.successfulAsList(queries);
+Futures.addCallback(successfulQueries, callbackOnSuccessfulQueries);
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org51ec836" class="outline-2">
+<h2 id="org51ec836">CheckedFuture</h2>
+<div class="outline-text-2" id="text-org51ec836">
+<p>
+Guava也提供了 CheckedFuture&lt;V, X extends Exception&gt; 接口。CheckedFuture 是一个
+ListenableFuture ，其中包含了多个版本的get 方法，方法声明抛出检查异常.这样使得创
+建一个在执行逻辑中可以抛出异常的Future更加容易 。将 ListenableFuture 转换成
+CheckedFuture，可以使用 Futures.makeChecked(ListenableFuture&lt;V&gt;,
+Function&lt;Exception, X&gt;)。
+</p>
+</div>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

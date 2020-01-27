@@ -1,0 +1,27 @@
+# -*- coding: utf-8-unix; -*-
+#+TITLE:       pathmunge
+#+AUTHOR:      Bruce Asu
+#+EMAIL:       bruceasu@163.com
+#+DATE:        <2016-05-16 20:00>
+#+filetags:        linux
+#+DESCRIPTION: 记录一下bash 函数，pathmunge
+
+#+LANGUAGE:    en
+#+OPTIONS:     H:7 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:nil
+
+记录一下 pathmung，这个只在 redhat 家族中存在的，用于添加新路径到 $path 变量中。
+
+#+BEGIN_SRC bash
+pathmunge () {
+    case ":${PATH}:" in
+        *:"$1":*)
+            ;;
+        *)
+            if [ "$2" = "after" ] ; then
+                PATH=$PATH:$1
+            else
+                PATH=$1:$PATH
+            fi
+    esac
+}
+#+END_SRC

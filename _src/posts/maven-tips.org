@@ -1,0 +1,56 @@
+# -*- coding: utf-8-unix; -*-
+#+TITLE:       maven tips
+#+AUTHOR:      Bruce Asu
+#+EMAIL:       bruceasu@163.com
+#+DATE:        <2016-07-11 20:00>
+#+filetags:    maven
+#+DESCRIPTION: maven 的一些小 tips.
+
+#+LANGUAGE:    en
+#+OPTIONS:     H:7 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:nil
+
+* 导出到默认目录
+: mvn dependency:copy-dependencies
+
+* 导出到自定义目录中
+: mvn dependencies:copy-dependencies -DoutputDirectory=lib
+
+* 同时可以设置依赖级别，通常使用compile级别
+: mvn dependency:copy-dependencies -DoutputDirectory=lib -DincludeScope=compile
+: mvn dependency:copy-dependencies -DoutputDirectory=lib -DincludeScope=runtime
+
+* 跳过测试
+: mvn package -Dmaven.test.skip=true
+
+* maven打包时的文件拷贝
+通常打包外部资源文件时，都使用maven-dependency-plugin或是maven-resources-plugin
+插件。但是项目中遇见一个问题，在打包jnotify的动态链接库时，使用上面两个插件进行
+文件拷贝时，程序会无法识别到打包后dll文件。多次尝试后使用了maven-antrun-plugin进
+行拷贝，问题得到解决。其拷贝配置如下:
+#+BEGIN_SRC xml
+<plugin>
+  <groupId>org.apache.maven.plugins</groupId>
+  <artifactId>maven-antrun-plugin</artifactId>
+  <version>1.7</version>
+  <executions>
+    <execution>
+      <id>copy-native-libraries</id>
+      <phase>package</phase>
+      <goals>
+        <goal>run</goal>
+      </goals>
+      <configuration>
+        <target>
+          <echo message="copy native libraries" />
+          <copy todir="${project.build.directory}/lib">
+            <fileset dir="${basedir}/lib"></fileset>
+          </copy>
+        </target>
+      </configuration>
+    </execution>
+  </executions>
+</plugin>
+
+#+END_SRC
+
+使用assembly插件，或者执行shell都可以。

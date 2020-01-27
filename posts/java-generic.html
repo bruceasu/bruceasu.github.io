@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>java Generic</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">java Generic</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#java"><div class="category">java</div></a> </div>
+<div class="char-counter">2017-03-01</div>
+        <div id="content">
+<nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#org337910b">类型擦除</a></li>
+<li><a href="#org42ad3dc">通配符</a>
+<ul>
+<li><a href="#org92cbfda">extends</a></li>
+<li><a href="#org8fbe863">super</a></li>
+</ul>
+</li>
+<li><a href="#org51a5d42">协变</a></li>
+<li><a href="#org9d427b9">Type</a>
+<ul>
+<li><a href="#org3a2ec7d">Class</a></li>
+<li><a href="#org7ca2427">PrimitiveType</a></li>
+<li><a href="#org7263615">ParameterizedType</a></li>
+<li><a href="#org9dbc6ad">TypeVariable</a></li>
+<li><a href="#orgd845791">数组类型。</a></li>
+<li><a href="#org1a3f53d">WildcardType</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</nav>
+<p>
+泛型的出现，让我们写一些容器的时候变的更爽了。比如我只想在列表中添加Message，非
+Message不能添加进来的话，我们就需要使用泛型了。再比如RxJava的出现，让泛型的使用
+更加出神入化了。
+</p>
+
+<p>
+泛型是从Java5开始被支持的，泛型的出现可以让编译器提前告知你类型错误，从而避免(减
+少)运行时出现类型错误等等。
+</p>
+
+<p>
+下面我们来先举个例子：
+</p>
+<div class="org-src-container">
+<pre class="src src-java"><span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">Case 1</span>
+<span style="font-weight: bold;">final</span> <span style="font-weight: bold; text-decoration: underline;">List</span>&lt;<span style="font-weight: bold; text-decoration: underline;">Integer</span>&gt; <span style="font-weight: bold; font-style: italic;">integers</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">ArrayList</span>&lt;&gt;();
+<span style="font-weight: bold;">final</span> <span style="font-weight: bold; text-decoration: underline;">List</span>&lt;<span style="font-weight: bold; text-decoration: underline;">Object</span>&gt; <span style="font-weight: bold; font-style: italic;">objects</span> = integers;
+
+<span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">Case 2</span>
+<span style="font-weight: bold;">final</span> <span style="font-weight: bold; text-decoration: underline;">Integer</span>[] <span style="font-weight: bold; font-style: italic;">aI</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">Integer</span>[1];
+<span style="font-weight: bold;">final</span> <span style="font-weight: bold; text-decoration: underline;">Object</span>[] <span style="font-weight: bold; font-style: italic;">aO</span> = aI;
+</pre>
+</div>
+
+<p>
+当我们IDE中写出如上语句的时候，你会发现Case 1会报错误，而Case 2不会报错。主要原
+因是Java中泛型默认是不允许协变，而数组是允许协变的。如果Case 1也能像Case 2一样的
+话，那么就破坏了泛型的安全性。
+</p>
+
+<div id="outline-container-org337910b" class="outline-2">
+<h2 id="org337910b">类型擦除</h2>
+<div class="outline-text-2" id="text-org337910b">
+<p>
+其实泛型是在编译器层面实现的，简单来说就是编译的时候编译器会将泛型给擦除，只留下
+RawType。比如：List&lt;String&gt;编译后会变成List。
+</p>
+
+<p>
+之所以会出现泛型擦除主要原因是泛型是Java1.5之后才出现的，也就是说我们之前写的代
+码是没法使用的。主要是兼容性方面的考虑，故而编译器编译的时候会进行泛型擦除。
+</p>
+
+<p>
+正因为会类型擦除，从而不会存在List&lt;String&gt;.class这种class发生。如果我们写代码的
+时候想要告诉调用的类型是这样的方式怎么办呢？一种方式是反射，一种是自己实现一个
+ParameterizedType。下面将Type的时候会讲到。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org42ad3dc" class="outline-2">
+<h2 id="org42ad3dc">通配符</h2>
+<div class="outline-text-2" id="text-org42ad3dc">
+<p>
+extends 表示的是类型的上界，即表示类型的最上层的超类。故而其表示的类型是其本身或
+者其子类。
+</p>
+
+<p>
+super 表示的是类型的下界，即表示类型的最下层的子类。故而其表示的是类型本身或者其
+超类，一直到Object。
+</p>
+
+<p>
+下面分别距离讲讲extent和super的读取逻辑。
+</p>
+</div>
+
+<div id="outline-container-org92cbfda" class="outline-3">
+<h3 id="org92cbfda">extends</h3>
+<div class="outline-text-3" id="text-org92cbfda">
+<div class="org-src-container">
+<pre class="src src-java"><span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#21487;&#20197;&#20351;&#29992;Number&#26412;&#36523;</span>
+<span style="font-weight: bold; text-decoration: underline;">List</span>&lt;? <span style="font-weight: bold;">extends</span> <span style="font-weight: bold; text-decoration: underline;">Number</span>&gt; <span style="font-weight: bold; font-style: italic;">list</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">ArrayList</span>&lt;<span style="font-weight: bold; text-decoration: underline;">Number</span>&gt;();
+<span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">Integer&#32487;&#25215;&#33258;Number</span>
+<span style="font-weight: bold; text-decoration: underline;">List</span>&lt;? <span style="font-weight: bold;">extends</span> <span style="font-weight: bold; text-decoration: underline;">Number</span>&gt; <span style="font-weight: bold; font-style: italic;">list</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">ArrayList</span>&lt;<span style="font-weight: bold; text-decoration: underline;">Integer</span>&gt;();
+<span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">Long&#32487;&#25215;&#33258;Number</span>
+<span style="font-weight: bold; text-decoration: underline;">List</span>&lt;? <span style="font-weight: bold;">extends</span> <span style="font-weight: bold; text-decoration: underline;">Number</span>&gt; <span style="font-weight: bold; font-style: italic;">list</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">ArrayList</span>&lt;<span style="font-weight: bold; text-decoration: underline;">Long</span>&gt;();
+</pre>
+</div>
+
+<p>
+读取的时候，以上面代码为例，列表可以保证的是读取的数据类型一定是Number或者其子类。
+</p>
+
+<p>
+但是使用 extend 方式的通配符没法进行写入，因为没法知道 list 具体是什么类型。比如
+你想往里面 add 一个 Number，但是 list 有可能是 ArrayList；如果你想往里面写入一个
+Integer 的时候，list 也有可能是 ArrayList。所以使用 extends 的时候是没法往 list
+里面写入的。
+</p>
+
+<p>
+但是，在list初始化的时候可以直接引用另一个list。比如：
+</p>
+<div class="org-src-container">
+<pre class="src src-java"><span style="font-weight: bold;">final</span> <span style="font-weight: bold; text-decoration: underline;">List</span>&lt;? <span style="font-weight: bold;">extends</span> <span style="font-weight: bold; text-decoration: underline;">Number</span>&gt; <span style="font-weight: bold; font-style: italic;">list</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">ArrayList</span>&lt;<span style="font-weight: bold; text-decoration: underline;">Long</span>&gt;();
+<span style="font-weight: bold;">final</span> <span style="font-weight: bold; text-decoration: underline;">List</span>&lt;? <span style="font-weight: bold;">extends</span> <span style="font-weight: bold; text-decoration: underline;">Number</span>&gt; <span style="font-weight: bold; font-style: italic;">list2</span> = list;
+
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org8fbe863" class="outline-3">
+<h3 id="org8fbe863">super</h3>
+<div class="outline-text-3" id="text-org8fbe863">
+<div class="org-src-container">
+<pre class="src src-java"><span style="font-weight: bold;">final</span> <span style="font-weight: bold; text-decoration: underline;">Integer</span> <span style="font-weight: bold; font-style: italic;">integer</span> = Integer.valueOf(0);
+<span style="font-weight: bold;">final</span> <span style="font-weight: bold; text-decoration: underline;">List</span>&lt;? <span style="font-weight: bold;">super</span> <span style="font-weight: bold; text-decoration: underline;">Integer</span>&gt; <span style="font-weight: bold; font-style: italic;">numbers</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">ArrayList</span>&lt;<span style="font-weight: bold; text-decoration: underline;">Number</span>&gt;();<span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">Number&#26159;Integer&#30340;&#29238;&#31867;</span>
+<span style="font-weight: bold;">final</span> <span style="font-weight: bold; text-decoration: underline;">List</span>&lt;? <span style="font-weight: bold;">super</span> <span style="font-weight: bold; text-decoration: underline;">Integer</span>&gt; <span style="font-weight: bold; font-style: italic;">objects</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">ArrayList</span>&lt;<span style="font-weight: bold; text-decoration: underline;">Object</span>&gt;();<span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">Object&#26159;&#25152;&#26377;&#23545;&#35937;&#30340;&#29238;&#31867;</span>
+<span style="font-weight: bold;">final</span> <span style="font-weight: bold; text-decoration: underline;">List</span>&lt;? <span style="font-weight: bold;">super</span> <span style="font-weight: bold; text-decoration: underline;">Integer</span>&gt; <span style="font-weight: bold; font-style: italic;">integers</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">ArrayList</span>&lt;<span style="font-weight: bold; text-decoration: underline;">Integer</span>&gt;();<span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#21487;&#20197;&#20351;&#29992;Integer&#26412;&#36523;</span>
+numbers.add(integer);
+objects.add(integer);
+integers.add(integer);
+</pre>
+</div>
+
+<p>
+读取的数据的时候，由于不知道具体的泛型是什么，所以没法确认其类型。但是可以肯定的
+是，必然是Object或者其子类(废话)。
+</p>
+
+<p>
+而 super 则可以直接往里面写入数据。如上，不论 list 是一个 ArrayList&lt;Integer&gt; 还
+是一个ArrayList&lt;Number&gt;，我们都可以往里面写入一个 Integer。因为可以确定的是 list
+中的泛型必然是 Integer 或者其父类。但是，Integer 的父类比如 Number 是不允许写入
+的，因为编译器不能确定 list 是一个 ArrayList&lt;Number&gt;，编译器只知道当前的泛型是
+Integer 或者其父类。
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org51a5d42" class="outline-2">
+<h2 id="org51a5d42">协变</h2>
+<div class="outline-text-2" id="text-org51a5d42">
+<p>
+前面提到了协变，在 Java 中数据时支持协变的。对于数组而言，Number 是 Integer 的父
+类，那么 Number[] 也是 Integer[] 的父类了。而泛型的出现就是为了让我们写代码的时
+候类型安全，如 果List 是 List 的父类的话，我们编译器会运行我们往 list 里面添加一
+个Long，但是它需要的是 Integer，故而就破坏了泛型的初衷：类型安全。所以默认泛型是
+不支持协变的。
+</p>
+
+<p>
+但是，使用通配符的时候泛型是支持协变的。比如:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-java"><span style="font-weight: bold;">final</span> <span style="font-weight: bold; text-decoration: underline;">List</span>&lt;<span style="font-weight: bold; text-decoration: underline;">Number</span>&gt; <span style="font-weight: bold; font-style: italic;">numbers</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">ArrayList</span>&lt;&gt;();
+<span style="font-weight: bold;">final</span> <span style="font-weight: bold; text-decoration: underline;">List</span>&lt;? <span style="font-weight: bold;">extends</span> <span style="font-weight: bold; text-decoration: underline;">Object</span>&gt; <span style="font-weight: bold; font-style: italic;">list</span> = integers;
+
+</pre>
+</div>
+
+<p>
+原因是使用 extends 的时候，编译器要求 list 的泛型必须是 Object 的子类，故而
+Number 可以支持。
+</p>
+
+<p>
+下面这种方式是逆变，它与协变是反过来的。
+</p>
+
+<div class="org-src-container">
+<pre class="src src-java"><span style="font-weight: bold;">final</span> <span style="font-weight: bold; text-decoration: underline;">List</span>&lt;<span style="font-weight: bold; text-decoration: underline;">Number</span>&gt; <span style="font-weight: bold; font-style: italic;">numbers</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">ArrayList</span>&lt;&gt;();
+<span style="font-weight: bold;">final</span> <span style="font-weight: bold; text-decoration: underline;">List</span>&lt;? <span style="font-weight: bold;">super</span> <span style="font-weight: bold; text-decoration: underline;">Integer</span>&gt; <span style="font-weight: bold; font-style: italic;">list</span> = numbers;
+
+</pre>
+</div>
+
+<p>
+对了，开头提到的那种不能编译通过的方式是不变。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org9d427b9" class="outline-2">
+<h2 id="org9d427b9">Type</h2>
+<div class="outline-text-2" id="text-org9d427b9">
+<p>
+Type 是所有类型的父接口，比如 Class 本身就是继承自 Type 的。 在我们使用反射的时
+候通常会用到 Type。
+</p>
+<div class="org-src-container">
+<pre class="src src-java"><span style="font-weight: bold;">public</span> <span style="font-weight: bold;">final</span> <span style="font-weight: bold;">class</span> <span style="font-weight: bold; text-decoration: underline;">Class</span>&lt;<span style="font-weight: bold; text-decoration: underline;">T</span>&gt; <span style="font-weight: bold;">implements</span> <span style="font-weight: bold; text-decoration: underline;">java</span>.<span style="font-weight: bold; text-decoration: underline;">io</span>.<span style="font-weight: bold; text-decoration: underline;">Serializable</span>,
+                              <span style="font-weight: bold; text-decoration: underline;">java</span>.<span style="font-weight: bold; text-decoration: underline;">lang</span>.<span style="font-weight: bold; text-decoration: underline;">reflect</span>.<span style="font-weight: bold; text-decoration: underline;">GenericDeclaration</span>,
+                              <span style="font-weight: bold; text-decoration: underline;">java</span>.<span style="font-weight: bold; text-decoration: underline;">lang</span>.<span style="font-weight: bold; text-decoration: underline;">reflect</span>.<span style="font-weight: bold; text-decoration: underline;">Type</span>,
+                              <span style="font-weight: bold; text-decoration: underline;">java</span>.<span style="font-weight: bold; text-decoration: underline;">lang</span>.<span style="font-weight: bold; text-decoration: underline;">reflect</span>.<span style="font-weight: bold; text-decoration: underline;">AnnotatedElement</span> {}
+</pre>
+</div>
+
+<p>
+它大概会分为下面几种方式：
+</p>
+</div>
+
+<div id="outline-container-org3a2ec7d" class="outline-3">
+<h3 id="org3a2ec7d">Class</h3>
+<div class="outline-text-3" id="text-org3a2ec7d">
+<p>
+除泛型之外Class本身就是一种Type，包括PrimitiveType也会被box成对应的Class对象。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org7ca2427" class="outline-3">
+<h3 id="org7ca2427">PrimitiveType</h3>
+<div class="outline-text-3" id="text-org7ca2427">
+<p>
+基本类型
+</p>
+
+<p>
+比如:
+</p>
+
+<p>
+boolean.class/byte.class/char.class/double.class/float.class/int.class/long.class/short.class
+。当我们反射需要用到的时候需要将其转换成对应的Class，比如Boolean.class等等。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org7263615" class="outline-3">
+<h3 id="org7263615">ParameterizedType</h3>
+<div class="outline-text-3" id="text-org7263615">
+<p>
+参数化类型。
+</p>
+
+<p>
+比如: List/Map&lt;Integer,String&gt;等等。
+</p>
+
+<p>
+主要三个方法：
+</p>
+
+<p>
+<code>Type[] getActualTypeArguments();</code> 返回的是泛型的参数的类型，比如 <code>List&lt;String&gt;</code> 会
+返回 <code>String</code>,如果是 <code>Map&lt;String,Integer&gt;</code> 则为 <code>String</code> 和 <code>Integer</code> 组成的数组~Type
+getRawType();~ 返回的是泛型擦除后的类型，比如上面的 <code>List&lt;String&gt;</code> 会返回~List~ ,
+<code>Type getOwnerType();</code> 一般返回的是类的 <code>Owner</code> ，比如声明为A.B，则此处返回为A例如：
+</p>
+<div class="org-src-container">
+<pre class="src src-java"><span style="font-weight: bold;">public</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold;">class</span> <span style="font-weight: bold; text-decoration: underline;">LIST</span>&lt;<span style="font-weight: bold; text-decoration: underline;">T</span> <span style="font-weight: bold;">extends</span> <span style="font-weight: bold; text-decoration: underline;">View</span> &amp; <span style="font-weight: bold; text-decoration: underline;">Comparable</span> &amp; <span style="font-weight: bold; text-decoration: underline;">Cloneable</span>&gt; <span style="font-weight: bold;">extends</span> <span style="font-weight: bold; text-decoration: underline;">ArrayList</span>&lt;<span style="font-weight: bold; text-decoration: underline;">T</span>&gt; {
+    <span style="font-weight: bold;">private</span> <span style="font-weight: bold; text-decoration: underline;">T</span> <span style="font-weight: bold; font-style: italic;">key</span>;
+    <span style="font-weight: bold;">private</span> <span style="font-weight: bold; text-decoration: underline;">OBJ</span>&lt;<span style="font-weight: bold; text-decoration: underline;">T</span>&gt;[] <span style="font-weight: bold; font-style: italic;">array</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">OBJ</span>[0];
+}
+<span style="font-weight: bold; font-style: italic;">//</span>
+<span style="font-weight: bold;">public</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold;">class</span> <span style="font-weight: bold; text-decoration: underline;">OBJ</span> <span style="font-weight: bold;">extends</span> <span style="font-weight: bold; text-decoration: underline;">View</span> <span style="font-weight: bold;">implements</span> <span style="font-weight: bold; text-decoration: underline;">Comparable</span>&lt;<span style="font-weight: bold; text-decoration: underline;">OBJ</span>&gt;, <span style="font-weight: bold; text-decoration: underline;">Cloneable</span> {
+
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">OBJ</span>(<span style="font-weight: bold; text-decoration: underline;">Context</span> <span style="font-weight: bold; font-style: italic;">context</span>) {
+        <span style="font-weight: bold;">super</span>(context);
+    }
+
+    <span style="font-weight: bold; text-decoration: underline;">@Override</span>
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold;">compareTo</span>(<span style="font-weight: bold; text-decoration: underline;">@NonNull</span> <span style="font-weight: bold; text-decoration: underline;">OBJ</span> <span style="font-weight: bold; font-style: italic;">o</span>) {
+        <span style="font-weight: bold;">return</span> 0;
+    }
+}
+<span style="font-weight: bold; font-style: italic;">//</span>
+<span style="font-weight: bold;">private</span> <span style="font-weight: bold;">final</span> <span style="font-weight: bold; text-decoration: underline;">ReflectTypeFragment</span>.<span style="font-weight: bold; text-decoration: underline;">LIST</span>&lt;<span style="font-weight: bold; text-decoration: underline;">OBJ</span>&gt; <span style="font-weight: bold; font-style: italic;">list</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">ReflectTypeFragment</span>.<span style="font-weight: bold; text-decoration: underline;">LIST</span>&lt;&gt;();
+<span style="font-weight: bold;">private</span> <span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">testParameterizedType</span>() <span style="font-weight: bold;">throws</span> <span style="font-weight: bold; text-decoration: underline;">NoSuchFieldException</span> {
+    <span style="font-weight: bold;">final</span> <span style="font-weight: bold; text-decoration: underline;">Field</span> <span style="font-weight: bold; font-style: italic;">field</span> = <span style="font-weight: bold;">this</span>.getClass().getDeclaredField(<span style="font-style: italic;">"list"</span>);
+    <span style="font-weight: bold;">final</span> <span style="font-weight: bold; text-decoration: underline;">Type</span> <span style="font-weight: bold; font-style: italic;">type</span> = field.getGenericType();
+    <span style="font-weight: bold;">final</span> <span style="font-weight: bold; text-decoration: underline;">ParameterizedType</span> <span style="font-weight: bold; font-style: italic;">pt</span> = (<span style="font-weight: bold; text-decoration: underline;">ParameterizedType</span>) type;
+    log(String.format(<span style="font-style: italic;">"type = %s (%s)\nActualTypeArguments=%s\nOwnerType = %s"</span>, print(type), (type <span style="font-weight: bold;">instanceof</span> ParameterizedType), print(pt.getActualTypeArguments()), print(pt.getOwnerType())));
+}
+</pre>
+</div>
+
+<p>
+最后的结果为：
+</p>
+<pre class="example">
+&gt; type = ReflectTypeFragment$LIST&lt;ReflectTypeFragment$OBJ&gt;(true)
+&gt; ActualTypeArguments = class ReflectTypeFragment$OBJ
+&gt; OwnerType = class ReflectTypeFragment
+
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org9dbc6ad" class="outline-3">
+<h3 id="org9dbc6ad">TypeVariable</h3>
+<div class="outline-text-3" id="text-org9dbc6ad">
+<p>
+类型变量
+</p>
+
+<p>
+<code>Type[] getBounds()</code> , 返回的是泛型的上边界。也就是说是只能通过”extends”方式声明类型。
+<code>D getGenericDeclaration()</code>, 返回的是声明的此类型的地方。
+<code>String getName()</code>, 源码中定义泛型时的名字。
+例如：
+</p>
+<div class="org-src-container">
+<pre class="src src-java"><span style="font-weight: bold;">private</span> <span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">testVariable</span>() <span style="font-weight: bold;">throws</span> <span style="font-weight: bold; text-decoration: underline;">NoSuchFieldException</span> {
+    <span style="font-weight: bold;">final</span> <span style="font-weight: bold; text-decoration: underline;">Field</span> <span style="font-weight: bold; font-style: italic;">field</span> = LIST.<span style="font-weight: bold;">class</span>.getDeclaredField(<span style="font-style: italic;">"key"</span>);
+    <span style="font-weight: bold;">final</span> <span style="font-weight: bold; text-decoration: underline;">Type</span> <span style="font-weight: bold; font-style: italic;">type</span> = field.getGenericType();
+    <span style="font-weight: bold;">final</span> <span style="font-weight: bold; text-decoration: underline;">TypeVariable</span> <span style="font-weight: bold; font-style: italic;">t</span> = (<span style="font-weight: bold; text-decoration: underline;">TypeVariable</span>) type;
+    log(String.format(<span style="font-style: italic;">"type = %s (%s)\nBounds = %s\nGenericDeclaration = %s\nName = %s"</span>, print(type), (type <span style="font-weight: bold;">instanceof</span> TypeVariable), print(t.getBounds()), t.getGenericDeclaration(), t.getName()));
+}
+</pre>
+</div>
+<pre class="example">
+&gt; type = T (true)
+&gt; Bounds = class android.view.View, interface java.lang.Comparable, interface java.lang.Cloneable
+&gt; GenericDeclaration = class ReflectTypeFragment$LIST
+&gt; Name = T
+&gt; GenericArrayType
+
+</pre>
+</div>
+</div>
+
+<div id="outline-container-orgd845791" class="outline-3">
+<h3 id="orgd845791">数组类型。</h3>
+<div class="outline-text-3" id="text-orgd845791">
+<p>
+需要注意的是，只能是 <code>TypeVariable</code> 或者是 <code>ParameterizedType</code> 的数组才能称得上是数
+组类型, 比如 <code>String[]</code> ， <code>List</code> 都不是。
+</p>
+
+<p>
+<code>Type getGenericComponentType();</code> 返回的是数组的类型。
+</p>
+<div class="org-src-container">
+<pre class="src src-java"><span style="font-weight: bold;">private</span> <span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">testGenericArrayType</span>() <span style="font-weight: bold;">throws</span> <span style="font-weight: bold; text-decoration: underline;">NoSuchFieldException</span> {
+    <span style="font-weight: bold;">final</span> <span style="font-weight: bold; text-decoration: underline;">Field</span> <span style="font-weight: bold; font-style: italic;">field</span> = LIST.<span style="font-weight: bold;">class</span>.getDeclaredField(<span style="font-style: italic;">"array"</span>);
+    <span style="font-weight: bold;">final</span> <span style="font-weight: bold; text-decoration: underline;">GenericArrayType</span> <span style="font-weight: bold; font-style: italic;">t</span> = (<span style="font-weight: bold; text-decoration: underline;">GenericArrayType</span>) field.getGenericType();
+    log(String.format(<span style="font-style: italic;">"testGenericArrayType:\ntype = %s\ngetGenericComponentType = %s"</span>, print(t), print(t.getGenericComponentType())));
+}
+</pre>
+</div>
+<p>
+结果：
+</p>
+<pre class="example">
+&gt; type = [ GenericArrayType: ReflectTypeFragment$OBJ&lt;T&gt;[] ]
+&gt; getGenericComponentType = [ ParameterizedType: ReflectTypeFragment$OBJ&lt;T&gt; ]
+&gt; 可以看到t.getGenericComponentType()返回的是ParameterizedType。
+
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org1a3f53d" class="outline-3">
+<h3 id="org1a3f53d">WildcardType</h3>
+<div class="outline-text-3" id="text-org1a3f53d">
+<p>
+通配符类型.
+</p>
+
+<p>
+<code>Type[] getUpperBounds()</code> 获取到的是类型的上限，如果没有设定上限那么默认会是Object.class
+<code>Type[] getLowerBounds()</code> 获取到的类型的下限，如果没通过super设定那么默认为null。
+例如:
+</p>
+<div class="org-src-container">
+<pre class="src src-java"><span style="font-weight: bold;">private</span> <span style="font-weight: bold;">final</span> <span style="font-weight: bold; text-decoration: underline;">Map</span>&lt;? <span style="font-weight: bold;">super</span> <span style="font-weight: bold; text-decoration: underline;">View</span>, ? <span style="font-weight: bold;">extends</span> <span style="font-weight: bold; text-decoration: underline;">View</span>&gt; <span style="font-weight: bold; font-style: italic;">map</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">HashMap</span>&lt;&gt;();
+<span style="font-weight: bold;">private</span> <span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">testWildcardType</span>() <span style="font-weight: bold;">throws</span> <span style="font-weight: bold; text-decoration: underline;">NoSuchFieldException</span> {
+    <span style="font-weight: bold;">final</span> <span style="font-weight: bold; text-decoration: underline;">Field</span> <span style="font-weight: bold; font-style: italic;">field</span> = <span style="font-weight: bold;">this</span>.getClass().getDeclaredField(<span style="font-style: italic;">"map"</span>);
+    <span style="font-weight: bold;">final</span> <span style="font-weight: bold; text-decoration: underline;">ParameterizedType</span> <span style="font-weight: bold; font-style: italic;">pt</span> = (<span style="font-weight: bold; text-decoration: underline;">ParameterizedType</span>) field.getGenericType();
+    <span style="font-weight: bold;">for</span> (<span style="font-weight: bold; text-decoration: underline;">Type</span> <span style="font-weight: bold;">type</span> : pt.getActualTypeArguments()) {
+        <span style="font-weight: bold;">final</span> <span style="font-weight: bold; text-decoration: underline;">WildcardType</span> <span style="font-weight: bold; font-style: italic;">t</span> = (<span style="font-weight: bold; text-decoration: underline;">WildcardType</span>) type;
+        log(String.format(<span style="font-style: italic;">"testWildcardType:\ntype = %s\ngetUpperBounds = %s\ngetLowerBounds = %s"</span>, print(t), print(t.getUpperBounds()), print(t.getLowerBounds())));
+    }
+}
+</pre>
+</div>
+<p>
+打印结果如下:
+</p>
+<pre class="example">
+&gt; testWildcardType:
+&gt; type = [ ? super android.view.View ]
+&gt; getUpperBounds = [ class java.lang.Object ]
+&gt; getLowerBounds = [ class android.view.View ]
+&gt; testWildcardType:
+&gt; type = [ ? extends android.view.View ]
+&gt; getUpperBounds = [ class android.view.View ]
+&gt; getLowerBounds = null
+
+</pre>
+
+<p>
+在这里使用了一个 Map，map 对象是一个 ParameterizedType，然后通过其
+getActualTypeArguments，获取里面的多个 Parameter。之后每个 Parameter 都是通配符。
+</p>
+</div>
+</div>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

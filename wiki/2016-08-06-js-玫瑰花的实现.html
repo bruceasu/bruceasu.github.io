@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>玫瑰花的实现</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">玫瑰花的实现</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#javascript"><div class="category">javascript</div></a> </div>
+<div class="char-counter">2016-08-06</div>
+        <div id="content">
+<div class="org-src-container">
+<pre class="src src-javascript"><span style="font-weight: bold;">var</span> <span style="font-weight: bold; font-style: italic;">b</span> = document.body;
+<span style="font-weight: bold;">var</span> <span style="font-weight: bold; font-style: italic;">c</span> = document.getElementsByTagName(<span style="font-style: italic;">'canvas'</span>)[0];
+<span style="font-weight: bold;">var</span> <span style="font-weight: bold; font-style: italic;">a</span> = c.getContext(<span style="font-style: italic;">'2d'</span>);
+<span style="font-weight: bold;">var</span> <span style="font-weight: bold; font-style: italic;">canvas</span> = document.getElementsByTagName(<span style="font-style: italic;">'canvas'</span>)[0];
+<span style="font-weight: bold;">var</span> <span style="font-weight: bold; font-style: italic;">ctx</span> = canvas.getContext(<span style="font-style: italic;">'2d'</span>);
+document.body.clientWidth;
+<span style="font-weight: bold;">with</span> (m = Math) C = cos, S = sin, P = pow, R = random;
+c.width = c.height = f = 500;
+h =- 250;
+<span style="font-weight: bold;">function</span> <span style="font-weight: bold;">p</span>(<span style="font-weight: bold; font-style: italic;">a</span>, <span style="font-weight: bold; font-style: italic;">b</span>, <span style="font-weight: bold; font-style: italic;">c</span>)
+{
+    <span style="font-weight: bold;">if</span> (c &gt; 60)
+    {
+        <span style="font-weight: bold;">return</span> [S(a * 7) * (13 + 5  / (.2 + P(b * 4, 4))) - S(b) * 50, b * f + 50, 625 + C(a * 7) * (13 + 5  / (.2 + P(b * 4,
+        4))) + b * 400, a * 1 - b  / 2, a];
+    }
+    A = a * 2 - 1;
+    B = b * 2 - 1;
+    <span style="font-weight: bold;">if</span> (A * A + B * B &lt; 1)
+    {
+        <span style="font-weight: bold;">if</span> (c &gt; 37)
+        {
+            n = (j = c &amp; 1) ? 6 : 4;
+            o = .5 / (a + .01) + C(b * 125) * 3 - a * 300;
+            w = b * h;
+            <span style="font-weight: bold;">return</span> [o * C(n) + w * S(n) + j * 610 - 390, o * S(n) - w * C(n) + 550 - j * 350, 1180 + C(B + A) * 99 - j * 300,
+            .4 - a * .1 + P(1 - B * B, - h * 6) * .15 - a * b * .4 + C(a + b) / 5 + P(C((o * (a + 1) + (B &gt; 0 ? w :- w)) / 25),
+            30) * .1 * (1 - B * B), o / 1e3 + .7 - o * w * 3e - 6]
+        }
+        <span style="font-weight: bold;">if</span> (c &gt; 32)
+        {
+            c = c * 1.16 - .15;
+            o = a * 45 - 20;
+            w = b * b * h;
+            z = o * S(c) + w * C(c) + 620;
+            <span style="font-weight: bold;">return</span> [o * C(c) - w * S(c), 28 + C(B * .5) * 99 - b * b * b * 60 - z / 2 - h, z, (b * b * .3 + P((1 - (A * A)),
+            7) * .15 + .3) * b, b * .7]
+        }
+        o = A * (2 - b) * (80 - c * 2);
+        w = 99 - C(A) * 120 - C(b) * (-h - c * 4.9) + C(P(1 - b, 7)) * 50 + c * 2;
+        z = o * S(c) + w * C(c) + 700;
+        <span style="font-weight: bold;">return</span> [o * C(c) - w * S(c), B * 99 - C(P(b, 7)) * 50 - c / 3 - z / 1.35 + 450, z, (1 - b / 1.2) * .9 + a * .1,
+        P((1 - b), 20) / 4 + .05]
+    }
+}
+<span style="font-weight: bold;">var</span> <span style="font-weight: bold; font-style: italic;">draw</span> = setInterval(<span style="font-style: italic;">'for(i=0;i&lt;1e4;i++)if(s=p(R(),R(),i%46/.74)){z=s[2];x=~~(s[0]*f/z-h);y=~~(s[1]*f/z-h);if(!m[q=y*f+x]|m[q]&gt;z)m[q]=z,a.fillStyle="rgb("+~(s[3]*h)+","+~(s[4]*h)+","+~(s[3]*s[3]*-80)+")",a.fillRect(x,y,1,1)}'</span>,
+0);
+<span style="font-weight: bold;">var</span> <span style="font-weight: bold; font-style: italic;">demo</span> = document.getElementById(<span style="font-style: italic;">'demo'</span>);
+<span style="font-weight: bold;">function</span> <span style="font-weight: bold;">redraw</span>()
+{
+    <span style="font-weight: bold; font-style: italic;">/*</span>
+<span style="font-weight: bold; font-style: italic;">        var d_c = document.createElement("canvas");</span>
+<span style="font-weight: bold; font-style: italic;">        d_c.setAttribute("id","c");</span>
+<span style="font-weight: bold; font-style: italic;">        d_c.setAttribute("width","520");</span>
+<span style="font-weight: bold; font-style: italic;">        d_c.setAttribute("height","500");</span>
+<span style="font-weight: bold; font-style: italic;">        demo.appendChild(d_c);</span>
+<span style="font-weight: bold; font-style: italic;">        */</span>
+    draw = setInterval(<span style="font-style: italic;">'for(i=0;i&lt;1e4;i++)if(s=p(R(),R(),i%46/.74)){z=s[2];x=~~(s[0]*f/z-h);y=~~(s[1]*f/z-h);if(!m[q=y*f+x]|m[q]&gt;z)m[q]=z,a.fillStyle="rgb("+~(s[3]*h)+","+~(s[4]*h)+","+~(s[3]*s[3]*-80)+")",a.fillRect(x,y,1,1)}'</span>,
+    0);
+    <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">alert(d_c);</span>
+}
+<span style="font-weight: bold;">function</span> <span style="font-weight: bold;">clear_canvas</span>()
+{
+    ctx.clearRect(0, 0, 520, 500);
+    <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">canvas.parentNode.removeChild(canvas);   //&#21024;&#38500;</span>
+}
+<span style="font-weight: bold;">function</span> <span style="font-weight: bold;">stop_draw</span>(<span style="font-weight: bold; font-style: italic;">obj</span>)
+{
+    clearInterval(obj);
+}
+
+
+
+
+<span style="font-weight: bold;">var</span> <span style="font-weight: bold; font-style: italic;">b</span> = document.body;
+<span style="font-weight: bold;">var</span> <span style="font-weight: bold; font-style: italic;">c</span> = document.getElementsByTagName(<span style="font-style: italic;">'canvas'</span>)[0];
+<span style="font-weight: bold;">var</span> <span style="font-weight: bold; font-style: italic;">a</span> = c.getContext(<span style="font-style: italic;">'2d'</span>);
+<span style="font-weight: bold;">var</span> <span style="font-weight: bold; font-style: italic;">canvas</span> = document.getElementsByTagName(<span style="font-style: italic;">'canvas'</span>)[0];
+<span style="font-weight: bold;">var</span> <span style="font-weight: bold; font-style: italic;">ctx</span> = canvas.getContext(<span style="font-style: italic;">'2d'</span>);
+document.body.clientWidth;
+<span style="font-weight: bold;">with</span> (m = Math) C = cos, S = sin, P = pow, R = random;
+c.width = c.height = f = 500;
+h =- 250;
+<span style="font-weight: bold;">function</span> <span style="font-weight: bold;">p</span>(<span style="font-weight: bold; font-style: italic;">a</span>, <span style="font-weight: bold; font-style: italic;">b</span>, <span style="font-weight: bold; font-style: italic;">c</span>)
+{
+    <span style="font-weight: bold;">if</span> (c &gt; 60)
+    {
+        <span style="font-weight: bold;">return</span> [S(a * 7) * (13 + 5  / (.2 + P(b * 4, 4))) - S(b) * 50, b * f + 50, 625 + C(a * 7) * (13 + 5  / (.2 + P(b * 4,
+        4))) + b * 400, a * 1 - b  / 2, a];
+    }
+    A = a * 2 - 1;
+    B = b * 2 - 1;
+    <span style="font-weight: bold;">if</span> (A * A + B * B &lt; 1)
+    {
+        <span style="font-weight: bold;">if</span> (c &gt; 37)
+        {
+            n = (j = c &amp; 1) ? 6 : 4;
+            o = .5 / (a + .01) + C(b * 125) * 3 - a * 300;
+            w = b * h;
+            <span style="font-weight: bold;">return</span> [o * C(n) + w * S(n) + j * 610 - 390, o * S(n) - w * C(n) + 550 - j * 350, 1180 + C(B + A) * 99 - j * 300,
+            .4 - a * .1 + P(1 - B * B, - h * 6) * .15 - a * b * .4 + C(a + b) / 5 + P(C((o * (a + 1) + (B &gt; 0 ? w :- w)) / 25),
+            30) * .1 * (1 - B * B), o / 1e3 + .7 - o * w * 3e - 6]
+        }
+        <span style="font-weight: bold;">if</span> (c &gt; 32)
+        {
+            c = c * 1.16 - .15;
+            o = a * 45 - 20;
+            w = b * b * h;
+            z = o * S(c) + w * C(c) + 620;
+            <span style="font-weight: bold;">return</span> [o * C(c) - w * S(c), 28 + C(B * .5) * 99 - b * b * b * 60 - z / 2 - h, z, (b * b * .3 + P((1 - (A * A)),
+            7) * .15 + .3) * b, b * .7]
+        }
+        o = A * (2 - b) * (80 - c * 2);
+        w = 99 - C(A) * 120 - C(b) * (-h - c * 4.9) + C(P(1 - b, 7)) * 50 + c * 2;
+        z = o * S(c) + w * C(c) + 700;
+        <span style="font-weight: bold;">return</span> [o * C(c) - w * S(c), B * 99 - C(P(b, 7)) * 50 - c / 3 - z / 1.35 + 450, z, (1 - b / 1.2) * .9 + a * .1,
+        P((1 - b), 20) / 4 + .05]
+    }
+}
+<span style="font-weight: bold;">var</span> <span style="font-weight: bold; font-style: italic;">draw</span> = setInterval(<span style="font-style: italic;">'for(i=0;i&lt;1e4;i++)if(s=p(R(),R(),i%46/.74)){z=s[2];x=~~(s[0]*f/z-h);y=~~(s[1]*f/z-h);if(!m[q=y*f+x]|m[q]&gt;z)m[q]=z,a.fillStyle="rgb("+~(s[3]*h)+","+~(s[4]*h)+","+~(s[3]*s[3]*-80)+")",a.fillRect(x,y,1,1)}'</span>,
+0);
+<span style="font-weight: bold;">var</span> <span style="font-weight: bold; font-style: italic;">demo</span> = document.getElementById(<span style="font-style: italic;">'demo'</span>);
+<span style="font-weight: bold;">function</span> <span style="font-weight: bold;">redraw</span>()
+{
+    <span style="font-weight: bold; font-style: italic;">/*</span>
+<span style="font-weight: bold; font-style: italic;">        var d_c = document.createElement("canvas");</span>
+<span style="font-weight: bold; font-style: italic;">        d_c.setAttribute("id","c");</span>
+<span style="font-weight: bold; font-style: italic;">        d_c.setAttribute("width","520");</span>
+<span style="font-weight: bold; font-style: italic;">        d_c.setAttribute("height","500");</span>
+<span style="font-weight: bold; font-style: italic;">        demo.appendChild(d_c);</span>
+<span style="font-weight: bold; font-style: italic;">        */</span>
+    draw = setInterval(<span style="font-style: italic;">'for(i=0;i&lt;1e4;i++)if(s=p(R(),R(),i%46/.74)){z=s[2];x=~~(s[0]*f/z-h);y=~~(s[1]*f/z-h);if(!m[q=y*f+x]|m[q]&gt;z)m[q]=z,a.fillStyle="rgb("+~(s[3]*h)+","+~(s[4]*h)+","+~(s[3]*s[3]*-80)+")",a.fillRect(x,y,1,1)}'</span>,
+    0);
+    <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">alert(d_c);</span>
+}
+<span style="font-weight: bold;">function</span> <span style="font-weight: bold;">clear_canvas</span>()
+{
+    ctx.clearRect(0, 0, 520, 500);
+    <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">canvas.parentNode.removeChild(canvas);   //&#21024;&#38500;</span>
+}
+<span style="font-weight: bold;">function</span> <span style="font-weight: bold;">stop_draw</span>(<span style="font-weight: bold; font-style: italic;">obj</span>)
+{
+    clearInterval(obj);
+}
+
+</pre>
+</div>
+
+<p>
+这里用了多个不同的形状图来组成这朵代码玫瑰。共使用了31个形状：24个花瓣，4个萼片，
+2个叶子和1根花茎，其中每一个形状图都用代码进行描绘。表面采样方法是创建三维图形非
+常著名的、最古老的方法之一，但这种把蒙特卡罗、z-buffer加入到表面采样中的方法并不
+常见。对于现实生活场景的制作，这也许算不上很有创意，但它简易的代码实现和很小的体
+积仍令人满意。
+</p>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

@@ -1,0 +1,332 @@
+#+title: 高性能 Java 缓存库 — Caffeine
+#+date: <2016-09-16 20:48>
+#+filetags: java reprint
+
+* 高性能 Java 缓存库 — Caffeine
+
+http://www.baeldung.com/java-caching-caffeine
+作者：baeldung
+译者：oopsguy.com
+
+** 1、介绍
+在本文中，我们来看看 Caffeine — 一个高性能的 Java 缓存库。
+
+缓存和 Map 之间的一个根本区别在于缓存可以回收存储的 item。
+
+回收策略为在指定时间删除哪些对象。此策略直接影响缓存的命中率 — 缓存库的一个重要
+特征。
+
+Caffeine 因使用 Window TinyLfu 回收策略，提供了一个近乎最佳的命中率。
+
+** 2、依赖
+我们需要在 pom.xml 中添加 caffeine 依赖：
+#+BEGIN_SRC xml
+<dependency>
+    <groupId>com.github.ben-manes.caffeine</groupId>
+    <artifactId>caffeine</artifactId>
+    <version>2.5.5</version>
+</dependency>
+
+#+END_SRC
+
+您可以在 Maven Central 上找到最新版本的 caffeine。
+
+** 3、填充缓存
+让我们来了解一下 Caffeine 的三种缓存填充策略：手动、同步加载和异步加载。
+
+首先，我们为要缓存中存储的值类型写一个类：
+#+BEGIN_SRC java
+class DataObject {
+    private final String data;
+
+    private static int objectCounter = 0;
+    // standard constructors/getters
+
+    public static DataObject get(String data) {
+        objectCounter++;
+        return new DataObject(data);
+    }
+}
+#+END_SRC
+
+*** 3.1、手动填充
+
+在此策略中，我们手动将值放入缓存之后再检索。
+
+让我们初始化缓存：
+#+BEGIN_SRC java
+Cache<String, DataObject> cache = Caffeine.newBuilder()
+  .expireAfterWrite(1, TimeUnit.MINUTES)
+  .maximumSize(100)
+  .build();
+#+END_SRC
+
+现在，我们可以使用 getIfPresent 方法从缓存中获取一些值。 如果缓存中不存在此值，
+则此方法将返回 null：
+#+BEGIN_EXAMPLE
+String key = "A";
+DataObject dataObject = cache.getIfPresent(key);
+
+assertNull(dataObject);
+#+END_EXAMPLE
+
+我们可以使用 put 方法手动填充缓存：
+#+BEGIN_EXAMPLE
+cache.put(key, dataObject);
+dataObject = cache.getIfPresent(key);
+
+assertNotNull(dataObject);
+
+#+END_EXAMPLE
+
+我们也可以使用 get 方法获取值，该方法将一个参数为 key 的 Function 作为参数传入。
+如果缓存中不存在该键，则该函数将用于提供回退值，该值在计算后插入缓存中：
+#+BEGIN_EXAMPLE
+dataObject = cache
+  .get(key, k -> DataObject.get("Data for A"));
+
+assertNotNull(dataObject);
+assertEquals("Data for A", dataObject.getData())
+
+#+END_EXAMPLE
+
+get 方法可以原子方式执行计算。这意味着您只进行一次计算 — 即使多个线程同时请求该
+值。这就是为什么使用 get 优于 getIfPresent。
+
+有时我们需要手动使一些缓存的值失效：
+#+BEGIN_EXAMPLE
+cache.invalidate(key);
+dataObject = cache.getIfPresent(key);
+
+assertNull(dataObject);
+#+END_EXAMPLE
+
+*** 3.2、同步加载
+
+这种加载缓存的方法使用了与用于初始化值的 Function 相似的手动策略的 get 方法。让
+我们看看如何使用它。
+
+首先，我们需要初始化缓存：
+#+BEGIN_EXAMPLE
+LoadingCache<String, DataObject> cache = Caffeine.newBuilder()
+  .maximumSize(100)
+  .expireAfterWrite(1, TimeUnit.MINUTES)
+  .build(k -> DataObject.get("Data for " + k));
+
+#+END_EXAMPLE
+
+现在我们可以使用 get 方法检索值：
+#+BEGIN_EXAMPLE
+DataObject dataObject = cache.get(key);
+
+assertNotNull(dataObject);
+assertEquals("Data for " + key, dataObject.getData());
+
+#+END_EXAMPLE
+
+我们也可以使用 getAll 方法获取一组值：
+#+BEGIN_EXAMPLE
+Map<String, DataObject> dataObjectMap
+  = cache.getAll(Arrays.asList("A", "B", "C"));
+
+assertEquals(3, dataObjectMap.size());
+
+#+END_EXAMPLE
+
+从传递给 build 方法的底层后端初始化函数检索值。 这使得可以使用缓存作为访问值的主
+要门面（Facade）。
+
+*** 3.3、异步加载
+
+此策略的作用与之前相同，但是以异步方式执行操作，并返回一个包含值的
+CompletableFuture：
+#+BEGIN_EXAMPLE
+AsyncLoadingCache<String, DataObject> cache = Caffeine.newBuilder()
+  .maximumSize(100)
+  .expireAfterWrite(1, TimeUnit.MINUTES)
+  .buildAsync(k -> DataObject.get("Data for " + k));
+
+#+END_EXAMPLE
+我们可以以相同的方式使用 get 和 getAll 方法，同时考虑到他们返回的是
+CompletableFuture：
+#+BEGIN_EXAMPLE
+String key = "A";
+
+cache.get(key).thenAccept(dataObject -> {
+    assertNotNull(dataObject);
+    assertEquals("Data for " + key, dataObject.getData());
+});
+
+cache.getAll(Arrays.asList("A", "B", "C"))
+  .thenAccept(dataObjectMap -> assertEquals(3, dataObjectMap.size()));
+
+#+END_EXAMPLE
+CompletableFuture 有许多有用的 API，您可以在此文中获取更多内容。
+
+** 4、值回收
+Caffeine 有三个值回收策略：基于大小，基于时间和参考。
+
+*** 4.1、基于大小回收
+
+这种回收方式假定当超过配置的缓存大小限制时会发生回收。 获取大小有两种方法：缓存
+中计数对象，或获取权重。
+
+让我们看看如何计算缓存中的对象。当缓存初始化时，其大小等于零：
+#+BEGIN_EXAMPLE
+LoadingCache<String, DataObject> cache = Caffeine.newBuilder()
+  .maximumSize(1)
+  .build(k -> DataObject.get("Data for " + k));
+
+assertEquals(0, cache.estimatedSize());
+
+#+END_EXAMPLE
+当我们添加一个值时，大小明显增加：
+#+BEGIN_EXAMPLE
+cache.get("A");
+
+assertEquals(1, cache.estimatedSize());
+
+#+END_EXAMPLE
+我们可以将第二个值添加到缓存中，这导致第一个值被删除：
+#+BEGIN_EXAMPLE
+cache.get("B");
+cache.cleanUp();
+
+assertEquals(1, cache.estimatedSize());
+
+#+END_EXAMPLE
+值得一提的是，在获取缓存大小之前，我们调用了 cleanUp 方法。 这是因为缓存回收被异
+步执行，这种方法有助于等待回收的完成。
+
+我们还可以传递一个 weigher Function 来获取缓存的大小：
+#+BEGIN_EXAMPLE
+LoadingCache<String, DataObject> cache = Caffeine.newBuilder()
+  .maximumWeight(10)
+  .weigher((k,v) -> 5)
+  .build(k -> DataObject.get("Data for " + k));
+
+assertEquals(0, cache.estimatedSize());
+
+cache.get("A");
+assertEquals(1, cache.estimatedSize());
+
+cache.get("B");
+assertEquals(2, cache.estimatedSize());
+
+#+END_EXAMPLE
+当 weight 超过 10 时，值将从缓存中删除：
+#+BEGIN_EXAMPLE
+cache.get("C");
+cache.cleanUp();
+
+assertEquals(2, cache.estimatedSize());
+
+#+END_EXAMPLE
+*** 4.2、基于时间回收
+
+这种回收策略是基于条目的到期时间，有三种类型：
+#+BEGIN_VERSE
+访问后到期 — 从上次读或写发生后，条目即过期。
+写入后到期 — 从上次写入发生之后，条目即过期
+自定义策略 — 到期时间由 Expiry 实现独自计算
+#+END_VERSE
+
+让我们使用 expireAfterAccess 方法配置访问后过期策略：
+#+BEGIN_EXAMPLE
+LoadingCache<String, DataObject> cache = Caffeine.newBuilder()
+  .expireAfterAccess(5, TimeUnit.MINUTES)
+  .build(k -> DataObject.get("Data for " + k));
+
+#+END_EXAMPLE
+
+要配置写入后到期策略，我们使用 expireAfterWrite 方法：
+#+BEGIN_EXAMPLE
+cache = Caffeine.newBuilder()
+  .expireAfterWrite(10, TimeUnit.SECONDS)
+  .weakKeys()
+  .weakValues()
+  .build(k -> DataObject.get("Data for " + k));
+
+#+END_EXAMPLE
+要初始化自定义策略，我们需要实现 Expiry 接口：
+#+BEGIN_EXAMPLE
+cache = Caffeine.newBuilder().expireAfter(new Expiry<String, DataObject>() {
+    @Override
+    public long expireAfterCreate(
+      String key, DataObject value, long currentTime) {
+        return value.getData().length() * 1000;
+    }
+    @Override
+    public long expireAfterUpdate(
+      String key, DataObject value, long currentTime, long currentDuration) {
+        return currentDuration;
+    }
+    @Override
+    public long expireAfterRead(
+      String key, DataObject value, long currentTime, long currentDuration) {
+        return currentDuration;
+    }
+}).build(k -> DataObject.get("Data for " + k));
+
+#+END_EXAMPLE
+
+*** 4.3、基于引用回收
+
+我们可以将缓存配置为启用缓存键值的垃圾回收。为此，我们将 key 和 value 配置为 弱
+引用，并且我们可以仅配置软引用以进行垃圾回收。
+
+当没有任何对对象的强引用时，使用 WeakRefence 可以启用对象的垃圾收回收。
+SoftReference 允许对象根据 JVM 的全局最近最少使用（Least-Recently-Used）的策略进
+行垃圾回收。有关 Java 引用的更多详细信息，请参见此处。
+
+我们应该使用 Caffeine.weakKeys()、Caffeine.weakValues() 和 Caffeine.softValues()
+来启用每个选项：
+#+BEGIN_EXAMPLE
+LoadingCache<String, DataObject> cache = Caffeine.newBuilder()
+  .expireAfterWrite(10, TimeUnit.SECONDS)
+  .weakKeys()
+  .weakValues()
+  .build(k -> DataObject.get("Data for " + k));
+
+cache = Caffeine.newBuilder()
+  .expireAfterWrite(10, TimeUnit.SECONDS)
+  .softValues()
+  .build(k -> DataObject.get("Data for " + k));
+
+#+END_EXAMPLE
+
+** 5、刷新
+可以将缓存配置为在定义的时间段后自动刷新条目。让我们看看如何使用 refreshAfterWrite 方法：
+#+BEGIN_EXAMPLE
+Caffeine.newBuilder()
+  .refreshAfterWrite(1, TimeUnit.MINUTES)
+  .build(k -> DataObject.get("Data for " + k));
+
+#+END_EXAMPLE
+这里我们应该要明白 expireAfter 和 refreshAfter 之间的区别。 当请求过期条目时，执
+行将发生阻塞，直到 build Function 计算出新值为止。
+
+但是，如果条目可以刷新，则缓存将返回一个旧值，并异步重新加载该值。
+
+** 6、统计
+Caffeine 有一种记录缓存使用情况的统计方式：
+#+BEGIN_EXAMPLE
+LoadingCache<String, DataObject> cache = Caffeine.newBuilder()
+  .maximumSize(100)
+  .recordStats()
+  .build(k -> DataObject.get("Data for " + k));
+cache.get("A");
+cache.get("A");
+
+assertEquals(1, cache.stats().hitCount());
+assertEquals(1, cache.stats().missCount());
+
+#+END_EXAMPLE
+我们也可能会传入 recordStats supplier，创建一个 StatsCounter 的实现。每次与统计
+相关的更改将推送此对象。
+
+** 7、结论
+在本文中，我们熟悉了 Java 的 Caffeine 缓存库。 我们看到了如何配置和填充缓存，以
+及如何根据我们的需要选择适当的到期或刷新策略。
+
+文中示例的源代码可以在 Github 上找到。

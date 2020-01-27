@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>javascript_对屏幕位置及浏览器位置的获取</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">javascript_对屏幕位置及浏览器位置的获取</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#javascript"><div class="category">javascript</div></a> </div>
+<div class="char-counter">2016-05-30</div>
+        <div id="content">
+<div class="org-src-container">
+<pre class="src src-javascript"><span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#27983;&#35272;&#22120;&#26174;&#31034;&#21306;&#22495;&#30340;&#23485;&#21644;&#39640;&#65292;&#21521;&#19979;&#36824;&#21407;&#21518;&#20540;&#20250;&#21464;&#23567;&#12290;</span>
+document.documentElement.clientWidth;
+document.documentElement.clientHeight;
+<span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#19982;&#19978;&#38754;&#30340;&#20004;&#20010;&#20540;&#30456;&#27604;&#65292;&#25105;&#35273;&#24471;&#23601;&#26159;&#21152;&#19978;&#20102;&#28378;&#21160;&#26465;&#30340;&#23485;&#21644;&#39640;</span>
+document.body.offsetWidth;
+document.body.offsetHeight;
+<span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#25972;&#20010;&#32593;&#39029;&#30340;&#39640;&#24230;&#21644;&#23485;&#24230;&#65292;&#21253;&#25324;&#28378;&#21160;&#26465;&#20013;&#27809;&#26377;&#26174;&#31034;&#20986;&#26469;&#30340;</span>
+document.body.scrollWidth;
+document.body.scrollHeight;
+<span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#32593;&#39029;&#34987;&#28378;&#21160;&#26465;&#28378;&#36807;&#21435;&#30340;&#23485;&#21644;&#39640;</span>
+document.body.scrollTop;
+document.body.scrollLeft;
+<span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#39029;&#38754;&#26368;&#24038;&#19978;&#35282;&#30340;&#20301;&#32622;&#36317;&#25972;&#20010;&#23631;&#24149;&#24038;&#19978;&#35282;&#30340;&#36317;&#31163;</span>
+window.screenTop;
+window.screenLeft;
+<span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#36825;&#20010;&#23601;&#26159;&#23631;&#24149;&#20998;&#36776;&#29575;</span>
+window.screen.height;
+window.screen.width;
+<span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#27983;&#35272;&#22120;&#26368;&#22823;&#21270;&#21518;&#31383;&#21475;&#30340;&#22823;&#23567;</span>
+window.screen.availHeight;
+window.screen.availWidth;
+<span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#40736;&#26631;&#30340;&#20301;&#32622;</span>
+event.clentX
+event.clentY
+</pre>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

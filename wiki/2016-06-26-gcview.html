@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>gcview document</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">gcview document</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#java"><div class="category">java</div></a> </div>
+<div class="char-counter">2016-06-26</div>
+        <div id="content">
+<nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#orgf1e421c">Supported verbose:gc formats are:</a></li>
+<li><a href="#org16def4d">Chart</a></li>
+<li><a href="#org57b8cd3">Metrics</a></li>
+<li><a href="#org3657a10">Memory</a></li>
+<li><a href="#orgdcf8980">Pause</a></li>
+<li><a href="#orgd3edfd7">Notes</a>
+<ul>
+<li><a href="#org448c923">IBM JDKs</a></li>
+<li><a href="#org7c409cf">Sun JDK 1.3.1/1.4 with -verbose:gc</a></li>
+<li><a href="#org2e457f4">Sun JDK 1.3.1/1.4 with -verbose:gc does not provide a timestamp.</a></li>
+<li><a href="#orgab08ecf">Sun / Oracle JDK 1.6 / 1.7 / 1.8 (a.k.a. Java 6 / 7 / 8)</a></li>
+<li><a href="#orgaec6504">BEA JRockit 1.4.2/1.5/1.6</a></li>
+</ul>
+</li>
+<li><a href="#org611890e">Export formats</a></li>
+<li><a href="#org34d1202">Internationalization</a></li>
+<li><a href="#org8a9dd26">Start of log / absolute times</a></li>
+<li><a href="#org36b0cd1">Bug reports</a></li>
+<li><a href="#org37570ab">Building GCViewer from Source</a></li>
+</ul>
+</div>
+</nav>
+<blockquote>
+<p>
+GCViewer is a little tool that visualizes verbose GC output generated
+by Sun / Oracle, IBM, HP and BEA Java Virtual Machines. It is free
+software released under GNU LGPL. You can start GCViewer (gui) by
+simply double-clicking on gcviewer-1.3x.jar or running
+<code>java -jar gcviewer-1.3x.jar</code> (it needs a java 1.8 vm to run). For a
+cmdline based report summary just type:
+</p>
+
+<pre class="example">
+java -jar gcviewer-1.3x.jar gc.log summary.csv [chart.png] [-t PLAIN|CSV|CSV_TS|SIMPLE|SUMMARY]
+</pre>
+
+<p>
+to generate a report (including optional chart image file).
+</p>
+</blockquote>
+
+<div id="outline-container-orgf1e421c" class="outline-2">
+<h2 id="orgf1e421c">Supported verbose:gc formats are:</h2>
+<div class="outline-text-2" id="text-orgf1e421c">
+<ul class="org-ul">
+<li>Oracle JDK 1.8 -Xloggc: [-XX:+PrintGCDetails]
+[-XX:+PrintGCDateStamps]</li>
+<li>Sun / Oracle JDK 1.7 with option -Xloggc: [-XX:+PrintGCDetails]
+[-XX:+PrintGCDateStamps]</li>
+<li>Sun / Oracle JDK 1.6 with option -Xloggc: [-XX:+PrintGCDetails]
+[-XX:+PrintGCDateStamps]</li>
+<li>Sun JDK 1.4/1.5 with the option -Xloggc: [-XX:+PrintGCDetails]</li>
+<li>Sun JDK 1.2.2/1.3.1/1.4 with the option -verbose:gc</li>
+<li>IBM JDK 1.3.1/1.3.0/1.2.2 with the option -verbose:gc</li>
+<li>IBM iSeries Classic JVM 1.4.2 with option -verbose:gc</li>
+<li>HP-UX JDK 1.2/1.3/1.4.x with the option -Xverbosegc</li>
+<li>BEA JRockit 1.4.2/1.5/1.6 with the option -verbose:memory
+[-Xverbose:gcpause,gcreport] [-Xverbosetimestamp]</li>
+</ul>
+
+<p>
+Best results are achieved with:
+</p>
+
+<pre class="example">
+-Xloggc: -XX:+PrintGCDetails -XX:+PrintGCDateStamps
+</pre>
+
+<p>
+A few other options are supported, but most of the information generated
+is ignored by GCViewer (the javadoc introduction of
+<code>https://github.com/chewiebug/GCViewer/blob/master/src/main/java/com/tagtraum/perf/gcviewer/imp/DataReaderSun1_6_0.java</code>
+shows the details).
+</p>
+
+<p>
+Hendrik Schreiber wrote GCViewer up to 1.29. What you are seeing here is
+based on his very good work. Links to detailed descriptions of many JVM
+parameters relevant to garbage collection can be found in the links
+section of <a href="https://github.com/chewiebug/GCViewer/wiki">https://github.com/chewiebug/GCViewer/wiki</a>
+</p>
+</div>
+</div>
+
+<div id="outline-container-org16def4d" class="outline-2">
+<h2 id="org16def4d">Chart</h2>
+<div class="outline-text-2" id="text-org16def4d">
+<p>
+GCViewer shows a number of lines etc. in a chart (first tab). These are:
+</p>
+
+<ul class="org-ul">
+<li>Full GC Lines:- Black vertical line at every Full GC</li>
+<li>Inc GC Lines:- Cyan vertical line at every Incremental GC</li>
+<li>GC Times Line:- Green line that shows the length of all GCs</li>
+<li>GC Times Rectangles:- black rectangle at every Full GC</li>
+<li>blue rectangle at every inital mark event</li>
+<li>orange rectangle at every remark event</li>
+<li>red rectangle at every vm operation event ("application stopped&#x2026;")</li>
+<li>Grey rectangle at every 'normal' GC</li>
+<li>Light grey rectangle at every Incremental GC</li>
+<li>Total Heap:- Red line that shows heap size</li>
+<li>Tenured Generation:- Magenta area that shows the size of the tenured
+generation (not available without PrintGCDetails)</li>
+<li>Young Generation:- Orange area that shows the size of the young
+generation (not available without PrintGCDetails)</li>
+<li>Used Heap:- Blue line that shows used heap size</li>
+<li>Initial mark level:- Yellow line that shows the heap usage at
+"initial-mark" event (only available when the gc algorithm uses
+concurrent collections, which is the case for CMS and G1)</li>
+<li>Concurrent collections- Cyan vertical line for every begin
+(concurrent-mark-start) and pink vertical line for every end
+(CMS-concurrent-reset / G1: concurrent-cleanup-end) of a concurrent
+collection cycle</li>
+</ul>
+
+<p>
+In the second tab ("Event details") it shows details about the events it
+parsed: E.g. events like the following
+</p>
+
+<pre class="example">
+24.187: [GC 24.188: [ParNew: 93184K-&gt;5464K(104832K), 0.0442895 secs] \ 93184K-&gt;5464K(1036928K), 0.0447149 secs] \ [Times: user=0.39 sys=0.07, real=0.05 secs]
+</pre>
+
+<p>
+are shown in one line as GC ParNew: , , &#x2026; Events like these
+</p>
+
+<pre class="example">
+4183.962: [Full GC 4183.962: [CMS: 32957K-&gt;40326K(932096K), 2.3313389 secs] \ 76067K-&gt;40326K(1036928K), [CMS Perm : 43837K-&gt;43453K(43880K)], 2.3339606 secs] \ [Times: user=2.33 sys=0.01, real=2.33 secs]
+</pre>
+
+<p>
+are shown as Full GC; CMS; CMS Perm &#x2026;
+</p>
+
+<p>
+So for every line the text is extracted (not always every part of it).
+This allows a user which is familiar with the text log files to find out
+more details about the events that occurred.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org57b8cd3" class="outline-2">
+<h2 id="org57b8cd3">Metrics</h2>
+<div class="outline-text-2" id="text-org57b8cd3">
+<p>
+GCViewer provides some metrics to help you interpret the graph. Note
+that some metrics based on averages are shown along with their standard
+deviation. If it is obvious that the standard deviation is fairly big in
+comparison to the average, the values are grayed out, indicating that
+actual values are much smaller or bigger than the average.
+</p>
+
+<p>
+Summary
+</p>
+
+<ul class="org-ul">
+<li>Footprint: Maximal amount of memory allocated</li>
+<li>Max heap after conc GC: Max used heap after concurrent gc.</li>
+<li>Max tenured after conc GC: Max used tenured heap after concurrent gc
+(followed by % of max tenured / % of max total heap).</li>
+<li>Max heap after full GC: Max used heap after full gc. Indicates max
+live object size and can help to determine heap size.</li>
+<li>Freed Memory: Total amount of memory that has been freed</li>
+<li>Freed Mem/Min: Amount of memory that has been freed per minute</li>
+<li>Total Time: Time data was collected for (only if timestamp was
+present in log)</li>
+<li>Acc Pauses: Sum of all pauses due to GC</li>
+<li>Throughput: Time percentage the application was NOT busy with GC</li>
+<li>Full GC Performance: Performance of full collections. Note that all
+collections that include a collection of the tenured generation or
+are marked with "Full GC" are considered Full GC.</li>
+<li>GC Performance: Performance of minor collections. These are
+collections that are not full according to the definition above.</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-org3657a10" class="outline-2">
+<h2 id="org3657a10">Memory</h2>
+<div class="outline-text-2" id="text-org3657a10">
+<ul class="org-ul">
+<li>Total heap (usage / alloc max): Max memory usage / allocation in
+total heap (the last is the same as "footprint" in Summary)</li>
+<li>Tenured heap (usage / alloc max): Max memory usage / allocation in
+tenured space</li>
+<li>Young heap (usage / alloc max): Max memory usage / allocation in
+young space</li>
+<li>Perm heap (usage / alloc max): Max memory usage / allocation in perm
+space</li>
+<li>Max tenured after conc GC: see in "summary" section</li>
+<li>Avg tenured after conc GC: average size of tenured heap after
+concurrent collection</li>
+<li>Max heap after conc GC: see in "summary" section</li>
+<li>Avg heap after conc GC: average size of concurrent heap after
+concurrent collection</li>
+<li>Max heap after full GC: see in "summary" section</li>
+<li>Avg after full GC: The average heap memory consumption after a full
+collection</li>
+<li>Avg after GC: The average heap memory consumption after a minor
+collection</li>
+<li>Freed Memory: Total amount of memory that has been freed</li>
+<li>Freed by full GC: Amount of memory that has been freed by full
+collections</li>
+<li>Freed by GC: Amount of memory that has been freed by minor
+collections</li>
+<li>Avg freed full GC: Average amount of memory that has been freed by
+full collections</li>
+<li>Avg freed GC: Average amount of memory that has been freed by minor
+collections</li>
+<li>Avg rel inc after FGC: Average relative increase in memory
+consumption between full collections. This is the average difference
+between the memory consumption after a full collection to the memory
+consumption after the next full collection.</li>
+<li>Avg rel inc after GC: Average relative increase in memory consumption
+between minor collections. This is the average difference between the
+memory consumption after a minor collection to the memory consumption
+after the next minor collection. This can be used as an indicator for
+the amount of memory that survives minor collections and has to be
+moved to the survivor spaces or the tenured generation. This value
+added to "Avg freed GC" gives you an idea about the size of the young
+generation in case you don't have PrintGCDetails turned on.</li>
+<li>Slope full GC: Slope of the regression line for the memory
+consumption after full collections. This can be used as an indicator
+for the increase in indispensable memory consumption (base footprint)
+of an application over time.</li>
+<li>Slope GC: Average of the slope of the regression lines for the memory
+consumption after minor collections in between full collections. That
+is, if you have two full collections and many minor collections in
+between, GCViewer will calculate the slope for the minor collections
+up to the first full collection, then the slope of the minor
+collections between the first and the second full collection. Then it
+will compute a weighted average (each slope wil be weighted with the
+number of measuring points it was computed with).</li>
+<li>initiatingOccFraction (avg / max): CMS GC kicks in before tenured
+generation is filled. InitiatingOccupancyFraction tells you the avg /
+max usage in % of the tenured generation, when CMS GC started
+(initial mark). This value can be set manually using
+-XX:CMSInitiatingOccupancyFraction=.</li>
+<li>avg promotion: Promotion means the size of objects that are promoted
+from young to tenured generation during a young generation
+collection. Avg promotion shows the average amount of memory that is
+promoted from young to tenured with each young collection (only
+available with PrintGCDetails)</li>
+<li>total promotion: Total promotion shows the total amount of memory
+that is promoted from young to tenured with all young collections in
+a file (only available with PrintGCDetails)</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-orgdcf8980" class="outline-2">
+<h2 id="orgdcf8980">Pause</h2>
+<div class="outline-text-2" id="text-orgdcf8980">
+<ul class="org-ul">
+<li>Acc Pauses: Sum of all pauses due to any kind of GC</li>
+<li>Number of Pauses: Count of all pauses due to any kind of GC</li>
+<li>Avg Pause: Average length of a GC pause of any kind</li>
+<li>Min / max Pause: Shortest /longest pause of any kind</li>
+<li>Avg pause interval: avg interval between two pauses of any kind</li>
+<li>Min / max pause interval: Min / max interval between two pauses of
+any kind</li>
+<li>Acc full GC: Sum of all pauses due to full collections</li>
+<li>Number of full GC pauses: Count of all pauses due to full collections</li>
+<li>Acc GC: Sum of all full GC pauses</li>
+<li>Avg full GC: Average length of a full GC pause</li>
+<li>Min / max full GC pause: Shortest / longest full GC pause</li>
+<li>Acc GC: Sum of all pauses due to minor collections</li>
+<li>Number of GC pauses: Count of all pauses due to minor collections</li>
+<li>Avg GC: Average length of a minor collection pause</li>
+<li>Min / max GC pause: Shortest / longest minor GC pause</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-orgd3edfd7" class="outline-2">
+<h2 id="orgd3edfd7">Notes</h2>
+<div class="outline-text-2" id="text-orgd3edfd7">
+<p>
+This is not a perfect tool. However, GCViewer can help you getting a
+grip on finding out what's going on in your application with regards to
+garbage collection. Here are some known limitations.
+</p>
+</div>
+
+<div id="outline-container-org448c923" class="outline-3">
+<h3 id="org448c923">IBM JDKs</h3>
+<div class="outline-text-3" id="text-org448c923">
+<p>
+If you have problems with the IBM format, please check that every line
+of information is really in one line and not wrapped. The IBM format
+actually provides a lot more information than is visualized.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org7c409cf" class="outline-3">
+<h3 id="org7c409cf">Sun JDK 1.3.1/1.4 with -verbose:gc</h3>
+</div>
+
+<div id="outline-container-org2e457f4" class="outline-3">
+<h3 id="org2e457f4">Sun JDK 1.3.1/1.4 with -verbose:gc does not provide a timestamp.</h3>
+<div class="outline-text-3" id="text-org2e457f4">
+<p>
+Therefore values like 'Total Time', 'Throughput', and 'Freed Mem/Min'
+cannot be calculated.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgab08ecf" class="outline-3">
+<h3 id="orgab08ecf">Sun / Oracle JDK 1.6 / 1.7 / 1.8 (a.k.a. Java 6 / 7 / 8)</h3>
+<div class="outline-text-3" id="text-orgab08ecf">
+<p>
+CMS and G1 collector sometimes mix concurrent events with stop the world
+collections in the output. In some cases the parser can recover from
+such mixed lines, sometimes it can't and will show an error message.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgaec6504" class="outline-3">
+<h3 id="orgaec6504">BEA JRockit 1.4.2/1.5/1.6</h3>
+<div class="outline-text-3" id="text-orgaec6504">
+<p>
+Concurrently collected garbage may not be reflected correctly in the
+data panel.
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org611890e" class="outline-2">
+<h2 id="org611890e">Export formats</h2>
+<div class="outline-text-2" id="text-org611890e">
+<p>
+CSV Comma Separated Values The CSV format is quite useful for importing
+the data to a spreadsheet application. However, it does not export all
+data.
+</p>
+
+<p>
+CSV\<sub>TS</sub> Comma Separated Values CSV format using unix timestamp and one
+line per gc event.
+</p>
+
+<p>
+PLAIN Plain Data Plain text representation of the gc log. If written
+from Sun / Oracle gc log it is usually compatible with HPjmeter.
+</p>
+
+<p>
+SIMPLE Simple GC Log Very simple representation of a gc log in the
+format . This format is compatible with gchisto
+(<a href="http://java.net/projects/gchisto">http://java.net/projects/gchisto</a>)
+</p>
+
+<p>
+SUMMARY Detailed summary exporting all details about a gc log file (same
+as shown in data panel).
+</p>
+</div>
+</div>
+
+<div id="outline-container-org34d1202" class="outline-2">
+<h2 id="org34d1202">Internationalization</h2>
+<div class="outline-text-2" id="text-org34d1202">
+<p>
+Provided are a German, an English and a Swedish localStrings.properties
+file. If someone feels the need to translate these to another language,
+please do so. I will be more than glad, to include it in a future
+version of this tool.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org8a9dd26" class="outline-2">
+<h2 id="org8a9dd26">Start of log / absolute times</h2>
+<div class="outline-text-2" id="text-org8a9dd26">
+<p>
+If you happen to know when the application and GC log was started, you
+can specify this time by right-clicking on the time ruler and entering a
+start time. Sun / Oracle VMs: If -XX:+PrintGCDateStamps was used, the
+proposed start time is read from the gc log file.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org36b0cd1" class="outline-2">
+<h2 id="org36b0cd1">Bug reports</h2>
+<div class="outline-text-2" id="text-org36b0cd1">
+<p>
+If you are a developer, you may fork
+(<a href="http://help.github.com/fork-a-repo/">http://help.github.com/fork-a-repo/</a>) the repository
+on <a href="http://github.com/chewiebug/GCViewerand">http://github.com/chewiebug/GCViewerand</a> send me a pull request
+(<a href="http://help.github.com/send-pull-requests/">http://help.github.com/send-pull-requests/</a>). If you plan a bigger
+change I'd appreciate a notice in advance.
+</p>
+
+<p>
+To file a bug report, please open an issue
+on <a href="http://github.com/chewiebug/GCViewer/issues%C2%A0or">http://github.com/chewiebug/GCViewer/issues or</a> send an email
+to gcviewer-info@googlegroups.com with a description of the error, the
+name of the JVM that produced the GC data and all used flags along with
+a sample GC log file.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org37570ab" class="outline-2">
+<h2 id="org37570ab">Building GCViewer from Source</h2>
+<div class="outline-text-2" id="text-org37570ab">
+<p>
+Download and install Maven3 from <a href="http://maven.apache.org/%C2%A0Download">http://maven.apache.org/ Download</a>
+the src distribution of GCViewer. Execute from the GCViewer base
+directory (same as pom.xml):
+</p>
+
+<pre class="example">
+mvn clean install
+</pre>
+
+<p>
+The executable jar will be placed in the target directory. Enjoy! Joerg
+Wuethrich <a href="http://github.com/chewiebug/GCViewer">http://github.com/chewiebug/GCViewer</a> gcviewer@gmx.ch
+</p>
+</div>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

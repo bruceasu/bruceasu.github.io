@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>一行 Python 实现并行化 -- 日常多线程操作的新思路(转)</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">一行 Python 实现并行化 -- 日常多线程操作的新思路(转)</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#python"><div class="category">python</div></a> </div>
+<div class="char-counter">2017-04-04</div>
+        <div id="content">
+<p>
+<b>一行 Python 实现并行化 -- 日常多线程操作的新思路</b>
+</p>
+
+<p>
+春节坐在回家的火车上百无聊赖，偶然看到 Parallelism in one line 这篇在 Hacker
+News 和 reddit 上都评论过百的文章，顺手译出，enjoy:-)
+<a href="http://www.zhangzhibo.net/2014/02/01/parallelism-in-one-line/">http://www.zhangzhibo.net/2014/02/01/parallelism-in-one-line/</a>
+</p>
+
+<p>
+Python 在程序并行化方面多少有些声名狼藉。撇开技术上的问题，例如线程的实现和
+GIL[1]，我觉得错误的教学指导才是主要问题。常见的经典 Python 多线程、多进程教程
+多显得偏“重”。而且往往隔靴搔痒，没有深入探讨日常工作中最有用的内容。
+</p>
+
+<p>
+<b>传统的例子</b>
+</p>
+
+<p>
+简单搜索下“Python 多线程教程”，不难发现几乎所有的教程都给出涉及类和队列的例子：
+</p>
+
+<div class="org-src-container">
+<pre class="src src-python"><span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">Example.py</span>
+<span style="font-style: italic;">'''</span>
+<span style="font-style: italic;">Standard Producer/Consumer Threading Pattern</span>
+<span style="font-style: italic;">'''</span>
+<span style="font-weight: bold;">import</span> time
+<span style="font-weight: bold;">import</span> threading
+<span style="font-weight: bold;">import</span> Queue
+
+<span style="font-weight: bold;">class</span> <span style="font-weight: bold; text-decoration: underline;">Consumer</span>(threading.Thread):
+    <span style="font-weight: bold;">def</span> <span style="font-weight: bold;">__init__</span>(<span style="font-weight: bold;">self</span>, queue):
+        threading.Thread.__init__(<span style="font-weight: bold;">self</span>)
+        <span style="font-weight: bold;">self</span>._queue = queue
+
+    <span style="font-weight: bold;">def</span> <span style="font-weight: bold;">run</span>(<span style="font-weight: bold;">self</span>):
+        <span style="font-weight: bold;">while</span> <span style="font-weight: bold; text-decoration: underline;">True</span>:
+            <span style="font-weight: bold; font-style: italic;"># </span><span style="font-weight: bold; font-style: italic;">queue.get() blocks the current thread until</span>
+            <span style="font-weight: bold; font-style: italic;"># </span><span style="font-weight: bold; font-style: italic;">an item is retrieved.</span>
+            <span style="font-weight: bold; font-style: italic;">msg</span> = <span style="font-weight: bold;">self</span>._queue.get()
+            <span style="font-weight: bold; font-style: italic;"># </span><span style="font-weight: bold; font-style: italic;">Checks if the current message is</span>
+            <span style="font-weight: bold; font-style: italic;"># </span><span style="font-weight: bold; font-style: italic;">the "Poison Pill"</span>
+            <span style="font-weight: bold;">if</span> <span style="font-weight: bold;">isinstance</span>(msg, <span style="font-weight: bold;">str</span>) <span style="font-weight: bold;">and</span> msg == <span style="font-style: italic;">'quit'</span>:
+                <span style="font-weight: bold; font-style: italic;"># </span><span style="font-weight: bold; font-style: italic;">if so, exists the loop</span>
+                <span style="font-weight: bold;">break</span>
+            <span style="font-weight: bold; font-style: italic;"># </span><span style="font-weight: bold; font-style: italic;">"Processes" (or in our case, prints) the queue item</span>
+            <span style="font-weight: bold;">print</span> <span style="font-style: italic;">"I'm a thread, and I received %s!!"</span> % msg
+            <span style="font-weight: bold; font-style: italic;"># </span><span style="font-weight: bold; font-style: italic;">Always be friendly!</span>
+        <span style="font-weight: bold;">print</span> <span style="font-style: italic;">'Bye byes!'</span>
+
+
+<span style="font-weight: bold;">def</span> <span style="font-weight: bold;">Producer</span>():
+    <span style="font-weight: bold; font-style: italic;"># </span><span style="font-weight: bold; font-style: italic;">Queue is used to share items between</span>
+    <span style="font-weight: bold; font-style: italic;"># </span><span style="font-weight: bold; font-style: italic;">the threads.</span>
+    <span style="font-weight: bold; font-style: italic;">queue</span> = Queue.Queue()
+
+    <span style="font-weight: bold; font-style: italic;"># </span><span style="font-weight: bold; font-style: italic;">Create an instance of the worker</span>
+    <span style="font-weight: bold; font-style: italic;">worker</span> = Consumer(queue)
+    <span style="font-weight: bold; font-style: italic;"># </span><span style="font-weight: bold; font-style: italic;">start calls the internal run() method to</span>
+    <span style="font-weight: bold; font-style: italic;"># </span><span style="font-weight: bold; font-style: italic;">kick off the thread</span>
+    worker.start()
+
+    <span style="font-weight: bold; font-style: italic;"># </span><span style="font-weight: bold; font-style: italic;">variable to keep track of when we started</span>
+    <span style="font-weight: bold; font-style: italic;">start_time</span> = time.time()
+    <span style="font-weight: bold; font-style: italic;"># </span><span style="font-weight: bold; font-style: italic;">While under 5 seconds..</span>
+    <span style="font-weight: bold;">while</span> time.time() - start_time &lt; 5:
+        <span style="font-weight: bold; font-style: italic;"># </span><span style="font-weight: bold; font-style: italic;">"Produce" a piece of work and stick it in</span>
+        <span style="font-weight: bold; font-style: italic;"># </span><span style="font-weight: bold; font-style: italic;">the queue for the Consumer to process</span>
+        queue.put(<span style="font-style: italic;">'something at %s'</span> % time.time())
+        <span style="font-weight: bold; font-style: italic;"># </span><span style="font-weight: bold; font-style: italic;">Sleep a bit just to avoid an absurd number of messages</span>
+        time.sleep(1)
+
+    <span style="font-weight: bold; font-style: italic;"># </span><span style="font-weight: bold; font-style: italic;">This the "poison pill" method of killing a thread.</span>
+    queue.put(<span style="font-style: italic;">'quit'</span>)
+    <span style="font-weight: bold; font-style: italic;"># </span><span style="font-weight: bold; font-style: italic;">wait for the thread to close down</span>
+    worker.join()
+
+
+<span style="font-weight: bold;">if</span> <span style="font-weight: bold;">__name__</span> == <span style="font-style: italic;">'__main__'</span>:
+    Producer()
+
+</pre>
+</div>
+
+
+<p>
+哈，看起来有些像 Java 不是吗？
+</p>
+
+<p>
+我并不是说使用生产者/消费者模型处理多线程/多进程任务是错误的（事实上，这一模
+型自有其用武之地）。只是，处理日常脚本任务时我们可以使用更有效率的模型。
+</p>
+
+<p>
+问题在于…首先，你需要一个样板类；其次，你需要一个队列来传递对象；而且，你还
+需要在通道两端都构建相应的方法来协助其工作（如果需想要进行双向通信或是保存结
+果还需要再引入一个队列）。
+</p>
+
+<p>
+worker 越多，问题越多按照这一思路，你现在需要一个 worker 线程的线程池。下面
+是一篇 IBM 经典教程中的例子——在进行网页检索时通过多线程进行加速。
+</p>
+<div class="org-src-container">
+<pre class="src src-python"><span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">Example2.py</span>
+<span style="font-style: italic;">'''</span>
+<span style="font-style: italic;">A more realistic thread pool example</span>
+<span style="font-style: italic;">'''</span>
+
+<span style="font-weight: bold;">import</span> time
+<span style="font-weight: bold;">import</span> threading
+<span style="font-weight: bold;">import</span> Queue
+<span style="font-weight: bold;">import</span> urllib2
+
+<span style="font-weight: bold;">class</span> <span style="font-weight: bold; text-decoration: underline;">Consumer</span>(threading.Thread):
+    <span style="font-weight: bold;">def</span> <span style="font-weight: bold;">__init__</span>(<span style="font-weight: bold;">self</span>, queue):
+        threading.Thread.__init__(<span style="font-weight: bold;">self</span>)
+        <span style="font-weight: bold;">self</span>._queue = queue
+
+    <span style="font-weight: bold;">def</span> <span style="font-weight: bold;">run</span>(<span style="font-weight: bold;">self</span>):
+        <span style="font-weight: bold;">while</span> <span style="font-weight: bold; text-decoration: underline;">True</span>:
+            <span style="font-weight: bold; font-style: italic;">content</span> = <span style="font-weight: bold;">self</span>._queue.get()
+            <span style="font-weight: bold;">if</span> <span style="font-weight: bold;">isinstance</span>(content, <span style="font-weight: bold;">str</span>) <span style="font-weight: bold;">and</span> content == <span style="font-style: italic;">'quit'</span>:
+                <span style="font-weight: bold;">break</span>
+            <span style="font-weight: bold; font-style: italic;">response</span> = urllib2.urlopen(content)
+        <span style="font-weight: bold;">print</span> <span style="font-style: italic;">'Bye byes!'</span>
+
+
+<span style="font-weight: bold;">def</span> <span style="font-weight: bold;">Producer</span>():
+    <span style="font-weight: bold; font-style: italic;">urls</span> = [
+        <span style="font-style: italic;">'http://www.python.org'</span>, <span style="font-style: italic;">'http://www.yahoo.com'</span>
+        <span style="font-style: italic;">'http://www.scala.org'</span>, <span style="font-style: italic;">'http://www.google.com'</span>
+        <span style="font-weight: bold; font-style: italic;"># </span><span style="font-weight: bold; font-style: italic;">etc..</span>
+    ]
+    <span style="font-weight: bold; font-style: italic;">queue</span> = Queue.Queue()
+    <span style="font-weight: bold; font-style: italic;">worker_threads</span> = build_worker_pool(queue, 4)
+    <span style="font-weight: bold; font-style: italic;">start_time</span> = time.time()
+
+    <span style="font-weight: bold; font-style: italic;"># </span><span style="font-weight: bold; font-style: italic;">Add the urls to process</span>
+    <span style="font-weight: bold;">for</span> url <span style="font-weight: bold;">in</span> urls:
+        queue.put(url)
+    <span style="font-weight: bold; font-style: italic;"># </span><span style="font-weight: bold; font-style: italic;">Add the poison pillv</span>
+    <span style="font-weight: bold;">for</span> worker <span style="font-weight: bold;">in</span> worker_threads:
+        queue.put(<span style="font-style: italic;">'quit'</span>)
+    <span style="font-weight: bold;">for</span> worker <span style="font-weight: bold;">in</span> worker_threads:
+        worker.join()
+
+    <span style="font-weight: bold;">print</span> <span style="font-style: italic;">'Done! Time taken: {}'</span>.<span style="font-weight: bold;">format</span>(time.time() - start_time)
+
+<span style="font-weight: bold;">def</span> <span style="font-weight: bold;">build_worker_pool</span>(queue, size):
+    <span style="font-weight: bold; font-style: italic;">workers</span> = []
+    <span style="font-weight: bold;">for</span> _ <span style="font-weight: bold;">in</span> <span style="font-weight: bold;">range</span>(size):
+        <span style="font-weight: bold; font-style: italic;">worker</span> = Consumer(queue)
+        worker.start()
+        workers.append(worker)
+    <span style="font-weight: bold;">return</span> workers
+
+<span style="font-weight: bold;">if</span> <span style="font-weight: bold;">__name__</span> == <span style="font-style: italic;">'__main__'</span>:
+    Producer()
+
+</pre>
+</div>
+
+<p>
+这段代码能正确的运行，但仔细看看我们需要做些什么：构造不同的方法、追踪一系列
+的线程，还有为了解决恼人的死锁问题，我们需要进行一系列的 join 操作。这还只是
+开始……
+</p>
+
+<p>
+至此我们回顾了经典的多线程教程，多少有些空洞不是吗？样板化而且易出错，这样事
+倍功半的风格显然不那么适合日常使用，好在我们还有更好的方法。
+</p>
+
+<p>
+何不试试 map map 这一小巧精致的函数是简捷实现 Python 程序并行化的关键。map
+源于Lisp 这类函数式编程语言。它可以通过一个序列实现两个函数之间的映射。
+</p>
+
+<pre class="example">
+urls = ['http://www.yahoo.com', 'http://www.reddit.com']
+results = map(urllib2.urlopen, urls)
+
+</pre>
+
+<p>
+上面的这两行代码将q urls 这一序列中的每个元素作为参数传递到 urlopen 方法中，
+并将所有结果保存到 results 这一列表中。其结果大致相当于：
+</p>
+<div class="org-src-container">
+<pre class="src src-python"><span style="font-weight: bold; font-style: italic;">results</span> = []
+<span style="font-weight: bold;">for</span> url <span style="font-weight: bold;">in</span> urls:
+    results.append(urllib2.urlopen(url))
+
+</pre>
+</div>
+
+<p>
+map 函数一手包办了序列操作、参数传递和结果保存等一系列的操作。
+</p>
+
+<p>
+为什么这很重要呢？这是因为借助正确的库，map 可以轻松实现并行化操作。
+</p>
+
+<p>
+在 Python 中有个两个库包含了 map 函数： multiprocessing 和它鲜为人知的子库
+multiprocessing.dummy.
+</p>
+
+<p>
+这里多扯两句： multiprocessing.dummy？ mltiprocessing 库的线程版克隆？这是虾
+米？即便在 multiprocessing 库的官方文档里关于这一子库也只有一句相关描述。而
+这句描述译成人话基本就是说:"嘛，有这么个东西，你知道就成."相信我，这个库被严
+重低估了！
+</p>
+
+<p>
+dummy 是 multiprocessing 模块的完整克隆，唯一的不同在于 multiprocessing 作用
+于进程，而 dummy 模块作用于线程（因此也包括了 Python 所有常见的多线程限制）。
+所以替换使用这两个库异常容易。你可以针对 IO 密集型任务和 CPU 密集型任务来选
+择不同的库。[2]
+</p>
+
+<p>
+<b>动手尝试</b>
+</p>
+
+<p>
+使用下面的两行代码来引用包含并行化 map 函数的库：
+</p>
+<div class="org-src-container">
+<pre class="src src-python"><span style="font-weight: bold;">from</span> multiprocessing <span style="font-weight: bold;">import</span> Pool
+<span style="font-weight: bold;">from</span> multiprocessing.dummy <span style="font-weight: bold;">import</span> Pool <span style="font-weight: bold;">as</span> ThreadPool
+</pre>
+</div>
+
+<p>
+实例化 Pool 对象：
+</p>
+<pre class="example">
+pool = ThreadPool()
+</pre>
+
+<p>
+这条简单的语句替代了 example2.py 中 build_worker_pool 函数 7 行代码的工作。
+它生成了一系列的 worker 线程并完成初始化工作、将它们储存在变量中以方便访问。
+</p>
+
+<p>
+Pool 对象有一些参数，这里我所需要关注的只是它的第一个参数：processes. 这一参
+数用于设定线程池中的线程数。其默认值为当前机器 CPU 的核数。
+</p>
+
+<p>
+一般来说，执行 CPU 密集型任务时，调用越多的核速度就越快。但是当处理网络密集
+型任务时，事情有有些难以预计了，通过实验来确定线程池的大小才是明智的。
+</p>
+<pre class="example">
+pool = ThreadPool(4) # Sets the pool size to 4
+
+</pre>
+
+<p>
+线程数过多时，切换线程所消耗的时间甚至会超过实际工作时间。对于不同的工作，通
+过尝试来找到线程池大小的最优值是个不错的主意。
+</p>
+
+<p>
+创建好 Pool 对象后，并行化的程序便呼之欲出了。我们来看看改写后的 example2.py
+</p>
+<div class="org-src-container">
+<pre class="src src-python"><span style="font-weight: bold;">import</span> urllib2
+<span style="font-weight: bold;">from</span> multiprocessing.dummy <span style="font-weight: bold;">import</span> Pool <span style="font-weight: bold;">as</span> ThreadPool
+
+<span style="font-weight: bold; font-style: italic;">urls</span> = [
+    <span style="font-style: italic;">'http://www.python.org'</span>,
+    <span style="font-style: italic;">'http://www.python.org/about/'</span>,
+    <span style="font-style: italic;">'http://www.onlamp.com/pub/a/python/2003/04/17/metaclasses.html'</span>,
+    <span style="font-style: italic;">'http://www.python.org/doc/'</span>,
+    <span style="font-style: italic;">'http://www.python.org/download/'</span>,
+    <span style="font-style: italic;">'http://www.python.org/getit/'</span>,
+    <span style="font-style: italic;">'http://www.python.org/community/'</span>,
+    <span style="font-style: italic;">'https://wiki.python.org/moin/'</span>,
+    <span style="font-style: italic;">'http://planet.python.org/'</span>,
+    <span style="font-style: italic;">'https://wiki.python.org/moin/LocalUserGroups'</span>,
+    <span style="font-style: italic;">'http://www.python.org/psf/'</span>,
+    <span style="font-style: italic;">'http://docs.python.org/devguide/'</span>,
+    <span style="font-style: italic;">'http://www.python.org/community/awards/'</span>
+    <span style="font-weight: bold; font-style: italic;"># </span><span style="font-weight: bold; font-style: italic;">etc..</span>
+    ]
+
+<span style="font-weight: bold; font-style: italic;"># </span><span style="font-weight: bold; font-style: italic;">Make the Pool of workers</span>
+<span style="font-weight: bold; font-style: italic;">pool</span> = ThreadPool(4)
+<span style="font-weight: bold; font-style: italic;"># </span><span style="font-weight: bold; font-style: italic;">Open the urls in their own threads</span>
+<span style="font-weight: bold; font-style: italic;"># </span><span style="font-weight: bold; font-style: italic;">and return the results</span>
+<span style="font-weight: bold; font-style: italic;">results</span> = pool.<span style="font-weight: bold;">map</span>(urllib2.urlopen, urls)
+<span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">close the pool and wait for the work to finish</span>
+pool.close()
+pool.join()
+
+</pre>
+</div>
+
+<p>
+实际起作用的代码只有 4 行，其中只有一行是关键的。map 函数轻而易举的取代了前
+文中超过 40 行的例子。为了更有趣一些，我统计了不同方法、不同线程池大小的耗时
+情况。
+</p>
+<div class="org-src-container">
+<pre class="src src-python"><span style="font-weight: bold; font-style: italic;">results</span> = []
+<span style="font-weight: bold;">for</span> url <span style="font-weight: bold;">in</span> urls:
+  <span style="font-weight: bold; font-style: italic;">result</span> = urllib2.urlopen(url)
+  results.append(result)
+
+<span style="font-weight: bold; font-style: italic;"># </span><span style="font-weight: bold; font-style: italic;">------- VERSUS ------- #</span>
+
+
+<span style="font-weight: bold; font-style: italic;"># </span><span style="font-weight: bold; font-style: italic;">------- 4 Pool ------- #</span>
+<span style="font-weight: bold; font-style: italic;">pool</span> = ThreadPool(4)
+<span style="font-weight: bold; font-style: italic;">results</span> = pool.<span style="font-weight: bold;">map</span>(urllib2.urlopen, urls)
+
+<span style="font-weight: bold; font-style: italic;"># </span><span style="font-weight: bold; font-style: italic;">------- 8 Pool ------- #</span>
+<span style="font-weight: bold; font-style: italic;">pool</span> = ThreadPool(8)
+<span style="font-weight: bold; font-style: italic;">results</span> = pool.<span style="font-weight: bold;">map</span>(urllib2.urlopen, urls)
+
+<span style="font-weight: bold; font-style: italic;"># </span><span style="font-weight: bold; font-style: italic;">------- 13 Pool ------- #</span>
+<span style="font-weight: bold; font-style: italic;">pool</span> = ThreadPool(13)
+<span style="font-weight: bold; font-style: italic;">results</span> = pool.<span style="font-weight: bold;">map</span>(urllib2.urlopen, urls)
+
+</pre>
+</div>
+
+<p>
+结果：
+</p>
+<p class="verse">
+#        Single thread:  14.4 Seconds<br>
+#               4 Pool:   3.1 Seconds<br>
+#               8 Pool:   1.4 Seconds<br>
+#              13 Pool:   1.3 Seconds<br>
+<br>
+</p>
+
+<p>
+很棒的结果不是吗？这一结果也说明了为什么要通过实验来确定线程池的大小。在我的
+机器上当线程池大小大于 9 带来的收益就十分有限了。
+</p>
+
+<p>
+另一个真实的例子生成上千张图片的缩略图这是一个 CPU 密集型的任务，并且十分适
+合进行并行化。
+</p>
+
+<p>
+基础单进程版本
+</p>
+<div class="org-src-container">
+<pre class="src src-python"><span style="font-weight: bold;">import</span> os
+<span style="font-weight: bold;">import</span> PIL
+
+<span style="font-weight: bold;">from</span> multiprocessing <span style="font-weight: bold;">import</span> Pool
+<span style="font-weight: bold;">from</span> PIL <span style="font-weight: bold;">import</span> Image
+
+<span style="font-weight: bold; font-style: italic;">SIZE</span> = (75,75)
+<span style="font-weight: bold; font-style: italic;">SAVE_DIRECTORY</span> = <span style="font-style: italic;">'thumbs'</span>
+
+<span style="font-weight: bold;">def</span> <span style="font-weight: bold;">get_image_paths</span>(folder):
+    <span style="font-weight: bold;">return</span> (os.path.join(folder, f)
+            <span style="font-weight: bold;">for</span> f <span style="font-weight: bold;">in</span> os.listdir(folder)
+            <span style="font-weight: bold;">if</span> <span style="font-style: italic;">'jpeg'</span> <span style="font-weight: bold;">in</span> f)
+
+<span style="font-weight: bold;">def</span> <span style="font-weight: bold;">create_thumbnail</span>(filename):
+    <span style="font-weight: bold; font-style: italic;">im</span> = Image.<span style="font-weight: bold;">open</span>(filename)
+    im.thumbnail(SIZE, Image.ANTIALIAS)
+    <span style="font-weight: bold; font-style: italic;">base</span>, <span style="font-weight: bold; font-style: italic;">fname</span> = os.path.split(filename)
+    <span style="font-weight: bold; font-style: italic;">save_path</span> = os.path.join(base, SAVE_DIRECTORY, fname)
+    im.save(save_path)
+
+<span style="font-weight: bold;">if</span> <span style="font-weight: bold;">__name__</span> == <span style="font-style: italic;">'__main__'</span>:
+    <span style="font-weight: bold; font-style: italic;">folder</span> = os.path.abspath(
+        <span style="font-style: italic;">'11_18_2013_R000_IQM_Big_Sur_Mon__e10d1958e7b766c3e840'</span>)
+    os.mkdir(os.path.join(folder, SAVE_DIRECTORY))
+
+    <span style="font-weight: bold; font-style: italic;">images</span> = get_image_paths(folder)
+
+    <span style="font-weight: bold;">for</span> image <span style="font-weight: bold;">in</span> images:
+        create_thumbnail(Image)
+</pre>
+</div>
+
+<p>
+上边这段代码的主要工作就是将遍历传入的文件夹中的图片文件，一一生成缩略图，并
+将这些缩略图保存到特定文件夹中。
+</p>
+
+<p>
+这我的机器上，用这一程序处理 6000 张图片需要花费 27.9 秒。
+</p>
+
+<p>
+如果我们使用 map 函数来代替 for 循环：
+</p>
+<div class="org-src-container">
+<pre class="src src-python"><span style="font-weight: bold;">import</span> os
+<span style="font-weight: bold;">import</span> PIL
+
+<span style="font-weight: bold;">from</span> multiprocessing <span style="font-weight: bold;">import</span> Pool
+<span style="font-weight: bold;">from</span> PIL <span style="font-weight: bold;">import</span> Image
+
+<span style="font-weight: bold; font-style: italic;">SIZE</span> = (75,75)
+<span style="font-weight: bold; font-style: italic;">SAVE_DIRECTORY</span> = <span style="font-style: italic;">'thumbs'</span>
+
+<span style="font-weight: bold;">def</span> <span style="font-weight: bold;">get_image_paths</span>(folder):
+    <span style="font-weight: bold;">return</span> (os.path.join(folder, f)
+            <span style="font-weight: bold;">for</span> f <span style="font-weight: bold;">in</span> os.listdir(folder)
+            <span style="font-weight: bold;">if</span> <span style="font-style: italic;">'jpeg'</span> <span style="font-weight: bold;">in</span> f)
+
+<span style="font-weight: bold;">def</span> <span style="font-weight: bold;">create_thumbnail</span>(filename):
+    <span style="font-weight: bold; font-style: italic;">im</span> = Image.<span style="font-weight: bold;">open</span>(filename)
+    im.thumbnail(SIZE, Image.ANTIALIAS)
+    <span style="font-weight: bold; font-style: italic;">base</span>, <span style="font-weight: bold; font-style: italic;">fname</span> = os.path.split(filename)
+    <span style="font-weight: bold; font-style: italic;">save_path</span> = os.path.join(base, SAVE_DIRECTORY, fname)
+    im.save(save_path)
+
+<span style="font-weight: bold;">if</span> <span style="font-weight: bold;">__name__</span> == <span style="font-style: italic;">'__main__'</span>:
+    <span style="font-weight: bold; font-style: italic;">folder</span> = os.path.abspath(
+        <span style="font-style: italic;">'11_18_2013_R000_IQM_Big_Sur_Mon__e10d1958e7b766c3e840'</span>)
+    os.mkdir(os.path.join(folder, SAVE_DIRECTORY))
+
+    <span style="font-weight: bold; font-style: italic;">images</span> = get_image_paths(folder)
+
+    <span style="font-weight: bold; font-style: italic;">pool</span> = Pool()
+    pool.<span style="font-weight: bold;">map</span>(creat_thumbnail, images)
+    pool.close()
+    pool.join()
+
+</pre>
+</div>
+
+<p>
+5.6 秒！
+</p>
+
+<p>
+虽然只改动了几行代码，我们却明显提高了程序的执行速度。在生产环境中，我们可以
+为CPU 密集型任务和 IO 密集型任务分别选择多进程和多线程库来进一步提高执行速
+度——这也是解决死锁问题的良方。此外，由于 map 函数并不支持手动线程管理，反而
+使得相关的debug 工作也变得异常简单。
+</p>
+
+<p>
+到这里，我们就实现了（基本）通过一行 Python 实现并行化。
+</p>
+
+<p>
+Update:
+</p>
+
+<p>
+译文已获作者 Chris 授权
+<a href="https://medium.com/building-things-on-the-internet/40e9b2b36148#66bf-f06f781cb52b">https://medium.com/building-things-on-the-internet/40e9b2b36148#66bf-f06f781cb52b</a>
+</p>
+
+<ol class="org-ol">
+<li>下面的网址中可以找到关于 GIL（Global Interpretor Lock，全局解释器锁）更多的讨论：</li>
+</ol>
+<p>
+<a href="http://stackoverflow.com/questions/3044580/multiprocessing-vs-threading-python">http://stackoverflow.com/questions/3044580/multiprocessing-vs-threading-python</a>
+</p>
+
+<ol class="org-ol">
+<li>简言之，</li>
+<li>IO 密集型任务选择 multiprocessing.dummy，</li>
+<li>CPU 密集型任务选择 multiprocessing</li>
+</ol>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

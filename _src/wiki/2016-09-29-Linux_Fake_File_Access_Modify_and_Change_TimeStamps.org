@@ -1,0 +1,116 @@
+#+title: Linux – Fake File Access, Modify and Change TimeStamps
+#+date: <2016-09-29 20:48>
+#+filetags: linux
+
+           //Linux – Fake File Access, Modify and Change TimeStamps //
+
+
+Files in Linux have 3 types of timestamps: atime (access), mtime (modify) and
+ctime(change).
+
+Someday you may have a situation when you would like to fake a timestamps of
+some file.
+
+atime and mtime timestamps can be easily changed using touch command, but there
+is no a standard way to set a different ctimetimestamp.
+
+As a possible workaround you can set the system time to the ctime you want to
+impose, then touch the file and then restore the system time.
+
+Read the below article to learn how to change a file’s timestamps and keep
+anonymity.
+
+* Get a File’s TimeStamps
+
+Use the *stat* command to see the current file’s timestamps:
+#+BEGIN_EXAMPLE
+$ stat file.txt
+  File: ‘file.txt’
+  Size: 0           Blocks: 0          IO Block: 4096   regular empty file
+Device: 804h/2052d	Inode: 2501536     Links: 1
+Access: (0644/-rw-r--r--)  Uid: ( 1000/     admin)   Gid: ( 1000/     admin)
+
+Access: 2015-02-19 11:43:08.503408793 +0200
+Modify: 2015-02-19 11:43:08.503408793 +0200
+Change: 2015-02-19 11:43:08.503408793 +0200
+
+
+#+END_EXAMPLE
+
+* Difference Between “atime”, “mtime” and “ctime”
+
+| Timestamp | When it gets updated?                                                                                                                                                                                |
+|-----------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| atime     | Access time gets updated when you open a file or when a file is used for other operations like grep, cat, head and so on.                                                                            |
+| mtime     | Modify time gets updated when you whenever update content of a file or save a file.                                                                                                                  |
+| ctime     | Change time gets updated when the file attributes are changed, like changing the owner, changing the permission or moving it to another filesystem, but will also be updated when you modify a file. |
+
+* Change File “Access” & “Modification” Time
+
+** Change a file’s =atime= (access time):
+#+BEGIN_EXAMPLE
+$ touch -a --date="1988-02-15" file.txt
+$ touch -a --date="1988-02-15 01:00" file.txt
+$ touch -a --date="1988-02-15 01:00:17.547775198 +0300" file.txt
+
+#+END_EXAMPLE
+
+** Change a file’s mtime (modification time):
+#+BEGIN_EXAMPLE
+$ touch -m --date="2020-01-20" file.txt
+$ touch -m --date="2020-01-20 23:05" file.txt
+$ touch -m --date="2020-01-20 23:05:43.443117094 +0400" file.txt
+
+#+END_EXAMPLE
+** Change File “Change” Time
+As i have already said there is no a standard solution to fake a =ctime= (change
+time) timestamp. Nevertheless, if you are ready to risk, it is possible;)
+
+Firstly you can set the system time to the =ctime= you want to impose.
+
+Then =touch= the file and immediately rollback the system time.
+
+Unexpected impact: Modification of a system time may cause an unexpected impact!
+Use the below commands on your own risk!
+
+Save the current system’s date and time in the variable =NOW=:
+: $ NOW=$(date)
+
+Set the fake date and time (requires root):
+: $ date --set "2030-08-15 21:30:11"
+
+Touch the file to fake the all timestamps:
+: $ touch file.txt
+
+Rollback the date and time (requires root):
+: $ date --set "$NOW"
+
+To speedup modification and reduce the possible impact, execute the above
+commands as follows:
+
+: $ NOW=$(date) && date -s "2030-08-15 21:30:11" && touch file.txt && date -s "$NOW"
+
+* Stay Stealthy
+
+To stay stealthy – unset the variable, clear logs and history.
+
+Unset the variable =NOW=:
+: $ unset NOW
+
+Remove the information about changed time from =/var/log/messages= (requires root):
+
+Feb 24 06:32:46 centos7 systemd: Time has been changed
+Aug 15 14:30:11 centos7 systemd: Time has been changed
+atime and mtime timestamps can be easily changed using touch command, but there is no a standard way to set a different ctime timestamp.
+
+Cool Tip: Want to stay anonymous? Learn how to use PROXY on the Linux command line. Read more →
+
+Clear the last login history (requires root):<e
+#+BEGIN_EXAMPLE
+$ echo > /var/log/wtmp
+$ echo > /var/log/btmp
+$ echo > /var/log/lastlog
+#+END_EXAMPLE
+
+Clear the history of the current session:
+: $ history -r

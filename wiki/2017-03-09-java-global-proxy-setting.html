@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>java global proxy setting</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">java global proxy setting</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#java"><div class="category">java</div></a> </div>
+<div class="char-counter">2017-03-09</div>
+        <div id="content">
+<div class="org-src-container">
+<pre class="src src-java"><span style="font-style: italic;">/**</span>
+<span style="font-style: italic;"> * &#26681;&#25454;&#25351;&#23450;&#30340;&#20195;&#29702;&#20449;&#24687;&#35774;&#32622;&#31995;&#32479;&#20840;&#23616;&#30340;&#32593;&#32476;&#20195;&#29702;</span>
+<span style="font-style: italic;"> *</span>
+<span style="font-style: italic;"> * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@param</span><span style="font-style: italic;"> networkBean</span>
+<span style="font-style: italic;"> */</span>
+<span style="font-weight: bold;">public</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">setNetworkProxyBySystem</span>(<span style="font-weight: bold; text-decoration: underline;">NetworkBean</span> <span style="font-weight: bold; font-style: italic;">networkBean</span>) {
+    System.out.println(<span style="font-style: italic;">"System Set Proxy : "</span> + networkBean);
+    <span style="font-weight: bold;">if</span> (isUserProxy(networkBean)) {
+        <span style="font-weight: bold;">if</span> (networkBean.getType() == <span style="font-weight: bold; text-decoration: underline;">Proxy</span>.<span style="font-weight: bold; text-decoration: underline;">Type</span>.SOCKS) {
+            System.getProperties().remove(<span style="font-style: italic;">"http.proxyHost"</span>);
+            System.getProperties().remove(<span style="font-style: italic;">"http.proxyPort"</span>);
+            System.getProperties().setProperty(<span style="font-style: italic;">"socksProxyHost"</span>, networkBean.getAddress());
+            System.getProperties().setProperty(<span style="font-style: italic;">"socksProxyPort"</span>, networkBean.getPort());
+        } <span style="font-weight: bold;">else</span> {
+            System.getProperties().setProperty(<span style="font-style: italic;">"http.proxyHost"</span>, networkBean.getAddress());
+            System.getProperties().setProperty(<span style="font-style: italic;">"http.proxyPort"</span>, networkBean.getPort());
+        }
+        Authenticator.setDefault(<span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">BairuiAuthenticator</span>(networkBean.getDomainAndUsername(), networkBean.getPassword()));
+    } <span style="font-weight: bold;">else</span> <span style="font-weight: bold;">if</span> (networkBean != <span style="font-weight: bold; text-decoration: underline;">null</span>) {
+        System.getProperties().remove(<span style="font-style: italic;">"proxySet"</span>);
+        System.getProperties().remove(<span style="font-style: italic;">"socksProxySet"</span>);
+        System.getProperties().remove(<span style="font-style: italic;">"http.proxyHost"</span>);
+        System.getProperties().remove(<span style="font-style: italic;">"http.proxyPort"</span>);
+        System.getProperties().remove(<span style="font-style: italic;">"socksProxyHost"</span>);
+        System.getProperties().remove(<span style="font-style: italic;">"socksProxyPort"</span>);
+    }
+}
+
+</pre>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

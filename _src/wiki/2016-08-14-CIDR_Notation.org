@@ -1,0 +1,204 @@
+# -*- org -*-
+# -*- encoding: utf-8 -*-
+#+TITLE: CIDR
+#+FILETAGS: reprint
+#+date: <2016-08-14 20:48>
+
+
+* 前言
+http://blog.sina.com.cn/s/blog_5d76edd80101e48f.html
+
+* What is CIDR Notation
+Classless Inter Domain Routing (CIDR) is a method for assigning IP
+addresses without using the standard IP address classes like Class A,
+Class B or Class C. In CIDR notation, an IP address is represented as
+A.B.C.D /n, where "/n" is called the IP prefix or network prefix. The
+IP prefix identifies the number of significant bits used to identify a
+network. For example, 192.9.205.22 /18 means, the first 18 bits are
+used to represent the network and the remaining 14 bits are used to
+identify hosts. Common prefixes are 8, 16, 24, and 32. Refer to the
+following page for the CIDR to Netmask Translation Table.
+
+| CIDR | Netmask (Dot Notation) | Number of Hosts |
+|------+------------------------+-----------------|
+| /1   |              128.0.0.0 |                 |
+| /2   |              192.0.0.0 |                 |
+| /3   |              224.0.0.0 |                 |
+| /4   |              240.0.0.0 |                 |
+| /5   |              248.0.0.0 |                 |
+| /6   |              252.0.0.0 |                 |
+| /7   |              254.0.0.0 |                 |
+| /8   |              255.0.0.0 |                 |
+| /9   |            255.128.0.0 |                 |
+| /10  |            255.192.0.0 |                 |
+| /11  |            255.224.0.0 |                 |
+| /12  |            255.240.0.0 |                 |
+| /13  |            255.248.0.0 |                 |
+| /14  |            255.252.0.0 |                 |
+| /15  |            255.254.0.0 |                 |
+| /16  |            255.255.0.0 |                 |
+| /17  |            255.255.128 |                 |
+| /18  |          255.255.192.0 |                 |
+| /19  |          255.255.224.0 |                 |
+| /20  |          255.255.240.0 |                 |
+| /21  |          255.255.248.0 |                 |
+| /22  |          255.255.252.0 |                 |
+| /23  |          255.255.254.0 |                 |
+| /24  |          255.255.255.0 | 256             |
+| /25  |        255.255.255.128 | 128             |
+| /26  |        255.255.255.192 | 64              |
+| /27  |        255.255.255.224 | 32              |
+| /28  |        255.255.255.240 | 16              |
+| /29  |        255.255.255.248 | 8               |
+| /30  |        255.255.255.252 | 4               |
+| /31  |        255.255.255.254 | 2               |
+| /32  |        255.255.255.255 | 1               |
+
+
+CIDR notation is a compact specification of an Internet Protocol
+address and its associated routing prefix. Classless Inter-Domain
+Routing (CIDR) is an Internet Protocol (IP) address allocation and
+route aggregation methodology[1] used within the Internet addressing
+architecture that replaced the IPv4 classful network organization of
+the IP address space. It is used also for IPv6 networking, the next
+generation of the IP addressing architecture.
+
+CIDR notation is constructed from the IP address and the prefix size,
+the latter being equivalent to the number of leading 1 bits in the
+routing prefix mask. The IP address is expressed according to the
+standards of IPv4 or IPv6. It is followed by a separator character,
+the slash (/) character, and the prefix size expressed as a decimal
+number.
+
+The address may denote a single, distinct, interface address or the
+beginning address of an entire network. In the latter case the CIDR
+notation specifies the address block allocation of the network. The
+maximum size of the network is given by the number of addresses that
+are possible with the remaining, least-significant bits below the
+prefix. This is often called the host identifier.
+
+For example:
+
+- 198.51.100.1/24 represents the given IPv4 address and its associated
+  routing prefix 198.51.100.0, or equivalently, its subnet
+  mask 255.255.255.0.
+- the IPv4 block 198.51.100.0/22 represents the 1024 IPv4 addresses
+  from 198.51.100.0 to 198.51.103.255.
+- the IPv6 block 2001:db8::/48 represents the IPv6 addresses
+  from 2001:db8:0:0:0:0:0:0 to 2001:db8:0:ffff:ffff:ffff:ffff:ffff.
+- ::1/128 represents the IPv6 loopback address. Its prefix size is
+  128, i.e. the size of the address itself, indicating that this
+  facility consists of only this one address.
+
+Before CIDR notation, IPv4 networks usually used dot-decimal notation,
+an alternative representation which uses the network address followed
+by the network's subnet mask. Thus, The CIDR
+notation 198.51.100.0/24 would be written
+as 198.51.100.0/255.255.255.0
+
+The number of addresses of a subnet defined by the mask or prefix can
+be calculated as 2address size - prefix size, in which the address
+size for IPv6 is 128 and 32 for IPv4. For example, in IPv4, a prefix
+size of /29 gives: 232-29 = 23 = 8 addresses.
+
+However, because at least one of these addresses is typically used for
+a gateway to other subnets, and because certain addresses are reserved
+as broadcast addresses, the number of addresses available for hosts is
+usually smaller.
+
+http://wenku.baidu.com/view/736f9e1fb7360b4c2e3f649f.html
+
+* IP 编址问题的演进
+划分子网在一定程度上缓解了因特网在发展中遇到的困难。然而在 1992 年因特
+网仍然面临三个必须尽早解决的问题，这就是：
+
+#+BEGIN_QUOTE
+B 类地址在 1992 年已分配了近一半，眼看就要在 1994 年 3 月全部分配完毕！
+因特网主干网上的路由表中的项目数急剧增长（从几千个增长到几万个）。整个
+IPv4 的地址空间最终将全部耗尽。
+#+END_QUOTE
+
+1987 年，RFC 1009 就指明了在一个划分子网的网络中可同时使用几个不同的子
+网掩码。使用变长子网掩码 VLSM (Variable Length Subnet Mask)可进一步提
+高 IP 地址资源的利用率。
+
+ 在 VLSM 的基础上又进一步研究出无分类编址方法，它的正式名字是无分类域间
+路由选择 CIDR (Classless Inter-Domain Routing)。
+
+** CIDR 最主要的特点
+
+CIDR 消除了传统的 A 类、B 类和 C 类地址以及划分子网的概念，因而可以更
+加有效地分配 IPv4 的地址空间。
+
+CIDR 使用各种长度的“网络前缀” (network-prefix)来代替分类地址中的网络号
+和子网号。
+
+IP 地址从三级编址（使用子网掩码）又回到了两级编址。
+
+** 无分类的两级编址
+
+*** 无分类的两级编址的记法是：
+
+#+BEGIN_EXAMPLE
+IP 地址 ::= {<网络前缀>, <主机号>}
+#+END_EXAMPLE
+
+CIDR 还使用“斜线记法”(slash notation)，它又称为CIDR 记法，即在 IP 地址
+后面加上一个斜线“/”，然后写上网络前缀所占的比特数（这个数值对应于三级
+编址中子网掩码中比特 1 的个数）。
+
+*** CIDR 将网络前缀都相同的连续的 IP 地址组成“CIDR 地址块”。
+
+*** CIDR 地址块
+128.14.32.0/20 表示的地址块共有 212 个地址（因为斜线后面的 20 是网络前
+缀的比特数，所以主机号的比特数是 12）。
+
+- 这个地址块的起始地址是 128.14.32.0。
+- 在不需要指出地址块的起始地址时，也可将这样的地址块简称为“/20 地址块”。
+- 128.14.32.0/20 地址块的最小地址：128.14.32.0
+- 128.14.32.0/20 地址块的最大地址：128.14.32.255
+- 全 0 和全 1 的主机号地址一般不使用。
+- 128.14.32.0/20 表示的地址（212 个地址）
+#+BEGIN_EXAMPLE
+10000000 00001110 00100000 00000000
+10000000 00001110 00100000 00000001
+10000000 00001110 00100000 00000010
+10000000 00001110 00100000 00000011
+10000000 00001110 00100000 00000100
+10000000 00001110 00100000 00000101
+10000000 00001110 00101111 11111011
+10000000 00001110 00101111 11111100
+10000000 00001110 00101111 11111101
+10000000 00001110 00101111 11111110
+10000000 00001110 00101111 11111111
+… …
+
+#+END_EXAMPLE
+
+所有地址的20 bit前缀都是一样的
+
+*** 路由聚合(route aggregation)
+一个 CIDR 地址块可以表示很多地址，这种地址的聚合常称为路由聚合，它使得
+路由表中的一个项目可以表示很多个（例如上千个）原来传统分类地址的路由。
+路由聚合也称为构成超网(supernetting)。
+
+CIDR 虽然不使用子网了，但仍然使用“掩码”这一名词（但不叫子网掩码）。对
+于 /20 地址块，它的掩码是 20 个连续的 1。 斜线记法中的数字就是掩码中 1
+的个数。
+
+- 10.0.0.0/10 可简写为 10/10，也就是将点分十进制中低位连续的 0 省略。
+- 10.0.0.0/10 隐含地指出 IP 地址 10.0.0.0 的掩码是 255.192.0.0。此掩码
+  可表示为CIDR 记法的其他形式
+- 10.0.0.0/10 可简写为 10/10，也就是将点分十进制中低位连续的 0 省略。
+- 10.0.0.0/10 相当于指出 IP 地址 10.0.0.0 的掩码是 255.192.0.0，即
+11111111 11000000 00000000 00000000
+
+网络前缀的后面加一个星号 * 的表示方法，如 00001010 00*，在星号 * 之前是网络
+前缀，而星号 * 表示 IP 地址中的主机号，可以是任意值。
+
+*** 构成超网
+前缀长度不超过 23 bit 的 CIDR 地址块都包含了多个 C 类地址。这些 C 类地
+址合起来就构成了超网。CIDR 地址块中的地址数一定是 2 的整数次幂。网络前
+缀越短，其地址块所包含的地址数就越多。而在三级结构的IP 地址中，划分子
+网是使网络前缀变长。CIDR 作用将有类别的寻址方式替换成更灵活、浪费更少
+的无类别方案。加强了路由聚合，即超网（supernetting）。

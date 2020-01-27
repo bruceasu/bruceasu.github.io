@@ -1,0 +1,5 @@
+#+title: install gitflow on linux
+#+date: <2016-09-14 20:48>
+#+filetags: git
+
+: wget -q -O - --no-check-certificate https://github.com/nvie/gitflow/raw/develop/contrib/gitflow-installer.sh | bash

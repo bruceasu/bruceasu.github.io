@@ -1,0 +1,146 @@
+# -*- coding: utf-8-unix; -*-
+#+TITLE:       在emacs中以root權限編輯檔案
+#+AUTHOR:      Bruce Asu
+#+EMAIL:       bruceasu@163.com
+#+DATE:        <2016-05-25 20:00>
+#+filetags:    emacs
+#+DESCRIPTION: 在emacs中以root權限編輯檔案，sudo, tramp ...
+
+#+LANGUAGE:    en
+#+OPTIONS:     H:7 num:nil toc:t \n:nil ::t |:t ^:nil -:nil f:t *:t <:nil
+
+
+* 前言
+
+通常初使用emacs的人都會發現，拿emacs來編輯系統檔案，似乎相對麻煩：使用sudo的時候，
+是以root的身份執行emacs，套用的設定也非自己所撰寫的init.el。不過其實，有很多方法
+可以讓emacs遙身一變成為最適合編輯系統檔案的文字處理器。
+
+另外，雖然ido是一個強大方便的自動提示，不過可能有人討厭他那種自以為是的檔名記憶
+而沒有使用，只要把elisp函數中ido-這個prefix去掉即可。
+
+- 方法一：重開buffer代碼：
+  #+BEGIN_SRC emacs-lisp
+  (defun sudo-edit (&optional arg)
+    (interactive "P")
+    (if (or arg (not buffer-file-name))
+        (find-file (concat "/sudo:root@localhost:"
+                           (ido-read-file-name "Find file(as root): ")))
+      (find-alternate-file (concat "/sudo:root@localhost:" buffer-file-name))))
+
+  #+END_SRC
+
+  這段代碼的目的是：假如你正在看某個檔案，就以root的身份連接到這個檔案。若不是在
+  看一個檔案，則問你要以root身份開啟什麼檔案。
+
+- 方法二：讓emacs判斷是否擁有編輯權限代碼：
+  #+BEGIN_SRC emacs-lisp
+  ((defun fun (args)
+     "docstring"
+     (interactive "P")
+     )advice ido-find-file (after find-file-sudo activate)
+    "Find file as root if necessary."
+    (unless (and buffer-file-name
+                 (file-writable-p buffer-file-name))
+      (find-alternate-file (concat "/sudo:root@localhost:" buffer-file-name))))
+
+  #+END_SRC
+
+  這段代碼的目的是，讓電腦自動判斷是否擁有檔案編輯的權限，若無，則以root身份開啟
+  之，若有，則以user的身份打開(emacs可以判斷檔案是read only還是
+  writable的) ido-find-file的改造！
+
+- 方法三：alias+emacsclient
+    在.bashrc/.zshrc添加如下命令
+  : alias sudeemacs="SUDO_EDITOR=\"emacsclient -t -a emacs\" sudoedit"
+  #+BEGIN_SRC emacs-lisp
+  (defun sudo-find-file (file-name)
+      "Like find file, but opens the file as root."
+      (interactive "FSudo Find File: ")
+      (let ((tramp-file-name (concat "/sudo::" (expand-file-name file-name))))
+        (find-file tramp-file-name)))
+
+
+    (defun eshell/sudoedit (file)
+      (if (string-equal "/" (substring file 0 1))
+          (find-file (concat "/sudo:root@localhost:" file))
+        (find-file (concat "/sudo:root@localhost:" default-directory file))))
+
+
+    (defun wenshan-edit-current-file-as-root ()
+        "Edit the file that is associated with current buffer as root"
+        (interactive)
+        (if (buffer-file-name)
+            (progn
+                    (setq file (concat "/sudo:root@localhost:" (buffer-file-name)))
+                    (find-file file)
+            )
+            (message "Current buffer does not have an associated file.")
+        )
+    )
+
+    (defun sudo-save ()
+        (interactive)
+        (if (not buffer-file-name)
+            (write-file (concat "/sudo:root@localhost:" (ido-read-file-name "File:")))
+            (write-file (concat "/sudo:root@localhost:" buffer-file-name))
+        )
+    )
+
+#+END_SRC
+
+* Tramp
+
+现在最常用的编辑器还是emacs，但是有的时候还是离不开vi，主要还是因为有时要编辑一
+些用户权限外的东西的关系。用vi的话可以使用sudo，而emacs虽然也能sudo，但我想大部
+分人是不愿意的，因为这样就无法享受到emacs daemon的便利而不得不在root名下专门开启
+一个emacs进程。
+
+不过emacs有Tramp（Transparent Remote (file) Access, Multiple Protocol），所以可
+以以C-x C-f /root@localhost:<filepath>来作为root ssh到本机进行编辑。但这终究不是
+啥方便的办法，一是不得不使用root登录，二是在其他buffer上想再继续sudo编辑其他文件
+的时候还得再次输入这串连接字符串，因为ido并不会自动完成。所以一直以来，编辑/etc
+下的文件我还是使用vi来完成。
+
+不过最近发现了Tramp的另外一项功能：sudo。使用C-x C-f /sudo:root@localhost来打开
+文件就可以了。比起上述方法最为便利的是连接字符串可以自动完成，而且使用的是sudo的
+方法，所以连接是使用的是当前sudoer的密码。目前用下来没有什么大问题，基本就能抛开
+vi了。
+
+
+* emacs sudo编辑远端文件
+由 jay 发表于 on 六月 20日, 2011
+
+我在之前的一篇文章里提到过在Emacs下使用sudo的方法。这个解决了我很多本地编辑的问
+题。但是我还是抛不开vi，因为一直没有解决服务器上需要sudo才有权限的文件编辑问题。
+
+现实中这是一个很普遍的现象，就是在服务器上关闭了root或者其他用户的ssh登陆权限，
+是通过一般用户登陆以后通过sudo等方式获得权限后才能进行进一步的文件编辑。而如果直
+接使用sudo，用比如/sudo:user@host:filepath的方式来打开文件，Emacs会报错说这是一
+个远端文件，不能使用sudo来进行操作。就因为这提示，导致我一直以来对于这样的情况只
+能乖乖地开个shell跑到服务器上面去用vi编辑，编辑过程中的各种不爽在此不表……
+
+不过当最终忍受不住这种只能用vi的寂寞后，终于下定决心看一下tramp的手册，结果很好，
+发现了这么一章内容――Connecting to a remote host using multiple hops，原来tramp是
+可以通过设置代理的方式来编辑那些无法直接访问到的文件的。代理可以是各种Inline
+method，也可以是Gateway method。所以通过ssh做跳板再sudo是完全可行的。
+
+设置的格式是(host user proxy)，其中proxy可以使用%u和%h来通配输入的用户名和主机名。
+详细情况感兴趣的童鞋可以细看手册，这儿就只贴出满足我的需求的代码了:
+#+BEGIN_SRC emacs-lisp
+;; 跳板：localhost -> machine1.abc.def.edu -> machine2.abc.def.edu
+    (add-to-list 'tramp-default-proxies-alist
+                 '(nil "\\`user\\'" "/ssh:%h:"))
+    (add-to-list 'tramp-default-proxies-alist
+                 '("machine2.abc.def.edu" nil "/ssh:myname@machine1.abc.def.edu:"))
+#+END_SRC
+
+经过这样的设置，就可以直接使用/sudo:user@host:filepath来编辑那些远端需要sudo的文
+件了。所以，泡杯茶，扔掉vi吧 : )
+#+BEGIN_SRC sh
+  # edit file with root privs
+    function E() {
+             emacsclient -c -a emacs "/sudo:root@localhost:$1"
+  }
+  alias E="SUDO_EDITOR=\"emacsclient -c -a emacs\" sudoedit"
+#+END_SRC

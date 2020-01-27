@@ -1,0 +1,117 @@
+# -*- coding: utf-8-unix; -*-
+#+TITLE:       Java 7 TransferQueue
+#+AUTHOR:      Bruce Asu
+#+EMAIL:       bruceasu@163.com
+#+DATE:        <2016-06-27 20:48>
+#+filetags:    java
+
+#+LANGUAGE:    en
+#+OPTIONS:     H:7 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:nil
+
+
+* 原文
+Java 7 will include several improvements in the collections and concur rency
+libraries under JSR 166y. One addition is a new interface called
+ TransferQueue and a corresponding implementation called LinkedTransfe rQueue.
+
+TransferQueue extends BlockingQueue which extends Queue interface adde d in Java
+5 and adds some new methods. BlockingQueue expresses the con cept of a queue
+that a producer can block when adding items to a queue until there is space
+avaliable or a consumer can block when removing a n item from the queue until an
+item exists.
+
+TransferQueue takes this one step further and blocks on put until the i tem is
+actually consumed by a consumer (not just added to the queue). T his new
+constraint is expressed in the key new method called transfer( ). The name is
+very descriptive – because the blocking occurs until a h and-off is complete
+from one thread to another, you are effectively tr ansferring the item between
+threads (in a way that properly creates ha ppens-before relationships in the
+Java Memory Model).
+
+Several other methods are included as well: two forms of tryTransfer()  that
+perform a transfer but are either non-blocking (transfer only if it can be done
+immediately) or with a timeout. And then there are a c ouple of helper
+methods hasWaitingConsumer() and getWaitingConsumerCou nt().
+
+When I first read about TransferQueue, I was immediately reminded of t he
+existingSynchronousQueue implementation, which provides a queue wit h size 0.
+That seemed inherently useless when I originally looked at i t but I’ve since
+found it to be one of the most useful queue implement ations in the collections
+framework, specifically for this use case of handing off an item from one thread
+to another.
+
+TransferQueue is more generic and useful than SynchronousQueue however as it
+allows you to flexibly decide whether to use normal BlockingQue ue semantics or
+a guaranteed hand-off. In the case where items are alr eady in the queue,
+calling transfer will guarantee that all existing q ueue items will be processed
+before the transferred item. Doug Lea say s that
+capability-wise,LinkedTransferQueue is actually a superset of C
+oncurrentLinkedQueue, SynchronousQueue (in “fair” mode), and unbounded
+ LinkedBlockingQueues. And it’s made better by allowing you to mix and match
+those features as well as take advantage of higher-performance i mplementation
+techniques.
+
+Joe Bowbeer helpfully provided a link to a paper by William Scherer, D oug Lea,
+and Michael Scottthat lays out the LinkedTransferQueue algori thms and
+performance tests showing their improvements over the existin g Java 5
+alternatives. LinkedTransferQueue outperformsSynchronousQueue  by a factor of 3x
+in unfair mode and 14x in fair mode. BecauseSynchro nousQueue is used as the
+heart of task handoff in something like Threa dPoolExecutor, this can result in
+similar kinds of performance improve ments there. Given the importance of
+executors in concurrent programmi ng, you start to see the importance of adding
+this new implementation.
+
+The Java 5 SynchronousQueue implementation uses dual queues (for waiti ng
+producers and waiting consumers) and protects both queues with a si ngle lock.
+The LinkedTransferQueueimplementation uses CAS operations t o form a nonblocking
+implementation and that is at the heart of avoidi ng serialization bottlenecks.
+The paper lays out a lot more detail and data – if you’re interested in the
+details it’s worth a read.
+
+POSTED BY ALEX ON SATURDAY, FEBRUARY 28, 2009 AT 2:05 PM FILED
+UNDER COLLECTIONS, CONCURRENCY, JAVA, JDK7 · TAGGED WITH
+
+* 中文翻译
+Java7中加入了JSR 166y规范对集合类和并发类库的改进。其中的一项是增加了接口
+TransferQueue和其实现类LinkedTransferQueue。
+
+TransferQueue继承了BlockingQueue（BlockingQueue又继承了Queue）并扩展了一些新方法。
+BlockingQueue（和Queue）是Java 5中加入的接口，它是指这样的一个队列：当生产者向队
+列添加元素但队列已满时，生产者会被阻塞；当消费者从队列移除元素但队列为空时，消费
+者会被阻塞。
+
+TransferQueue则更进一步，生产者会一直阻塞直到所添加到队列的元素被某一个消费者所
+消费（不仅仅是添加到队列里就完事）。新添加的transfer方法用来实现这种约束。顾名思
+义，阻塞就是发生在元素从一个线程transfer到另一个线程的过程中，它有效地实现了元素
+在线程之间的传递（以建立Java内存模型中的happens- before关系的方式）。
+
+TransferQueue还包括了其他的一些方法：两个tryTransfer方法，一个是非阻塞的，另一个
+带有timeout参数设置超时时间的。还有两个辅助方法hasWaitingConsum er()和
+getWaitingConsumerCount()。
+
+当我第一次看到TransferQueue时，首先想到了已有的实现类SynchronousQueue。
+SynchronousQueue的队列长度为0，最初我认为这好像没多大用处，但后来我发现它是整个
+Java Collection Framework中最有用的队列实现类之一，特别是对于两个线程之间传递元
+素这种用例。
+
+TransferQueue相比SynchronousQueue用处更广、更好用，因为你可以决定是使用
+BlockingQueue的方法（译者注：例如put方法）还是确保一次传递完成（译者注：即t
+ransfer方法）。在队列中已有元素的情况下，调用transfer方法，可以确保队列中被传递
+元素之前的所有元素都能被处理。Doug Lea说从功能角度来讲，LinkedTra nsferQueue实际
+上是ConcurrentLinkedQueue、SynchronousQueue（公平模式）和L inkedBlockingQueue的
+超集。而且LinkedTransferQueue更好用，因为它不仅仅综合了这几个类的功能，同时也提
+供了更高效的实现。
+
+Joe Bowbeer提供了一篇William Scherer, Doug Lea, and Michael Scott的论文，在这篇
+论文中展示了LinkedTransferQueue的算法，性能测试的结果表明它优于J ava 5的那些类
+（译者注：ConcurrentLinkedQueue、SynchronousQueue和LinkedBl ockingQueue）。
+LinkedTransferQueue的性能分别是SynchronousQueue的3倍（非公平模式）和14倍（公平模
+式）。因为像ThreadPoolExecutor这样的类在任务传递时都是使用SynchronousQueue，所以
+使用LinkedTransferQueue来代替SynchronousQue ue也会使得ThreadPoolExecutor得到相应
+的性能提升。考虑到executor在并发编程中的重要性，你就会理解添加这个实现类的重要性
+了。
+
+Java 5中的SynchronousQueue使用两个队列（一个用于正在等待的生产者、另一个用于正在
+等待的消费者）和一个用来保护两个队列的锁。而LinkedTransferQueue使用CAS操作（译者
+注：参考wiki）实现一个非阻塞的方法，这是避免序列化处理任务的关键。这篇论文还罗列
+了很多的细节和数据，如果你感兴趣，非常值得一读。

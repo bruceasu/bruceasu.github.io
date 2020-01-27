@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>Java 7 之 fork-join 框架</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">Java 7 之 fork-join 框架</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#java"><div class="category">java</div></a> </div>
+<div class="char-counter">2016-06-28</div>
+        <div id="content">
+<nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#org2f53bcb">前言</a></li>
+<li><a href="#org1ebb80f">概述</a></li>
+<li><a href="#org6c8357d">Divide and conquer</a></li>
+<li><a href="#org807ecde">递归（旧的方法）</a></li>
+<li><a href="#orgc75184d">并行计算（fork-join）</a></li>
+<li><a href="#org9aba979">工作窃取</a></li>
+<li><a href="#org5a9c1bf">标准实现</a></li>
+</ul>
+</div>
+</nav>
+
+<div id="outline-container-org2f53bcb" class="outline-2">
+<h2 id="org2f53bcb">前言</h2>
+<div class="outline-text-2" id="text-org2f53bcb">
+<p>
+如果让我个人理解什么是fork-join，我立刻会想到hadoop的map/reduce。他们是同一种模
+型。更早之前，笔者就看过关于fork-join的相关文章，但是理解的都不够深刻。自从深入
+研究了java多线程这块的相关技术，再回头来看fork-join，觉得真是个了不起的技术。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org1ebb80f" class="outline-2">
+<h2 id="org1ebb80f">概述</h2>
+<div class="outline-text-2" id="text-org1ebb80f">
+<p>
+fork/join框架是ExecutorService接口的一种具体实现，目的是为了帮助你更好地利用多处
+理器带来的好处。它是为那些能够被递归地拆解成子任务的工作类型量身设计的。其目的在
+于能够使用所有可用的运算能力来提升你的应用的性能。
+</p>
+
+<p>
+类似于ExecutorService接口的其他实现，fork/join框架会将任务分发给线程池中的工作线
+程。fork/join框架的独特之处在与它使用工作窃取(work-stealing)算法。完成自己的工作
+而处于空闲的工作线程能够从其他仍然处于忙碌(busy)状态的工作线程处窃取等待执行的任
+务。 fork/join框架的核心是ForkJoinPool类，它是对AbstractExecutorService类的扩展。
+ForkJoinPool实现了工作偷取算法，并可以执行ForkJoinTask任务。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org6c8357d" class="outline-2">
+<h2 id="org6c8357d">Divide and conquer</h2>
+<div class="outline-text-2" id="text-org6c8357d">
+<p>
+合并排序是 divide-and-conquer 算法的一个例子，在这种算法中将一个问题递归分解成子
+问题，再将子问题的解决方案组合得到最终结果。divide-and-conquer 算法也可用于顺序
+环境中，但是在并行环境中更加有效，因为可以并行处理子问题。
+</p>
+
+<p>
+并行 divide-and-conquer 算法首先对问题进行评估，确定其大小是否更适合使用顺序解决
+方案；通常，可通过将问题大小与某个阙值进行比较完成。如果问题大到需要并行分解，算
+法会将其分解成两个或更多子问题，并以并行方式对子问题递归调用算法本身，然后等待子
+问题的结果，最后合并这些结果。用于选择顺序和并行执行方法的理想阙值是协调并行任务
+的成本。如果协调成本为 0，更多的更细粒度的任务会提供更好的并行性；在需要转向顺序
+方法之前，协调成本越低，就可以划分更细粒度的任务。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org807ecde" class="outline-2">
+<h2 id="org807ecde">递归（旧的方法）</h2>
+<div class="outline-text-2" id="text-org807ecde">
+<p>
+如果从一个数组中，选一个最大值。我一般都会采用递归调用。这样的话只有当前线程的一
+个方法是运行的，其他方法都阻塞在线程栈中。所以在多核情况下，其他CPU都是空闲，没
+有得到充分利用。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgc75184d" class="outline-2">
+<h2 id="orgc75184d">并行计算（fork-join）</h2>
+<div class="outline-text-2" id="text-orgc75184d">
+<p>
+类似hadoop的map/reduce，可以将任务拆分成多个块，然后最终将这些子结果集合并成最终
+结果集。它的行为表现为当前任务是暂停的，并行执行两个子任务，而当前任务等待两个子
+任务的完成。然后就可以将两个子任务的结果进行合并。这种并行分解方法常常称作
+fork-join，因为执行一个任务将首先分解（fork）为多个子任务，然后再合并（join）
+（完成后）。
+</p>
+
+<p>
+使用fork/join框架的第一步是编写执行一部分工作的代码。你的代码结构看起来应该与下
+面所示的伪代码类似：
+</p>
+
+<p class="verse">
+<br>
+if(当前这个任务工作量足够小)<br>
+&#xa0;&#xa0;直接完成这个任务<br>
+else<br>
+&#xa0;&#xa0;将这个任务或这部分工作分解成两个部分<br>
+<br>
+</p>
+
+<p>
+分别触发(invoke)这两个子任务的执行，并等待结果
+</p>
+
+<p>
+示例代码如下：
+</p>
+<div class="org-src-container">
+<pre class="src src-java"><span style="font-weight: bold; text-decoration: underline;">importjava</span>.<span style="font-weight: bold; text-decoration: underline;">util</span>.<span style="font-weight: bold; text-decoration: underline;">concurrent</span>.ForkJoinPool;
+<span style="font-weight: bold; text-decoration: underline;">importjava</span>.<span style="font-weight: bold; text-decoration: underline;">util</span>.<span style="font-weight: bold; text-decoration: underline;">concurrent</span>.RecursiveTask;
+
+<span style="font-style: italic;">/**</span>
+<span style="font-style: italic;"> *</span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@authorpiaohailin</span>
+<span style="font-style: italic;"> *</span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@date</span><span style="font-style: italic;">2014-3-26</span>
+<span style="font-style: italic;"> */</span>
+ <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">class</span> <span style="font-weight: bold; text-decoration: underline;">Fibonacci</span> <span style="font-weight: bold;">extends</span> <span style="font-weight: bold; text-decoration: underline;">RecursiveTask</span>&lt;<span style="font-weight: bold; text-decoration: underline;">Long</span>&gt; {
+   privatestaticfinallongserialVersionUID=7875142223684511653L;
+   privatefinallongn;
+
+   <span style="font-weight: bold;">Fibonacci</span>(<span style="font-weight: bold; text-decoration: underline;">longn</span>){
+     <span style="font-weight: bold;">this</span>.n=n;
+   }
+
+   <span style="font-weight: bold;">protected</span> <span style="font-weight: bold;">Longcompute</span>(){
+     <span style="font-weight: bold;">if</span>(n&lt;=1){
+       returnn;
+     }
+     <span style="font-weight: bold; text-decoration: underline;">Fibonacci</span> <span style="font-weight: bold; font-style: italic;">f1</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">Fibonacci</span>(n-1);
+     f1.fork();
+     <span style="font-weight: bold; text-decoration: underline;">Fibonacci</span> <span style="font-weight: bold; font-style: italic;">f2</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">Fibonacci</span>(n-2);
+     <span style="font-weight: bold;">return</span> f2.compute() + f1.join();
+ }
+
+ <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">main</span>(<span style="font-weight: bold; text-decoration: underline;">String</span>[] <span style="font-weight: bold; font-style: italic;">args</span>) {
+   <span style="font-weight: bold; text-decoration: underline;">Fibonacci</span> <span style="font-weight: bold; font-style: italic;">task</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">Fibonacci</span>(10);
+   <span style="font-weight: bold; text-decoration: underline;">ForkJoinPool</span> <span style="font-weight: bold; font-style: italic;">pool</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">ForkJoinPool</span>(4);
+   pool.invoke(task);
+   System.out.println(task.getRawResult());
+ }
+
+}
+
+
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org9aba979" class="outline-2">
+<h2 id="org9aba979">工作窃取</h2>
+<div class="outline-text-2" id="text-org9aba979">
+<p>
+fork-join 框架通过一种称作工作窃取（work stealing） 的技术减少了工作队列的争用情
+况。每个工作线程都有自己的工作队列，这是使用双端队列（或者叫做 deque）来实现的
+（Java 6 在类库中添加了几种 deque 实现，包括ArrayDeque 和 LinkedBlockingDeque）。
+当一个任务划分一个新线程时，它将自己推到 deque 的头部。当一个任务执行与另一个未
+完成任务的合并操作时，它会将另一个任务推到队列头部并执行，而不会休眠以等待另一任
+务完成（像Thread.join() 的操作一样）。当线程的任务队列为空，它将尝试从另一个线程
+的 deque 的尾部 窃取另一个任务。
+</p>
+
+<p>
+可以使用标准队列实现工作窃取，但是与标准队列相比，deque 具有两方面的优势：减少争
+用和窃取。因为只有工作线程会访问自身的 deque 的头部，deque头部永远不会发生争用；
+因为只有当一个线程空闲时才会访问 deque 的尾部，所以也很少存在线程的 deque 尾部的
+争用（在 fork-join 框架中结合 deque实现会使这些访问模式进一步减少协调成本）。跟
+传统的基于线程池的方法相比，减少争用会大大降低同步成本。此外，这种方法暗含的后进
+先出（last-in-first-out，LIFO）任务排队机制意味着最大的任务排在队列的尾部，当另
+一个线程需要窃取任务时，它将得到一个能够分解成多个小任务的任务，从而避免了在未来
+窃取任务。因此，工作窃取实现了合理的负载平衡，无需进行协调并且将同步成本降到了最
+小。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org5a9c1bf" class="outline-2">
+<h2 id="org5a9c1bf">标准实现</h2>
+<div class="outline-text-2" id="text-org5a9c1bf">
+<p>
+除了能够使用fork/join框架来实现能够在多处理系统中被并行执行的定制化算法（如前文
+中的ForkBlur.java例子），在Java SE中一些比较常用的功能点也已经使用fork/join框架
+来实现了。在Java SE 8中，java.util.Arrays类的一系列parallelSort()方法就使用了
+fork/join来实现。这些方法与sort()系列方法很类似，但是通过使用fork/join框架，借助
+了并发来完成相关工作。在多处理器系统中，对大数组的并行排序会比串行排序更快。这些
+方法究竟是如何运用fork/join框架并不在本教程的讨论范围内。想要了解更多的信息，请
+参见Java API文档。 其他采用了fork/join框架的方法还包括java.util.streams包中的一
+些方法，此包是作为Java SE 8发行版中Project Lambda的一部分。想要了解更多信息，请
+参见Lambda Expressions一节。
+</p>
+
+<p>
+参考资料
+<a href="http://www.ibm.com/developerworks/cn/java/j-jtp11137.html">http://www.ibm.com/developerworks/cn/java/j-jtp11137.html</a>
+</p>
+</div>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

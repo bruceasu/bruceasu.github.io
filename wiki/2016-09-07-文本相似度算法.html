@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>文本相似度算法</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">文本相似度算法</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#reprint"><div class="category">reprint</div></a> </div>
+<div class="char-counter">2016-09-07</div>
+        <div id="content">
+<nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#orgb6a7f17">1. 信息检索中的重要发明TF-IDF</a>
+<ul>
+<li><a href="#org43513c4">1.1 TF</a></li>
+<li><a href="#orga4de769">1.2 IDF</a></li>
+</ul>
+</li>
+<li><a href="#org764097c">2. 基于空间向量的余弦算法</a>
+<ul>
+<li><a href="#orge726ad8">2.1 算法步骤</a></li>
+<li><a href="#org3a5bfff">2.2 步骤简介</a>
+<ul>
+<li><a href="#orgb218394">2.2.1 预处理</a></li>
+<li><a href="#orgb7951b6">2.2.2 文本特征项选择与加权</a></li>
+<li><a href="#orgcab8a51">2.2.3向量空间模型VSM及余弦计算</a></li>
+</ul>
+</li>
+<li><a href="#org4f4e7d5">2.3 算法实现</a></li>
+<li><a href="#orga9e2b72">2.4 缺陷</a></li>
+<li><a href="#orgb8f63cc">2.5算法变体</a></li>
+</ul>
+</li>
+<li><a href="#org7e586c9">3. 改进算法</a>
+<ul>
+<li><a href="#org3c78ade">3.1 隐形语义引标</a></li>
+<li><a href="#orgd75fefe">3.2 基于语义相似度的文本相似度算法</a></li>
+</ul>
+</li>
+<li><a href="#orgf196b02">4. 其它算法涉及的相似度衡量方式</a>
+<ul>
+<li><a href="#orgeb9ea2d">4.1 基于拼音相似度的汉语模糊搜索算法</a></li>
+<li><a href="#org4ca3533">4.2 最长公共子序列</a></li>
+<li><a href="#org8a5b26c">4.3 最小编辑距离算法</a></li>
+</ul>
+</li>
+<li><a href="#org6ccadc8">5. 总结</a></li>
+<li><a href="#org38feb97">文本相似度算法</a>
+<ul>
+<li><a href="#org376f360">余弦公式略</a></li>
+<li><a href="#orged92a1d">C#实现代码</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</nav>
+<p>
+文本相似度算法
+</p>
+
+<div id="outline-container-orgb6a7f17" class="outline-2">
+<h2 id="orgb6a7f17">1. 信息检索中的重要发明TF-IDF</h2>
+<div class="outline-text-2" id="text-orgb6a7f17">
+</div>
+<div id="outline-container-org43513c4" class="outline-3">
+<h3 id="org43513c4">1.1 TF</h3>
+<div class="outline-text-3" id="text-org43513c4">
+<p>
+Term frequency即关键词词频，是指一篇文章中关键词出现的频率，比如在一篇M个词的文章中有N个该关键词，则
+（公式1.1-1）
+为该关键词在这篇文章中的词频。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orga4de769" class="outline-3">
+<h3 id="orga4de769">1.2 IDF</h3>
+<div class="outline-text-3" id="text-orga4de769">
+<p>
+Inverse document frequency指逆向文本频率，是用于衡量关键词权重的指数，由公式
+（公式1.2-1）
+计算而得，其中D为文章总数，Dw为关键词出现过的文章数。
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org764097c" class="outline-2">
+<h2 id="org764097c">2. 基于空间向量的余弦算法</h2>
+<div class="outline-text-2" id="text-org764097c">
+</div>
+<div id="outline-container-orge726ad8" class="outline-3">
+<h3 id="orge726ad8">2.1 算法步骤</h3>
+<div class="outline-text-3" id="text-orge726ad8">
+<p>
+预处理→文本特征项选择→加权→生成向量空间模型后计算余弦。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org3a5bfff" class="outline-3">
+<h3 id="org3a5bfff">2.2 步骤简介</h3>
+<div class="outline-text-3" id="text-org3a5bfff">
+</div>
+<div id="outline-container-orgb218394" class="outline-4">
+<h4 id="orgb218394">2.2.1 预处理</h4>
+<div class="outline-text-4" id="text-orgb218394">
+<p>
+预处理主要是进行中文分词和去停用词，分词的开源代码有：ICTCLAS。
+</p>
+
+<p>
+然后按照停用词表中的词语将语料中对文本内容识别意义不大但出现频率很高的词、符号、
+标点及乱码等去掉。如“这，的，和，会，为”等词几乎出现在任 何一篇中文文本中，但是
+它们对这个文本所表达的意思几乎没有任何贡献。使用停用词列表来剔除停用词的过程很简
+单，就是一个查询过程：对每一个词条，看其是 否位于停用词列表中，如果是则将其从词
+条串中删除。
+</p>
+
+<p>
+图2.2.1-1中文文本相似度算法预处理流程
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgb7951b6" class="outline-4">
+<h4 id="orgb7951b6">2.2.2 文本特征项选择与加权</h4>
+<div class="outline-text-4" id="text-orgb7951b6">
+<p>
+过滤掉常用副词、助词等频度高的词之后，根据剩下词的频度确定若干关键词。频度计算参照TF公式。
+</p>
+
+<p>
+加权是针对每个关键词对文本特征的体现效果大小不同而设置的机制，权值计算参照IDF公式。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgcab8a51" class="outline-4">
+<h4 id="orgcab8a51">2.2.3向量空间模型VSM及余弦计算</h4>
+<div class="outline-text-4" id="text-orgcab8a51">
+<p>
+向量空间模型的基本思想是把文档简化为以特征项（关键词）的权重为分量的N维向量表示。
+</p>
+
+<p>
+这个模型假设词与词间不相关（这个前提造成这个模型无法进行语义相关的判断，向量空间
+模型的缺点在于关键词之间的线性无关的假说前提），用向量来表示文本，从而简化了文本
+中的关键词之间的复杂关系，文档用十分简单的向量表示，使得模型具备了可计算性。
+</p>
+
+<p>
+在向量空间模型中，文本泛指各种机器可读的记录。
+</p>
+
+<p>
+用D（Document）表示文本，特征项（Term，用t表示）指出现在文档D中且能够代表该文档
+内容的基本语言单位，主要是由词或者短语构成，文本可以用特征项集表示为D（T1，T2，…，
+Tn），其中Tk是特征项，要求满足1&lt;=k&lt;=N。
+</p>
+
+<p>
+下面是向量空间模型（特指权值向量空间）的解释。
+</p>
+
+<p>
+假设一篇文档中有a、b、c、d四个特征项，那么这篇文档就可以表示为
+</p>
+<pre class="example">
+D（a，b，c，d）
+
+</pre>
+<p>
+对于其它要与之比较的文本，也将遵从这个特征项顺序。对含有n个特征项的文本而言，通
+常会给每个特征项赋予一定的权重表示其重要程度，即
+</p>
+<pre class="example">
+D＝D（T1，W1；T2，W2；…，Tn，Wn）
+
+</pre>
+<p>
+简记为
+</p>
+<pre class="example">
+D＝D（W1，W2，…，Wn）
+
+</pre>
+
+<p>
+我们把它叫做文本D的权值向量表示，其中Wk是Tk的权重，1&lt;=k&lt;=N。
+</p>
+
+<p>
+在上面那个例子中，假设a、b、c、d的权重分别为30，20，20，10，那么该文本的向量表示为
+</p>
+<pre class="example">
+D（30，20，20，10）
+
+</pre>
+
+<p>
+在向量空间模型中，两个文本D1和D2之间的内容相关度Sim（D1，D2）常用向量之间夹角的
+余弦值表示，公式为：
+</p>
+
+<p>
+其中，W1k、W2k分别表示文本D1和D2第K个特征项的权值，1&lt;=k&lt;=N。
+</p>
+
+<p>
+下面是利用模型进行余弦计算的示例。
+</p>
+
+<p>
+在自动归类中，我们可以利用类似的方法来计算待归类文档和某类目的相关度。
+</p>
+
+<p>
+假设文本D1的特征项为a，b，c，d，权值分别为30，20，20，10，类目C1的特征项为a，c，
+d，e，权值分别为40，30，20，10，则D1的向量表示为
+</p>
+<pre class="example">
+D1（30，20，20，10，0）
+
+</pre>
+<p>
+C1的向量表示为
+</p>
+<pre class="example">
+C1（40，0，30，20，10）
+
+</pre>
+<p>
+则根据上式计算出来的文本D1与类目C1相关度是0.86。那么0.86具体是怎么推导出来的呢？
+</p>
+
+<p>
+在数学当中，n维向量是
+</p>
+<pre class="example">
+V{v1，v2，v3，...，vn}
+
+</pre>
+<p>
+模为
+</p>
+<pre class="example">
+|v|=sqrt（v1*v1+v2*v2+…+vn*vn）
+
+</pre>
+<p>
+两个向量的点积
+</p>
+<pre class="example">
+m*n=n1*m1+n2*m2+......+nn*mn
+
+</pre>
+<p>
+相似度
+</p>
+<pre class="example">
+sim ＝（m*n）/（|m|*|n|）
+
+</pre>
+
+<p>
+它的物理意义就是两个向量的空间夹角的余弦数值。
+</p>
+
+<p>
+下面是代入公式的过程：
+</p>
+<pre class="example">
+d1*c1=30*40+20*0+20*30+10*20+0*10=2000
+|d1|=sqrt（30*30+20*20+20*20+10*10+0*0）=sqrt（1800）
+|c1|=sqrt（40*40+0*0+30*30+20*20+10*10）=sqrt（3000）
+sim=d1*c1/（|d1|*|c1|）=2000/sqrt（1800*3000）=0.86066
+</pre>
+
+<p>
+完毕。
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org4f4e7d5" class="outline-3">
+<h3 id="org4f4e7d5">2.3 算法实现</h3>
+<div class="outline-text-3" id="text-org4f4e7d5">
+<dl class="org-dl">
+<dt>开源代码</dt><dd>Text-Similarity-0.08</dd>
+<dt>简介</dt><dd>PERL脚本、自定义去停用词表、无语义识别功能、不适于中文。</dd>
+<dt>局限</dt><dd>仅适用于英文、无语义相似判别功能</dd>
+<dt>编译安装</dt><dd><ul class="org-ul">
+<li>（1）进入代码主目录里的/bin 修改 text_similarity.pl, 将第一行改为#!/usr/bin/perl</li>
+<li><p>
+（2）退回代码主目录，分别执行
+</p>
+<pre class="example">
+perl Makefile.PL
+make
+make test
+make install
+</pre></li>
+<li><p>
+（3）重新进入主目录/bin进行测试
+</p>
+
+<p>
+图2.3-1代码效果
+</p></li>
+</ul></dd>
+</dl>
+<pre class="example">
+可以看见语句“.......this is one”与“????this is two”的匹配度是0.66；
+“.......this is one”与“.......this is two”的匹配度仍然是0.66；
+“.......this is one”与“…….this is one”的匹配度是1；
+“.......this is one”与“..（）（）this is one”的匹配度是1。
+</pre>
+
+<p>
+说明匹配的算法去停用字功能存在。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orga9e2b72" class="outline-3">
+<h3 id="orga9e2b72">2.4 缺陷</h3>
+<div class="outline-text-3" id="text-orga9e2b72">
+<p>
+这类算法没有很好地解决文本数据中存在的自然语言问题，即同义词和多义词。这样对于搜
+索的精度产生很大的影响。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgb8f63cc" class="outline-3">
+<h3 id="orgb8f63cc">2.5算法变体</h3>
+<div class="outline-text-3" id="text-orgb8f63cc">
+<p>
+图2.5-1算法变体（红）
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org7e586c9" class="outline-2">
+<h2 id="org7e586c9">3. 改进算法</h2>
+<div class="outline-text-2" id="text-org7e586c9">
+</div>
+<div id="outline-container-org3c78ade" class="outline-3">
+<h3 id="org3c78ade">3.1 隐形语义引标</h3>
+<div class="outline-text-3" id="text-org3c78ade">
+<p>
+隐性语义标引（LSI）利用矩阵理论中的“奇异值分解（SVD）”技术，将词频矩阵转化为奇异
+矩阵：首先从全部的文档集中生成一个文档矩阵，该矩阵 的每个分量为整数值，代表某个
+特定的文档矩阵出现在某个特定文档中次数。然后将该矩阵进行奇异值分解，较小的奇异值
+被剔除。结果奇异向量以及奇异值矩阵用 于将文档向量和查询向量映射到一个子空间中，
+在该空间中，来自文档矩阵的语义关系被保留。最后，可以通过标准化的内积计算来计算向
+量之间的夹角余弦相似 度，进而根据计算结果比较文本间的相似度。LSI引入的唯一变化就
+是剔除小的奇异值，因为与小的奇异值相关联的特征实际上在计算相似度时并不相关，将它
+们 包括进来将降低相关性判断的精确度。保留下来的特征是那些对文档向量在m维空间中的
+位置大有影响的特征。剔除小的奇异值将文档特征空间变为文档概念空间。 概念向量之问
+使用内积的夹角余弦相似度计算比原来基于原文本向量的相似度计算更可靠，这也是使用
+LSI方法的主要原因所在。LSI的缺点在于它的效果依赖 于上下文信息，过于稀疏的语料不
+能很好的体现其潜在的语义。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgd75fefe" class="outline-3">
+<h3 id="orgd75fefe">3.2 基于语义相似度的文本相似度算法</h3>
+<div class="outline-text-3" id="text-orgd75fefe">
+<p>
+用向量空间模型（VSM）来表示文本在该领域内普遍受到认可，是因为其在知识表示方法上
+的巨大优势。在该模型中，文本内容被形式化为多维空间中的一 个点，通过向量的形式给
+出，把对文本内容的处理简化为向量空间中向量的运算，使问题的复杂性大为降低。但是它
+很大的不足之处在于只考虑了词在上下文中的统 计特性，假定关键词之间线性无关，而没
+有考虑词本身的语义信息，因此具有一定的局限性。
+</p>
+
+<p>
+结合语义相似度计算后的算法流程如下所示：
+</p>
+
+<p>
+图3.2-1基于向量空间的语义相似度算法流程图
+</p>
+
+<p>
+其中，语义相关度计算获得相似度矩阵的方向有两个：基于知网HowNet或者基于WordNet。
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgf196b02" class="outline-2">
+<h2 id="orgf196b02">4. 其它算法涉及的相似度衡量方式</h2>
+<div class="outline-text-2" id="text-orgf196b02">
+</div>
+<div id="outline-container-orgeb9ea2d" class="outline-3">
+<h3 id="orgeb9ea2d">4.1 基于拼音相似度的汉语模糊搜索算法</h3>
+<div class="outline-text-3" id="text-orgeb9ea2d">
+<p>
+不同于传统的以关键词匹配为核心的匹配技术，这里提出基于拼音相似度的编辑距离来衡量
+汉字字符串之间的相似度。
+</p>
+
+<p>
+论文提出三种编辑距离：基于汉字的编辑距离、基于拼音的编辑距离，以及基于拼音改良的
+编辑距离。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org4ca3533" class="outline-3">
+<h3 id="org4ca3533">4.2 最长公共子序列</h3>
+<div class="outline-text-3" id="text-org4ca3533">
+<ul class="org-ul">
+<li>（1）将两个字符串分别以行和列组成矩阵。</li>
+<li>（2）计算每个节点行列字符是否相同，如相同则为1。</li>
+<li>（3）通过找出值为1的最长对角线即可得到最长公共子串。</li>
+</ul>
+
+<p>
+为进一步提升该算法，我们可以将字符相同节点的值加上左上角（d[i-1，j-1]）的值，这
+样即可获得最大公共子串的长度。如此一来只需以行号和最大值为条件即可截取最大子串。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org8a5b26c" class="outline-3">
+<h3 id="org8a5b26c">4.3 最小编辑距离算法</h3>
+<div class="outline-text-3" id="text-org8a5b26c">
+<ul class="org-ul">
+<li><p>
+（1）狭义编辑距离
+</p>
+
+<p>
+ 设A、B为两个字符串，狭义的编辑距离定义为把A转换成B需要的最少删除（删除A中一个
+字符）、插入（在A中插入一个字符）和替换（把A中的某个字符替换成另一个字符）的次
+数，用ED（A，B）来表示。直观来说，两个串互相转换需要经过的步骤越多，差异越大。
+</p></li>
+<li>（2）步骤
+<ol class="org-ol">
+<li>对两部分文本进行处理，将所有的非文本字符替换为分段标记“#”</li>
+<li>较长文本作为基准文本，遍历分段之后的短文本，发现长文本包含短文本子句后在长本文中移除，未发现匹配的字句累加长度。</li>
+<li>比较剩余文本长度与两段文本长度和，其比值为不匹配比率。</li>
+</ol></li>
+</ul>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org6ccadc8" class="outline-2">
+<h2 id="org6ccadc8">5. 总结</h2>
+<div class="outline-text-2" id="text-org6ccadc8">
+<p>
+衡量文本相似度的几种手段：
+</p>
+<ul class="org-ul">
+<li>（1）最长公共子串（基于词条空间）</li>
+<li>（2）最长公共子序列（基于权值空间、词条空间）</li>
+<li>（3）最少编辑距离法（基于词条空间）</li>
+<li>（4）汉明距离（基于权值空间）</li>
+<li>（5）余弦值（基于权值空间）</li>
+</ul>
+</div>
+</div>
+
+
+<div id="outline-container-org38feb97" class="outline-2">
+<h2 id="org38feb97">文本相似度算法</h2>
+<div class="outline-text-2" id="text-org38feb97">
+<p>
+在向量空间模型中，文本泛指各种机器可读的记录。用D（Document）表示，特征项（Term，
+用t表示）是指出现在文档D中且能够代表该文档 内容的基本语言单位，主要是由词或者短
+语构成，文本可以用特征项集表示为D(T1，T2，…，Tn)，其中Tk是特征项，1&lt;=k&lt;=N。例 如
+一篇文档中有a、b、c、d四个特征项，那么这篇文档就可以表示为D(a，b，c，d)。对含有n
+个特征项的文本而言，通常会给每个特征项赋予一定的权 重表示其重要程度。即D＝D(T1，
+W1；T2，W2；…，Tn，Wn)，简记为D＝D(W1，W2，…，Wn)，我们把它叫做文本D的向量表示。
+其中 Wk是Tk的权重，1&lt;=k&lt;=N。在上面那个例子中，假设a、b、c、d的权重分别为30，20，
+20，10，那么该文本的向量表示为 D(30，20，20，10)。在向量空间模型中，两个文本D1和
+D2之间的内容相关度Sim(D1，D2)常用向量之间夹角的余弦值表示，公式为：
+</p>
+</div>
+
+<div id="outline-container-org376f360" class="outline-3">
+<h3 id="org376f360">余弦公式略</h3>
+<div class="outline-text-3" id="text-org376f360">
+<p>
+其中，W1k、W2k分别表示文本D1和D2第K个特征项的权值，1&lt;=k&lt;=N。
+</p>
+
+<p>
+在 自动归类中，我们可以利用类似的方法来计算待归类文档和某类目的相关度。例如文本
+D1的特征项为a，b，c，d，权值分别为30，20，20，10，类目 C1的特征项为a，c，d，e，
+权值分别为40，30，20，10，则D1的向量表示为D1(30,20,20,10,0),C1的向量表示为
+C1（40，0，30，20，10），则根据上式计算出来的文本D1与类目C1相关度是0.86
+</p>
+
+<p>
+那个相关度0.86是怎么算出来的？
+</p>
+
+<p>
+是这样的，抛开你的前面的赘述
+</p>
+<p class="verse">
+在数学当中，n维向量是 V{v1, v2, v3, &#x2026;, vn}<br>
+他的模： |v| = sqrt ( v1*v1 + v2*v2 + &#x2026; + vn*vn )<br>
+两个向量的点击 m*n = n1*m1 + n2*m2 + &#x2026;&#x2026; + nn*mn<br>
+相似度 ＝ (m*n) /(|m|*|n|)<br>
+物理意义就是两个向量的空间夹角的余弦数值<br>
+对于你的例子<br>
+d1*c1 = 30*40 + 20*0 + 20*30 + 10*20 + 0*10 = 2000<br>
+|d1| = sqrt(30*30 +20*20 + 20*20 + 10*10 + 0*0) = sqrt(1800)<br>
+|c1| = sqrt(40*40 + 0*0 + 30*30 + 20*20 + 10*10) = sqrt(3000)<br>
+相似度 = d1*c1/(|d1|*|c1|)= 2000/sqrt(1800*3000)= 0.86066<br>
+<br>
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-orged92a1d" class="outline-3">
+<h3 id="orged92a1d">C#实现代码</h3>
+<div class="outline-text-3" id="text-orged92a1d">
+<div class="org-src-container">
+<pre class="src src-c"><span style="font-weight: bold; font-style: italic;">///</span><span style="font-weight: bold; font-style: italic;">&#160;&#35745;&#31639;&#30456;&#20284;&#24230;</span>
+<span style="font-weight: bold; font-style: italic;">///</span><span style="font-weight: bold; font-style: italic;">&#160;&lt;/summary&gt;</span>
+<span style="font-weight: bold; font-style: italic;">///</span><span style="font-weight: bold; font-style: italic;">&#160;&lt;param&#160;name="text1"&gt;&#35789;&#20856;&#19968;&lt;/param&gt;</span>
+<span style="font-weight: bold; font-style: italic;">///</span><span style="font-weight: bold; font-style: italic;">&#160;&lt;param&#160;name="text2"&gt;&#35789;&#20856;&#20108;&lt;/param&gt;</span>
+<span style="font-weight: bold; font-style: italic;">///</span><span style="font-weight: bold; font-style: italic;">&#160;&lt;returns&gt;&#35789;&#20856;&#19968;&#21644;&#35789;&#20856;&#20108;&#30340;&#30456;&#20284;&#24230;&lt;/returns&gt;</span>
+public&#160;<span style="font-weight: bold; text-decoration: underline;">double</span>&#160;Similarity(Dictionary&lt;string,&#160;<span style="font-weight: bold; text-decoration: underline;">int</span>&gt;&#160;text1,&#160;Dictionary&lt;string,&#160;<span style="font-weight: bold; text-decoration: underline;">int</span>&gt;&#160;text2)
+{
+&#160;&#160;&#160;&#160;<span style="font-weight: bold; text-decoration: underline;">double</span>&#160;similarity&#160;=&#160;0.0,&#160;numerator&#160;=&#160;0.0,&#160;denominator1&#160;=&#160;0.0,&#160;denominator2&#160;=&#160;0.0;
+&#160;&#160;&#160;&#160;<span style="font-weight: bold; text-decoration: underline;">int</span>&#160;temp1,&#160;temp2;
+&#160;&#160;&#160;&#160;Dictionary&lt;string,&#160;<span style="font-weight: bold; text-decoration: underline;">int</span>&gt;&#160;dictionary1&#160;=&#160;new&#160;Dictionary&lt;string,<span style="font-weight: bold; text-decoration: underline;">int</span>&gt;(text1);
+&#160;&#160;&#160;&#160;Dictionary&lt;string,&#160;<span style="font-weight: bold; text-decoration: underline;">int</span>&gt;&#160;dictionary2&#160;=&#160;new&#160;Dictionary&lt;string,<span style="font-weight: bold; text-decoration: underline;">int</span>&gt;(text2);
+&#160;&#160;&#160;&#160;<span style="font-weight: bold;">if</span>&#160;((dictionary1.Count&#160;&lt;&#160;1)&#160;||&#160;(dictionary2.Count&#160;&lt;&#160;1))<span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#22914;&#26524;&#20219;&#19968;&#31687;&#25991;&#31456;&#20013;&#19981;&#21547;&#26377;&#27721;&#23383;</span>
+&#160;&#160;&#160;&#160;{
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold;">return</span>&#160;0.0;
+&#160;&#160;&#160;&#160;}
+&#160;&#160;&#160;&#160;Dictionary&lt;string,&#160;<span style="font-weight: bold; text-decoration: underline;">int</span>&gt;.KeyCollection&#160;keys1&#160;=&#160;dictionary1.Keys;
+&#160;&#160;&#160;&#160;foreach&#160;(string&#160;key&#160;in&#160;keys1)
+&#160;&#160;&#160;&#160;{
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;dictionary1.TryGetValue(key,&#160;out&#160;temp1);
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="font-weight: bold;">if</span>&#160;(!dictionary2.TryGetValue(key,&#160;out&#160;temp2))
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;{
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;temp2&#160;=&#160;0;
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;}
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;dictionary2.Remove(key);
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;numerator&#160;+=&#160;temp1&#160;*&#160;temp2;
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;denominator1&#160;+=&#160;temp1&#160;*&#160;temp1;
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;denominator2&#160;+=&#160;temp2&#160;*&#160;temp2;
+&#160;&#160;&#160;&#160;}
+&#160;&#160;&#160;&#160;Dictionary&lt;string,&#160;<span style="font-weight: bold; text-decoration: underline;">int</span>&gt;.KeyCollection&#160;keys2&#160;=&#160;dictionary2.Keys;
+&#160;&#160;&#160;&#160;foreach&#160;(string&#160;key&#160;in&#160;keys2)
+&#160;&#160;&#160;&#160;{
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;dictionary2.TryGetValue(key,&#160;out&#160;temp2);
+&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;denominator2&#160;+=&#160;temp2&#160;*&#160;temp2;
+&#160;&#160;&#160;&#160;}
+&#160;&#160;&#160;&#160;similarity&#160;=&#160;numerator&#160;/&#160;(Math.Sqrt(denominator1&#160;*&#160;denominator2));
+&#160;&#160;&#160;&#160;<span style="font-weight: bold;">return</span>&#160;similarity;
+}
+
+</pre>
+</div>
+</div>
+</div>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

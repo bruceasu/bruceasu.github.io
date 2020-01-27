@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>实现自定义事件</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">实现自定义事件</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#javascript"><div class="category">javaScript</div></a> <a href="https://bruceasu.github.io/tags.html#reprint"><div class="category">reprint</div></a> </div>
+<div class="char-counter">2017-03-02</div>
+        <div id="content">
+<nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#orge4f73a7">摘要:</a></li>
+<li><a href="#orgf3a331c">jQuery的事件机制</a></li>
+<li><a href="#org776f571">实现自定义事件的思路</a></li>
+<li><a href="#org4dc96ba">事件机制的简单实现</a></li>
+<li><a href="#org44340ad">事件机制的完整实现</a></li>
+<li><a href="#org1350d72">结束语</a></li>
+</ul>
+</div>
+</nav>
+
+<div id="outline-container-orge4f73a7" class="outline-2">
+<h2 id="orge4f73a7">摘要:</h2>
+<div class="outline-text-2" id="text-orge4f73a7">
+<p>
+无论是从事web开发还是从事GUI开发，事件都是我们经常使用到的。事件又被称为观察者模
+式或订阅/发布，拿HTML来说，一个DIV可以触发click事件，这个事件类型click是对外公开
+的，所以我们可以去订阅它。如果通过DIV去订阅一个未知的事件类型，则其结果是未定义
+的。所以事件click在接受对外订阅之前，需要对外发布。当鼠标在DIV上点击时，click事
+件就被触发。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgf3a331c" class="outline-2">
+<h2 id="orgf3a331c">jQuery的事件机制</h2>
+<div class="outline-text-2" id="text-orgf3a331c">
+<p>
+普通对象通过jQuery包装后即拥有自定义事件功能(当然拥有的功能非常多，但这里只关
+注自定义事件)，并且jQuery的自定义事件被实现为无须对外发布事件即可被订阅。来看
+个例子：
+</p>
+
+<pre class="example">
+&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+    &lt;meta charset="utf-8"&gt;
+    &lt;title&gt;Test Event&lt;/title&gt;
+    &lt;meta name="author" content="" /&gt;
+    &lt;meta http-equiv="X-UA-Compatible" content="IE=7" /&gt;
+    &lt;meta name="keywords" content="Test Event" /&gt;
+    &lt;meta name="description" content="Test Event" /&gt;
+    &lt;script type="text/javascript" src="http://cdn.staticfile.org/jquery/2.1.0/jquery.min.js"&gt;&lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;script type="text/javascript"&gt;
+var EventObject = jQuery({});
+EventObject.bind('GO_TO_BED', function(event, name, hour) {
+    console.group("Test Event");
+    console.log("event object: ", event);
+    console.log("name: ", name);
+    console.log("hour: ", hour);
+});
+EventObject.trigger('GO_TO_BED', ['goal', 12]);
+&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</pre>
+
+<p>
+先bind，后trigger，这是有原因的，下文将详细解释这点。事件类型为GO\<sub>TO</sub>\<sub>BED</sub>，使用大
+写的事件类型是一个约定，我们不妨遵循这条规则好了。执行结果如下图所示：
+</p>
+
+<p>
+在 trigger
+时所传的参数被完整的传到bind时指定的事件句柄中，至于传参的方式，这只是
+实现上的细节。上述代码的 bind 是用于订阅事件，trigger 用于触发事件。bind
+和 trigger 的第一个参数都是事件类型并且都是同一个事件类型才能被触发。而
+bind 方法的第二个 参数为 GO\<sub>TO</sub>\<sub>BED</sub> 事件被触发时所执行的函数。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org776f571" class="outline-2">
+<h2 id="org776f571">实现自定义事件的思路</h2>
+<div class="outline-text-2" id="text-org776f571">
+<div class="HTML">
+<p>
+&lt;dl&gt;
+    &lt;dt&gt;什么是发布事件&lt;/dt&gt;
+    &lt;dd&gt;发布事件其实是指定可用的事件类型列表。当然这个并非一定要实现，类似jQuery方式的也是可行的。&lt;/dd&gt;
+    &lt;dt&gt;什么是事件类型&lt;/dt&gt;
+    &lt;dd&gt;事件类型其实是相当于一个查找key，而这个key可以关联多个函数。所以这个事件类型应该是Map的一个key，这个key被关联到一个待执行函数列表。我们暂且将这个Map定义为eventsList。 &lt;/dd&gt;
+    &lt;dt&gt;什么是事件订阅&lt;/dt&gt;
+    &lt;dd&gt;事件订阅是往eventsList里添加事件类型key和它所关联的待执行函数。当然如果eventsList里已经存在某个key，则仅仅是将待执行函数添加到队列尾。&lt;/dd&gt;
+    &lt;dt&gt;什么是事件触发&lt;/dt&gt;
+    &lt;dd&gt;事件触发令所指定的事件类型key所关联的待执行函数列表有机会逐一执行。&lt;/dd&gt;
+&lt;/dl&gt;
+</p>
+
+</div>
+</div>
+</div>
+
+<div id="outline-container-org4dc96ba" class="outline-2">
+<h2 id="org4dc96ba">事件机制的简单实现</h2>
+<div class="outline-text-2" id="text-org4dc96ba">
+<p>
+为了对自定义事件机制有个大概的印象，下面简单实现了一个，只包括发布事件、订阅事件和触发事件功能。而且在订阅事件和触发事件时并没有去检测有没有公开相应的事件类型。
+</p>
+
+<p>
+代码如下：
+</p>
+
+<pre class="example">
+&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+    &lt;meta charset="utf-8"&gt;
+    &lt;title&gt;Test Event&lt;/title&gt;
+    &lt;meta name="author" content="" /&gt;
+    &lt;meta http-equiv="X-UA-Compatible" content="IE=7" /&gt;
+    &lt;meta name="keywords" content="Test Event" /&gt;
+    &lt;meta name="description" content="Test Event" /&gt;
+    &lt;script type="text/javascript" src="http://cdn.staticfile.org/jquery/2.1.0/jquery.min.js"&gt;&lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;input type="button" value="Test Event" /&gt;
+&lt;script type="text/javascript"&gt;
+// 事件类
+function Observer()
+{
+    this._eventsList = {}; // {'eat' : [{fn : null, scope : null}, {fn : null, scope : null}]}
+}
+
+Observer.prototype = {
+    dispatchEvent : function(eName)
+    {
+        eName = eName.toLowerCase();
+        this._eventsList[eName] = [];
+    },
+    on : function(eName, fn, scope)
+    {
+        eName = eName.toLowerCase();
+        this._eventsList[eName].push({fn : fn || null, scope : scope || null});
+    },
+    fireEvent : function()
+    {
+        var args  = Array.prototype.slice.call(arguments);
+        var eName = args.shift();
+        eName = eName.toLowerCase();
+        var list = this._eventsList[eName];
+        for (var i = 0; i &lt; list.length; i++)
+        {
+            var dict  = list[i];
+            var fn    = dict.fn;
+            var scope = dict.scope;
+            fn.apply(scope || null, args);
+        }
+    }
+};
+// end
+
+var EventObject = new Observer();
+
+EventObject.dispatchEvent('GO_TO_BED');
+EventObject.on('GO_TO_BED', function(name, hour) {
+    console.group('Test Event');
+    console.log(name + '要在' + hour + '点之前去睡觉');
+});
+
+~function($) {
+    $(function() {
+        $("input").click(function(event) {
+            event.stopPropagation();
+            EventObject.fireEvent('GO_TO_BED', 'goal', 12);
+        });
+    });
+}(jQuery)
+&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</pre>
+
+<p>
+执行结果如下：
+</p>
+</div>
+</div>
+
+<div id="outline-container-org44340ad" class="outline-2">
+<h2 id="org44340ad">事件机制的完整实现</h2>
+<div class="outline-text-2" id="text-org44340ad">
+<p>
+为什么要先订阅再触发呢？因为订阅是往 eventsList 添加 key
+和可执行函数列表，如果颠倒 了顺序，则在触发事件时 eventsList 中事件类型
+key 所关联的可执行函数列表是空的，也就
+没什么可执行的了。下面是一个比较完整的实现：
+</p>
+
+<pre class="example">
+&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+    &lt;meta charset="utf-8"&gt;
+    &lt;title&gt;Test Event&lt;/title&gt;
+    &lt;meta name="author" content="" /&gt;
+    &lt;meta http-equiv="X-UA-Compatible" content="IE=7" /&gt;
+    &lt;meta name="keywords" content="Test Event" /&gt;
+    &lt;meta name="description" content="Test Event" /&gt;
+    &lt;script type="text/javascript" src="http://cdn.staticfile.org/jquery/2.1.0/jquery.min.js"&gt;&lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;input type="button" value="Test Event" /&gt;
+&lt;script type="text/javascript"&gt;
+/**
+* 观察者模式实现事件监听
+*/
+function Observer()
+{
+    this._eventsList = {}; // 对外发布的事件列表{"connect" : [{fn : null, scope : null}, {fn : null, scope : null}]}
+}
+
+Observer.prototype = {
+    // 空函数
+    _emptyFn : function()
+    {
+    },
+
+    /**
+    * 判断事件是否已发布
+    * @param eType 事件类型
+    * @return Boolean
+    */
+    _hasDispatch : function(eType)
+    {
+        eType = (String(eType) || '').toLowerCase();
+
+        return "undefined" !== typeof this._eventsList[eType];
+    },
+
+    /**
+    * 根据事件类型查对fn所在的索引,如果不存在将返回-1
+    * @param eType 事件类型
+    * @param fn 事件句柄
+    */
+    _indexFn : function(eType, fn)
+    {
+        if(!this._hasDispatch(eType))
+        {
+            return -1;
+        }
+
+        var list = this._eventsList[eType];
+        fn = fn || '';
+        for(var i = 0; i &lt; list.length; i++)
+        {
+            var dict = list[i];
+            var _fn  = dict.fn || '';
+            if(fn.toString() === _fn.toString())
+            {
+                return i;
+            }
+        }
+
+        return -1;
+    },
+
+    /**
+    * 创建委托
+    */
+    createDelegate : function()
+    {
+        var __method = this;
+        var args     = Array.prototype.slice.call(arguments);
+        var object   = args.shift();
+        return function() {
+            return __method.apply(object, args.concat(Array.prototype.slice.call(arguments)));
+        }
+    },
+
+    /**
+    * 发布事件
+    */
+    dispatchEvent : function()
+    {
+        if(arguments.length &lt; 1)
+        {
+            return false;
+        }
+
+        var args = Array.prototype.slice.call(arguments), _this = this;
+        $.each(args, function(index, eType){
+            if(_this._hasDispatch(eType))
+            {
+                return true;
+            }
+            _this._eventsList[eType.toLowerCase()] = [];
+        });
+
+        return this;
+    },
+
+    /**
+    * 触发事件
+    */
+    fireEvent : function()
+    {
+        if(arguments.length &lt; 1)
+        {
+            return false;
+        }
+
+        var args = Array.prototype.slice.call(arguments), eType = args.shift().toLowerCase(), _this = this;
+        if(this._hasDispatch(eType))
+        {
+            var list = this._eventsList[eType];
+            if (!list)
+            {
+                return this;
+            }
+
+            $.each(list, function(index, dict){
+                var fn = dict.fn, scope = dict.scope || _this;
+                if(!fn || "function" !== typeof fn)
+                {
+                    fn = _this._emptyFn;
+                }
+                if(true === scope)
+                {
+                    scope = null;
+                }
+
+                fn.apply(scope, args);
+            });
+        }
+
+        return this;
+    },
+
+    /**
+    * 订阅事件
+    * @param eType 事件类型
+    * @param fn 事件句柄
+    * @param scope
+    */
+    on : function(eType, fn, scope)
+    {
+        eType = (eType || '').toLowerCase();
+        if(!this._hasDispatch(eType))
+        {
+            throw new Error("not dispatch event " + eType);
+            return false;
+        }
+
+        this._eventsList[eType].push({fn : fn || null, scope : scope || null});
+
+        return this;
+    },
+
+    /**
+    * 取消订阅某个事件
+    * @param eType 事件类型
+    * @param fn 事件句柄
+    */
+    un : function(eType, fn)
+    {
+        eType = (eType || '').toLowerCase();
+        if(this._hasDispatch(eType))
+        {
+            var index = this._indexFn(eType, fn);
+            if(index &gt; -1)
+            {
+                var list = this._eventsList[eType];
+                list.splice(index, 1);
+            }
+        }
+
+        return this;
+    },
+
+    /**
+    * 取消订阅所有事件
+    */
+    die : function(eType)
+    {
+        eType = (eType || '').toLowerCase();
+        if(this._eventsList[eType])
+        {
+            this._eventsList[eType] = [];
+        }
+
+        return this;
+    }
+};
+// end
+
+var EventObject = new Observer();
+
+EventObject.dispatchEvent('GO_TO_BED');
+EventObject.on('GO_TO_BED', function(name, hour) {
+    console.group('Test Event');
+    console.log(name + '要在' + hour + '点之前去睡觉，谁又懂得了码农的辛酸啊？');
+});
+
+~function($) {
+    $(function() {
+        $("input").click(function(event) {
+            event.stopPropagation();
+            EventObject.fireEvent('GO_TO_BED', 'goal', 12);
+        });
+    });
+}(jQuery)
+&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</pre>
+
+<p>
+以上代码完整的实现了发布事件、订阅事件、触发事件以及取消订阅功能。执行结果如下：
+</p>
+</div>
+</div>
+
+<div id="outline-container-org1350d72" class="outline-2">
+<h2 id="org1350d72">结束语</h2>
+<div class="outline-text-2" id="text-org1350d72">
+<p>
+在有需要的时候可以将EventObject组合到其它类中来使用，或者模拟类的实现和继承，为代码解耦发力。
+</p>
+</div>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

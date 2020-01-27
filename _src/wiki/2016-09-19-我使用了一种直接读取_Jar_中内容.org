@@ -1,0 +1,19 @@
+#+title: 我使用了一种直接读取 Jar 中内容
+#+date: <2016-09-19 20:48>
+#+filetags: java
+
+#+BEGIN_SRC java
+final File jarFile = new File([类名].class.getProtectionDomain().getCodeSource().getLocation().getPath()); //定位类所在的 Jar 文件
+            if(jarFile.isFile()) {
+                final JarFile jar = new JarFile(jarFile);
+                Enumeration<JarEntry> entries = jar.entries();
+                while (entries.hasMoreElements()) {
+                    JarEntry entry = entries.nextElement();
+                    if (entry.getName().startsWith("org/noahx")) {
+                        InputStream entryInputStream = jarFile.getInputStream(entry); //遍历包中的内容来获得资源
+                    }
+                }
+                jar.close();
+            }
+
+#+END_SRC

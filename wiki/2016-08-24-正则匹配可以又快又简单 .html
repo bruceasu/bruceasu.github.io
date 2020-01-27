@@ -1,0 +1,1170 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>正则匹配可以又快又简单</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">正则匹配可以又快又简单</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#reprint"><div class="category">reprint</div></a> </div>
+<div class="char-counter">2016-08-24</div>
+        <div id="content">
+<nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#org93f6406">介绍：</a></li>
+<li><a href="#orgc199bc9">正则表达式</a></li>
+<li><a href="#orgb036ff4">有限状态机</a></li>
+<li><a href="#org4d78ec3">将正则表达式转换为 NFA</a></li>
+<li><a href="#org13a0e02">正则搜索算法</a></li>
+<li><a href="#org8219b66">真实世界的正则实现</a></li>
+<li><a href="#org8e367de">原文</a></li>
+</ul>
+</div>
+</nav>
+<p>
+本文是翻译 Russ Cox 三篇关于正则表达式的文章中的第一篇 Regular Expression Matching Can Be Simple And Fast
+ <a href="http://www.shahuwang.com/2014/07/01/%E6%AD%A3%E5%88%99%E5%8C%B9%E9%85%8D%E5%8F%AF%E4%BB%A5%E5%8F%88%E5%BF%AB%E5%8F%88%E7%AE%80%E5%8D%95%E4%B8%80.html">http://www.shahuwang.com/2014/07/01/正则匹配可以又快又简单一.html</a>
+</p>
+
+<div id="outline-container-org93f6406" class="outline-2">
+<h2 id="org93f6406">介绍：</h2>
+<div class="outline-text-2" id="text-org93f6406">
+<p>
+下图展示了两种正则表达式匹配效率的对比。其中一个广泛运用于很多语言的解析器，包括
+Perl(图左）。另一个则仅用于少数几个地方，特别是 awk 和 grep 的实现上（图右）。这
+两种方法在性能上有着非常大的差异：
+</p>
+
+
+<p>
+              用正则a?nan匹配an耗时
+</p>
+
+<p>
+这个正则里，用上标表示重复次数，如 a?3a3 表示正则 a?a?a?aaa . 上面这两幅图，对比
+了两种方法实现的正则引擎，在用a?nan 匹配字符串an时所需要的时间。
+</p>
+
+<p>
+值得注意的是，Perl 匹配 a29 的时候，需要耗时超过60秒。而另一种方法（标注为
+Thompson NFA 的原因后面会解释），只需要 20 微秒，这不是打错字了，Perl 正则匹配的
+那个图的时间刻度是秒，而 Thompson NFA 的那个图，时间刻度是微妙。Thompson NFA 方
+法在匹配 a29 的时候比 Perl 快一百万倍。按照两幅图的函数曲线推算，Thompson NFA 方
+法实现的正则引擎在匹配 a100 的时候，只需要不到 200 微妙，而 Perl 的那个实现，需
+要超过 1015 年。（ Perl 只是大量使用此种算法的程序中比较显著的一个，左上图也可以
+描绘 Python,PHP,Ruby 以及其他很多的语言在正则匹配上的性能。文章后面还会有一个更
+详细的图表，展示其他实现的数据。） 这个图表展示的情况非常难以置信，也许你用过
+Perl，它的正则也似乎从没有那么慢过。实际上，大部分时候，Perl 里的正则匹配的速度
+是足够快的。不过，正如左上图所显示的，我们是可以写一种 “失控正则（pathological）”
+令 Perl 匹配非常非常慢。相反，在 Thompson NFA 的实现里，是不会出现失控正则的。对
+比看这两个图的时候，提示你一个问题：“为什么 Perl 不使用 Thompson NFA呢?” 实际上
+是可以的，也是应该的，下面的文章将会介绍如何实现。 长期以来，正则表达式都是计算
+机科学中，用来说明好的理论形成好的程序的著名例子之一，以前理论工作者仅仅是实现一
+个简单的计算模型，但是 Ken Thompson 通过给 CTSS （ Cray Time Sharing System）的
+QED 编辑器实现，把正则表达式介绍给了程序员们。Dennis Ritchie 仿效 Thompson ，也
+在其给 GE-TSS 写的 QED 里实现了正则引擎。后续 Thompson 和 Ritchie 还将创造 Unix，
+并把正则表达式也带入到了 Unix 里。上世纪 70 年代后期，正则表达式已经是 Unix 世界
+里的关键特征了，如 ed, sed, grep, egrep, awk 和 lex 这些工具都使用了正则表达式。
+</p>
+
+<p>
+如今，正则表达式也是一个用来说明忽略好的理论导致不好的程序的著名例子。当今的很多
+流行工具里实现的正则表达式，比 30 多年前的 Unix 工具都要慢。
+</p>
+
+<p>
+本文回顾了一些好的理论：正则表达式，有限状态机，以及由 Ken Thompson 在上世纪 60
+年代中期发明的正则表达式搜索算法。同时，还将这些理论予以实践，描述了 Thompson 的
+算法的简单实现。这份少于 400 行 C 语言代码的实现，就是上面那个和 Perl 对比的那个。
+它胜过了 Perl， Python， PCRE 等这些跟复杂的实现。本文归纳并总结了如何将一个理论
+转换为实践。
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-orgc199bc9" class="outline-2">
+<h2 id="orgc199bc9">正则表达式</h2>
+<div class="outline-text-2" id="text-orgc199bc9">
+<p>
+正则表达式是指用来描述一组字符串的记号。当在这组字符串中有一个特定的字符串可以被
+一个正则表达式描述，那么我们就说这个正则表达式匹配这个字符串。 最简单的正则表达
+式是一个单一的常值字符（literal character)。除了特殊的元字符 *+?()|, 字符都是匹
+配其自身（译注：这篇文章实现的正则表达式是最简单基本的那种，只有这几个元字符）。
+要匹配元字符，用一个反斜杠放在他们前面，如 \+ 匹配 + 号。 两个正则表达式可以进行
+并联或者串联形成一个新的正则表达式：如果 e1 匹配 s, 而 e2 匹配 t, 则 e1|e2 匹配
+s 或者 t, e1e2 则匹配 st。 元字符 *, <del>, 和 ? 是重复操作符： e1∗ 匹配零个或者多个
+能被 e1 匹配的字符串。e1</del> 匹配一个或者多个；e1? 匹配零个或者一个。 这些操作符，从
+弱到强的结合，分别是并联，串联和重复操作符。括号则可以用来改变结合顺序，就如数学
+运算中的一样。 当前描述的正则语法，是传统的 Unix 工具 egrep 正则语法的一个子集。
+这个子集已经足够用来描述所有的正则语言了：宽泛一点来说，正则语言是指能够在一定的
+内存占用下，通过单趟扫描文本，可以进行匹配的 一组字符串。最新的正则表达式用法
+（主要是 Perl 和那些抄袭它的）增加了许多操作符和转义符号。这些增加的功能令正则表
+达式更加简明，不过有时也变得更加隐晦了，但通常没有更加强大：那些新的神奇的正则
+表达式，通常有一个更长的传统正则表达式与之等价。 一个常见的正则扩展是反向引用。
+一个反向引用，如\1 或者 \2 表示的是匹配其前面用括号括起来的子正则表达式捕获的第
+一组或者第二组内容。如 (cat|dog)\1 匹配的是字符串 catcat 或者 dogdog， 而不是
+catdog或dogcat，因为\1表示匹配其前面第一组子表达式（用括号括起来的）匹配到的内容，
+前面匹配到cat，这里也必须是cat。 不过从理论上说，反向引用并不属于正则表达式。反
+向引用的强大是以巨大的消耗为代价的：在最坏的情况下，即使是最好的实现，搜索算法的
+时空 消耗都是指数级的，就像 Perl 那样。Perl 以及其他语言现在当然不可能移除反向引
+用，不过他们可以给没有反向引用的正则表达式一个更高效的算法实现，就像上面说的那个。
+本文就是关于那些高效的正则引擎实现算法的。
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-orgb036ff4" class="outline-2">
+<h2 id="orgb036ff4">有限状态机</h2>
+<div class="outline-text-2" id="text-orgb036ff4">
+<p>
+另一种可以用来描述一组字符的方式是有限自动机。有限自动机也叫状态机，下文将会交互
+使用自动机和状态机。 一个简单的例子，下图的这个状态机描述了一组可以被正则表达式
+a(bb)+a 匹配的字符串：
+</p>
+
+
+<p>
+一个有限自动机总是处于其某一个状态之中，在图中以圆圈表示这些状态。当状态机读取了
+一个字符，它就从一个状态转移到另一个状态去了。上图这个自动机有两个特殊的状态，开
+始状态 S0 和匹配状态 S4 ，开始状态用一个长箭头指向它（箭头尾部不接另一个状态），
+匹配状态则是用双圆圈描绘。 状态机一次读取一个字符，对应的箭头就将状态机从一个状
+态移动到另一个状态。举例来说，如果输入字符串是 abbbba，当状态机读取到第一个字符
+a 的时候，它此时处于开始状态 S0 , 然后它跟随箭头进入到状态 S1 , 当状态机读取剩下
+的字符串的时候，这个过程就这样重复下去，读取 b 到 S2 ,读取 b 到 S3, 读取 b 到
+S2, 读取 b 到 S3 ,最后读取 a 到 S4。
+</p>
+
+
+
+<p>
+状态机停在 S4, 一个匹配状态，所以这个正则匹配了这个字符串。如果一个状态机停留在
+非匹配状态，那么它就不匹配这个字符串。在状态机运行的过程中，如果发现没有一个箭头
+对应输入的字符，那么状态机就马上停止。 刚才我们所说的状态机称作确定有限状态机
+（DFA），因为在任意一个状态，每个可能的输入都只对应着最多一个状态。我们也可以创
+建一个状态机，其需要在多个状态里选择一个作为下一个状态，如下图，这个状态机和上面
+的那个是对等的，但是它是非确定性的：
+</p>
+
+
+<p>
+这个状态机是非确定的，是因为当它处于 S2 的时候，如果其读入一个 b，它有多个下一个
+状态可选： 它可以回到 S1 去，以其后面出现多一个 bb 字符串。也可以走到 S3 去，以
+其后面出现一个a。由于状态机不能预看剩下的字符，它无从知道哪一个是正确的。在这种
+情况下，如何让状态机总是猜对就变得很有趣了。这样的状态机称作非确定性有限状态机
+（NFA）。 有时候，让 NFA 有一些没有字符对应的空箭头令处理起来非常方便。一个 NFA
+可以在任何时候，在没有任何输入的情况下，跟随空箭头到下一个状态。 下图这个状态机
+和之前的那两个是对等的，但是空箭头令这个状态机对应 a(bb)+a 看起来更加清晰：
+</p>
+</div>
+</div>
+
+
+
+<div id="outline-container-org4d78ec3" class="outline-2">
+<h2 id="org4d78ec3">将正则表达式转换为 NFA</h2>
+<div class="outline-text-2" id="text-org4d78ec3">
+<p>
+正则表达式和 NFA 在能力上是等价的： 每一个正则表达式都有一个等价的 NFA （它们匹
+配同意的字符串），反之亦然。另外，DFA 在能力上也是和 NFA 以及正则表达式是等价的，
+后面我们将会说到这个。有很多种方法可以把正则表达式转换为 NFA，本文描述的方法最早
+是由 Thompson 发表在他 1968 年 CACM 的论文上的。 对应一个正则表达式的 NFA 是由多
+个对应子正则表达式的部分 NFA 组成的，每一个操作符都有不同的构造。 部分 NFA 是没
+有匹配状态的，相反，他们有一个或者多个引出的不指向任何状态的箭头，最终构造程序会
+将这些箭头连接起来指向一个匹配状态。 匹配一个单一字符的 NFA 如下图：
+</p>
+
+<p>
+e1e2 两个正则的串联的 NFA，如下图，状态机 e1 的末尾箭头指向状态机 e2 的开始状态。
+</p>
+
+<p>
+e1|e2 两个正则的并联，如下图，增加一个新的开始状态，可以选择去 e1 或者 e2 。
+</p>
+
+<p>
+正则 e? 则如下图这个 NFA，与一个空路径并联：
+</p>
+
+<p>
+正则 e∗ 与上面差不多，不过增加了一个接受 e 之后返回到开始的循环：
+</p>
+
+<p>
+正则 e+ 的 NFA 如下图，有一个循环，至少需要通过 e一次：
+</p>
+
+<p>
+通过上面这些图，我们可以知道，除了括号之外，自动机技术为正则表达式里的每一个字符
+或者元字符创建一个状态。因此，最终的 NFA，最多只有与原正则表达式字符长度一样多的
+状态。
+</p>
+
+<p>
+正如之前对 NFA 的讨论，我们是可以把 NFA 的空箭头移除的，也可以优先生成一些没有空
+箭头的 NFA。 但是有空箭头的 NFA 令我们读起来和理解起来更容易， 而且也令 C 语言的
+实现上更加简单，所以我们会保留着他们。
+</p>
+</div>
+</div>
+
+
+
+<div id="outline-container-org13a0e02" class="outline-2">
+<h2 id="org13a0e02">正则搜索算法</h2>
+<div class="outline-text-2" id="text-org13a0e02">
+<p>
+现在我们已经知道一个方法来测试一个正则表达式是否匹配一个字符串了：把这个正则表达
+式转换为 NFA，然后用这个字符串做输入，看看 NFA 运行到哪里去。记住需要赋予 NFA 在
+面临多个状态选择的时候，做出正确猜测的能力：让普通电脑上运行一个 NFA，我们需要找
+到一个模拟这种猜测的方法。 一个可行的方法是先选其中一个可选项，如果它不行，就尝
+试另一个。比如，看看如下这个对应正则 abab|abbb 的 NFA 在遇到 abbb 时的运行情况：
+</p>
+
+
+
+<p>
+在 step 0 的时候，这个 NFA 要做一个选择：到底是去匹配 abab 呢还是去匹配 abbb ?
+在上图中，它去尝试 NFA , 但是在 step 3 的时候失败了。然后它尝试另一个选择，在
+step 4 的时候匹配成功了。这种回溯的方法可以用递归简单实现，但是它需要多次扫描字
+符串，而且可能会尝试完所有的路径。 上面这个例子只是有两个不同的路径，但是在最坏
+的情况下，可能会有指数级的可选路径，这样就会非常慢了。 另一种更高效的方法是同时
+选择所有可选路径进行模拟，这个模拟需要状态机可以同时处于多个状态。
+</p>
+
+<p>
+在 step 1 和 step 2， 这个 NFA 同时处于两个状态，到了 step 3 的时候，此时只处于
+一个状态了。这种多状态方法同时尝试所有的路径，只需要扫描一次的字符串。最坏的情况
+是在任何一个步骤下，这个状态机处于所有可选状态 之中，不过即使如此，也只是需要一
+个常量时间，时间的长短只取决于字符串的长度。所以任意大的输入都只需要线性时间来处
+理而已。这对于需要回溯方法的指数 时间，简直是巨大的提升。之所以效率提升这么大，
+是因为我们追踪哪些状态可以到达，而不是哪些路径可以到达。一个有 n 个节点的 NFA，
+每一个步骤都最多有 n 个状态可达，但是却有2n 条路径。
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-org8219b66" class="outline-2">
+<h2 id="org8219b66">真实世界的正则实现</h2>
+<div class="outline-text-2" id="text-org8219b66">
+<p>
+在生产环境中使用的正则表达式远比上面实现的那个正则引擎能处理的情况复杂得多。本节
+主要简单描述一下一些共通的复杂度，完整的介绍已经超过了一篇介绍性文章的范围。字符
+集合：一个字符集，无论是[0-9] 还是 \w 或者 . (点号), 都仅仅是一个替代的简明表示。
+这些字符集可以在编译过程中展开为其替代的内容，不过添加一个它们完整明确表示新的
+NFA 节点会更加有效。POSIX 定义了一些特殊的字符集，如 \[\[:upper:\]\] ，会根据当前的区域
+改变其意义，达到这个目标最难的不是把它们的意义编码为 NFA，而是确定他们的意义。转
+义序列 真正的转义序列需要处理转义序列，比如要匹配一些元字符如\( , \) ，\\ 等。另
+外还有能匹配一些打不出来的字符，如换行符\n重复计数 很多正则引擎都提供了重复计数
+操作符，如{n} 表示匹配 n 次，{n,m} 匹配最少 n 次，且不超过 m 次。而{n,} 则表示匹
+配 n 次或者更多。递归的回溯正则实现可以用一个循环实现重复计数。而基于 NFA 或者
+DFA 的实现则必须将重复计数展开，如 e{3} 展开为 eee, e{3,5} 展开为 eeee?e?, e{3,}
+则展开为 eee+. 子匹配提取 当正则用来进行字符串财富或者解析的时候，能找出输入字符
+串的哪一部分被哪个子正则匹配了，还是很有用的。很多正则引擎可以提取出括号括起来的
+子正则匹配的字符串，如在 Perl 里，使用如下正则，可以分部分提取出输入字符串（日期
+和时间字符串）中各个部分的内容：if(<i>([0-9]+-[0-9]+-[0-9]+) ([0-9]+:[0-9]+)</i>){
+print "date: $1, time: \(2\n"; }子匹配边界的提取一直是被计算机科学理论所忽视的，
+而它也是很多正则引擎使用递归回溯最主要的原因。不过，Thompson 这类型的算法是可以
+在不影响性能的情况下，调整为可追踪子匹配边界的算法。在早至 1985 年的时候，第八版
+的 regexp(3) 已经实现了一个这样的算法，不过并没有广泛使用，甚至很少被提起过，下
+文将会对它进行说明。不固定匹配（unanchored match) 本文都假设正则是和整个的输入字
+符串对应匹配的，但现实中，我们更需要的是找出输入字符串中被正则匹配的部分。Unix
+的工具一般都返回的是从最左起的最长匹配。对 e 的不固定搜索，其实是特殊的子匹配提
+取，它其实和 .*(e).* （.*限制为只匹配最短）这个正则是一样的。非贪心操作符 在传统
+的 Unix 正则里，重复操作符 ?, * 和 + 都是最大最多匹配的，比如用(.+)(.+) 去匹配
+abcd 的时候，第一个 (.+) 会匹配完 abc，然后第二个会匹配 d。这些操作符称之为贪心
+操作符。Perl 引进了 ??, *? 和 +? 作为非贪心操作符，它们会尽可能少匹配，如
+(.+?)(.+?) 去匹配 abcd 的时候，第一个 (.+?) 会匹配一个 a，第二个则会匹配bcd。根据
+定义，贪心非贪心，都不用影响一个正则是否匹配一个字符串，只会影响括号括起来的子正
+则匹配的情况。在回溯算法里使用过一些建的的非贪心操作符实现，先尝试去匹配短的，然
+后再去匹配长的。断言 传统的正则元字符 ^ 和 \) 可以看做其周围字符串的断言：^ 断言
+在其之前是一新行（或者一个字符串的开头），$ 则断言下一个字符串是新行（或者一个字
+符串的结尾) 。Perl 使用了更多的断言，如 \b 断言其前一个字符是文字和数字，而其下
+一个则不是。Perl 还提供了前瞻断言，(?=re) 就断言当前位置之后的字符串可被正则 re
+匹配，而且并不改变当前指向的字符串位置。(?&lt;=re)则提供了逆序环视，与前瞻断言功能
+相反，是回看断言。反向引用 就像之前提到的，没有人知道怎么能够高效实现反向引用，
+而没有人能够证明这是不可能的。实际上，这个问题是 NP-complete, 如果有人可以高效实
+现，那么这将成为计算机界轰动的大事，也将获得一百万美元大奖。 关于反向引用简单高
+效的实现，那就是不去实现它。但现在这个策略已经行不通了，很多用户越来越依赖反向引
+用，而且反向引用已经成了 POSIX 正则标准里的一部分了。尽管如此，还是需要在大部分
+情况下使用 Thompson 的 NFA 模拟算法，只有在出现反向引用的时候才选择其他实现。一
+个特别聪明的实现，是把这两者结合起来，反向引用的归反向引用。反向引用与
+memoization Perl 使用 memoization 来尽可能防止在出现反向引用的时候引起指数爆炸，
+在理论上，其应该是可以达到和 NFA 方法相同的效果。但是 memoization 并没有完全解决
+这个问题，这需要的内存大概是文本长度和正则长度相乘之积。 memoization 同样没有解
+决反向引用栈空间的使用问题，它和文本长度线性相关，对于长文本，直接会耗尽栈空间。
+如下这个正则就运行不了：$ perl -e '("a" x 100000) =~ <i>^(ab?)*$</i>;'
+</p>
+</div>
+</div>
+
+<div id="outline-container-org8e367de" class="outline-2">
+<h2 id="org8e367de">原文</h2>
+<div class="outline-text-2" id="text-org8e367de">
+<p class="verse">
+REGULAR EXPRESSION MATCHING CAN BE SIMPLE AND FAST<br>
+<br>
+&#xa0;Regular Expression Matching Can Be Simple And Fast<br>
+&#xa0;(but is slow in Java, Perl, PHP, Python, Ruby, &#x2026;)<br>
+<br>
+&#xa0;Russ Cox<br>
+&#xa0;rsc@swtch.com<br>
+&#xa0;January 2007<br>
+<br>
+<br>
+Introduction<br>
+<br>
+This is a tale of two approaches to regular expression matching. One of them is<br>
+in widespread use in the standard interpreters for many languages, including<br>
+Perl. The other is used only in a few places, notably most implementations of<br>
+awk and grep. The two approaches have wildly different performance<br>
+characteristics:<br>
+<br>
+<br>
+Time to match a?nan against an<br>
+<br>
+<br>
+Let's use superscripts to denote string repetition, so that a?3a3 is shorthand<br>
+for a?a?a?aaa. The two graphs plot the time required by each approach to match<br>
+the regular expression a?nan against the string an. Notice that Perl requires<br>
+over sixty seconds to match a 29-character string. The other approach, labeled<br>
+Thompson NFA for reasons that will be explained later, requires twenty<br>
+microseconds to match the string. That's not a typo. The Perl graph plots time<br>
+in seconds, while the Thompson NFA graph plots time in microseconds: the<br>
+Thompson NFA implementation is a million times faster than Perl when running on<br>
+a miniscule 29-character string. The trends shown in the graph continue: the<br>
+Thompson NFA handles a 100-character string in under 200 microseconds, while<br>
+Perl would require over 1015 years. (Perl is only the most conspicuous example<br>
+of a large number of popular programs that use the same algorithm; the above<br>
+graph could have been Python, or PHP, or Ruby, or many other languages. A more<br>
+detailed graph later in this article presents data for other implementations.)<br>
+It may be hard to believe the graphs: perhaps you've used Perl, and it never<br>
+seemed like regular expression matching was particularly slow. Most of the time,<br>
+in fact, regular expression matching in Perl is fast enough. As the graph shows,<br>
+though, it is possible to write so-called “pathological” regular expressions<br>
+that Perl matches very very slowly. In contrast, there are no regular<br>
+expressions that are pathological for the Thompson NFA implementation. Seeing<br>
+the two graphs side by side prompts the question, “why doesn't Perl use the<br>
+Thompson NFA approach?” It can, it should, and that's what the rest of this<br>
+article is about. Historically, regular expressions are one of computer<br>
+science's shining examples of how using good theory leads to good programs. They<br>
+were originally developed by theorists as a simple computational model, but Ken<br>
+Thompson introduced them to programmers in his implementation of the text editor<br>
+QED for CTSS. Dennis Ritchie followed suit in his own implementation of QED, for<br>
+GE-TSS. Thompson and Ritchie would go on to create Unix, and they brought<br>
+regular expressions with them. By the late 1970s, regular expressions were a key<br>
+feature of the Unix landscape, in tools such as ed, sed, grep, egrep, awk, and<br>
+lex. Today, regular expressions have also become a shining example of how<br>
+ignoring good theory leads to bad programs. The regular expression<br>
+implementations used by today's popular tools are significantly slower than the<br>
+ones used in many of those thirty-year-old Unix tools. This article reviews the<br>
+good theory: regular expressions, finite automata, and a regular expression<br>
+search algorithm invented by Ken Thompson in the mid-1960s. It also puts the<br>
+theory into practice, describing a simple implementation of Thompson's<br>
+algorithm. That implementation, less than 400 lines of C, is the one that went<br>
+head to head with Perl above. It outperforms the more complex real-world<br>
+implementations used by Perl, Python, PCRE, and others. The article concludes<br>
+with a discussion of how theory might yet be converted into practice in the<br>
+real-world implementations.<br>
+<br>
+Regular Expressions<br>
+<br>
+Regular expressions are a notation for describing sets of character strings.<br>
+When a particular string is in the set described by a regular expression, we<br>
+often say that the regular expression matches the string. The simplest regular<br>
+expression is a single literal character. Except for the special metacharacters<br>
+*+?()|, characters match themselves. To match a metacharacter, escape it with a<br>
+backslash: \+ matches a literal plus character. Two regular expressions can be<br>
+alternated or concatenated to form a new regular expression: if e1 matches s and<br>
+e2 matches t, then e1|e2 matches s or t, and e1e2 matches st. The metacharacters<br>
+<b>, +, and ? are repetition operators: e1</b> matches a sequence of zero or more<br>
+(possibly different) strings, each of which match e1; e1+ matches one or more;<br>
+e1? matches zero or one. The operator precedence, from weakest to strongest<br>
+binding, is first alternation, then concatenation, and finally the repetition<br>
+operators. Explicit parentheses can be used to force different meanings, just as<br>
+in arithmetic expressions. Some examples: ab|cd is equivalent to (ab)|(cd); ab*<br>
+is equivalent to a(b*). The syntax described so far is a subset of the<br>
+traditional Unix egrep regular expression syntax. This subset suffices to<br>
+describe all regular languages: loosely speaking, a regular language is a set of<br>
+strings that can be matched in a single pass through the text using only a fixed<br>
+amount of memory. Newer regular expression facilities (notably Perl and those<br>
+that have copied it) have added many new operators and escape sequences. These<br>
+additions make the regular expressions more concise, and sometimes more cryptic,<br>
+but usually not more powerful: these fancy new regular expressions almost always<br>
+have longer equivalents using the traditional syntax. One common regular<br>
+expression extension that does provide additional power is called<br>
+backreferences. A backreference like \1 or \2 matches the string matched by a<br>
+previous parenthesized expression, and only that string: (cat|dog)\1 matches<br>
+catcat and dogdog but not catdog nor dogcat. As far as the theoretical term is<br>
+concerned, regular expressions with backreferences are not regular expressions.<br>
+The power that backreferences add comes at great cost: in the worst case, the<br>
+best known implementations require exponential search algorithms, like the one<br>
+Perl uses. Perl (and the other languages) could not now remove backreference<br>
+support, of course, but they could employ much faster algorithms when presented<br>
+with regular expressions that don't have backreferences, like the ones<br>
+considered above. This article is about those faster algorithms.<br>
+<br>
+Finite Automata<br>
+<br>
+Another way to describe sets of character strings is with finite automata.<br>
+Finite automata are also known as state machines, and we will use “automaton”<br>
+and “machine” interchangeably. As a simple example, here is a machine<br>
+recognizing the set of strings matched by the regular expression a(bb)+a:<br>
+<br>
+A finite automaton is always in one of its states, represented in the diagram by<br>
+circles. (The numbers inside the circles are labels to make this discussion<br>
+easier; they are not part of the machine's operation.) As it reads the string,<br>
+it switches from state to state. This machine has two special states: the start<br>
+state s0 and the matching state s4. Start states are depicted with lone<br>
+arrowheads pointing at them, and matching states are drawn as a double circle.<br>
+The machine reads an input string one character at a time, following arrows<br>
+corresponding to the input to move from state to state. Suppose the input string<br>
+is abbbba. When the machine reads the first letter of the string, the a, it is<br>
+in the start state s0. It follows the a arrow to state s1. This process repeats<br>
+as the machine reads the rest of the string: b to s2, b to s3, b to s2, b to s3,<br>
+and finally a to s4.<br>
+<br>
+The machine ends in s4, a matching state, so it matches the string. If the<br>
+machine ends in a non-matching state, it does not match the string. If, at any<br>
+point during the machine's execution, there is no arrow for it to follow<br>
+corresponding to the current input character, the machine stops executing early.<br>
+The machine we have been considering is called a deterministic finite automaton<br>
+(DFA), because in any state, each possible input letter leads to at most one new<br>
+state. We can also create machines that must choose between multiple possible<br>
+next states. For example, this machine is equivalent to the previous one but is<br>
+not deterministic:<br>
+<br>
+The machine is not deterministic because if it reads a b in state s2, it has<br>
+multiple choices for the next state: it can go back to s1 in hopes of seeing<br>
+another bb, or it can go on to s3 in hopes of seeing the final a. Since the<br>
+machine cannot peek ahead to see the rest of the string, it has no way to know<br>
+which is the correct decision. In this situation, it turns out to be interesting<br>
+to let the machine always guess correctly. Such machines are called<br>
+non-deterministic finite automata (NFAs or NDFAs). An NFA matches an input<br>
+string if there is some way it can read the string and follow arrows to a<br>
+matching state. Sometimes it is convenient to let NFAs have arrows with no<br>
+corresponding input character. We will leave these arrows unlabeled. An NFA can,<br>
+at any time, choose to follow an unlabeled arrow without reading any input. This<br>
+NFA is equivalent to the previous two, but the unlabeled arrow makes the<br>
+correspondence with a(bb)+a clearest:<br>
+<br>
+<br>
+Converting Regular Expressions to NFAs<br>
+<br>
+Regular expressions and NFAs turn out to be exactly equivalent in power: every<br>
+regular expression has an equivalent NFA (they match the same strings) and vice<br>
+versa. (It turns out that DFAs are also equivalent in power to NFAs and regular<br>
+expressions; we will see this later.) There are multiple ways to translate<br>
+regular expressions into NFAs. The method described here was first described by<br>
+Thompson in his 1968 CACM paper. The NFA for a regular expression is built up<br>
+from partial NFAs for each subexpression, with a different construction for each<br>
+operator. The partial NFAs have no matching states: instead they have one or<br>
+more dangling arrows, pointing to nothing. The construction process will finish<br>
+by connecting these arrows to a matching state. The NFAs for matching single<br>
+characters look like:<br>
+<br>
+The NFA for the concatenation e1e2 connects the final arrow of the e1 machine to<br>
+the start of the e2 machine:<br>
+<br>
+The NFA for the alternation e1|e2 adds a new start state with a choice of either<br>
+the e1 machine or the e2 machine.<br>
+<br>
+The NFA for e? alternates the e machine with an empty path:<br>
+<br>
+The NFA for e* uses the same alternation but loops a matching e machine back to<br>
+the start:<br>
+<br>
+The NFA for e+ also creates a loop, but one that requires passing through e at<br>
+least once:<br>
+<br>
+Counting the new states in the diagrams above, we can see that this technique<br>
+creates exactly one state per character or metacharacter in the regular<br>
+expression, excluding parentheses. Therefore the number of states in the final<br>
+NFA is at most equal to the length of the original regular expression. Just as<br>
+with the example NFA discussed earlier, it is always possible to remove the<br>
+unlabeled arrows, and it is also always possible to generate the NFA without the<br>
+unlabeled arrows in the first place. Having the unlabeled arrows makes the NFA<br>
+easier for us to read and understand, and they also make the C representation<br>
+simpler, so we will keep them.<br>
+<br>
+Regular Expression Search Algorithms<br>
+<br>
+<br>
+Now we have a way to test whether a regular expression matches a string: convert<br>
+the regular expression to an NFA and then run the NFA using the string as input.<br>
+Remember that NFAs are endowed with the ability to guess perfectly when faced<br>
+with a choice of next state: to run the NFA using an ordinary computer, we must<br>
+find a way to simulate this guessing. One way to simulate perfect guessing is to<br>
+guess one option, and if that doesn't work, try the other. For example, consider<br>
+the NFA for abab|abbb run on the string abbb:<br>
+<br>
+<br>
+At step 0, the NFA must make a choice: try to match abab or try to match abbb?<br>
+In the diagram, the NFA tries abab, but that fails after step 3. The NFA then<br>
+tries the other choice, leading to step 4 and eventually a match. This<br>
+backtracking approach has a simple recursive implementation but can read the<br>
+input string many times before succeeding. If the string does not match, the<br>
+machine must try all possible execution paths before giving up. The NFA tried<br>
+only two different paths in the example, but in the worst case, there can be<br>
+exponentially many possible execution paths, leading to very slow run times. A<br>
+more efficient but more complicated way to simulate perfect guessing is to guess<br>
+both options simultaneously. In this approach, the simulation allows the machine<br>
+to be in multiple states at once. To process each letter, it advances all the<br>
+states along all the arrows that match the letter.<br>
+<br>
+The machine starts in the start state and all the states reachable from the<br>
+start state by unlabeled arrows. In steps 1 and 2, the NFA is in two states<br>
+simultaneously. Only at step 3 does the state set narrow down to a single state.<br>
+This multi-state approach tries both paths at the same time, reading the input<br>
+only once. In the worst case, the NFA might be in every state at each step, but<br>
+this results in at worst a constant amount of work independent of the length of<br>
+the string, so arbitrarily large input strings can be processed in linear time.<br>
+This is a dramatic improvement over the exponential time required by the<br>
+backtracking approach. The efficiency comes from tracking the set of reachable<br>
+states but not which paths were used to reach them. In an NFA with n nodes,<br>
+there can only be n reachable states at any step, but there might be 2n paths<br>
+through the NFA.<br>
+<br>
+Implementation<br>
+<br>
+Thompson introduced the multiple-state simulation approach in his 1968 paper. In<br>
+his formulation, the states of the NFA were represented by small machine-code<br>
+sequences, and the list of possible states was just a sequence of function call<br>
+instructions. In essence, Thompson compiled the regular expression into clever<br>
+machine code. Forty years later, computers are much faster and the machine code<br>
+approach is not as necessary. The following sections present an implementation<br>
+written in portable ANSI C. The full source code (under 400 lines) and the<br>
+benchmarking scripts are available online. (Readers who are unfamiliar or<br>
+uncomfortable with C or pointers should feel free to read the descriptions and<br>
+skip over the actual code.)<br>
+<br>
+Implementation: Compiling to NFA<br>
+<br>
+The first step is to compile the regular expression into an equivalent NFA. In<br>
+our C program, we will represent an NFA as a linked collection of State<br>
+structures:<br>
+<br>
+struct State<br>
+{<br>
+&#xa0;&#xa0;&#xa0;&#xa0;int c;<br>
+&#xa0;&#xa0;&#xa0;&#xa0;State *out;<br>
+&#xa0;&#xa0;&#xa0;&#xa0;State *out1;<br>
+&#xa0;&#xa0;&#xa0;&#xa0;int lastlist;<br>
+};<br>
+<br>
+Each State represents one of the following three NFA fragments, depending on the value of c.<br>
+<br>
+(Lastlist is used during execution and is explained in the next section.)<br>
+Following Thompson's paper, the compiler builds an NFA from a regular expression<br>
+in postfix notation with dot (.) added as an explicit concatenation operator. A<br>
+separate function re2post rewrites infix regular expressions like “a(bb)+a” into<br>
+equivalent postfix expressions like “abb.+.a.”. (A “real” implementation would<br>
+certainly need to use dot as the “any character” metacharacter rather than as a<br>
+concatenation operator. A real implementation would also probably build the NFA<br>
+during parsing rather than build an explicit postfix expression. However, the<br>
+postfix version is convenient and follows Thompson's paper more closely.) As the<br>
+compiler scans the postfix expression, it maintains a stack of computed NFA<br>
+fragments. Literals push new NFA fragments onto the stack, while operators pop<br>
+fragments off the stack and then push a new fragment. For example, after<br>
+compiling the abb in abb.+.a., the stack contains NFA fragments for a, b, and b.<br>
+The compilation of the . that follows pops the two b NFA fragment from the stack<br>
+and pushes an NFA fragment for the concatenation bb.. Each NFA fragment is<br>
+defined by its start state and its outgoing arrows:<br>
+<br>
+struct Frag<br>
+{<br>
+&#xa0;&#xa0;&#xa0;&#xa0;State *start;<br>
+&#xa0;&#xa0;&#xa0;&#xa0;Ptrlist *out;<br>
+};<br>
+<br>
+Start points at the start state for the fragment, and out is a list of pointers<br>
+to State* pointers that are not yet connected to anything. These are the<br>
+dangling arrows in the NFA fragment. Some helper functions manipulate pointer<br>
+lists:<br>
+<br>
+Ptrlist *list1(State **outp);<br>
+Ptrlist *append(Ptrlist *l1, Ptrlist *l2);<br>
+<br>
+void patch(Ptrlist *l, State *s);<br>
+<br>
+List1 creates a new pointer list containing the single pointer outp. Append<br>
+concatenates two pointer lists, returning the result. Patch connects the<br>
+dangling arrows in the pointer list l to the state s: it sets *outp = s for each<br>
+pointer outp in l.<br>
+<br>
+Given these primitives and a fragment stack, the compiler is a simple loop over<br>
+the postfix expression. At the end, there is a single fragment left: patching in<br>
+a matching state completes the NFA.<br>
+<br>
+State*<br>
+post2nfa(char *postfix)<br>
+{<br>
+&#xa0;&#xa0;&#xa0;&#xa0;char *p;<br>
+&#xa0;&#xa0;&#xa0;&#xa0;Frag stack[1000], *stackp, e1, e2, e;<br>
+&#xa0;&#xa0;&#xa0;&#xa0;State *s;<br>
+<br>
+&#xa0;&#xa0;&#xa0;&#xa0;#define push(s) *stackp++ = s<br>
+&#xa0;&#xa0;&#xa0;&#xa0;#define pop()   *&#x2013;stackp<br>
+<br>
+&#xa0;&#xa0;&#xa0;&#xa0;stackp = stack;<br>
+&#xa0;&#xa0;&#xa0;&#xa0;for(p=postfix; *p; p++){<br>
+&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;switch(<b>p){<br>
+&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;/</b> compilation cases, described below */<br>
+&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;}<br>
+&#xa0;&#xa0;&#xa0;&#xa0;}<br>
+<br>
+&#xa0;&#xa0;&#xa0;&#xa0;e = pop();<br>
+&#xa0;&#xa0;&#xa0;&#xa0;patch(e.out, matchstate);<br>
+&#xa0;&#xa0;&#xa0;&#xa0;return e.start;<br>
+}<br>
+<br>
+The specific compilation cases mimic the translation  steps described earlier.<br>
+<br>
+Literal characters:<br>
+default:s = state(*p, NULL, NULL);push(frag(s, list1(&amp;s-&gt;out));break; ||  ||<br>
+&#xa0;&#xa0;Catenation:<br>
+case '.':e2 = pop();e1 = pop();patch(e1.out, e2.start);push(frag(e1.start, e2.out));break; ||  ||<br>
+&#xa0;&#xa0;Alternation:<br>
+case '|':e2 = pop();e1 = pop();s = state(Split, e1.start, e2.start);push(frag(s, append(e1.out, e2.out)));break; ||  ||<br>
+&#xa0;&#xa0;Zero or one:<br>
+case '?':e = pop();s = state(Split, e.start, NULL);push(frag(s, append(e.out, list1(&amp;s-&gt;out1))));break; ||  ||<br>
+&#xa0;&#xa0;Zero or more:<br>
+case '*':e = pop();s = state(Split, e.start, NULL);patch(e.out, s);push(frag(s, list1(&amp;s-&gt;out1)));break; ||  ||<br>
+&#xa0;&#xa0;One or more:<br>
+case '+':e = pop();s = state(Split, e.start, NULL);patch(e.out, s);push(frag(e.start, list1(&amp;s-&gt;out1)));break; ||  ||<br>
+<br>
+<br>
+Implementation: Simulating the NFA<br>
+<br>
+Now that the NFA has been built, we need to simulate it. The simulation requires<br>
+tracking State sets, which are stored as a simple array list:<br>
+<br>
+struct List<br>
+{<br>
+&#xa0;&#xa0;&#xa0;&#xa0;State **s;<br>
+&#xa0;&#xa0;&#xa0;&#xa0;int n;<br>
+};<br>
+<br>
+The simulation uses two lists: clist is the current set of states that the NFA<br>
+is in, and nlist is the next set of states that the NFA will be in, after<br>
+processing the current character. The execution loop initializes clist to<br>
+contain just the start state and then runs the machine one step at a time.<br>
+<br>
+int<br>
+match(State *start, char *s)<br>
+{<br>
+&#xa0;&#xa0;&#xa0;&#xa0;List *clist, *nlist, *t;<br>
+<br>
+&#xa0;&#xa0;&#xa0;&#xa0;<i>* l1 and l2 are preallocated globals *</i><br>
+&#xa0;&#xa0;&#xa0;&#xa0;clist = startlist(start, &amp;l1);<br>
+&#xa0;&#xa0;&#xa0;&#xa0;nlist = &amp;l2;<br>
+&#xa0;&#xa0;&#xa0;&#xa0;for(; *s; s++){<br>
+&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;step(clist, <b>s, nlist);<br>
+&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;t = clist; clist = nlist; nlist = t;	/</b> swap clist, nlist */<br>
+&#xa0;&#xa0;&#xa0;&#xa0;}<br>
+&#xa0;&#xa0;&#xa0;&#xa0;return ismatch(clist);<br>
+}<br>
+<br>
+To avoid allocating on every iteration of the loop, match uses two preallocated<br>
+lists l1 and l2 as clist and nlist, swapping the two after each step.<br>
+<br>
+If the final state list contains the matching state, then the string matches.<br>
+<br>
+int<br>
+ismatch(List *l)<br>
+{<br>
+&#xa0;&#xa0;&#xa0;&#xa0;int i;<br>
+<br>
+&#xa0;&#xa0;&#xa0;&#xa0;for(i=0; i&lt;l-&gt;n; i++)<br>
+&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;if(l-&gt;s[i] == matchstate)<br>
+&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;return 1;<br>
+&#xa0;&#xa0;&#xa0;&#xa0;return 0;<br>
+}<br>
+<br>
+Addstate adds a state to the list, but not if it is already on the list.<br>
+Scanning the entire list for each add would be inefficient; instead the variable<br>
+listid acts as a list generation number. When addstate adds s to a list, it<br>
+records listid in s-&gt;lastlist. If the two are already equal, then s is already<br>
+on the list being built. Addstate also follows unlabeled arrows: if s is a Split<br>
+state with two unlabeled arrows to new states, addstate adds those states to the<br>
+list instead of s.<br>
+<br>
+void<br>
+addstate(List *l, State *s)<br>
+{<br>
+&#xa0;&#xa0;&#xa0;&#xa0;if(s <code>= NULL || s-&gt;lastlist =</code> listid)<br>
+&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;return;<br>
+&#xa0;&#xa0;&#xa0;&#xa0;s-&gt;lastlist = listid;<br>
+&#xa0;&#xa0;&#xa0;&#xa0;if(s-&gt;c == Split){<br>
+&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;<i>* follow unlabeled arrows *</i><br>
+&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;addstate(l, s-&gt;out);<br>
+&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;addstate(l, s-&gt;out1);<br>
+&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;return;<br>
+&#xa0;&#xa0;&#xa0;&#xa0;}<br>
+&#xa0;&#xa0;&#xa0;&#xa0;l-&gt;s[l-&gt;n++] = s;<br>
+}<br>
+<br>
+Startlist creates an initial state list by adding just the start state:<br>
+<br>
+List*<br>
+startlist(State *s, List *l)<br>
+{<br>
+&#xa0;&#xa0;&#xa0;&#xa0;listid++;<br>
+&#xa0;&#xa0;&#xa0;&#xa0;l-&gt;n = 0;<br>
+&#xa0;&#xa0;&#xa0;&#xa0;addstate(l, s);<br>
+&#xa0;&#xa0;&#xa0;&#xa0;return l;<br>
+}<br>
+<br>
+Finally, step advances the NFA past a single character, using the current list<br>
+clist to compute the next list nlist.<br>
+<br>
+void<br>
+step(List *clist, int c, List *nlist)<br>
+{<br>
+&#xa0;&#xa0;&#xa0;&#xa0;int i;<br>
+&#xa0;&#xa0;&#xa0;&#xa0;State *s;<br>
+<br>
+&#xa0;&#xa0;&#xa0;&#xa0;listid++;<br>
+&#xa0;&#xa0;&#xa0;&#xa0;nlist-&gt;n = 0;<br>
+&#xa0;&#xa0;&#xa0;&#xa0;for(i=0; i&lt;clist-&gt;n; i++){<br>
+&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;s = clist-&gt;s[i];<br>
+&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;if(s-&gt;c == c)<br>
+&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;addstate(nlist, s-&gt;out);<br>
+&#xa0;&#xa0;&#xa0;&#xa0;}<br>
+}<br>
+<br>
+Performance<br>
+<br>
+The C implementation just described was not written with performance in mind.<br>
+Even so, a slow implementation of a linear-time algorithm can easily outperform<br>
+a fast implementation of an exponential-time algorithm once the exponent is<br>
+large enough. Testing a variety of popular regular expression engines on a<br>
+so-called pathological regular expression demonstrates this nicely. Consider the<br>
+regular expression a?nan. It matches the string an when the a? are chosen not to<br>
+match any letters, leaving the entire string to be matched by the an.<br>
+Backtracking regular expression implementations implement the zero-or-one ? by<br>
+first trying one and then zero. There are n such choices to make, a total of 2n<br>
+possibilities. Only the very last possibility—choosing zero for all the ?—will<br>
+lead to a match. The backtracking approach thus requires O(2n) time, so it will<br>
+not scale much beyond n=25. In contrast, Thompson's algorithm maintains state<br>
+lists of length approximately n and processes the string, also of length n, for<br>
+a total of O(n2) time. (The run time is superlinear, because we are not keeping<br>
+the regular expression constant as the input grows. For a regular expression of<br>
+length m run on text of length n, the Thompson NFA requires O(mn) time.) The<br>
+following graph plots time required to check whether a?nan matches an:<br>
+<br>
+<br>
+regular expression and text size n<br>
+<br>
+a?nanmatching an<br>
+<br>
+Notice that the graph's y-axis has a logarithmic scale, in order to be able to<br>
+see a wide variety of times on a single graph. From the graph it is clear that<br>
+Perl, PCRE, Python, and Ruby are all using recursive backtracking. PCRE stops<br>
+getting the right answer at n=23, because it aborts the recursive backtracking<br>
+after a maximum number of steps. As of Perl 5.6, Perl's regular expression<br>
+engine is said to memoize the recursive backtracking search, which should, at<br>
+some memory cost, keep the search from taking exponential amounts of time unless<br>
+backreferences are being used. As the performance graph shows, the memoization<br>
+is not complete: Perl's run time grows exponentially even though there are no<br>
+backreferences in the expression. Although not benchmarked here, Java uses a<br>
+backtracking implementation too. In fact, the java.util.regex interface requires<br>
+a backtracking implementation, because arbitrary Java code can be substituted<br>
+into the matching path. PHP uses the PCRE library. The thick blue line is the C<br>
+implementation of Thompson's algorithm given above. Awk, Tcl, GNU grep, and GNU<br>
+awk build DFAs, either precomputing them or using the on-the-fly construction<br>
+described in the next section. Some might argue that this test is unfair to the<br>
+backtracking implementations, since it focuses on an uncommon corner case. This<br>
+argument misses the point: given a choice between an implementation with a<br>
+predictable, consistent, fast running time on all inputs or one that usually<br>
+runs quickly but can take years of CPU time (or more) on some inputs, the<br>
+decision should be easy. Also, while examples as dramatic as this one rarely<br>
+occur in practice, less dramatic ones do occur. Examples include using (.*) (.*)<br>
+(.*) (.*) (.*) to split five space-separated fields, or using alternations where<br>
+the common cases are not listed first. As a result, programmers often learn<br>
+which constructs are expensive and avoid them, or they turn to so-called<br>
+optimizers. Using Thompson's NFA simulation does not require such adaptation:<br>
+there are no expensive regular expressions.<br>
+<br>
+Caching the NFA to build a DFA<br>
+<br>
+Recall that DFAs are more efficient to execute than NFAs, because DFAs are only<br>
+ever in one state at a time: they never have a choice of multiple next states.<br>
+Any NFA can be converted into an equivalent DFA in which each DFA state<br>
+corresponds to a list of NFA states.<br>
+<br>
+For example, here is the NFA we used earlier for abab|abbb, with state numbers<br>
+added:<br>
+<br>
+he equivalent DFA would be:<br>
+<br>
+Each state in the DFA corresponds to a list of  states from the NFA.<br>
+<br>
+In a sense, Thompson's NFA simulation is executing the equivalent DFA: each List<br>
+corresponds to some DFA state, and the step function is computing, given a list<br>
+and a next character, the next DFA state to enter. Thompson's algorithm<br>
+simulates the DFA by reconstructing each DFA state as it is needed. Rather than<br>
+throw away this work after each step, we could cache the Lists in spare memory,<br>
+avoiding the cost of repeating the computation in the future and essentially<br>
+computing the equivalent DFA as it is needed. This section presents the<br>
+implementation of such an approach. Starting with the NFA implementation from<br>
+the previous section, we need to add less than 100 lines to build a DFA<br>
+implementation.<br>
+<br>
+To implement the cache, we first introduce a new data type that represents a DFA<br>
+state:<br>
+<br>
+struct DState { List l; DState *next[256]; DState *left; DState *right; };<br>
+<br>
+A DState is the cached copy of the list l. The array next contains pointers to<br>
+the next state for each possible input character: if the current state is d and<br>
+the next input character is c, then d-&gt;next[c] is the next state. If d-&gt;next[c]<br>
+is null, then the next state has not been computed yet. Nextstate computes,<br>
+records, and returns the next state for a given state and character.<br>
+<br>
+The regular expression match follows d-&gt;next[c] repeatedly, calling nextstate to<br>
+compute new states as needed.<br>
+<br>
+int<br>
+match(DState *start, char *s)<br>
+{<br>
+&#xa0;&#xa0;&#xa0;&#xa0;int c;<br>
+&#xa0;&#xa0;&#xa0;&#xa0;DState *d, *next;<br>
+<br>
+&#xa0;&#xa0;&#xa0;&#xa0;d = start;<br>
+&#xa0;&#xa0;&#xa0;&#xa0;for(; *s; s++){<br>
+&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;c = *s &amp; 0xFF;<br>
+&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;if((next = d-&gt;next[c]) == NULL)<br>
+&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;next = nextstate(d, c);<br>
+&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;d = next;<br>
+&#xa0;&#xa0;&#xa0;&#xa0;}<br>
+&#xa0;&#xa0;&#xa0;&#xa0;return ismatch(&amp;d-&gt;l);<br>
+}<br>
+<br>
+All the DStates that have been computed need to be saved in a structure that<br>
+lets us look up a DState by its List. To do this, we arrange them in a binary<br>
+tree using the sorted List as the key. The dstate function returns the DState<br>
+for a given List, allocating one if necessary:<br>
+<br>
+DState*<br>
+dstate(List *l)<br>
+{<br>
+&#xa0;&#xa0;&#xa0;&#xa0;int i;<br>
+&#xa0;&#xa0;&#xa0;&#xa0;DState **dp, *d;<br>
+&#xa0;&#xa0;&#xa0;&#xa0;static DState *alldstates;<br>
+<br>
+&#xa0;&#xa0;&#xa0;&#xa0;qsort(l-&gt;s, l-&gt;n, sizeof l-&gt;s[0], ptrcmp);<br>
+<br>
+&#xa0;&#xa0;&#xa0;&#xa0;<i>* look in tree for existing DState *</i><br>
+&#xa0;&#xa0;&#xa0;&#xa0;dp = &amp;alldstates;<br>
+&#xa0;&#xa0;&#xa0;&#xa0;while((d = *dp) != NULL){<br>
+&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;i = listcmp(l, &amp;d-&gt;l);<br>
+&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;if(i &lt; 0)<br>
+&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;dp = &amp;d-&gt;left;<br>
+&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;else if(i &gt; 0)<br>
+&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;dp = &amp;d-&gt;right;<br>
+&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;else<br>
+&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;return d;<br>
+&#xa0;&#xa0;&#xa0;&#xa0;}<br>
+<br>
+&#xa0;&#xa0;&#xa0;&#xa0;<i>* allocate, initialize new DState *</i><br>
+&#xa0;&#xa0;&#xa0;&#xa0;d = malloc(sizeof *d + l-&gt;n*sizeof l-&gt;s[0]);<br>
+&#xa0;&#xa0;&#xa0;&#xa0;memset(d, 0, sizeof <b>d);<br>
+&#xa0;&#xa0;&#xa0;&#xa0;d-&gt;l.s = (State*</b>)(d+1);<br>
+&#xa0;&#xa0;&#xa0;&#xa0;memmove(d-&gt;l.s, l-&gt;s, l-&gt;n*sizeof l-&gt;s[0]);<br>
+&#xa0;&#xa0;&#xa0;&#xa0;d-&gt;l.n = l-&gt;n;<br>
+<br>
+&#xa0;&#xa0;&#xa0;&#xa0;<i>* insert in tree *</i><br>
+&#xa0;&#xa0;&#xa0;&#xa0;*dp = d;<br>
+&#xa0;&#xa0;&#xa0;&#xa0;return d;<br>
+}<br>
+<br>
+Nextstate runs the NFA step and returns the corresponding DState:<br>
+<br>
+DState*<br>
+nextstate(DState *d, int c)<br>
+{<br>
+&#xa0;&#xa0;&#xa0;&#xa0;step(&amp;d-&gt;l, c, &amp;l1);<br>
+&#xa0;&#xa0;&#xa0;&#xa0;return d-&gt;next[c] = dstate(&amp;l1);<br>
+}<br>
+<br>
+Finally, the DFA's start state is the DState corresponding to the NFA's start list:<br>
+<br>
+DState*<br>
+startdstate(State *start)<br>
+{<br>
+&#xa0;&#xa0;&#xa0;&#xa0;return dstate(startlist(start, &amp;l1));<br>
+}<br>
+<br>
+(As in the NFA simulation, l1 is a preallocated List.) The DStates correspond to<br>
+DFA states, but the DFA is only built as needed: if a DFA state has not been<br>
+encountered during the search, it does not yet exist in the cache. An<br>
+alternative would be to compute the entire DFA at once. Doing so would make<br>
+match a little faster by removing the conditional branch, but at the cost of<br>
+increased startup time and memory use. One might also worry about bounding the<br>
+amount of memory used by the on-the-fly DFA construction. Since the DStates are<br>
+only a cache of the step function, the implementation of dstate could choose to<br>
+throw away the entire DFA so far if the cache grew too large. This cache<br>
+replacement policy only requires a few extra lines of code in dstate and in<br>
+nextstate, plus around 50 lines of code for memory management. An implementation<br>
+is available online. (Awk uses a similar limited-size cache strategy, with a<br>
+fixed limit of 32 cached states; this explains the discontinuity in its<br>
+performance at n=28 in the graph above.) NFAs derived from regular expressions<br>
+tend to exhibit good locality: they visit the same states and follow the same<br>
+transition arrows over and over when run on most texts. This makes the caching<br>
+worthwhile: the first time an arrow is followed, the next state must be computed<br>
+as in the NFA simulation, but future traversals of the arrow are just a single<br>
+memory access. Real DFA-based implementations can make use of additional<br>
+optimizations to run even faster. A companion article (not yet written) will<br>
+explore DFA-based regular expression implementations in more detail.<br>
+<br>
+Real world regular expressions<br>
+<br>
+Regular expression usage in real programs is somewhat more complicated than what<br>
+the regular expression implementations described above can handle. This section<br>
+briefly describes the common complications; full treatment of any of these is<br>
+beyond the scope of this introductory article. Character classes. A character<br>
+class, whether [0-9] or \w or . (dot), is just a concise representation of an<br>
+alternation. Character classes can be expanded into alternations during<br>
+compilation, though it is more efficient to add a new kind of NFA node to<br>
+represent them explicitly. POSIX defines special character classes like \[\[:upper:\]\]<br>
+that change meaning depending on the current locale, but the hard part of<br>
+accommodating these is determining their meaning, not encoding that meaning into<br>
+an NFA. Escape sequences. Real regular expression syntaxes need to handle escape<br>
+sequences, both as a way to match metacharacters (\(, \), \\, etc.) and to<br>
+specify otherwise difficult-to-type characters such as \n. Counted repetition.<br>
+Many regular expression implementations provide a counted repetition operator<br>
+{n} to match exactly n strings matching a pattern; {n,m} to match at least n but<br>
+no more than m; and {n,} to match n or more. A recursive backtracking<br>
+implementation can implement counted repetition using a loop; an NFA or<br>
+DFA-based implementation must expand the repetition: e{3} expands to eee; e{3,5}<br>
+expands to eeee?e?, and e{3,} expands to eee+. Submatch extraction. When regular<br>
+expressions are used for splitting or parsing strings, it is useful to be able<br>
+to find out which sections of the input string were matched by each<br>
+subexpression. After a regular expression like ([0-9]+-[0-9]+-[0-9]+)<br>
+([0-9]+:[0-9]+) matches a string (say a date and time), many regular expression<br>
+engines make the text matched by each parenthesized expression available. For<br>
+example, one might write in Perl: if(<i>([0-9]+-[0-9]+-[0-9]+) ([0-9]+:[0-9]+)</i>){<br>
+print "date: $1, time: $2\n"; } The extraction of submatch boundaries has been<br>
+mostly ignored by computer science theorists, and it is perhaps the most<br>
+compelling argument for using recursive backtracking. However, Thompson-style<br>
+algorithms can be adapted to track submatch boundaries without giving up<br>
+efficient performance. The Eighth Edition Unix regexp(3) library implemented<br>
+such an algorithm as early as 1985, though as explained below, it was not very<br>
+widely used or even noticed. Unanchored matches. This article has assumed that<br>
+regular expressions are matched against an entire input string. In practice, one<br>
+often wishes to find a substring of the input that matches the regular<br>
+expression. Unix tools traditionally return the longest matching substring that<br>
+starts at the leftmost possible point in the input. An unanchored search for e<br>
+is a special case of submatch extraction: it is like searching for .*(e).* where<br>
+the first .* is constrained to match as short a string as possible. Non-greedy<br>
+operators. In traditional Unix regular expressions, the repetition operators ?,<br>
+*, and + are defined to match as much of the string as possible while still<br>
+allowing the entire regular expression to match: when matching (.+)(.+) against<br>
+abcd, the first (.+) will match abc, and the second will match d. These<br>
+operators are now called greedy. Perl introduced ??, *?, and +? as non-greedy<br>
+versions, which match as little of the string as possible while preserving the<br>
+overall match: when matching (.+?)(.+?) against abcd, the first (.+?) will match<br>
+only a, and the second will match bcd. By definition, whether an operator is<br>
+greedy cannot affect whether a regular expression matches a particular string as<br>
+a whole; it only affects the choice of submatch boundaries. The backtracking<br>
+algorithm admits a simple implementation of non-greedy operators: try the<br>
+shorter match before the longer one. For example, in a standard backtracking<br>
+implementation, e? first tries using e and then tries not using it; e?? uses the<br>
+other order. The submatch-tracking variants of Thompson's algorithm can be<br>
+adapted to accommodate non-greedy operators. Assertions. The traditional regular<br>
+expression metacharacters ^ and $ can be viewed as assertions about the text<br>
+around them: ^ asserts that the previous character is a newline (or the<br>
+beginning of the string), while $ asserts that the next character is a newline<br>
+(or the end of the string). Perl added more assertions, like the word boundary<br>
+\b, which asserts that the previous character is alphanumeric but the next is<br>
+not, or vice versa. Perl also generalized the idea to arbitrary conditions<br>
+called lookahead assertions: (?=re) asserts that the text after the current<br>
+input position matches re, but does not actually advance the input position;<br>
+(?!re) is similar but asserts that the text does not match re. The lookbehind<br>
+assertions (?&lt;=re) and (?&lt;!re) are similar but make assertions about the text<br>
+before the current input position. Simple assertions like ^, $, and \b are easy<br>
+to accommodate in an NFA, delaying the match one byte for forward assertions.<br>
+The generalized assertions are harder to accommodate but in principle could be<br>
+encoded in the NFA. Backreferences. As mentioned earlier, no one knows how to<br>
+implement regular expressions with backreferences efficiently, though no one can<br>
+prove that it's impossible either. (Specifically, the problem is NP-complete,<br>
+meaning that if someone did find an efficient implementation, that would be<br>
+major news to computer scientists and would win a million dollar prize.) The<br>
+simplest, most effective strategy for backreferences, taken by the original awk<br>
+and egrep, is not to implement them. This strategy is no longer practical: users<br>
+have come to rely on backreferences for at least occasional use, and<br>
+backreferences are part of the POSIX standard for regular expressions. Even so,<br>
+it would be reasonable to use Thompson's NFA simulation for most regular<br>
+expressions, and only bring out backtracking when it is needed. A particularly<br>
+clever implementation could combine the two, resorting to backtracking only to<br>
+accommodate the backreferences. Backtracking with memoization. Perl's approach<br>
+of using memoization to avoid exponential blowup during backtracking when<br>
+possible is a good one. At least in theory, it should make Perl's regular<br>
+expressions behave more like an NFA and less like backtracking. Memoization does<br>
+not completely solve the problem, though: the memoization itself requires a<br>
+memory footprint roughly equal to the size of the text times the size of the<br>
+regular expression. Memoization also does not address the issue of the stack<br>
+space used by backtracking, which is linear in the size of the text: matching<br>
+long strings typically causes a backtracking implementation to run out of stack<br>
+space: $ perl -e '("a" x 100000) =~ <i>^(ab?)*$</i>;' Segmentation fault (core dumped)<br>
+$ Character sets. Modern regular expression implementations must deal with large<br>
+non-ASCII character sets such as Unicode. The Plan 9 regular expression library<br>
+incorporates Unicode by running an NFA with a single Unicode character as the<br>
+input character for each step. That library separates the running of the NFA<br>
+from decoding the input, so that the same regular expression matching code is<br>
+used for both UTF-8 and wide-character inputs.<br>
+<br>
+History and References<br>
+<br>
+Michael Rabin and Dana Scott introduced non-deterministic finite automata and<br>
+the concept of non-determinism in 1959 [7], showing that NFAs can be simulated<br>
+by (potentially much larger) DFAs in which each DFA state corresponds to a set<br>
+of NFA states. (They won the Turing Award in 1976 for the introduction of the<br>
+concept of non-determinism in that paper.) R. McNaughton and H. Yamada [4] and<br>
+Ken Thompson [9] are commonly credited with giving the first constructions to<br>
+convert regular expressions into NFAs, even though neither paper mentions the<br>
+then-nascent concept of an NFA. McNaughton and Yamada's construction creates a<br>
+DFA, and Thompson's construction creates IBM 7094 machine code, but reading<br>
+between the lines one can see latent NFA constructions underlying both. Regular<br>
+expression to NFA constructions differ only in how they encode the choices that<br>
+the NFA must make. The approach used above, mimicking Thompson, encodes the<br>
+choices with explicit choice nodes (the Split nodes above) and unlabeled arrows.<br>
+An alternative approach, the one most commonly credited to McNaughton and<br>
+Yamada, is to avoid unlabeled arrows, instead allowing NFA states to have<br>
+multiple outgoing arrows with the same label. McIlroy [3] gives a particularly<br>
+elegant implementation of this approach in Haskell. Thompson's regular<br>
+expression implementation was for his QED editor running on the CTSS [10]<br>
+operating system on the IBM 7094. A copy of the editor can be found in archived<br>
+CTSS sources [5]. L. Peter Deutsch and Butler Lampson [1] developed the first<br>
+QED, but Thompson's reimplementation was the first to use regular expressions.<br>
+Dennis Ritchie, author of yet another QED implementation, has documented the<br>
+early history of the QED editor [8] (Thompson, Ritchie, and Lampson later won<br>
+Turing awards for work unrelated to QED or finite automata.) Thompson's paper<br>
+marked the beginning of a long line of regular expression implementations.<br>
+Thompson chose not to use his algorithm when implementing the text editor ed,<br>
+which appeared in First Edition Unix (1971), or in its descendant grep, which<br>
+first appeared in the Fourth Edition (1973). Instead, these venerable Unix tools<br>
+used recursive backtracking! Backtracking was justifiable because the regular<br>
+expression syntax was quite limited: it omitted grouping parentheses and the |,<br>
+?, and + operators. Al Aho's egrep, which first appeared in the Seventh Edition<br>
+(1979), was the first Unix tool to provide the full regular expression syntax,<br>
+using a precomputed DFA. By the Eighth Edition (1985), egrep computed the DFA on<br>
+the fly, like the implementation given above. While writing the text editor sam<br>
+[6] in the early 1980s, Rob Pike wrote a new regular expression implementation,<br>
+which Dave Presotto extracted into a library that appeared in the Eighth<br>
+Edition. Pike's implementation incorporated submatch tracking into an efficient<br>
+NFA simulation but, like the rest of the Eighth Edition source, was not widely<br>
+distributed. Pike himself did not realize that his technique was anything new.<br>
+Henry Spencer reimplemented the Eighth Edition library interface from scratch,<br>
+but using backtracking, and released his implementation into the public domain.<br>
+It became very widely used, eventually serving as the basis for the slow regular<br>
+expression implementations mentioned earlier: Perl, PCRE, Python, and so on. (In<br>
+his defense, Spencer knew the routines could be slow, and he didn't know that a<br>
+more efficient algorithm existed. He even warned in the documentation, “Many<br>
+users have found the speed perfectly adequate, although replacing the insides of<br>
+egrep with this code would be a mistake.”) Pike's regular expression<br>
+implementation, extended to support Unicode, was made freely available with sam<br>
+in late 1992, but the particularly efficient regular expression search algorithm<br>
+went unnoticed. The code is now available in many forms: as part of sam, as<br>
+Plan 9's regular expression library, or packaged separately for Unix. Ville<br>
+Laurikari independently discovered Pike's algorithm in 1999, developing a<br>
+theoretical foundation as well [2]. Finally, any discussion of regular<br>
+expressions would be incomplete without mentioning Jeffrey Friedl's book<br>
+Mastering Regular Expressions, perhaps the most popular reference among today's<br>
+programmers. Friedl's book teaches programmers how best to use today's regular<br>
+expression implementations, but not how best to implement them. What little text<br>
+it devotes to implementation issues perpetuates the widespread belief that<br>
+recursive backtracking is the only way to simulate an NFA. Friedl makes it clear<br>
+that he neither understands nor respects the underlying theory.<br>
+<br>
+Summary<br>
+<br>
+Regular expression matching can be simple and fast, using finite automata-based<br>
+techniques that have been known for decades. In contrast, Perl, PCRE, Python,<br>
+Ruby, Java, and many other languages have regular expression implementations<br>
+based on recursive backtracking that are simple but can be excruciatingly slow.<br>
+With the exception of backreferences, the features provided by the slow<br>
+backtracking implementations can be provided by the automata-based<br>
+implementations at dramatically faster, more consistent speeds.<br>
+<br>
+The next article in this series, “Regular Expression Matching: the Virtual<br>
+Machine Approach,” discusses NFA-based submatch extraction. The third article,<br>
+“Regular Expression Matching in the Wild,” examines a production implementation.<br>
+The fourth article, “Regular Expression Matching with a Trigram Index,” explains<br>
+how Google Code Search was implemented.<br>
+<br>
+Acknowledgements<br>
+<br>
+Lee Feigenbaum, James Grimmelmann, Alex Healy, William Josephson, and Arnold<br>
+Robbins read drafts of this article and made many helpful suggestions. Rob Pike<br>
+clarified some of the history surrounding his regular expression implementation.<br>
+Thanks to all.<br>
+<br>
+&#xa0;References<br>
+&#xa0;&#xa0;[1] L. Peter Deutsch and Butler Lampson, “An online editor,” Communications of the ACM 10(12) (December 1967), pp. 793–799. <a href="http://doi.acm.org/10.1145/363848.363863">http://doi.acm.org/10.1145/363848.363863</a><br>
+&#xa0;&#xa0;[2] Ville Laurikari, “NFAs with Tagged Transitions, their Conversion to Deterministic Automata and Application to Regular Expressions,” in Proceedings of the Symposium on String Processing and Information Retrieval, September 2000. <a href="http://laurikari.net/ville/spire2000-tnfa.ps">http://laurikari.net/ville/spire2000-tnfa.ps</a><br>
+&#xa0;&#xa0;[3] M. Douglas McIlroy, “Enumerating the strings of regular languages,” Journal of Functional Programming 14 (2004), pp. 503–518. <a href="http://www.cs.dartmouth.edu/~doug/nfa.ps.gz">http://www.cs.dartmouth.edu/~doug/nfa.ps.gz</a> (preprint)<br>
+&#xa0;&#xa0;[4] R. McNaughton and H. Yamada, “Regular expressions and state graphs for automata,” IRE Transactions on Electronic Computers EC-9(1) (March 1960), pp. 39–47.<br>
+&#xa0;&#xa0;[5] Paul Pierce, “CTSS source listings.” <a href="http://www.piercefuller.com/library/ctss.html">http://www.piercefuller.com/library/ctss.html</a>  (Thompson's QED is in the file com5 in the source listings archive and is marked as 0QED)<br>
+&#xa0;&#xa0;[6] Rob Pike, “The text editor sam,” Software—Practice &amp; Experience 17(11) (November 1987), pp. 813–845. <a href="http://plan9.bell-labs.com/sys/doc/sam/sam.html">http://plan9.bell-labs.com/sys/doc/sam/sam.html</a><br>
+&#xa0;&#xa0;[7] Michael Rabin and Dana Scott, “Finite automata and their decision problems,” IBM Journal of Research and Development 3 (1959), pp. 114–125. <a href="http://www.research.ibm.com/journal/rd/032/ibmrd0302C.pdf">http://www.research.ibm.com/journal/rd/032/ibmrd0302C.pdf</a><br>
+&#xa0;&#xa0;[8] Dennis Ritchie, “An incomplete history of the QED text editor.” <a href="http://plan9.bell-labs.com/~dmr/qed.html">http://plan9.bell-labs.com/~dmr/qed.html</a><br>
+&#xa0;&#xa0;[9] Ken Thompson, “Regular expression search algorithm,” Communications of the ACM 11(6) (June 1968), pp. 419–422. <a href="http://doi.acm.org/10.1145/363347.363387">http://doi.acm.org/10.1145/363347.363387</a> (PDF)<br>
+&#xa0;&#xa0;[10] Tom Van Vleck, “The IBM 7094 and CTSS.” <a href="http://www.multicians.org/thvv/7094.html">http://www.multicians.org/thvv/7094.html</a><br>
+<br>
+&#xa0;Discussion on reddit and perlmonks and LtU<br>
+&#xa0;Copyright © 2007 Russ Cox.  All Rights Reserved.<br>
+&#xa0;<a href="http://swtch.com/~rsc/regexp/">http://swtch.com/~rsc/regexp/</a><br>
+<br>
+</p>
+</div>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

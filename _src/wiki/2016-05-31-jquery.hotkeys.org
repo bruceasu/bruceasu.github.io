@@ -1,0 +1,2988 @@
+#+title: 一个jQuery热键插件:js-hotkeys
+#+date: <2016-05-31 20:00>
+#+filetags: jquery javascript
+#+description: 一个jQuery热键插件:js-hotkeys
+
+一个jQuery热键插件:js-hotkeys
+
+#+BEGIN_HTML
+  <table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+#+END_HTML
+
+#+BEGIN_HTML
+  <colgroup>
+#+END_HTML
+
+#+BEGIN_HTML
+  <col  class="org-left" />
+#+END_HTML
+
+#+BEGIN_HTML
+  <col  class="org-left" />
+#+END_HTML
+
+#+BEGIN_HTML
+  <col  class="org-left" />
+#+END_HTML
+
+#+BEGIN_HTML
+  <col  class="org-left" />
+#+END_HTML
+
+#+BEGIN_HTML
+  <col  class="org-left" />
+#+END_HTML
+
+#+BEGIN_HTML
+  <col  class="org-left" />
+#+END_HTML
+
+#+BEGIN_HTML
+  <col  class="org-left" />
+#+END_HTML
+
+#+BEGIN_HTML
+  <col  class="org-left" />
+#+END_HTML
+
+#+BEGIN_HTML
+  </colgroup>
+#+END_HTML
+
+#+BEGIN_HTML
+  <thead>
+#+END_HTML
+
+#+BEGIN_HTML
+  <tr>
+#+END_HTML
+
+#+BEGIN_HTML
+  <th scope="col" class="org-left">
+#+END_HTML
+
+SK
+
+#+BEGIN_HTML
+  </th>
+#+END_HTML
+
+#+BEGIN_HTML
+  <th scope="col" class="org-left">
+#+END_HTML
+
+L
+
+#+BEGIN_HTML
+  </th>
+#+END_HTML
+
+#+BEGIN_HTML
+  <th scope="col" class="org-left">
+#+END_HTML
+
+SMC
+
+#+BEGIN_HTML
+  </th>
+#+END_HTML
+
+#+BEGIN_HTML
+  <th scope="col" class="org-left">
+#+END_HTML
+
+SMS
+
+#+BEGIN_HTML
+  </th>
+#+END_HTML
+
+#+BEGIN_HTML
+  <th scope="col" class="org-left">
+#+END_HTML
+
+SMA
+
+#+BEGIN_HTML
+  </th>
+#+END_HTML
+
+#+BEGIN_HTML
+  <th scope="col" class="org-left">
+#+END_HTML
+
+SMCSK
+
+#+BEGIN_HTML
+  </th>
+#+END_HTML
+
+#+BEGIN_HTML
+  <th scope="col" class="org-left">
+#+END_HTML
+
+SMSSK
+
+#+BEGIN_HTML
+  </th>
+#+END_HTML
+
+#+BEGIN_HTML
+  <th scope="col" class="org-left">
+#+END_HTML
+
+SMASK
+
+#+BEGIN_HTML
+  </th>
+#+END_HTML
+
+#+BEGIN_HTML
+  </tr>
+#+END_HTML
+
+#+BEGIN_HTML
+  <tr>
+#+END_HTML
+
+#+BEGIN_HTML
+  <th scope="col" class="org-left">
+#+END_HTML
+
+Special Keys
+
+#+BEGIN_HTML
+  </th>
+#+END_HTML
+
+#+BEGIN_HTML
+  <th scope="col" class="org-left">
+#+END_HTML
+
+A-Z Letters
+
+#+BEGIN_HTML
+  </th>
+#+END_HTML
+
+#+BEGIN_HTML
+  <th scope="col" class="org-left">
+#+END_HTML
+
+Special Modifiers Ctrl
+
+#+BEGIN_HTML
+  </th>
+#+END_HTML
+
+#+BEGIN_HTML
+  <th scope="col" class="org-left">
+#+END_HTML
+
+Special Modifiers Shift
+
+#+BEGIN_HTML
+  </th>
+#+END_HTML
+
+#+BEGIN_HTML
+  <th scope="col" class="org-left">
+#+END_HTML
+
+Special Modifiers Alt
+
+#+BEGIN_HTML
+  </th>
+#+END_HTML
+
+#+BEGIN_HTML
+  <th scope="col" class="org-left">
+#+END_HTML
+
+Special Modifiers + Special Keys Ctrl
+
+#+BEGIN_HTML
+  </th>
+#+END_HTML
+
+#+BEGIN_HTML
+  <th scope="col" class="org-left">
+#+END_HTML
+
+Special Modifiers + Special Keys Shift
+
+#+BEGIN_HTML
+  </th>
+#+END_HTML
+
+#+BEGIN_HTML
+  <th scope="col" class="org-left">
+#+END_HTML
+
+Special Modifiers + Special Keys Alt
+
+#+BEGIN_HTML
+  </th>
+#+END_HTML
+
+#+BEGIN_HTML
+  </tr>
+#+END_HTML
+
+#+BEGIN_HTML
+  </thead>
+#+END_HTML
+
+#+BEGIN_HTML
+  <tbody>
+#+END_HTML
+
+#+BEGIN_HTML
+  <tr>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+esc
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+a
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Ctrl+a
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Shift+a
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Alt+a
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Ctrl+esc
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Shift+esc
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Alt+esc
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  </tr>
+#+END_HTML
+
+#+BEGIN_HTML
+  <tr>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+tab
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+b
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Ctrl+b
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Shift+b
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Alt+b
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Ctrl+tab
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Shift+tab
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Alt+tab
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  </tr>
+#+END_HTML
+
+#+BEGIN_HTML
+  <tr>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+space
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+c
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Ctrl+c
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Shift+c
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Alt+c
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Ctrl+space
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Shift+space
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Alt+space
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  </tr>
+#+END_HTML
+
+#+BEGIN_HTML
+  <tr>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+return
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+d
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Ctrl+d
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Shift+d
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Alt+d
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Ctrl+return
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Shift+return
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Alt+return
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  </tr>
+#+END_HTML
+
+#+BEGIN_HTML
+  <tr>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+backspace
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+e
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Ctrl+e
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Shift+e
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Alt+e
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Ctrl+backspace
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Shift+backspace
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Alt+backspace
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  </tr>
+#+END_HTML
+
+#+BEGIN_HTML
+  <tr>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+scroll
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+f
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Ctrl+f
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Shift+f
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Alt+f
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Ctrl+scroll
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Shift+scroll
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Alt+scroll
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  </tr>
+#+END_HTML
+
+#+BEGIN_HTML
+  <tr>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+capslock
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+g
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Ctrl+g
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Shift+g
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Alt+g
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Ctrl+capslock
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Shift+capslock
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Alt+capslock
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  </tr>
+#+END_HTML
+
+#+BEGIN_HTML
+  <tr>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+numlock
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+h
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Ctrl+h
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Shift+h
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Alt+h
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Ctrl+numlock
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Shift+numlock
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Alt+numlock
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  </tr>
+#+END_HTML
+
+#+BEGIN_HTML
+  <tr>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+pause
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+i
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Ctrl+i
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Shift+i
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Alt+i
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Ctrl+pause
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Shift+pause
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Alt+pause
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  </tr>
+#+END_HTML
+
+#+BEGIN_HTML
+  <tr>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+insert
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+j
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Ctrl+j
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Shift+j
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Alt+j
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Ctrl+insert
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Shift+insert
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Alt+insert
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  </tr>
+#+END_HTML
+
+#+BEGIN_HTML
+  <tr>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+home
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+k
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Ctrl+k
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Shift+k
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Alt+k
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Ctrl+home
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Shift+home
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Alt+home
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  </tr>
+#+END_HTML
+
+#+BEGIN_HTML
+  <tr>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+del
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+l
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Ctrl+l
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Shift+l
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Alt+l
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Ctrl+del
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Shift+del
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Alt+del
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  </tr>
+#+END_HTML
+
+#+BEGIN_HTML
+  <tr>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+end
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+m
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Ctrl+m
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Shift+m
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Alt+m
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Ctrl+end
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Shift+end
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Alt+end
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  </tr>
+#+END_HTML
+
+#+BEGIN_HTML
+  <tr>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+pageup
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+n
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Ctrl+n
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Shift+n
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Alt+n
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Ctrl+pageup
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Shift+pageup
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Alt+pageup
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  </tr>
+#+END_HTML
+
+#+BEGIN_HTML
+  <tr>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+pagedown
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+o
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Ctrl+o
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Shift+o
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Alt+o
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Ctrl+pagedown
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Shift+pagedown
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Alt+ pagedown
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  </tr>
+#+END_HTML
+
+#+BEGIN_HTML
+  <tr>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+left
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+p
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Ctrl+p
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Shift+p
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Alt+p
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Ctrl+left
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Shift+left
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Alt+left
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  </tr>
+#+END_HTML
+
+#+BEGIN_HTML
+  <tr>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+up
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+q
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Ctrl+q
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Shift+q
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Alt+q
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Ctrl+up
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Shift+up
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Alt+up
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  </tr>
+#+END_HTML
+
+#+BEGIN_HTML
+  <tr>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+right
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+r
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Ctrl+r
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Shift+r
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Alt+r
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Ctrl+right
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Shift+right
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Alt+right
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  </tr>
+#+END_HTML
+
+#+BEGIN_HTML
+  <tr>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+down
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+s
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Ctrl+s
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Shift+s
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Alt+s
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Ctrl+down
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Shift+down
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Alt+ down
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  </tr>
+#+END_HTML
+
+#+BEGIN_HTML
+  <tr>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+f1
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+t
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Ctrl+t
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Shift+t
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Alt+t
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Ctrl+f1
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Shift+f1
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Alt+f1
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  </tr>
+#+END_HTML
+
+#+BEGIN_HTML
+  <tr>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+f2
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+u
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Ctrl+u
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Shift+u
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Alt+u
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Ctrl+f2
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Shift+f2
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Alt+f2
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  </tr>
+#+END_HTML
+
+#+BEGIN_HTML
+  <tr>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+f3
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+v
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Ctrl+v
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Shift+v
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Alt+v
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Ctrl+f3
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Shift+f3
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Alt+f3
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  </tr>
+#+END_HTML
+
+#+BEGIN_HTML
+  <tr>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+f4
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+w
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Ctrl+w
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Shift+w
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Alt+w
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Ctrl+f4
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Shift+f4
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Alt+f4
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  </tr>
+#+END_HTML
+
+#+BEGIN_HTML
+  <tr>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+f5
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+x
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Ctrl+x
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Shift+x
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Alt+x
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Ctrl+f5
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Shift+f5
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Alt+f5
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  </tr>
+#+END_HTML
+
+#+BEGIN_HTML
+  <tr>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+f6
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+y
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Ctrl+y
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Shift+y
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Alt+y
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Ctrl+f6
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Shift+f6
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Alt+f6
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  </tr>
+#+END_HTML
+
+#+BEGIN_HTML
+  <tr>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+f7
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+z
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Ctrl+z
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Shift+z
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Alt+z
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Ctrl+f7
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Shift+f7
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Alt+f7
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  </tr>
+#+END_HTML
+
+#+BEGIN_HTML
+  <tr>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+f8
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Ctrl+f8
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Shift+f8
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Alt+f8
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  </tr>
+#+END_HTML
+
+#+BEGIN_HTML
+  <tr>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+f9
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Ctrl+f9
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Shift+f9
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Alt+f9
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  </tr>
+#+END_HTML
+
+#+BEGIN_HTML
+  <tr>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+f10
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Ctrl+f10
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Shift+f10
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Alt+f10
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  </tr>
+#+END_HTML
+
+#+BEGIN_HTML
+  <tr>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+f11
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Ctrl+f11
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Shift+f11
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Alt+f11
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  </tr>
+#+END_HTML
+
+#+BEGIN_HTML
+  <tr>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+f12
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Ctrl+f12
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Shift+f12
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  <td class="org-left">
+#+END_HTML
+
+Alt+f12
+
+#+BEGIN_HTML
+  </td>
+#+END_HTML
+
+#+BEGIN_HTML
+  </tr>
+#+END_HTML
+
+#+BEGIN_HTML
+  </tbody>
+#+END_HTML
+
+#+BEGIN_HTML
+  </table>
+#+END_HTML
+
+#+BEGIN_EXAMPLE
+    $(expression).bind(<types>,<options>, <handler>);
+    $(expression).unbind(<types>,<options>, <handler>);
+
+    $(document).bind('keydown', 'Ctrl+a', fn);
+
+    // e.g. replace '$' sign with '€'
+    $('input.foo').bind('keyup', '$', function(){
+        this.value = this.value.replace('$', '€');
+    });
+
+    $('div.foo').unbind('keydown', 'Ctrl+a', fn);
+#+END_EXAMPLE

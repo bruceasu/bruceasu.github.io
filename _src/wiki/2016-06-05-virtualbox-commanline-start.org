@@ -1,0 +1,68 @@
+# -*- coding: utf-8-unix; -*-
+#+TITLE:       VirtualBox通过命令启动虚拟机
+#+AUTHOR:      Bruce Asu
+#+EMAIL:       bruceasu@163.com
+#+DATE:        <2016-06-05 20:00>
+#+filetags:    virtualbox
+#+LANGUAGE:    en
+#+OPTIONS:     H:7 num:nil toc:t \n:nil ::t |:t ^:nil -:nil f:t *:t <:nil
+
+通过命令行启动 VirtualBox，可以省去直接启动虚拟机显示图形界面的那部分资源。这种
+形式非常适用于在服务器上虚拟 n 台机器同时提供服务。使用 Host Interface 网络连接
+方式，可以让虚拟机的虚拟网卡获取和主机一样的网络地址等信息，从而可以直接对外提供
+服务。
+
+* 查看主机上的可用虚拟机：
+#+BEGIN_VERSE
+    $VBoxManage list vms
+    "Ubuntu10.10" {36ea7e92-35ec-432e-9d91-15941cc3aae5}
+    "meego-tablet-ia32" {dfef3c26-de81-4ae1-b98c-536394cbff61}
+    "Win2008_VS2008AndVC6" {6f3f0f1a-dfa8-4acf-8fdb-4d236f44d4e3}
+    "RedHat9" {937d825f-4a3f-46c3-a22b-9e20d15964ec}
+
+#+END_VERSE
+
+注： *VBoxManage list vms -l* 显示详细信息。
+
+* 启动指定的可用虚拟机：
+: VBoxManage startvm <uuid>|<name> [--type gui|sdl|headless]
+** 打开默认窗口的虚拟机：
+#+BEGIN_VERSE
+    $VBoxManage startvm RedHat9 --type gui
+    Waiting for the VM to power on...
+    VM has been successfully started.
+
+#+END_VERSE
+** 打开简单窗口的虚拟机：
+#+BEGIN_VERSE
+  $VBoxManage startvm RedHat9 --type sdl
+    Waiting for the VM to power on...
+    VM has been successfully started.
+
+#+END_VERSE
+
+** 打开无窗口的虚拟机(无外设)：
+#+BEGIN_VERSE
+    $VBoxManage startvm RedHat9 --type headless
+    Waiting for the VM to power on...
+    VM has been successfully started.
+
+#+END_VERSE
+
+注：这种方式打开的虚拟机可以通过，如：远程桌面或 ssh 来登陆操作。
+* 查看已经运行的虚拟机：
+#+BEGIN_VERSE
+    $VBoxManage list runningvms
+    "RedHat9" {937d825f-4a3f-46c3-a22b-9e20d15964ec}
+
+#+END_VERSE
+* 控制已经运行的虚拟机：(暂停｜恢复｜重启｜关机｜休眠)
+: VBoxManage controlvm <uuid>|<name> pause|resume|reset|poweroff|savestate
+
+注：更多参数详见 VBoxManage &#x2013;help 输出的帮助。
+* 修改虚拟机配置：(&#x2013;memory 取值单位MB)
+: $VBoxManage modifyvm RedHat9 --memory 256 --acpi on --boot1 disk -nic1 bridged
+* 创建一个虚拟磁盘：(&#x2013;size 取值单位MB &#x2013;sizebyte 取值单位字节)
+: $VBoxManage createhd --filename RedHat9.vdi --size 30000
+
+* 更多命令用法详见 VBoxManage &#x2013;help 输出的帮助。

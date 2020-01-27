@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>ssh 指定私钥的配置管理</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">ssh 指定私钥的配置管理</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#linux"><div class="category">linux</div></a> </div>
+<div class="char-counter">2016-06-09</div>
+        <div id="content">
+<p>
+用ssh 公钥认证方式登录非常常见，快速方便，通常就是用 <code>ssh-keygen -t rsa</code> 在 ~/.ssh
+目录下生成默认名称的 <i>id_rsa</i> 和 <i>id_rsa.pub</i> 文件。
+</p>
+
+<p>
+特别是git流行之后，用ssh的方式访问git服务器，部署起来最容易。
+</p>
+
+<p>
+实际上，ssh 私钥的名称和生成地点都可以单独指定的, 和硬件操作系统无关你可以在任意
+一台服务器上生成 公钥,私钥对，保存起来，到处分发使用指定的配置文件叫做
+<i>ssh_config</i> , <i>man ssh_config</i> ，有详细说明
+</p>
+
+<p>
+个性化指定 私钥的步骤
+</p>
+
+<p>
+vi ~/.ssh/config文件，加入如下 配置行
+</p>
+<p class="verse">
+1.  Host xxxx<br>
+2.  IdentityFile 私钥文件名（不是 `id_rsa.pub` )<br>
+3.  Port 端口号<br>
+4.  User 你登陆xxxx服务器用的账号<br>
+<br>
+</p>
+
+<p>
+注意：
+</p>
+<ul class="org-ul">
+<li>这个文件没有格式，一行一条记录，不需要tab缩进</li>
+<li>你可以在这个文件里面指定多个Host</li>
+<li>一个 Host开头的行 到下一个 Host开头的行 是 这个host的细节设置</li>
+<li>全局的ssh config 文件在 /etc/ssh/ssh\_config</li>
+</ul>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

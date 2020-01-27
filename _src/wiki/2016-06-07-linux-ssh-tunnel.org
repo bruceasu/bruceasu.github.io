@@ -1,0 +1,160 @@
+# -*- coding: utf-8-unix; -*-
+#+TITLE:       ssh tunnel
+#+AUTHOR:      Bruce Asu
+#+EMAIL:       bruceasu@163.com
+#+DATE:        <2016-06-07 20:48>
+#+filetags:    linux
+
+#+LANGUAGE:    en
+#+OPTIONS:     H:7 num:nil toc:t \n:nil ::t |:t ^:nil -:nil f:t *:t <:nil
+
+* SSH命令参数:
+#+BEGIN_VERSE
+-f 后台运行,不打开终端
+-R 反向,让对方也可以连接过来
+-l 登录用户名,loginname
+-c 指定加密方式:blowfish|3des
+-v 显示详细信息,verbose
+-V 显示版本,version
+-a 关闭代理认证
+-A 启用代理认证
+-C 启用Gzip压缩
+-e 设定跳脱字节
+-g 允许远程主机连接本地指派的port
+-i 选择所读取的RSA 认证识别的档案
+-n 重导 stdin 到 /dev/null
+-N 不执行远程命令
+-p 指定ssh服务端口
+-q 安静模式
+-L local_port:host:port 指派本地的 port 到相对远程host地址的port
+-R remote_port:host:port 指派远程的 port 到相对本地host地址的port
+-2 强制 ssh 去使用协议版本2
+-4 强制 ssh 去使用 IPv4 地址
+-6 强制 ssh 去使用 IPv6 地址
+
+#+END_VERSE
+
+* 实例详解:
+1. 建立隧道，本地端口 7070, 将 222.111.111.10 设置动态 Socket 代理
+: ssh -p 22 -D 7070 ping.bao@222.111.111.10
+
+2. 建立隧道，本地端口8080, 对应相对 SSH 服务器 222.111.111.10 的 192.168.6.26:22
+: ssh -L 8080:192.168.6.26:22 ping.bao@222.111.111.10
+
+3. 建立隧道，在远程 SSH 服务器 222.111.111.10 端口 8888, 对应本地的 192.168.1.121:80
+: ssh -R 8888:192.168.1.121:80 ping.bao@222.111.111.10
+
+4. 建立隧道,放在后台
+: ssh -Nf -p 22 -D 7070 ping.bao@222.111.111.10
+* 案例
+假设有这样一个需求，需要从家中访问公司内网机器，可以用ssh遂道技术来作转发，遂道
+分正向遂道和反向遂道两种，如果数据流向与ssh的顺序（从 ssh client -> ssh server )
+相同即为正向遂道（用－L标识），如果数据流向与  ssh的顺序相反即为反向遂道。下面直
+接上两张图来说明：
+
+上面第一张图是正向遂道，数据流向与ssh的顺序（指ssh client -> ssh server)相同，即
+从192.168.1.1：80处监听到请求数据之后，通过ssh遂道，最后转发给了ssh server端6300
+端口去处理。6300：192.168.1.1：80 都是前部分是ssh server, 后端分是ssh client
+
+上面第二张图是反向遂道，数据流向与ssh的顺序(指ssh client -> ssh server)相反，即
+从ssh server端的6300端口监听到数据之后，通过ssh遂道，最后转给了192.168.1.1：8080
+
+仔细想想上面两张图吧，下面直接上代码，从家中访问公司内网的机器，必须在公司有一台
+可以从家中访问得到的跳转机（例IP：10.10.10.10)，要访问的内网机IP为192.168.1.1 。
+
+1. 如果用反向遂道实现的话，
+   先修改ssh server的 `/etc/ssh/sshd_config` 中的
+   : GatewayPorts  yes
+
+    重启sshd,  /etc/init.d/sshd restart
+
+   : ssh -R 8422:192.168.1.1:8422 -R 61616:192.168.1.1:61616  root@10.10.10.10 -g -N -C -o TCPKeepAlive=yes
+
+2. 如果用正向遂道的话，
+   先修改ssh server的 `/etc/ssh/sshd_config` 中的
+   : AllowTcpForwarding true
+
+   重启sshd,  /etc/init.d/sshd restart
+
+   接着要 ssh 登录到跳转机上执行下列命令：
+   : ssh -L 8422:localhost:8422 -L 61616:localhost:61616  root@9.125.13.30 -g -N -C -o TCPKeepAlive=yes
+
+   如果报错“open failed: administratively prohibited: open failed”，那是因为上面
+   的localhost处应该是ssh client的IP
+
+   example: <https://9.123.100.152:8422/ibm/console/login.do?action=secure>
+
+上述的缺点就是,为每个端口都得开一个tunnel，所以可以通过
+: ssh命令 -D 的参数( [地址:]端口 )
+
+含义是在某个本地地址的某个端口上开SOCKS服务进行监听，把这个端口的数据通信以加密
+形式转发到ssh的另一端。例如：我们翻墙的原理，要防墙必须国外有一台ssh server
+
+1. 首先，通过
+   : ssh -lquqissh -N -D 7070 root@yourForeignSSHhost
+   如 s20.flyssh.net
+2. 在 firefox 中设置使用 socket v5 的端口代理，端口为 7070 (选项菜单里的“高级”选项卡
+   的 Network 子选项卡中设置 Connection)
+
+3. 如何仍然有问题，可在 firefox的地址栏输入 about:config 配置使用远程DNS：
+   : network.proxy.socks_remote_dns=true
+
+上面的翻墙有个缺点，就是你访问国内的网站它也会用代理，这样就慢啊，所以你也可用
+autoproxy 插件选择仅在访问某些站点的使用指定代理，哪些不用代理
+
+原理如下：比如 firefox 现在要访问 www.163.com，firefox 先将请求数据转给 socket
+代理端口 7070, 然后通过 ssh 遂道，最后由国外的 ssh server 主机去根据远程的 DNS
+访问 www.163.com
+
+但上述需要应用程序支持socket代理，但有的程序不支持怎么办，可以用透明 tsocks, 它能
+让普通程序也走sock代理，在
+: yum install tsocks
+
+安装后，修改配置文件 /etc/tsocks.conf，可以在样本文件 tsocks.conf.sample 的基础
+上修改，通常只要配置 server = 127.0.0.1即可，其他都可以默认。例如svn服务，再用
+: ssh -D 1080 -f -N 用户名@公司服务器的公网地址
+
+在本机的 1080 端口开启 SOCKS 服务；然后按照你平时使用 svn 的习惯，只是在命令前加上
+tsocks，类似这样:
+: tsocks svn up 或者 tsocks svn ci -m 'aaaa'
+等等即可。
+
+如果是http代理，用squid，安装后修改配置
+#+BEGIN_VERSE
+    sudo vim /etc/squid/squid.conf
+    http_access allow localnet
+    http_access allow all
+
+    # And finally deny all other access to this proxy
+    #http_access deny all
+
+    # Squid normally listens to port 3128
+    http_port 21
+
+    sudo service squid start
+
+#+END_VERSE
+
+使用时，
+
+1. 在shell中，导入
+   : http_proxy=http://<httpproxyIP>:21
+
+   环境变量，然后 wget www.g.cn
+2. yum源中使用代理，
+   #+BEGIN_VERSE
+      vim /etc/yum.conf
+      proxy=http://<httpproxyIP>:21
+      然后 sudo yum install git
+
+   #+END_VERSE
+
+要实现ssh自动跳转非常简单，在  ~/.ssh/config
+#+BEGIN_VERSE
+  Host server-*
+  User ubuntu
+  IdentityFile ~/.stack/myssh.key
+  ProxyCommand ssh hua@<forward-machine> nc -q0 %h.stack %p
+#+END_VERSE
+
+SSHebang 就是一个这样自动分发如上配置的工具

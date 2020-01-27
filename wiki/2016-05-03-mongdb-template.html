@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>spring_data_mongodb之mongodbTemplate查询总结</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">spring_data_mongodb之mongodbTemplate查询总结</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#spring"><div class="category">spring</div></a> <a href="https://bruceasu.github.io/tags.html#mongodb"><div class="category">mongodb</div></a> </div>
+<div class="char-counter">2016-05-03</div>
+        <div id="content">
+
+<div id="outline-container-orgea851c8" class="outline-2">
+<h2 id="orgea851c8">常用的列表查询（筛选条件，查询字段，排序及分页）</h2>
+<div class="outline-text-2" id="text-orgea851c8">
+</div>
+<div id="outline-container-orgca09fbd" class="outline-3">
+<h3 id="orgca09fbd">相当于关系型数据库的：</h3>
+<div class="outline-text-3" id="text-orgca09fbd">
+<pre class="example">
+select fields from tableName where coditions order by field skip limit;
+
+</pre>
+
+<div class="org-src-container">
+<pre class="src src-java"><span style="font-weight: bold; text-decoration: underline;">DBObject</span> <span style="font-weight: bold; font-style: italic;">cond</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">BasicDBObject</span>();
+<span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#31561;&#20110;&#26465;&#20214;</span>
+cond.put(<span style="font-style: italic;">"sex"</span>,<span style="font-style: italic;">"male"</span>);
+<span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#38750;&#31561;&#20110;&#26465;&#20214;</span>
+cond.put(<span style="font-style: italic;">"age"</span>, <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">BasicDBObject</span>(<span style="font-weight: bold; text-decoration: underline;">QueryOperators</span>.GTE,20)
+            .append(<span style="font-weight: bold; text-decoration: underline;">QueryOperators</span>.LTE,30));
+<span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#28155;&#21152;or&#26465;&#20214;&#65288;&#21644;&#19978;&#38754;&#30340;&#26465;&#20214;&#36824;&#26159;and&#20851;&#31995;&#65289;</span>
+<span style="font-weight: bold; text-decoration: underline;">BasicDBList</span> <span style="font-weight: bold; font-style: italic;">orList</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">BasicDBList</span>();
+<span style="font-weight: bold; text-decoration: underline;">DBObject</span> <span style="font-weight: bold; font-style: italic;">orCond1</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">BasicDBObject</span>();
+orCond1.put(<span style="font-style: italic;">"name"</span>, <span style="font-style: italic;">"lisi"</span>);
+<span style="font-weight: bold; text-decoration: underline;">DBObject</span> <span style="font-weight: bold; font-style: italic;">orCond2</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">BasicDBObject</span>();
+orCond2.put(<span style="font-style: italic;">"name"</span>, <span style="font-style: italic;">"zhaoliu"</span>);
+orList.add(orCond1);
+orList.add(orCond2);
+cond.put(<span style="font-weight: bold; text-decoration: underline;">QueryOperators</span>.OR, orList);
+<span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#38480;&#21046;&#26597;&#35810;&#36820;&#22238;&#30340;&#23383;&#27573;</span>
+<span style="font-weight: bold; text-decoration: underline;">DBObject</span> <span style="font-weight: bold; font-style: italic;">feild</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">BasicDBObject</span>();
+feild.put(<span style="font-style: italic;">"name"</span>, 1);<span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#26597;&#35810;name</span>
+feild.put(<span style="font-style: italic;">"_id"</span>, 0);<span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">_id&#19981;&#26597;&#35810;</span>
+<span style="font-weight: bold; text-decoration: underline;">Query</span> <span style="font-weight: bold; font-style: italic;">query</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">BasicQuery</span>(cond,feild);
+<span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#21333;&#23383;&#27573;&#20498;&#24207;</span>
+query.with(<span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">Sort</span>(<span style="font-weight: bold; text-decoration: underline;">Direction</span>.DESC,<span style="font-style: italic;">"age"</span>));
+<span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#22810;&#23383;&#27573;&#25490;&#24207;</span>
+<span style="font-weight: bold; text-decoration: underline;">List</span>&lt;<span style="font-weight: bold; text-decoration: underline;">Order</span>&gt; <span style="font-weight: bold; font-style: italic;">orders</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">ArrayList</span>&lt;<span style="font-weight: bold; text-decoration: underline;">Sort</span>.<span style="font-weight: bold; text-decoration: underline;">Order</span>&gt;();
+orders.add(<span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">Order</span>(<span style="font-weight: bold; text-decoration: underline;">Direction</span>.DESC,<span style="font-style: italic;">"age"</span>));
+orders.add(<span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">Order</span>(<span style="font-weight: bold; text-decoration: underline;">Direction</span>.ASC,<span style="font-style: italic;">"name"</span>));
+query.with(<span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">Sort</span>(orders));
+<span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#20998;&#39029;</span>
+query.skip(0).limit(10);
+<span style="font-weight: bold; text-decoration: underline;">List</span>&lt;<span style="font-weight: bold; text-decoration: underline;">HashMap</span>&gt; <span style="font-weight: bold; font-style: italic;">result</span> = mongoTemplate.find(query, HashMap.<span style="font-weight: bold;">class</span>,<span style="font-style: italic;">"person"</span>);
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orga2fb84d" class="outline-3">
+<h3 id="orga2fb84d">QueryOperators常用的比较符：</h3>
+<div class="outline-text-3" id="text-orga2fb84d">
+<pre class="example">
+OR = "$or"：or条件
+AND = "$and"：and条件
+GT = "$gt"：大于操作
+GTE = "$gte"：大于等于操作
+LT = "$lt"：小于操作
+LTE = "$lte"小于等于操作
+NE = "$ne"：不等于操作
+IN = "$in"：in操作
+</pre>
+<div class="org-src-container">
+<pre class="src src-java"><span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#31034;&#20363;</span>
+<span style="font-weight: bold; text-decoration: underline;">BasicDBList</span> <span style="font-weight: bold; font-style: italic;">fieldList</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">BasicDBList</span>();
+fieldList.add(<span style="font-style: italic;">"&#19978;&#28023;"</span>);
+cond.put(<span style="font-style: italic;">"province"</span>, <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">BasicDBObject</span>(<span style="font-weight: bold; text-decoration: underline;">QueryOperators</span>.IN,fieldList));
+
+NIN = <span style="font-style: italic;">"$nin"</span>&#65306;not in
+MOD = <span style="font-style: italic;">"$mod"</span>;
+
+<span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#31034;&#20363;&#65288;age&#21644;6&#21462;&#27169;&#20026;0&#30340;&#25968;&#25454;&#65289;</span>
+<span style="font-weight: bold; text-decoration: underline;">BasicDBList</span> <span style="font-weight: bold; font-style: italic;">modList</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">BasicDBList</span>();
+modList.add(6);
+modList.add(0);
+cond.put(<span style="font-style: italic;">"age"</span>, <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">BasicDBObject</span>(<span style="font-weight: bold; text-decoration: underline;">QueryOperators</span>.MOD,modList));
+
+ALL = <span style="font-style: italic;">"$all"</span>&#65306;&#23383;&#27573;&#21516;&#26102;&#28385;&#36275;all&#20013;&#30340;&#25152;&#26377;&#26465;&#20214;&#65292;&#21487;&#20197;&#21644;$elemMatch&#37197;&#21512;&#20351;&#29992;
+SIZE = <span style="font-style: italic;">"$size"</span>&#65306;&#25968;&#32452;&#30340;&#38271;&#24230;
+EXISTS = <span style="font-style: italic;">"$exists"</span>&#65306;&#23383;&#27573;&#26159;&#21542;&#23384;&#22312;&#31579;&#36873;&#65288;<span style="font-weight: bold; text-decoration: underline;">true</span>,<span style="font-weight: bold; text-decoration: underline;">false</span>&#65289;
+ELEM_MATCH = <span style="font-style: italic;">"$elemMatch"</span>:&#20869;&#23884;&#25991;&#26723;&#23436;&#20840;&#21305;&#37197;&#26597;&#35810;
+WHERE = <span style="font-style: italic;">"$where"</span>&#65306;where&#26465;&#20214;&#65292;&#19968;&#33324;&#29992;&#20110;&#25991;&#26723;&#20013;&#20004;&#20010;&#23383;&#27573;&#30340;&#27604;&#36739;
+
+<span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#31034;&#20363;&#65288;name&#23383;&#27573;&#30340;&#20540;&#21644;province&#30340;&#20540;&#19981;&#31561;&#30340;&#25968;&#25454;&#65289;</span>
+cond.put(<span style="font-weight: bold; text-decoration: underline;">QueryOperators</span>.WHERE,<span style="font-style: italic;">"this.name != this.province"</span>);
+
+NOR = <span style="font-style: italic;">"$nor"</span>&#65306;&#21516;&#26102;&#19981;&#28385;&#36275;
+TYPE = <span style="font-style: italic;">"$type"</span>:&#23383;&#27573;&#31867;&#22411;&#21305;&#37197;
+<span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#27169;&#31946;&#26597;&#35810;</span>
+cond.put(<span style="font-style: italic;">"province"</span>, <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">BasicDBObject</span>(<span style="font-style: italic;">"$regex"</span>,<span style="font-style: italic;">"^.*&#19978;.*$"</span>));
+NOT = <span style="font-style: italic;">"$not"</span>&#65306;&#19981;&#28385;&#36275;&#25351;&#23450;&#26465;&#20214;&#65292;&#25110;&#32773;&#35813;&#23383;&#27573;&#19981;&#23384;&#22312;
+ORDER_BY = <span style="font-style: italic;">"$orderby"</span>:&#28155;&#21152;&#25490;&#24207;&#23383;&#27573;
+
+</pre>
+</div>
+</div>
+</div>
+
+
+<div id="outline-container-org6ff52b6" class="outline-3">
+<h3 id="org6ff52b6">这里列出的是比较常用的一些操作符，还有一些比较复杂的</h3>
+<div class="outline-text-3" id="text-org6ff52b6">
+<p>
+（例如计算点一点之间距离条件的）请参考：
+</p>
+</div>
+
+<div id="outline-container-orgf39fb05" class="outline-4">
+<h4 id="orgf39fb05">使用游标的方式进行分页查询：</h4>
+<div class="outline-text-4" id="text-orgf39fb05">
+<div class="org-src-container">
+<pre class="src src-java"><span style="font-weight: bold; text-decoration: underline;">DBObject</span> <span style="font-weight: bold; font-style: italic;">cond</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">BasicDBObject</span>();
+<span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#31561;&#20110;&#26465;&#20214;</span>
+cond.put(<span style="font-style: italic;">"sex"</span>,<span style="font-style: italic;">"male"</span>);
+<span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#38750;&#31561;&#20110;&#26465;&#20214;</span>
+cond.put(<span style="font-style: italic;">"age"</span>, <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">BasicDBObject</span>(<span style="font-weight: bold; text-decoration: underline;">QueryOperators</span>.GTE,20)
+            .append(<span style="font-weight: bold; text-decoration: underline;">QueryOperators</span>.LTE,30));
+<span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#28155;&#21152;or&#26465;&#20214;&#65288;&#21644;&#19978;&#38754;&#30340;&#26465;&#20214;&#36824;&#26159;and&#20851;&#31995;&#65289;</span>
+<span style="font-weight: bold; text-decoration: underline;">BasicDBList</span> <span style="font-weight: bold; font-style: italic;">orList</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">BasicDBList</span>();
+<span style="font-weight: bold; text-decoration: underline;">DBObject</span> <span style="font-weight: bold; font-style: italic;">orCond1</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">BasicDBObject</span>();
+orCond1.put(<span style="font-style: italic;">"name"</span>, <span style="font-style: italic;">"lisi"</span>);
+<span style="font-weight: bold; text-decoration: underline;">DBObject</span> <span style="font-weight: bold; font-style: italic;">orCond2</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">BasicDBObject</span>();
+orCond2.put(<span style="font-style: italic;">"name"</span>, <span style="font-style: italic;">"zhaoliu"</span>);
+orList.add(orCond1);
+orList.add(orCond2);
+cond.put(<span style="font-weight: bold; text-decoration: underline;">QueryOperators</span>.OR, orList);
+<span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#38480;&#21046;&#26597;&#35810;&#36820;&#22238;&#30340;&#23383;&#27573;</span>
+<span style="font-weight: bold; text-decoration: underline;">DBObject</span> <span style="font-weight: bold; font-style: italic;">feild</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">BasicDBObject</span>();
+feild.put(<span style="font-style: italic;">"name"</span>, 1);<span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#26597;&#35810;name</span>
+feild.put(<span style="font-style: italic;">"_id"</span>, 0);<span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">_id&#19981;&#26597;&#35810;</span>
+<span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#25490;&#24207;&#23383;&#27573;</span>
+<span style="font-weight: bold; text-decoration: underline;">DBObject</span> <span style="font-weight: bold; font-style: italic;">order</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">BasicDBObject</span>();
+order.put(<span style="font-style: italic;">"age"</span>,1);
+<span style="font-weight: bold; text-decoration: underline;">DBCursor</span> <span style="font-weight: bold; font-style: italic;">dbCursor</span> = mongoTemplate.getCollection(<span style="font-style: italic;">"person"</span>).find(cond, feild).sort(order).skip(0).limit(10);
+System.err.println(dbCursor.count());
+System.err.println(dbCursor.toArray());
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgf09468c" class="outline-4">
+<h4 id="orgf09468c">根据某字段去重查询：</h4>
+<div class="outline-text-4" id="text-orgf09468c">
+<div class="org-src-container">
+<pre class="src src-java"><span style="font-weight: bold; text-decoration: underline;">DBObject</span> <span style="font-weight: bold; font-style: italic;">cond</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">BasicDBObject</span>();
+cond.put(<span style="font-style: italic;">"sex"</span>,<span style="font-style: italic;">"male"</span>);
+<span style="font-weight: bold; text-decoration: underline;">List</span> <span style="font-weight: bold; font-style: italic;">distinct</span> = mongoTemplate.getCollection(<span style="font-style: italic;">"person"</span>).distinct(<span style="font-style: italic;">"name"</span>,cond);
+
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgfbb1a5d" class="outline-4">
+<h4 id="orgfbb1a5d">根据查询条件查询条数：</h4>
+<div class="outline-text-4" id="text-orgfbb1a5d">
+<div class="org-src-container">
+<pre class="src src-java"><span style="font-weight: bold; text-decoration: underline;">DBObject</span> <span style="font-weight: bold; font-style: italic;">cond</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">BasicDBObject</span>();
+cond.put(<span style="font-style: italic;">"sex"</span>,<span style="font-style: italic;">"male"</span>);
+<span style="font-weight: bold; text-decoration: underline;">long</span> <span style="font-weight: bold; font-style: italic;">count</span> = mongoTemplate.getCollection(<span style="font-style: italic;">"person"</span>).count(cond);
+System.out.println(count);
+
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org3cd3a90" class="outline-4">
+<h4 id="org3cd3a90">使用Aggregation Pipeline进行聚群分析：</h4>
+<div class="outline-text-4" id="text-org3cd3a90">
+<div class="org-src-container">
+<pre class="src src-java"><span style="font-weight: bold; text-decoration: underline;">List</span>&lt;<span style="font-weight: bold; text-decoration: underline;">AggregationOperation</span>&gt; <span style="font-weight: bold; font-style: italic;">aggregationOptions</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">ArrayList</span>&lt;<span style="font-weight: bold; text-decoration: underline;">AggregationOperation</span>&gt;();      aggregationOptions.add(Aggregation.match(Criteria.where(<span style="font-style: italic;">"province"</span>).is(<span style="font-style: italic;">"&#19978;&#28023;"</span>)));     aggregationOptions.add(Aggregation.group(<span style="font-style: italic;">"age"</span>).count().as(<span style="font-style: italic;">"count"</span>));
+aggregationOptions.add(Aggregation.project(<span style="font-style: italic;">"count"</span>).and(<span style="font-style: italic;">"age"</span>).previousOperation().andExclude(<span style="font-style: italic;">"_id"</span>));
+aggregationOptions.add(Aggregation.sort(<span style="font-weight: bold; text-decoration: underline;">Direction</span>.DESC,<span style="font-style: italic;">"age"</span>));
+aggregationOptions.add(Aggregation.skip(0L));
+aggregationOptions.add(Aggregation.limit(10));
+<span style="font-weight: bold; text-decoration: underline;">Aggregation</span> <span style="font-weight: bold; font-style: italic;">agg</span> = Aggregation.newAggregation(aggregationOptions);
+<span style="font-weight: bold; text-decoration: underline;">AggregationResults</span>&lt;<span style="font-weight: bold; text-decoration: underline;">HashMap</span>&gt; <span style="font-weight: bold; font-style: italic;">aggregate</span> = mongoTemplate.aggregate(agg,<span style="font-style: italic;">"person"</span>, HashMap.<span style="font-weight: bold;">class</span>);
+<span style="font-weight: bold; text-decoration: underline;">List</span>&lt;<span style="font-weight: bold; text-decoration: underline;">HashMap</span>&gt; <span style="font-weight: bold; font-style: italic;">mappedResults</span> = aggregate.getMappedResults();
+</pre>
+</div>
+
+<p>
+其中group后可以添加一些聚合函数，如sum，avg等。如果遇到内嵌文档，需要拆分的情况，
+我们可以使用unwind将内嵌文档进行拆分：
+</p>
+
+<pre class="example">
+aggregationOptions.add(Aggregation.unwind(field));
+
+</pre>
+</div>
+</div>
+
+
+<div id="outline-container-org16eeac1" class="outline-4">
+<h4 id="org16eeac1">Spring整合MongoDB实现多个or的范围查询</h4>
+<div class="outline-text-4" id="text-org16eeac1">
+<div class="org-src-container">
+<pre class="src src-java"><span style="font-weight: bold; text-decoration: underline;">Criteria</span> <span style="font-weight: bold; font-style: italic;">c1</span>= Criteria.where(<span style="font-style: italic;">"year"</span>).gte(startYear).lte(endYear).and(<span style="font-style: italic;">"month"</span>).is(endMonth).and(<span style="font-style: italic;">"day"</span>).gte(startDay).lte(endDay)
+            .and(<span style="font-style: italic;">"hour"</span>).gte(startHour).lte(endHour).and(<span style="font-style: italic;">"minute"</span>).is(startMinute).and(<span style="font-style: italic;">"second"</span>).gte(startSecond);
+<span style="font-weight: bold; text-decoration: underline;">Criteria</span> <span style="font-weight: bold; font-style: italic;">c2</span>=Criteria.where(<span style="font-style: italic;">"year"</span>).gte(startYear).lte(endYear).and(<span style="font-style: italic;">"month"</span>).is(endMonth).and(<span style="font-style: italic;">"day"</span>).gte(startDay).lte(endDay)
+            .and(<span style="font-style: italic;">"hour"</span>).gte(startHour).lte(endHour).and(<span style="font-style: italic;">"minute"</span>).is(endMinute).and(<span style="font-style: italic;">"second"</span>).lte(endSecond);
+<span style="font-weight: bold; text-decoration: underline;">Criteria</span> <span style="font-weight: bold; font-style: italic;">c3</span> =Criteria.where(<span style="font-style: italic;">"year"</span>).gte(startYear).lte(endYear).and(<span style="font-style: italic;">"month"</span>).is(endMonth).and(<span style="font-style: italic;">"day"</span>).gte(startDay).lte(endDay)
+            .and(<span style="font-style: italic;">"hour"</span>).gte(startHour).lte(endHour).and(<span style="font-style: italic;">"minute"</span>).gt(startMinute).lt(endMinute);
+<span style="font-weight: bold; text-decoration: underline;">Criteria</span> <span style="font-weight: bold; font-style: italic;">cr</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">Criteria</span>();
+query = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">Query</span>(cr.orOperator(c1,c2,c3));
+getMongoTemplate().find(query, SensorCollection.<span style="font-weight: bold;">class</span>);
+
+</pre>
+</div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgd224f13" class="outline-3">
+<h3 id="orgd224f13">附带Criteria方法：</h3>
+<div class="outline-text-3" id="text-orgd224f13">
+<table>
+
+
+<colgroup>
+<col  class="org-left">
+
+<col  class="org-left">
+
+<col  class="org-left">
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">&#xa0;</th>
+<th scope="col" class="org-left">Mongodb</th>
+<th scope="col" class="org-left">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">Criteria and (String key)</td>
+<td class="org-left">$and</td>
+<td class="org-left">并且</td>
+</tr>
+
+<tr>
+<td class="org-left">Criteria andOperator (Criteria…​ criteria)</td>
+<td class="org-left">$and</td>
+<td class="org-left">并且</td>
+</tr>
+
+<tr>
+<td class="org-left">Criteria orOperator (Criteria…​ criteria)</td>
+<td class="org-left">$or</td>
+<td class="org-left">或者</td>
+</tr>
+
+<tr>
+<td class="org-left">Criteria gt (Object o)</td>
+<td class="org-left">$gt</td>
+<td class="org-left">大于</td>
+</tr>
+
+<tr>
+<td class="org-left">Criteria gte (Object o)</td>
+<td class="org-left">$gte</td>
+<td class="org-left">大于等于</td>
+</tr>
+
+<tr>
+<td class="org-left">Criteria in (Object…​ o)</td>
+<td class="org-left">$in</td>
+<td class="org-left">包含</td>
+</tr>
+
+<tr>
+<td class="org-left">Criteria is (Object o)</td>
+<td class="org-left">$is</td>
+<td class="org-left">等于</td>
+</tr>
+
+<tr>
+<td class="org-left">Criteria lt (Object o)</td>
+<td class="org-left">$lt</td>
+<td class="org-left">小于</td>
+</tr>
+
+<tr>
+<td class="org-left">Criteria lte (Object o)</td>
+<td class="org-left">$lte</td>
+<td class="org-left">小等于</td>
+</tr>
+
+<tr>
+<td class="org-left">Criteria nin (Object…​ o)</td>
+<td class="org-left">$nin</td>
+<td class="org-left">不包含</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

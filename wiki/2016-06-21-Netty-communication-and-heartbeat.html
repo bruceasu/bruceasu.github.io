@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>Netty communication and heartbeat</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">Netty communication and heartbeat</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#netty"><div class="category">netty</div></a> <a href="https://bruceasu.github.io/tags.html#java"><div class="category">java</div></a> </div>
+<div class="char-counter">2016-06-21</div>
+        <div id="content">
+<nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#orge84e63f">前言</a></li>
+<li><a href="#org02d9f54">公共的Share部分(主要包含消息协议类型的定义)</a>
+<ul>
+<li><a href="#org4f4b624">设计消息类型：</a></li>
+<li><a href="#org4caf0a3">Message基类：</a></li>
+<li><a href="#orgb09e9e7">常量设置：</a></li>
+<li><a href="#org3e8e1ab">登录类型消息：</a></li>
+<li><a href="#org25ed4c7">心跳检测Ping类型消息：</a></li>
+<li><a href="#orgd3b8af3">请求类型消息：</a></li>
+<li><a href="#orgb16b490">请求类型参数</a></li>
+<li><a href="#org70271e1">响应类型消息：</a></li>
+<li><a href="#org5a6958f">相应类型body对像</a></li>
+</ul>
+</li>
+<li><a href="#orgaa54441">Server端</a>
+<ul>
+<li><a href="#orgc66e175">Map:</a></li>
+<li><a href="#orgfef008f">Handler</a></li>
+<li><a href="#org818e5fe">ServerBootstrap:</a></li>
+</ul>
+</li>
+<li><a href="#org4fb8e78">Client端</a>
+<ul>
+<li><a href="#orge37cfa6">handler</a></li>
+<li><a href="#orgab09113">bootstrap</a></li>
+</ul>
+</li>
+<li><a href="#org8a5c0b8">具体的例子和相应pom.xml</a></li>
+</ul>
+</div>
+</nav>
+
+<div id="outline-container-orge84e63f" class="outline-2">
+<h2 id="orge84e63f">前言</h2>
+<div class="outline-text-2" id="text-orge84e63f">
+<p>
+通过netty实现服务端与客户端的长连接通讯，及心跳检测。
+</p>
+
+<p>
+基本思路：netty服务端通过一个Map保存所有连接上来的客户端SocketChannel,
+客户端的Id作为Map的key。每次服务器端如果要向某个客户端发送消息，只需根
+据ClientId取出对应的SocketChannel,往里面写入message即可。心跳检测通过
+IdleEvent事件，定时向服务端放送Ping消息，检测SocketChannel是否终断。
+</p>
+
+<p>
+环境JDK1.8 和netty5
+</p>
+
+<p>
+以下是具体的代码实现和介绍：
+</p>
+</div>
+</div>
+
+<div id="outline-container-org02d9f54" class="outline-2">
+<h2 id="org02d9f54">公共的Share部分(主要包含消息协议类型的定义)</h2>
+<div class="outline-text-2" id="text-org02d9f54">
+</div>
+<div id="outline-container-org4f4b624" class="outline-3">
+<h3 id="org4f4b624">设计消息类型：</h3>
+<div class="outline-text-3" id="text-org4f4b624">
+<pre class="example">
+public enum  MsgType {
+    PING,ASK,REPLY,LOGIN
+}
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org4caf0a3" class="outline-3">
+<h3 id="org4caf0a3">Message基类：</h3>
+<div class="outline-text-3" id="text-org4caf0a3">
+<pre class="example">
+//必须实现序列,serialVersionUID 一定要有,否者在netty消息序列化反序列化
+//会有问题，接收不到消息！！！
+
+public abstract class BaseMsg  implements Serializable {
+    private static final long serialVersionUID = 1L;
+    private MsgType type;
+    //必须唯一，否者会出现channel调用混乱
+    private String clientId;
+
+    //初始化客户端id
+    public BaseMsg() {
+        this.clientId = Constants.getClientId();
+    }
+
+    public String getClientId() {
+        return clientId;
+    }
+
+    public void setClientId(String clientId) {
+        this.clientId = clientId;
+    }
+
+    public MsgType getType() {
+        return type;
+    }
+
+    public void setType(MsgType type) {
+        this.type = type;
+    }
+}
+</pre>
+</div>
+</div>
+
+<div id="outline-container-orgb09e9e7" class="outline-3">
+<h3 id="orgb09e9e7">常量设置：</h3>
+<div class="outline-text-3" id="text-orgb09e9e7">
+<pre class="example">
+public class Constants {
+    private static String clientId;
+    public static String getClientId() {
+        return clientId;
+    }
+    public static void setClientId(String clientId) {
+        Constants.clientId = clientId;
+    }
+}
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org3e8e1ab" class="outline-3">
+<h3 id="org3e8e1ab">登录类型消息：</h3>
+<div class="outline-text-3" id="text-org3e8e1ab">
+<pre class="example">
+public class LoginMsg extends BaseMsg {
+    private String userName;
+    private String password;
+    public LoginMsg() {
+        super();
+        setType(MsgType.LOGIN);
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+}
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org25ed4c7" class="outline-3">
+<h3 id="org25ed4c7">心跳检测Ping类型消息：</h3>
+<div class="outline-text-3" id="text-org25ed4c7">
+<pre class="example">
+public class PingMsg extends BaseMsg {
+    public PingMsg() {
+        super();
+        setType(MsgType.PING);
+    }
+}
+</pre>
+</div>
+</div>
+
+<div id="outline-container-orgd3b8af3" class="outline-3">
+<h3 id="orgd3b8af3">请求类型消息：</h3>
+<div class="outline-text-3" id="text-orgd3b8af3">
+<pre class="example">
+public class AskMsg extends BaseMsg {
+    public AskMsg() {
+        super();
+        setType(MsgType.ASK);
+    }
+    private AskParams params;
+
+    public AskParams getParams() {
+        return params;
+    }
+
+    public void setParams(AskParams params) {
+        this.params = params;
+    }
+}
+</pre>
+</div>
+</div>
+
+<div id="outline-container-orgb16b490" class="outline-3">
+<h3 id="orgb16b490">请求类型参数</h3>
+<div class="outline-text-3" id="text-orgb16b490">
+<p>
+必须实现序列化接口
+</p>
+
+<pre class="example">
+public class AskParams implements Serializable {
+    private static final long serialVersionUID = 1L;
+    private String auth;
+
+    public String getAuth() {
+        return auth;
+    }
+
+    public void setAuth(String auth) {
+        this.auth = auth;
+    }
+}
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org70271e1" class="outline-3">
+<h3 id="org70271e1">响应类型消息：</h3>
+<div class="outline-text-3" id="text-org70271e1">
+<pre class="example">
+public class ReplyMsg extends BaseMsg {
+    public ReplyMsg() {
+        super();
+        setType(MsgType.REPLY);
+    }
+    private ReplyBody body;
+
+    public ReplyBody getBody() {
+        return body;
+    }
+
+    public void setBody(ReplyBody body) {
+        this.body = body;
+    }
+}
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org5a6958f" class="outline-3">
+<h3 id="org5a6958f">相应类型body对像</h3>
+<div class="outline-text-3" id="text-org5a6958f">
+<pre class="example">
+public class ReplyBody implements Serializable {
+    private static final long serialVersionUID = 1L;
+}
+
+public class ReplyClientBody extends ReplyBody {
+    private String clientInfo;
+
+    public ReplyClientBody(String clientInfo) {
+        this.clientInfo = clientInfo;
+    }
+
+    public String getClientInfo() {
+        return clientInfo;
+    }
+
+    public void setClientInfo(String clientInfo) {
+        this.clientInfo = clientInfo;
+    }
+}
+
+public class ReplyServerBody extends ReplyBody {
+    private String serverInfo;
+    public ReplyServerBody(String serverInfo) {
+        this.serverInfo = serverInfo;
+    }
+    public String getServerInfo() {
+        return serverInfo;
+    }
+    public void setServerInfo(String serverInfo) {
+        this.serverInfo = serverInfo;
+    }
+}
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgaa54441" class="outline-2">
+<h2 id="orgaa54441">Server端</h2>
+<div class="outline-text-2" id="text-orgaa54441">
+<p>
+主要包含对SocketChannel引用的Map,ChannelHandler的实现和Bootstrap.
+</p>
+</div>
+
+<div id="outline-container-orgc66e175" class="outline-3">
+<h3 id="orgc66e175">Map:</h3>
+<div class="outline-text-3" id="text-orgc66e175">
+<pre class="example">
+public class NettyChannelMap {
+    private static Map&lt;String,SocketChannel&gt; map=new ConcurrentHashMap&lt;String, SocketChannel&gt;();
+    public static void add(String clientId,SocketChannel socketChannel){
+        map.put(clientId,socketChannel);
+    }
+    public static Channel get(String clientId){
+       return map.get(clientId);
+    }
+    public static void remove(SocketChannel socketChannel){
+        for (Map.Entry entry:map.entrySet()){
+            if (entry.getValue()==socketChannel){
+                map.remove(entry.getKey());
+            }
+        }
+    }
+
+}
+</pre>
+</div>
+</div>
+
+<div id="outline-container-orgfef008f" class="outline-3">
+<h3 id="orgfef008f">Handler</h3>
+<div class="outline-text-3" id="text-orgfef008f">
+<pre class="example">
+public class NettyServerHandler extends SimpleChannelInboundHandler&lt;BaseMsg&gt; {
+    @Override
+    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        //channel失效，从Map中移除
+        NettyChannelMap.remove((SocketChannel)ctx.channel());
+    }
+    @Override
+    protected void messageReceived(ChannelHandlerContext channelHandlerContext, BaseMsg baseMsg) throws Exception {
+
+        if(MsgType.LOGIN.equals(baseMsg.getType())){
+            LoginMsg loginMsg=(LoginMsg)baseMsg;
+            if("robin".equals(loginMsg.getUserName())&amp;&amp;"yao".equals(loginMsg.getPassword())){
+                //登录成功,把channel存到服务端的map中
+                NettyChannelMap.add(loginMsg.getClientId(),(SocketChannel)channelHandlerContext.channel());
+                System.out.println("client"+loginMsg.getClientId()+" 登录成功");
+            }
+        }else{
+            if(NettyChannelMap.get(baseMsg.getClientId())==null){
+                    //说明未登录，或者连接断了，服务器向客户端发起登录请求，让客户端重新登录
+                    LoginMsg loginMsg=new LoginMsg();
+                    channelHandlerContext.channel().writeAndFlush(loginMsg);
+            }
+        }
+        switch (baseMsg.getType()){
+            case PING:{
+                PingMsg pingMsg=(PingMsg)baseMsg;
+                PingMsg replyPing=new PingMsg();
+                NettyChannelMap.get(pingMsg.getClientId()).writeAndFlush(replyPing);
+            }break;
+            case ASK:{
+                //收到客户端的请求
+                AskMsg askMsg=(AskMsg)baseMsg;
+                if("authToken".equals(askMsg.getParams().getAuth())){
+                    ReplyServerBody replyBody=new ReplyServerBody("server info $$$$ !!!");
+                    ReplyMsg replyMsg=new ReplyMsg();
+                    replyMsg.setBody(replyBody);
+                    NettyChannelMap.get(askMsg.getClientId()).writeAndFlush(replyMsg);
+                }
+            }break;
+            case REPLY:{
+                //收到客户端回复
+                ReplyMsg replyMsg=(ReplyMsg)baseMsg;
+                ReplyClientBody clientBody=(ReplyClientBody)replyMsg.getBody();
+                System.out.println("receive client msg: "+clientBody.getClientInfo());
+            }break;
+            default:break;
+        }
+        ReferenceCountUtil.release(baseMsg);
+    }
+}
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org818e5fe" class="outline-3">
+<h3 id="org818e5fe">ServerBootstrap:</h3>
+<div class="outline-text-3" id="text-org818e5fe">
+<pre class="example">
+public class NettyServerBootstrap {
+    private int port;
+    private SocketChannel socketChannel;
+    public NettyServerBootstrap(int port) throws InterruptedException {
+        this.port = port;
+        bind();
+    }
+
+    private void bind() throws InterruptedException {
+        EventLoopGroup boss=new NioEventLoopGroup();
+        EventLoopGroup worker=new NioEventLoopGroup();
+        ServerBootstrap bootstrap=new ServerBootstrap();
+        bootstrap.group(boss,worker);
+        bootstrap.channel(NioServerSocketChannel.class);
+        bootstrap.option(ChannelOption.SO_BACKLOG, 128);
+        //通过NoDelay禁用Nagle,使消息立即发出去，不用等待到一定的数据量才发出去
+        bootstrap.option(ChannelOption.TCP_NODELAY, true);
+        //保持长连接状态
+        bootstrap.childOption(ChannelOption.SO_KEEPALIVE, true);
+        bootstrap.childHandler(new ChannelInitializer&lt;SocketChannel&gt;() {
+            @Override
+            protected void initChannel(SocketChannel socketChannel) throws Exception {
+                ChannelPipeline p = socketChannel.pipeline();
+                p.addLast(new ObjectEncoder());
+                p.addLast(new ObjectDecoder(ClassResolvers.cacheDisabled(null)));
+                p.addLast(new NettyServerHandler());
+            }
+        });
+        ChannelFuture f= bootstrap.bind(port).sync();
+        if(f.isSuccess()){
+            System.out.println("server start---------------");
+        }
+    }
+    public static void main(String []args) throws InterruptedException {
+        NettyServerBootstrap bootstrap=new NettyServerBootstrap(9999);
+        while (true){
+            SocketChannel channel=(SocketChannel)NettyChannelMap.get("001");
+            if(channel!=null){
+                AskMsg askMsg=new AskMsg();
+                channel.writeAndFlush(askMsg);
+            }
+            TimeUnit.SECONDS.sleep(5);
+        }
+    }
+}
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org4fb8e78" class="outline-2">
+<h2 id="org4fb8e78">Client端</h2>
+<div class="outline-text-2" id="text-org4fb8e78">
+<p>
+包含发起登录，发送心跳，及对应消息处理
+</p>
+</div>
+
+<div id="outline-container-orge37cfa6" class="outline-3">
+<h3 id="orge37cfa6">handler</h3>
+<div class="outline-text-3" id="text-orge37cfa6">
+<pre class="example">
+public class NettyClientHandler extends SimpleChannelInboundHandler&lt;BaseMsg&gt; {
+    //利用写空闲发送心跳检测消息
+    @Override
+    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+        if (evt instanceof IdleStateEvent) {
+            IdleStateEvent e = (IdleStateEvent) evt;
+            switch (e.state()) {
+                case WRITER_IDLE:
+                    PingMsg pingMsg=new PingMsg();
+                    ctx.writeAndFlush(pingMsg);
+                    System.out.println("send ping to server----------");
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+    @Override
+    protected void messageReceived(ChannelHandlerContext channelHandlerContext, BaseMsg baseMsg) throws Exception {
+        MsgType msgType=baseMsg.getType();
+        switch (msgType){
+            case LOGIN:{
+                //向服务器发起登录
+                LoginMsg loginMsg=new LoginMsg();
+                loginMsg.setPassword("yao");
+                loginMsg.setUserName("robin");
+                channelHandlerContext.writeAndFlush(loginMsg);
+            }break;
+            case PING:{
+                System.out.println("receive ping from server----------");
+            }break;
+            case ASK:{
+                ReplyClientBody replyClientBody=new ReplyClientBody("client info **** !!!");
+                ReplyMsg replyMsg=new ReplyMsg();
+                replyMsg.setBody(replyClientBody);
+                channelHandlerContext.writeAndFlush(replyMsg);
+            }break;
+            case REPLY:{
+                ReplyMsg replyMsg=(ReplyMsg)baseMsg;
+                ReplyServerBody replyServerBody=(ReplyServerBody)replyMsg.getBody();
+                System.out.println("receive client msg: "+replyServerBody.getServerInfo());
+            }
+            default:break;
+        }
+        ReferenceCountUtil.release(msgType);
+    }
+}
+</pre>
+</div>
+</div>
+
+<div id="outline-container-orgab09113" class="outline-3">
+<h3 id="orgab09113">bootstrap</h3>
+<div class="outline-text-3" id="text-orgab09113">
+<pre class="example">
+public class NettyClientBootstrap {
+    private int port;
+    private String host;
+    private SocketChannel socketChannel;
+    private static final EventExecutorGroup group = new DefaultEventExecutorGroup(20);
+    public NettyClientBootstrap(int port, String host) throws InterruptedException {
+        this.port = port;
+        this.host = host;
+        start();
+    }
+    private void start() throws InterruptedException {
+        EventLoopGroup eventLoopGroup=new NioEventLoopGroup();
+        Bootstrap bootstrap=new Bootstrap();
+        bootstrap.channel(NioSocketChannel.class);
+        bootstrap.option(ChannelOption.SO_KEEPALIVE,true);
+        bootstrap.group(eventLoopGroup);
+        bootstrap.remoteAddress(host,port);
+        bootstrap.handler(new ChannelInitializer&lt;SocketChannel&gt;() {
+            @Override
+            protected void initChannel(SocketChannel socketChannel) throws Exception {
+                socketChannel.pipeline().addLast(new IdleStateHandler(20,10,0));
+                socketChannel.pipeline().addLast(new ObjectEncoder());
+                socketChannel.pipeline().addLast(new ObjectDecoder(ClassResolvers.cacheDisabled(null)));
+                socketChannel.pipeline().addLast(new NettyClientHandler());
+            }
+        });
+        ChannelFuture future =bootstrap.connect(host,port).sync();
+        if (future.isSuccess()) {
+            socketChannel = (SocketChannel)future.channel();
+            System.out.println("connect server  成功---------");
+        }
+    }
+    public static void main(String[]args) throws InterruptedException {
+        Constants.setClientId("001");
+        NettyClientBootstrap bootstrap=new NettyClientBootstrap(9999,"localhost");
+
+        LoginMsg loginMsg=new LoginMsg();
+        loginMsg.setPassword("yao");
+        loginMsg.setUserName("robin");
+        bootstrap.socketChannel.writeAndFlush(loginMsg);
+        while (true){
+            TimeUnit.SECONDS.sleep(3);
+            AskMsg askMsg=new AskMsg();
+            AskParams askParams=new AskParams();
+            askParams.setAuth("authToken");
+            askMsg.setParams(askParams);
+            bootstrap.socketChannel.writeAndFlush(askMsg);
+        }
+    }
+}
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org8a5c0b8" class="outline-2">
+<h2 id="org8a5c0b8">具体的例子和相应pom.xml</h2>
+<div class="outline-text-2" id="text-org8a5c0b8">
+<p>
+见 <a href="https://github.com/WangErXiao/ServerClient">https://github.com/WangErXiao/ServerClient</a>
+</p>
+</div>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

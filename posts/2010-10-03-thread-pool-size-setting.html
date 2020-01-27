@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>线程池大小设置</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">线程池大小设置</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#knowledge"><div class="category">knowledge</div></a> </div>
+<div class="char-counter">2010-10-03</div>
+        <div id="content">
+<nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#org44deb64">首先，需要考虑到线程池所进行的工作的性质：</a></li>
+<li><a href="#org3bda4db">下面验证一下边界条件的正确性：</a></li>
+<li><a href="#orga1295cb">文章如何合理设置线程池大小里面提到了一个公式：</a></li>
+<li><a href="#org252471e">可以得出一个结论：</a></li>
+</ul>
+</div>
+</nav>
+
+
+<div id="outline-container-org44deb64" class="outline-2">
+<h2 id="org44deb64">首先，需要考虑到线程池所进行的工作的性质：</h2>
+<div class="outline-text-2" id="text-org44deb64">
+<ul class="org-ul">
+<li>IO密集型</li>
+<li>CPU密集型</li>
+</ul>
+
+
+<p>
+简单的分析来看，如果是CPU密集型的任务，我们应该设置数目较小的线程数，比如CPU数目
+加1。如果是IO密集型的任务，则应该设置可能多的线程数，由于IO操作不占用CPU，所以，
+不能让CPU闲下来。当然，如果线程数目太多，那么线程切换所带来的开销又会对系统的响
+应时间带来影响。
+</p>
+
+<p>
+在《linux多线程服务器端编程》中有一个思路，CPU计算和IO的阻抗匹配原则。
+</p>
+
+<p>
+如果线程池中的线程在执行任务时，密集计算所占的时间比重为P(0&lt;P&lt;=1)，而系统一共有C
+个CPU，为了让CPU跑满而又不过载，线程池的大小经验公式 <code>T = C / P</code> 。在此，T 只是一
+个参考，考虑到 P 的估计并不是很准确，T 的最佳估值可以上下浮动 50%。
+</p>
+
+<p>
+这个经验公式的原理很简单，T 个线程，每个线程占用 P 的 CPU 时间，如果刚好占满 C
+个 CPU, 那么必有
+</p>
+<blockquote>
+<p>
+T * P = C
+</p>
+</blockquote>
+</div>
+</div>
+
+
+<div id="outline-container-org3bda4db" class="outline-2">
+<h2 id="org3bda4db">下面验证一下边界条件的正确性：</h2>
+<div class="outline-text-2" id="text-org3bda4db">
+<p>
+假设C = 8，P = 1.0，线程池的任务完全是密集计算，那么 T = 8。只要8个活动线程就能让
+8个CPU饱和，再多也没用了，因为CPU资源已经耗光了。
+</p>
+
+<p>
+假设C = 8，P = 0.5，线程池的任务有一半是计算，有一半在等IO上，那么T = 16.考虑操
+作系统能灵活，合理调度 sleeping/writing/running 线程，那么大概 16 个 “50%繁忙的
+线程”能让 8 个 CPU 忙个不停。启动更多的线程并不能提高吞吐量，反而因为增加上下文
+切换的开销而降低性能。
+</p>
+
+<p>
+如果 P &lt; 0.2，这个公式就不适用了，T 可以取一个固定值，比如 5*C。另外公式里的 C
+不一定是 CPU 总数，可以是“分配给这项任务的 CPU 数目”，比如在8核机器上分出4个核来
+做一项任务，那么 C=4
+</p>
+</div>
+</div>
+
+<div id="outline-container-orga1295cb" class="outline-2">
+<h2 id="orga1295cb">文章如何合理设置线程池大小里面提到了一个公式：</h2>
+<div class="outline-text-2" id="text-orga1295cb">
+<blockquote>
+<p>
+最佳线程数目 = （（线程等待时间 + 线程CPU时间） / 线程CPU时间 ）* CPU数目
+</p>
+</blockquote>
+
+<p>
+比如平均每个线程CPU运行时间为0.5s，而线程等待时间（非CPU运行时间，比如IO）为 1.5s，
+CPU 核心数为 8，那么根据上面这个公式估算得到： <code>((0.5+1.5)/0.5)*8=32</code> 。这个公式进
+一步转化为：
+</p>
+<blockquote>
+<p>
+最佳线程数目 = （线程等待时间与线程CPU时间之比 + 1）* CPU数目
+</p>
+</blockquote>
+</div>
+</div>
+
+<div id="outline-container-org252471e" class="outline-2">
+<h2 id="org252471e">可以得出一个结论：</h2>
+<div class="outline-text-2" id="text-org252471e">
+<p>
+线程等待时间所占比例越高，需要越多线程。线程CPU时间所占比例越高，需要越少线程。
+</p>
+
+<p>
+以上公式与之前的CPU和IO密集型任务设置线程数基本吻合。
+</p>
+</div>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>十分钟学perl够用（客服MM都懂了）</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">十分钟学perl够用（客服MM都懂了）</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#perl"><div class="category">perl</div></a> </div>
+<div class="char-counter">2017-03-11</div>
+        <div id="content">
+<p>
+零基础，perl语言，10分钟入门
+</p>
+
+<ol class="org-ol">
+<li><p>
+Hello,World
+</p>
+
+<div class="org-src-container">
+<pre class="src src-perl"><span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">!/usr/bin/perl -w</span>
+print (<span style="font-style: italic;">"hello,world!\n"</span>);
+<span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">print "hello,world!\n";</span>
+</pre>
+</div>
+
+<p>
+说明：
+</p>
+
+<ul class="org-ul">
+<li>（1）第一行指定解释器，-w参数表示提示警告（或者使用use
+strict命令，执行更严格的检查）；</li>
+<li>（2）第二行输出hello, world!；</li>
+<li>（3）如果习惯c的函数方式，print的参数可以打括号；</li>
+<li>（4）第三行是注释，注释以#打头；</li>
+<li>（5）如果习惯shell的方式，print的参数可以没有括号；</li>
+<li>（6）双引号内可以使用转义字符；</li>
+</ul>
+
+<p>
+不妨设文件名为helloworld.pm 程序的执行方法为：
+</p>
+
+<ul class="org-ul">
+<li>（1）perl helloworld.pm</li>
+<li>（2）chmod 755 helloworld.pm &amp;&amp; ./helloworld.pm</li>
+</ul></li>
+
+<li><p>
+常量
+</p>
+
+<ul class="org-ul">
+<li>2.1 数字
+
+<ul class="org-ul">
+<li>（1）Perl内部总按照“双精度浮点数”保存数字并执行运算；</li>
+<li>（2）0377=&gt;八进制；0xFF=&gt;十六进制；</li>
+</ul></li>
+
+<li>2.2字符串
+
+<ul class="org-ul">
+<li>（1）单引号表示字符串，不转义；</li>
+<li>（2）双引号表示字符串，转义且解释变量；</li>
+</ul></li>
+
+<li>2.3字符串操作符
+
+<ul class="org-ul">
+<li>（1）拼接操作符：“.”=&gt;拼接字符串；</li>
+<li><p>
+（2）重复操作符：“x”=&gt;一个字符串重复多次；
+</p>
+
+<div class="org-src-container">
+<pre class="src src-perl"><span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">!/usr/bin/perl -w</span>
+print (<span style="font-style: italic;">"hello,"</span>.<span style="font-style: italic;">"world!\n"</span>);
+print (<span style="font-style: italic;">"hello "</span> x 3);
+</pre>
+</div>
+
+<p>
+输出结果是： hello,world! hello hello hello
+</p></li>
+</ul></li>
+</ul>
+
+<p>
+最后要说明一点，Perl是弱类型语言，字符串和数字会相互转化，这一点和php一样。
+</p></li>
+
+<li>变量
+
+<ul class="org-ul">
+<li>（1）变量以$开头，后接一个标示符；</li>
+<li><p>
+（2）如何用变量获取用户输入？
+使用，它获取用户的输入（一般以换行结束），可以使用chomp去除结尾的换行符。
+</p>
+
+<div class="org-src-container">
+<pre class="src src-perl"><span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">!/usr/bin/perl -w</span>
+$<span style="font-weight: bold; font-style: italic;">count</span> = 0;
+<span style="font-weight: bold;">while</span>($<span style="font-weight: bold; font-style: italic;">count</span>&lt;10)
+{
+    chomp($<span style="font-weight: bold; font-style: italic;">input</span> = );
+    print($<span style="font-weight: bold; font-style: italic;">input</span>);
+    $<span style="font-weight: bold; font-style: italic;">count</span>++;
+}
+</pre>
+</div></li>
+
+<li><p>
+（3）未定义变量
+未定义的变量会赋予undef值，它既不是数字，也不是字符串；
+它有可能被当做数字0使用；
+使用define函数可以知道一个变量是否被定义；
+</p>
+
+<div class="org-src-container">
+<pre class="src src-perl"><span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">!/usr/bin/perl -w</span>
+$<span style="font-weight: bold; font-style: italic;">var</span> = undef;
+print($<span style="font-weight: bold; font-style: italic;">var</span>);
+<span style="font-weight: bold;">if</span>(defined($<span style="font-weight: bold; font-style: italic;">var</span>))
+{
+    print(<span style="font-style: italic;">"defined!\n"</span>);
+}
+<span style="font-weight: bold;">else</span>
+{
+    print(<span style="font-style: italic;">"undefined!\n"</span>);
+}
+$<span style="font-weight: bold; font-style: italic;">var</span>++;
+print($<span style="font-weight: bold; font-style: italic;">var</span>);
+</pre>
+</div>
+
+<p>
+它的输出是： Useof uninitialized value in print at undef.pm line
+</p>
+<ol class="org-ol">
+<li>undefined!</li>
+</ol></li>
+<li>（4）变量的作用域
+
+<ul class="org-ul">
+<li>my和our可以指定变量的作用域</li>
+<li>my指定为局部作用域；</li>
+<li><p>
+our指定为全局作用域（默认为our）；
+</p>
+
+<div class="org-src-container">
+<pre class="src src-perl"><span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">!/usr/bin/perl -w</span>
+our $<span style="font-weight: bold; font-style: italic;">g_one</span> = <span style="font-style: italic;">"global_one\n"</span>;
+$<span style="font-weight: bold; font-style: italic;">g_two</span> = <span style="font-style: italic;">"global_two\n"</span>;
+{
+<span style="font-weight: bold; text-decoration: underline;">my</span> $<span style="font-weight: bold; font-style: italic;">local_one</span> = <span style="font-style: italic;">"local_one\n"</span>;
+print($<span style="font-weight: bold; font-style: italic;">g_one</span>);
+print($<span style="font-weight: bold; font-style: italic;">g_two</span>);
+print($<span style="font-weight: bold; font-style: italic;">local_one</span>);
+}
+print($<span style="font-weight: bold; font-style: italic;">g_one</span>);
+print($<span style="font-weight: bold; font-style: italic;">g_two</span>);
+print($<span style="font-weight: bold; font-style: italic;">local_one</span>);
+</pre>
+</div>
+
+<p>
+输出为： global\_one global\_two local\_one global\_one
+global\_two Use of uninitialized value in print at our\_my.pm
+line 13.
+</p></li>
+</ul></li>
+</ul></li>
+
+<li>数组与列表
+
+<ul class="org-ul">
+<li><p>
+4.1数组 和c的数组使用非常类似：
+</p>
+
+<div class="org-src-container">
+<pre class="src src-perl">$<span style="font-weight: bold; font-style: italic;">array</span>[0]=&#8221;a0&#8243;;
+$<span style="font-weight: bold; font-style: italic;">array</span>[1]=&#8221;a1&#8243;;
+$<span style="font-weight: bold; font-style: italic;">array</span>[2]=&#8221;a2&#8243;;
+</pre>
+</div></li>
+
+<li><p>
+4.2列表 圆括号内的一系列值，构成列表：
+</p>
+
+<div class="org-src-container">
+<pre class="src src-perl">(1, 2, 3)
+(&#8220;hello&#8221;, 4)
+(&#8220;hello&#8221;, &#8220;world&#8221;, &#8220;yes&#8221;, &#8220;<span style="font-weight: bold;">no</span>&#8221;)
+qw<span style="font-style: italic;">(hello world yes no)</span>
+(1..10)
+</pre>
+</div>
+
+<p>
+说明：
+</p>
+
+<ul class="org-ul">
+<li>（1）第一行，列表元素为1,2,3；</li>
+<li>（2）第二行，列表元素为一个字符串，一个数字；</li>
+<li>（3）第三行，列表元素为4个字符串，好多引号和逗号啊；</li>
+<li>（4）第四行，wq操作符，用来建立字符串列表，而不用输入这么多引号和逗号，效果同（3）；</li>
+<li><p>
+（5）范围操作符“..”，表示一个范围，从左至右连续加一。
+列表的赋值： <code>($v1, $v2, $v3) = qw(yes i am);</code>
+整个列表的引用，=@=操作符：
+</p>
+
+<div class="org-src-container">
+<pre class="src src-perl">@<span style="font-weight: bold; font-style: italic; text-decoration: underline;">list</span> = qw<span style="font-style: italic;">(yes i am)</span>;
+@<span style="font-weight: bold; font-style: italic; text-decoration: underline;">none</span> = ();
+@<span style="font-weight: bold; font-style: italic; text-decoration: underline;">huge</span> = (1..5);
+@<span style="font-weight: bold; font-style: italic; text-decoration: underline;">stuff</span> = (@<span style="font-weight: bold; font-style: italic; text-decoration: underline;">list</span>, @<span style="font-weight: bold; font-style: italic; text-decoration: underline;">none</span>, @<span style="font-weight: bold; font-style: italic; text-decoration: underline;">huge</span>);
+</pre>
+</div>
+
+<p>
+pop和push操作符：
+</p></li>
+<li>（1）pop弹出列表末端元素；</li>
+<li>（2）push向列表末端压入元素； shift和unshift操作符：</li>
+<li>（1）shift移出列表首部元素；</li>
+<li>（2）unshift向列表首部压入元素； 列表的输出：</li>
+<li>（1）列表输出，只输出列表，元素间不含空格；</li>
+<li>（2）列表的字符串化输出，输出列表，元素间加入空格；</li>
+<li><p>
+（3）foreach控制结果，可以依次取得列表中各个元素
+</p>
+
+<div class="org-src-container">
+<pre class="src src-perl"><span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">!/usr/bin/perl -w</span>
+@<span style="font-weight: bold; font-style: italic; text-decoration: underline;">list</span> = qw<span style="font-style: italic;">(yes i am)</span>;
+@<span style="font-weight: bold; font-style: italic; text-decoration: underline;">none</span> = ();
+@<span style="font-weight: bold; font-style: italic; text-decoration: underline;">huge</span> = (1..5);
+@<span style="font-weight: bold; font-style: italic; text-decoration: underline;">stuff</span> = (@<span style="font-weight: bold; font-style: italic; text-decoration: underline;">list</span>, @<span style="font-weight: bold; font-style: italic; text-decoration: underline;">none</span>, @<span style="font-weight: bold; font-style: italic; text-decoration: underline;">huge</span>);
+$<span style="font-weight: bold; font-style: italic;">pop_last</span> = pop(@<span style="font-weight: bold; font-style: italic; text-decoration: underline;">stuff</span>);
+print($<span style="font-weight: bold; font-style: italic;">pop_last</span>);
+push(@<span style="font-weight: bold; font-style: italic; text-decoration: underline;">stuff</span>, <span style="font-style: italic;">"hello"</span>);
+$<span style="font-weight: bold; font-style: italic;">shift_first</span> = shift(@<span style="font-weight: bold; font-style: italic; text-decoration: underline;">stuff</span>);
+print($<span style="font-weight: bold; font-style: italic;">shift_first</span>);
+unshift(@<span style="font-weight: bold; font-style: italic; text-decoration: underline;">stuff</span>, <span style="font-style: italic;">"world"</span>);
+print(@<span style="font-weight: bold; font-style: italic; text-decoration: underline;">stuff</span>);
+print(<span style="font-style: italic;">"@stuff"</span>);
+$<span style="font-weight: bold; font-style: italic;">element</span>=undef;
+<span style="font-weight: bold;">foreach</span> $<span style="font-weight: bold; font-style: italic;">element</span> (@<span style="font-weight: bold; font-style: italic; text-decoration: underline;">stuff</span>)
+{
+    print(<span style="font-style: italic;">"$element!\n"</span>);
+}
+</pre>
+</div>
+
+<p>
+输出： 5 yes worldiam1234hello world i am 1 2 3 4 hello i! am!
+1! 2! 3! 4! hello!
+</p></li>
+</ul></li>
+
+<li><p>
+4.3默认变量=$_=
+该使用变量的地方，如果省略变量，则会使用默认变量$\_。
+</p>
+
+<div class="org-src-container">
+<pre class="src src-perl"><span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">!/usr/bin/perl -w</span>
+$<span style="font-weight: bold; font-style: italic;">_</span>=<span style="font-style: italic;">"hello,world&#65281;"</span>;
+print();
+</pre>
+</div>
+
+<p>
+输出是： hello,world！
+</p></li>
+</ul></li>
+
+<li>函数
+
+<ul class="org-ul">
+<li>5.1函数定义与调用
+
+<ul class="org-ul">
+<li>（1）定义函数的关键字是sub；</li>
+<li>（2）函数调用的关键字是&amp;；</li>
+<li><p>
+（3）可用return显示返回，也可用一个数字隐式返回
+</p>
+
+<div class="org-src-container">
+<pre class="src src-perl"><span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">!/usr/bin/perl</span>
+$<span style="font-weight: bold; font-style: italic;">num</span>=0;
+<span style="font-weight: bold;">sub</span> <span style="font-weight: bold;">sumAdd</span>
+{
+$<span style="font-weight: bold; font-style: italic;">num</span>+=1;
+print(<span style="font-style: italic;">"$num\n"</span>);
+<span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">return $num; # &#26174;&#31034;&#36820;&#22238;</span>
+$<span style="font-weight: bold; font-style: italic;">num</span>; <span style="font-weight: bold; font-style: italic;"># &#38544;&#24335;&#36820;&#22238;</span>
+}
+&amp;<span style="font-weight: bold;">sumAdd</span>;
+&amp;<span style="font-weight: bold;">sumAdd</span>;
+print(&amp;<span style="font-weight: bold;">sumAdd</span>);
+</pre>
+</div>
+
+<p>
+执行结果为： 1 2 3 3
+</p></li>
+</ul></li>
+
+<li>5.2函数的参数
+
+<ul class="org-ul">
+<li>（1）调用函数时可直接带参数列表；</li>
+<li><p>
+（2）函数定义处使用“默认变量”获取参数列表；
+</p>
+
+<div class="org-src-container">
+<pre class="src src-perl"><span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">!/usr/bin/perl -w</span>
+<span style="font-weight: bold;">sub</span> <span style="font-weight: bold;">max</span>
+{
+<span style="font-weight: bold;">return</span> ($<span style="font-weight: bold; font-style: italic;">_</span>[0]&gt;$<span style="font-weight: bold; font-style: italic;">_</span>[1]?$<span style="font-weight: bold; font-style: italic;">_</span>[0]:$<span style="font-weight: bold; font-style: italic;">_</span>[1]);
+}
+$<span style="font-weight: bold; font-style: italic;">big</span>=20;
+$<span style="font-weight: bold; font-style: italic;">small</span>=10;
+print(&amp;<span style="font-weight: bold;">max</span>($<span style="font-weight: bold; font-style: italic;">big</span>,$<span style="font-weight: bold; font-style: italic;">small</span>));
+</pre>
+</div>
+
+<p>
+输出为： 20
+</p></li>
+</ul></li>
+</ul></li>
+
+<li>程序输入输出 上文已经介绍过标准输入，下面介绍其他几种常见的输入输出。
+
+<ul class="org-ul">
+<li><p>
+6.1Unix工具输入输出：&lt;&gt;
+&lt;&gt;提供类似于Unix工具输入输出的功能，它提供的功能能够很好的和cat/sed/awk/sort/
+grep等工具结合使用。
+</p>
+
+<div class="org-src-container">
+<pre class="src src-perl"><span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">!/usr/bin/perl -w</span>
+<span style="font-weight: bold;">use</span> <span style="font-weight: bold; text-decoration: underline;">strict</span>;
+<span style="font-weight: bold;">while</span>(&lt;&gt;)
+{
+chomp();
+print(<span style="font-style: italic;">"$_!!!\n"</span>);
+}
+</pre>
+</div>
+
+<p>
+该脚本的功能，是在输入每行后面加上!!!，它几处使用到了默认变量。
+不妨设文件名为diamond.pm
+不妨设hello.txt中有三行数据，分别是111,222,333 执行步骤：
+</p>
+
+<ul class="org-ul">
+<li>（1）chmod 755 diamond.pm</li>
+<li>（2）cat hello.txt | ./diamond.pm | cat 输出结果： 111!!!
+222!!! 333!!!</li>
+</ul></li>
+
+<li><p>
+6.2格式化输出：printf
+</p>
+
+<div class="org-src-container">
+<pre class="src src-perl"><span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">!/usr/bin/perl -w</span>
+$<span style="font-weight: bold; font-style: italic;">int_var</span> = 2011;
+$<span style="font-weight: bold; font-style: italic;">str_var</span> = <span style="font-style: italic;">"hello,world"</span>;
+printf(<span style="font-style: italic;">"%d\n%s\n"</span>,$<span style="font-weight: bold; font-style: italic;">int_var</span>,$<span style="font-weight: bold; font-style: italic;">str_var</span>);
+</pre>
+</div>
+
+<p>
+输出结果为： 2011 hello,world
+</p></li>
+
+<li>6.3文件输入输出
+Perl保留了6个文件句柄：STDIN/STDOUT/STDERR/DATA/ARGV/ARGVOUT
+上述6.1中的程序还能这么执行： ./diamond.pm out.txt
+则输出结果会重定向到out.txt中
+输入输出到文件中中，需要打开、使用、关闭文件句柄
+
+<ul class="org-ul">
+<li><p>
+（1）打开文件句柄：
+</p>
+
+<div class="org-src-container">
+<pre class="src src-perl">open LOG, &#8220;&gt;&gt;log.txt&#8221;;
+open CONFIG, &#8221;
+</pre>
+</div></li>
+
+<li><p>
+（2）关闭文件句柄：
+</p>
+
+<div class="org-src-container">
+<pre class="src src-perl">close LOG;
+close CONFIG;
+</pre>
+</div></li>
+
+<li><p>
+（3）使用文件句柄：
+</p>
+
+<div class="org-src-container">
+<pre class="src src-perl">print LOG (&#8220;hello,world!\n&#8221;);
+print STDERR (&#8220;yes i am!\n&#8221;);
+<span style="font-weight: bold;">while</span>()
+{
+chomp();
+&#8230;
+}
+</pre>
+</div>
+
+<p>
+也可以使用select关键字：
+</p>
+
+<div class="org-src-container">
+<pre class="src src-perl">print(&#8220;to stdout1!&#8221;);
+select LOG;
+print(&#8220;to log1&#8243;);
+print(&#8220;to log2&#8243;);
+select STDOUT;
+print(&#8220;to stdout2!&#8221;);
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-perl"><span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">!/usr/bin/perl -w</span>
+$<span style="font-weight: bold; font-style: italic;">input_file</span> = <span style="font-style: italic;">"hello.txt"</span>;
+$<span style="font-weight: bold; font-style: italic;">output_file</span> = <span style="font-style: italic;">"out.txt"</span>;
+open INPUT, <span style="font-style: italic;">"&lt;$input_file"</span>; open OUTPUT, <span style="font-style: italic;">"&gt;&gt;$output_file"</span>;
+<span style="font-weight: bold;">while</span>(
+&lt;input type=<span style="font-style: italic;">"text"</span>&gt;)
+{
+chomp();
+print OUTPUT (<span style="font-style: italic;">"$_!!!\n"</span>);
+}
+close OUTPUT;
+close INPUT;
+</pre>
+</div>
+
+<p>
+说明：他的功能和之前的diamond.pm是一样的。
+</p></li>
+</ul></li>
+</ul></li>
+
+<li>哈希hash
+
+<ul class="org-ul">
+<li><p>
+7.1哈希的存取
+</p>
+
+<div class="org-src-container">
+<pre class="src src-perl">$<span style="font-weight: bold; font-style: italic;">key</span>=&#8221;am&#8221;;
+$<span style="font-weight: bold; font-style: italic;">hash_one</span>{&#8220;yes&#8221;} = 3;
+$<span style="font-weight: bold; font-style: italic;">hash_one</span>{&#8220;i&#8221;} = 1;
+$<span style="font-weight: bold; font-style: italic;">hash_one</span>{$<span style="font-weight: bold; font-style: italic;">key</span>} = 5;
+print($<span style="font-weight: bold; font-style: italic;">hash_one</span>{&#8220;am&#8221;});
+$<span style="font-weight: bold; font-style: italic;">value</span> = $<span style="font-weight: bold; font-style: italic;">hash_one</span>{&#8220;hello&#8221;}; <span style="font-weight: bold; font-style: italic;"># undef</span>
+</pre>
+</div></li>
+
+<li><p>
+7.2哈希的引用 要引用整个哈希，使用=%=操作符。
+</p>
+
+<div class="org-src-container">
+<pre class="src src-perl">%<span style="font-weight: bold; font-style: italic; text-decoration: underline;">hash_one</span> = (&#8220;hello&#8221;,5,&#8221;world&#8221;,5);
+print ($<span style="font-weight: bold; font-style: italic;">hash_one</span>{&#8220;hello&#8221;});
+%<span style="font-weight: bold; font-style: italic; text-decoration: underline;">hash_two</span> = %<span style="font-weight: bold; font-style: italic; text-decoration: underline;">hash_one</span>;
+</pre>
+</div></li>
+
+<li><p>
+7.3哈希的松绑
+哈希可以转化为键值列表，称为哈希的松绑，转化后不保证键的顺序，但值一定在键的后面。
+</p>
+
+<div class="org-src-container">
+<pre class="src src-perl"><span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">!/usr/bin/perl -w</span>
+%<span style="font-weight: bold; font-style: italic; text-decoration: underline;">hash_one</span> = (<span style="font-style: italic;">"hello"</span>,5,<span style="font-style: italic;">"world"</span>,5);
+$<span style="font-weight: bold; font-style: italic;">hash_one</span>{<span style="font-style: italic;">"yes"</span>} = 3;
+$<span style="font-weight: bold; font-style: italic;">hash_one</span>{<span style="font-style: italic;">"i"</span>} = 1;
+$<span style="font-weight: bold; font-style: italic;">hash_one</span>{<span style="font-style: italic;">"am"</span>} = 2;
+@<span style="font-weight: bold; font-style: italic; text-decoration: underline;">array_one</span> = %<span style="font-weight: bold; font-style: italic; text-decoration: underline;">hash_one</span>;
+print ($<span style="font-weight: bold; font-style: italic;">hash_one</span>{<span style="font-style: italic;">"hello"</span>});
+print (<span style="font-style: italic;">"@array_one"</span>);
+</pre>
+</div>
+
+<p>
+输出结果为： 5 yes 3 am 2 hello 5 world 5 i 1
+</p></li>
+<li>7.4哈希的反转 建立值对应键的反转哈希。
+<code>%hash_reverse = reverse(%hash_one);</code>
+只有在键值一一对应的情况下才凑效，否则会有无法预期的覆盖发生。</li>
+<li><p>
+7.5哈希的美观赋值 哈希的美观赋值使用=&gt;符号。
+<code>%hash_one = (“hello”,5,”world”,5,”yes”,3,”i”,1,”am”,2);</code>
+上面这种赋值方式很容易搞错，特别是键值都是字符串的时候。
+</p>
+
+<div class="org-src-container">
+<pre class="src src-perl">%<span style="font-weight: bold; font-style: italic; text-decoration: underline;">hash_one</span> = (
+<span style="font-style: italic;">"hello"</span> =&gt; 5,
+<span style="font-style: italic;">"world"</span> =&gt; 5,
+<span style="font-style: italic;">"yes"</span>   =&gt; 3,
+<span style="font-style: italic;">"i"</span>     =&gt; 1,
+<span style="font-style: italic;">"am"</span>    =&gt; 2,
+);
+</pre>
+</div>
+
+<p>
+美观赋值，是不是看起来更美观，更容易区分哈什的键值呢。
+</p></li>
+
+<li>7.6哈希的遍历
+
+<ul class="org-ul">
+<li><p>
+（1）keys和values函数能返回所有键与值的列表，但列表内顺序不保证。
+</p>
+
+<div class="org-src-container">
+<pre class="src src-perl">@<span style="font-weight: bold; font-style: italic; text-decoration: underline;">k</span> = keys(%<span style="font-weight: bold; font-style: italic; text-decoration: underline;">hash_one</span>);
+@<span style="font-weight: bold; font-style: italic; text-decoration: underline;">v</span> = values(%<span style="font-weight: bold; font-style: italic; text-decoration: underline;">hash_one</span>);
+</pre>
+</div></li>
+
+<li><p>
+（2）each函数能一一遍历哈希，返回键值对，非常适合于while等循环；
+</p>
+
+<div class="org-src-container">
+<pre class="src src-perl"><span style="font-weight: bold;">while</span>(($<span style="font-weight: bold; font-style: italic;">key</span>, $<span style="font-weight: bold; font-style: italic;">value</span>) = each(%<span style="font-weight: bold; font-style: italic; text-decoration: underline;">hash_one</span>))
+{
+&#8230;
+}
+</pre>
+</div>
+
+<p>
+示例代码：
+`=perl #!/usr/bin/perl -w %hash_one = ( "hello" <code>&gt; 5, "world" =&gt; 5, "yes" =&gt; 3, "i" =&gt; 1, "am" =&gt; 2, ); @k = keys(%hash_one); @v = values(%hash_one); print("@k\n"); print("@v\n"); $key = undef; $value = undef; while(($key, $value) = each(%hash_one)) { print("$key=&gt;$value\n"); }</code>
+输出结果为： yes am hello world i 3 2 5 5 1 yes=&gt;3 am=&gt;2
+hello=&gt;5 world=&gt;5 i=&gt;1
+</p></li>
+</ul></li>
+
+<li>7.7哈希的查询与删除
+
+<ul class="org-ul">
+<li>（1）查询一个键是否存在，使用exists函数；</li>
+<li><p>
+（2）删除一个键，使用delete函数；
+</p>
+
+<div class="org-src-container">
+<pre class="src src-perl"><span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">!/usr/bin/perl -w</span>
+%<span style="font-weight: bold; font-style: italic; text-decoration: underline;">hash_one</span>=(
+<span style="font-style: italic;">"yes"</span> =&gt; 3,
+<span style="font-style: italic;">"i"</span> =&gt; 1,
+<span style="font-style: italic;">"am"</span> =&gt; 2,
+);
+delete($<span style="font-weight: bold; font-style: italic;">hash_one</span>{<span style="font-style: italic;">"yes"</span>});
+<span style="font-weight: bold;">if</span>(exists($<span style="font-weight: bold; font-style: italic;">hash_one</span>{<span style="font-style: italic;">"yes"</span>}))
+{
+print($<span style="font-weight: bold; font-style: italic;">hash_one</span>{<span style="font-style: italic;">"yes"</span>});
+}
+</pre>
+</div>
+
+<p>
+结果什么也不输出。
+</p></li>
+</ul></li>
+</ul></li>
+
+<li>流程控制*（本节可跳过，都是些花哨的用法）
+除了各语言常用的if/esle，for，while等流程控制外，Perl还有一些特有的控制语句，
+更人性化。
+
+<ul class="org-ul">
+<li>（1）unless控制结构 作用效果类似于if
+not，无效率上提升，只是使表达更自然，代码更容易理解。</li>
+<li>（2）until控制结构 作用效果类似于while not</li>
+<li>（3）条件修饰
+判断条件可以直接写在语句的后面，以增加可读性（habadog注：这是鬼扯）。
+<code>print (“$n”) if $n &lt; 0; $i *</code> 2 until $i &gt; 1024;=
+<code>&amp;sumAdd($_) foreach @num_list;</code></li>
+<li><p>
+（4）裸控制结构
+只有一个花括号的结构，往往用来限制作用域，在各语言中都很常见。
+</p>
+
+<div class="org-src-container">
+<pre class="src src-perl">{
+$<span style="font-weight: bold; font-style: italic;">a</span> = 1;
+&#8230;
+}
+<span style="font-weight: bold; font-style: italic;"># </span><span style="font-weight: bold; font-style: italic;">$a&#22833;&#25928;&#20102;</span>
+</pre>
+</div></li>
+
+<li>（5）last控制结构 相当于c中的break，立刻终止循环；</li>
+<li>（6）next控制结构 相当于c中的continue，立刻开始下一次循环；</li>
+<li><p>
+（7）redo控制结构 &#x2026;独有的，重新开始本次循环；
+</p>
+
+<div class="org-src-container">
+<pre class="src src-perl"><span style="font-weight: bold;">while</span>(1)
+{
+<span style="font-weight: bold; font-style: italic;"># </span><span style="font-weight: bold; font-style: italic;">&#36339;&#21040;&#36825;&#37324;</span>
+print (&#8220;hello&#8221;);
+<span style="font-weight: bold;">redo</span>;
+}
+</pre>
+</div></li>
+</ul></li>
+
+<li>高级特性
+神奇的Perl还有正则、module、文件、字符串、智能匹配、进程管理、线程支持等高级
+特性，就不在入门手册里介绍了。</li>
+</ol>
+
+<p>
+如果大伙喜欢，后续发布以上特性的手册。 希望你喜欢上Perl。
+</p>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

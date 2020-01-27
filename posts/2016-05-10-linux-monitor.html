@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>LINUX操作系统高性能集群监控管理之道(转)</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">LINUX操作系统高性能集群监控管理之道(转)</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#linux"><div class="category">linux</div></a> <a href="https://bruceasu.github.io/tags.html#reprint"><div class="category">reprint</div></a> </div>
+<div class="char-counter">2016-05-10</div>
+        <div id="content">
+<nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#org44dd73b">Java在Linux集群中的应用</a></li>
+<li><a href="#org801f676">高性能监控</a></li>
+<li><a href="#org1016b0d">监控阶段</a></li>
+</ul>
+</div>
+</nav>
+<p>
+监控是集群管理的核心任务。监控数据可用于调度任务、负载平衡、向管理员报告软硬件故
+障，并广泛地控制系统使用情况。监控信息必须在不影响集群性能的情况下获得。本文将讨
+论使用 /proc 文件系统和Java来获得监控数据的方法。
+</p>
+
+<div id="outline-container-org44dd73b" class="outline-2">
+<h2 id="org44dd73b">Java在Linux集群中的应用</h2>
+<div class="outline-text-2" id="text-org44dd73b">
+<p>
+Java技术为集群管理开发者提供了许多解决问题的办法。Java是动态、灵活、可移植的，
+这些不寻常的特征使得它成为了在异构网络及平台上构造集群管理的理想基础。
+</p>
+
+<p>
+Java具有广泛的例程库，很容易处理IP协议，如TCP、UDP，并可在multi-homed主机上进
+行网络程序设计，用它创建网络连接比用C或C＋＋更容易。通过Java本地接口（JNI），
+运行在Java 虚拟机（JVM）内的Java代码能够与用其它语言编写的应用及库文件相互操作
+并汇编。
+</p>
+
+<p>
+在构造集群监控和管理时，Java早已是一个可选的语言。然而，Java语言通常只被用于系
+统的前端或集群主机部分，而将用 C 语言编写的守护进程安装在集群结点上。尽管Java程
+序设计语言提供了许多优点，但是，对于高性能集群监控，Java能够有效地替换运行在每
+个结点上的 C 语言守护进程吗？这将是本文讨论的重点。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org801f676" class="outline-2">
+<h2 id="org801f676">高性能监控</h2>
+<div class="outline-text-2" id="text-org801f676">
+<p>
+监控Linux集群工具传统上以秒为测量频率来提供有限量的数据。而高性能集群监控被定义
+为“以intrasecond为测量频率，从结点有效地采集数据的能力”。当涉及较大集群时，监控
+软件的低效率问题就变得更加严重，这是因为所运行的应用软件必须互相协调或共享全局资
+源。
+</p>
+
+<p>
+在一个结点上的阻隔冲突（Interference）能影响其它结点上作业的运行。例如，一个MPI
+作用需要与所有参与的结点同步。一种解决办法是收集少量的数据，并以小频率传输。然而，
+如果是高性能监控，这种解决办法是不可接受的，因为有较重利用率的集群应该被频繁持续
+地监控。本地作业调度器必须能够基于资源使用情况做快速决策。管理员经常希望收到紧急
+事件的立即通知，并希望观察到历史趋势数据，如果集群不能被频繁持续地监控，那么这些
+要求是不可能实现的。因此，必须采取一些措施，如使用更有效的算法、增加传输的并行性、
+提高传输协议及数据格式的效率、减少冗余等。
+</p>
+
+<p>
+在跟踪运行中的资源使用情况时，压缩Profiling应用有助于调试程序或优化程序。对一个
+给定的应用而言，像存储器、网络、CPU这样动态资源的使用可能快速地改变着，为了能够
+观察应用是怎样使用这些资源的，一种可能的办法是使用高频率的监控。
+</p>
+
+<p>
+即使用户对高频率监控没有兴趣，如果算法是有效的，不管监控频率是多少，它也将消费很
+少的资源。在异构集群中这种效率将更重要，用户的作业可以被分散到较快的及较慢的结点
+上，慢的结点需要全部CPU来跟上较快的结点并与之同步。一个监控程序花费在较慢结点上
+的CPU时间是作业的关键路径。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org1016b0d" class="outline-2">
+<h2 id="org1016b0d">监控阶段</h2>
+<div class="outline-text-2" id="text-org1016b0d">
+<p>
+集群监控主要消耗 CPU 周期与网络带宽这两个重要资源。然而，资源消费问题与这两个资
+源是根本不同的。CPU 利用问题对结点而言是完全本地化的问题，可通过创建有效的收集与
+合并算法来解决。网络带宽是共享资源，是规模问题，可以通过最小化网络上传输的数据量
+来解决。
+</p>
+
+<p>
+为了解决这两个问题，我们将集群监控分为三个阶段：收集、合并、传输。收集阶段负责从
+操作系统装载数据、分析数据值，并存储数据。合并阶段负责将来自多个数据源的数据合在
+一起，决定数据值是否改变并过滤它们。传输阶段负责压缩并传输数据。本文集中讨论
+Linux集群监控的收集阶段。
+</p>
+
+<ol class="org-ol">
+<li>收集阶段
+Linux有几种方法来进行系统统计，每种方法都各有其优缺点。
+<ul class="org-ul">
+<li><p>
+使用现有的工具
+</p>
+
+<p>
+标准及非标准工具能执行一个或多个收集、合并及传输阶段，如rstatd或SNMP工具，
+然而标准的rstat后台程序提供的信息是有限的，速度慢而且效率低。
+</p></li>
+
+<li><p>
+内核模块
+</p>
+
+<p>
+几个系统监控工程利用内核模块来存取监控数据。一般情况下，这是很有效的收集系
+统数据的方法。然而这种方法存在的问题是，当主内核源内有其它改变时，必须保持
+代码一致性。一个内核模块可能与用户想使用的其它内核模块相冲突。此外，在使用
+监控系统之前，用户必须获得或申请模块。
+</p></li>
+
+<li><p>
+/proc虚拟文件系统
+</p>
+
+<p>
+/proc 虚拟文件系统是一个较快的、高效率执行系统监控的方法。使用 /proc的主要
+缺点是必须保持代码分析与 /proc 文件格式改变的同步。事实表明，Linux内核的改
+变比 /proc 文件格式的改变要更频繁，所以，用/proc虚拟文件系统比用内核模块存在
+的问题要少。
+</p></li>
+
+<li><p>
+混合系统
+</p>
+
+<p>
+某些监控系统采用混合方式，用内核模块收集数据，用 /proc 虚拟文件系统作为数据
+接口。
+</p></li>
+</ul></li>
+
+<li><p>
+合并阶段
+</p>
+
+<p>
+合并阶段的实现可以在结点上、集群管理的主机上，或者分布在两者上。考虑到效率，
+我们只采用在结点上的合并。原因在于结点是监控数据的收集器与提供者。两个或多个
+同时的数据请求不会引起两次操作系统调用来收集数据，而是将第一次请求获得的数据
+缓存，并可以提供给第二次请求调用。这种方法减少了操作系统的负担，提高了监控系
+统的响应性。合并阶段也可以用于将多个数据源的数据以相互独立的收集速率结合，因
+为并不是所有的数据都以同样的速度改变，或者需要以同样的速率收集。
+</p>
+
+<p>
+使用在结点层上合并的另一个原因是，减少了包括传输在内的信息量。许多 /proc 文件
+既包含动态数据也包含静态数据。删除最近一次传输后没有改变的值，一个结点发送的
+数据量可以大大地减少。合并不仅除去了不经常改变的动态值的传输，也解决了从不改
+变的静态值的传输。
+</p></li>
+
+<li><p>
+传输阶段
+</p>
+
+<p>
+监控数据几乎总是按一个层次结构组织起来。传输阶段的任务就是将层次数据进行有效
+的编码，形成一种能高效传输的数据格式。Java 拥有的文件格式是存储层次数据的有效
+方法，并且用提供的 Java APIs 很容易完成。S-Expressions 已经被认为是传输这种数
+据的另一个有效的方法。
+</p>
+
+<p>
+关于传输监控数据普遍讨论的问题是，数据应该按二进制编码还是按文本格式编码。二
+进制数据更容易压缩，因此也能更有效地传输。但是，当采用 /proc 文件系统时，监控
+数据通常以人们易读的格式存储。在传输之前，将数据转换为二进制格式将需要更多的
+处理资源与时间。以文本格式保留收集的数据，结点资源能被用于更多非监控性的相关
+工作。
+</p>
+
+<p>
+采用文本格式的数据将提供如下额外的益处：
+</p>
+
+<ul class="org-ul">
+<li><p>
+平台独立性
+</p>
+
+<p>
+当监控异构集群时，机器之间数据字节指令的配置不是永远相同的。文本格式的使用
+在代码方面解决了这个问题，而且体系结构独立不会影响更多的处理需求。
+</p></li>
+
+<li><p>
+易读的格式
+</p>
+
+<p>
+文本数据能以人们易读的格式进行组织。如果需要的话，这种特征能容易地进行程序
+调试或允许用户观看数据流。
+</p></li>
+
+<li><p>
+有效压缩
+</p>
+
+<p>
+数值数据的文本表示由来自10个字节集中的字符组成，而不是二进制下的256个字节集。
+它们产生的数字及模式的相对频率允许有效地使用基于压缩算法的字典及熵（平均信
+息量）。
+</p></li>
+</ul>
+
+<p>
+/proc 虚拟文件系统
+</p>
+
+<p>
+/proc 虚拟文件系统（也叫procfs）是Unix操作系统所使用的虚拟文件系统的 Linux 实
+现，包括 Sun Solaris、LinuxBSD。在 /proc 开始时，它以一个标准文件系统出现，并
+包含与正在运行的进程IDs同样名字的文件。然而，在/proc中的文件不占用磁盘空间，
+它们存在于工作存储器（内存）中。/proc 最初的目的是便于进程信息的存取，但是现
+在，在 Linux 中，它可被内核的每一部分使用来报告某些事情。
+</p>
+
+<p>
+在 /proc 文件系统提供的成百上千的值当中，我们将集中考虑集群监控所需的最小集，
+它们包括：
+</p>
+<ul class="org-ul">
+<li>/proc/loadavg：包含系统负载平均值；</li>
+<li>/proc/meminfo：包含存储管理统计量；</li>
+<li>/proc/net/dev：包含网卡度量；</li>
+<li>/proc/stat：包含内核统计量；</li>
+<li>/proc/uptime：包含总的系统正常工作时间及空闲时间。</li>
+</ul>
+
+<p>
+每个文件提供的值的数量是不同的。这些文件的完整有效值列表如下。
+</p>
+<ul class="org-ul">
+<li><p>
+/proc/loadavg 提供以下数据：
+</p>
+<p class="verse">
+1秒钟平均负载；<br>
+5秒钟平均负载；<br>
+15秒钟平均负载；<br>
+总作业数；<br>
+正在运行的作业总数。<br>
+<br>
+</p></li>
+
+<li><p>
+/proc/meminfo 提供的存储器信息包括：
+</p>
+<p class="verse">
+活动存储器；<br>
+不活动存储器；<br>
+缓冲存储器；<br>
+高速缓冲存储器；<br>
+总的自由存储器；<br>
+总的高位存储器；<br>
+自由高位存储器；<br>
+总的低位存储器；<br>
+自由低位存储器；<br>
+共享存储器；<br>
+交换存储器；<br>
+交换高速缓冲存储器；<br>
+交换自由存储器；<br>
+总存储器。<br>
+</p></li>
+
+<li><p>
+/proc/net/dev 中包括每个网卡的如下数据：
+</p>
+<p class="verse">
+接收到的字节；<br>
+接收到的压缩字节；<br>
+收到的误码数；<br>
+收到的漏失误码；<br>
+收到的FIFO误码；<br>
+收到的帧误码；<br>
+收到的多播误码；<br>
+收到的总包数；<br>
+已传输的字节；<br>
+已传输的压缩字节；<br>
+传输误码总数；<br>
+传输载波误码；<br>
+传输冲突误码；<br>
+传输漏失误码；<br>
+传输FIFO误码；<br>
+传输的总包数。<br>
+</p></li>
+
+<li><p>
+/proc/stat 提供：
+</p>
+<p class="verse">
+<br>
+&#xa0;&#xa0;&#xa0;&#xa0;引导时间；<br>
+&#xa0;&#xa0;&#xa0;&#xa0;上下文切换数量；<br>
+&#xa0;&#xa0;&#xa0;&#xa0;中断总量；<br>
+&#xa0;&#xa0;&#xa0;&#xa0;进页面总数；<br>
+&#xa0;&#xa0;&#xa0;&#xa0;出页面总数；<br>
+&#xa0;&#xa0;&#xa0;&#xa0;进程总数；<br>
+&#xa0;&#xa0;&#xa0;&#xa0;换入总数；<br>
+&#xa0;&#xa0;&#xa0;&#xa0;换出总数；<br>
+&#xa0;&#xa0;&#xa0;&#xa0;合计CPU空闲时间；<br>
+&#xa0;&#xa0;&#xa0;&#xa0;合计CPU nice时间；<br>
+&#xa0;&#xa0;&#xa0;&#xa0;合计CPU系统时间；<br>
+&#xa0;&#xa0;&#xa0;&#xa0;合计CPU用户时间。<br>
+&#xa0;&#xa0;&#xa0;&#xa0;同时提供对每个CPU的:<br>
+&#xa0;&#xa0;&#xa0;&#xa0;单个CPU空闲时间；<br>
+&#xa0;&#xa0;&#xa0;&#xa0;单个CPU nice时间；<br>
+&#xa0;&#xa0;&#xa0;&#xa0;单个CPU系统时间；<br>
+&#xa0;&#xa0;&#xa0;&#xa0;单个CPU用户时间。<br>
+&#xa0;&#xa0;&#xa0;&#xa0;以及对每个磁盘驱动器的如下数据：<br>
+&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;单个磁盘块读；<br>
+&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;单个磁盘块写；<br>
+&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;单个磁盘I/O总数；<br>
+&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;单个磁盘I/O读；<br>
+&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;&#xa0;单个磁盘I/O写。<br>
+</p></li>
+
+<li><p>
+/proc/uptime 中包括：
+</p>
+<p class="verse">
+系统总工作时间；<br>
+系统总空闲时间。<br>
+</p></li>
+</ul>
+
+<p>
+值得注意的是，每次某个 /proc 被读时，一个句柄函数都被内核或特有模块调用,来产
+生数据。数据在运行中产生，不管是读一个字符还是一个大的字块，整个文件都将被重
+建。这对效率是至关重要的一点，因为使用 /proc 的任何系统监控器将吞下整个文件，
+而不是一点一点地处理它。
+</p>
+
+<p>
+Java 提供了丰富的文件 I/O 类集，包括基于类的流、基于类的块设备，以及 J2SDK
+1.4 提供的新的 I/O 库。实验表明，一般而言，对基本的块读写文件操作，用
+RandomAccessFile类进行 I/O 是最佳的。例如，块读文件操作如下：
+</p>
+<pre class="example">
+mFile = new RandomAccessFile( "/proc/meminfo", "r" );
+
+</pre>
+
+<p>
+以读方式打开文件
+</p>
+<pre class="example">
+mFile.read( mBuffer ); //读文件块
+
+</pre></li>
+
+<li><p>
+结论
+</p>
+
+<p>
+本文讨论了如何将Java语言有效地用于Linux集群结点上的高性能监控。在程序设计中，
+要注意以下方面：
+</p>
+
+<ul class="org-ul">
+<li>采用 /proc 文件系统；</li>
+<li>以块形式读 /proc 文件，而不是以行或字符形式；</li>
+<li>在读文件期间保持文件打开；</li>
+<li>消除不必要的数据转换；</li>
+<li>在结点上合并数据；</li>
+<li>以压缩形式传输数据；</li>
+<li>注意与性能问题相关的语言或库。</li>
+</ul></li>
+</ol>
+
+
+<p>
+对高性能监控而言，内核模块不是必要条件，这点很重要，因为它在Linux版本和分类之间
+提供了很大程度的可移植性，在监控器实现语言上有很多的选择。但是，/proc文件系统的
+性能却很依赖内核代码的效率，因此，适当地理解有关的机制将对以任何语言编写的监控器
+性能有非常大的影响。
+</p>
+</div>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

@@ -1,0 +1,89 @@
+# -*- coding: utf-8-unix; -*-
+#+TITLE:       MySQL调用JDBC查询数据全部加载的问题
+#+AUTHOR:      Bruce Asu
+#+EMAIL:       bruceasu@163.com
+#+DATE:        <2016-07-25 20:48>
+#+filetags:    mysql
+
+#+LANGUAGE:    en
+#+OPTIONS:     H:7 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:nil
+
+之前在建立 Statement 或 PreparedStatement，您所使用的 是Connection 无参数的
+createStatement() 与 preparedStatement()，这样取得的 Statement 其执行SQL后得到的
+ResultSet，将只能使用 next() 方法逐笔取得查询结果。
+
+您可以在建立 Statement 对象时指定 resultSetType，可指定的参数有
+
+- =ResultSet.TYPE_FORWARD_ONLY=
+- =ResultSet.TYPE_SCROLL_INSENSITIVE=
+- =ResultSet.TYPE_SCROLL_SENSITIVE=
+
+在不指定的情况下，预设是第一个，也就是只能使用 next() 来逐笔取得资料，指定第二个
+或第三个，则可以使用 ResultSet 的 afterLast()、previous()、absolute()、
+relative() 等方法。
+
+=ResultSet.TYPE_SCROLL_INSENSITIVE= 与 =ResultSet.TYPE_SCROLL_SENSITIVE= 的差别在于
+能否取得 ResultSet 改变值后的资料，另外您还必须指定 resultSetConcurrency，有
+=ResultSet.CONCUR_READ_ONLY= 与 =ResultSet.CONCUR_UPDATABLE= 两个参数可以设定，前者
+表示只能读取 ResultSet 的资料，后者表示可以直接使用 ResultSet 来操作数据库，这会
+在下一个主题后说明。
+
+createStatement() 不给定参数时，预设是 =ResultSet.TYPE_FORWARD_ONLY= 、
+=ResultSet.CONCUR_READ_ONLY= 。
+
+这边先示范如何控制 ResultSet 的读取游标，在建立 Statement 时，您使用
+=ResultSet.TYPE_SCROLL_INSENSITIVE= 及 =ResultSet.CONCUR_READ_ONLY= 即可，下面这个例
+子示范从查询到的资料最后一笔开始往前读取：
+#+BEGIN_SRC java
+
+    Statement stmt = conn.createStatement(
+    ResultSet.TYPE_SCROLL_INSENSITIVE,
+    ResultSet.CONCUR_READ_ONLY);
+    ResultSet result = stmt.executeQuery(
+    "SELECT * FROM message");
+    result.afterLast();
+    while(result.previous()) {
+    System.out.print(result.getString("name") + "\t");
+    System.out.print(result.getString("email") + "\t");
+    System.out.print(result.getString("subject") + "\t");
+    System.out.print(result.getString("time") + "\t");
+    System.out.println(result.getString("memo") + "\t");
+    }
+    stmt.close();
+    conn.close();
+
+#+END_SRC
+
+afterLast() 会将 ResultSet 的读取游标移至最后一笔资料之后，您使用 previous() 方
+法往前移动读取游标。
+
+您也可以使用 absolute() 方法指定查询到的资料之位置，例如 absolute(4) 表示第四笔
+资料，absoulte(10) 则是第十笔资料，如果指定负数，则从最后往前数，例如
+absolute(-1) 则是最后一笔资料，若有 100 笔资料，absoulte(-4) 则是第 97 笔资料。
+
+relative() 方法则从目前游标处指定相对位置，例如若目前在第 25 笔数据，则
+relative(-2)则表示第 23 笔资料，而 relative (4) 则表示第 29 笔资料。
+
+另外有还 beforeFirst()，可以将游标移至数据的第一笔之前，first() 可以将游标移至第
+一笔数据，而 last() 可以将游标移至最后一笔数据。
+
+
+默认情况下，MySQL 的 JDBC 驱动会一下子把所有 row 都读取下来，这在一般情况下是最
+优的，因为可以减少 Client-Server 的通信开销。但是这样也有一个问题，当数据库查询
+结果很大时，特别当不能全部放进内存时，就会产生性能问题。
+
+本来，JDBC api里在 Connection、Statement 和 ResultSet 上都有设置 fetchSize 的方
+法，但是 MySQL 的 JDBC 驱动都不支持，无论你怎么设 fetchSize，ResultSet 都会一次
+性从 Server 读取数据。在 MySQL 的官方论坛上也有多个这样的问题，总结一下解决办法
+如下：
+
+1. MySQL版本在5.0以上，MySQL的JDBC驱动更新到最新版本(至少5.0以上)
+2. Statement一定是 =TYPE_FORWARD_ONLY= 的，并发级别是 =CONCUR_READ_ONLY= (即创建
+   Statement的默认参数)
+3. 以下两句语句选一即可：
+   1. statement.setFetchSize(Integer.MIN_VALUE);
+   2. ((com.mysql.jdbc.Statement)stat).enableStreamingResults();
+
+这样会一行一行地从 Server 读取数据，因此通信开销很大，但内存问题可以解决。官方的
+说法是不支持 fetchSize 不是 MySQL 的 JDBC 驱动的问题，而是 MySQL 本身就不支持。
+而商用数据库 Oracle 或 DB2 都是支持 fetchSize 的，从这里也可以看出两者的考量不同。

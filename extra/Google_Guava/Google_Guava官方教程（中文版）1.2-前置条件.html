@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>Google_Guava官方教程（中文版）1.2-前置条件</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">Google_Guava官方教程（中文版）1.2-前置条件</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#reprint"><div class="category">reprint</div></a> </div>
+<div class="char-counter">2010-10-01</div>
+        <div id="content">
+<nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#org1fb39b7">前置条件：让方法调用的前置条件判断更简单。</a></li>
+</ul>
+</div>
+</nav>
+
+<div id="outline-container-org1fb39b7" class="outline-2">
+<h2 id="org1fb39b7">前置条件：让方法调用的前置条件判断更简单。</h2>
+<div class="outline-text-2" id="text-org1fb39b7">
+<p>
+Guava在Preconditions类中提供了若干前置条件判断的实用方法，我们强烈建议在Eclipse
+中静态导入这些方法。每个方法都有三个变种：
+</p>
+<ul class="org-ul">
+<li>没有额外参数：抛出的异常中没有错误消息；</li>
+<li>有一个Object对象作为额外参数：抛出的异常使用Object.toString() 作为错误消息；</li>
+<li>有一个String对象作为额外参数，并且有一组任意数量的附加Object对象：这个变种处理
+异常消息的方式有点类似printf，但考虑GWT的兼容性和效率，只支持%s指示符。例如：</li>
+</ul>
+<pre class="example">
+checkArgument(i &gt;= 0, "Argument was %s but expected nonnegative", i);
+checkArgument(i &lt; j, "Expected i &lt; j, but %s &gt; %s", i, j);
+</pre>
+<table>
+
+
+<colgroup>
+<col  class="org-left">
+
+<col  class="org-left">
+
+<col  class="org-left">
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">方法声明（不包括额外参数）</th>
+<th scope="col" class="org-left">描述</th>
+<th scope="col" class="org-left">检查失败时抛出的异常</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">checkArgument(boolean)</td>
+<td class="org-left">检查boolean是否为true，用来检查传递给方法的参数。</td>
+<td class="org-left">IllegalArgumentException</td>
+</tr>
+
+<tr>
+<td class="org-left">checkNotNull(T)</td>
+<td class="org-left">检查value是否为null，该方法直接返回value，</td>
+<td class="org-left">NullPointerException</td>
+</tr>
+
+<tr>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">因此可以内嵌使用checkNotNull。</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-left">checkState(boolean)</td>
+<td class="org-left">用来检查对象的某些状态。</td>
+<td class="org-left">IllegalStateException</td>
+</tr>
+
+<tr>
+<td class="org-left">checkElementIndex(int index, int size)</td>
+<td class="org-left">检查index作为索引值对某个列表、字符串或数组是否有效。</td>
+<td class="org-left">IndexOutOfBoundsException</td>
+</tr>
+
+<tr>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">index&gt;=0 &amp;&amp; index&lt;size <sup><a id="fnr.1" class="footref" href="#fn.1">1</a></sup></td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-left">checkPositionIndex(int index, int size)</td>
+<td class="org-left">检查index作为位置值对某个列表、字符串或数组是否有效。</td>
+<td class="org-left">IndexOutOfBoundsException</td>
+</tr>
+
+<tr>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">index&gt;=0 &amp;&amp; index&lt;=size <sup><a id="fnr.2" class="footref" href="#fn.2">2</a></sup></td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-left">checkPositionIndexes(int start, int end, int size)</td>
+<td class="org-left">检查[start, end]表示的位置范围对某个列表、字符串或数组是否有效*</td>
+<td class="org-left">IndexOutOfBoundsException</td>
+</tr>
+</tbody>
+</table>
+
+
+
+
+<p>
+相比Apache Commons提供的类似方法，我们把Guava中的Preconditions作为首选。
+Piotr Jagielski在他的博客中简要地列举了一些理由：
+</p>
+<ul class="org-ul">
+<li>在静态导入后，Guava方法非常清楚明晰。checkNotNull清楚地描述做了什么，会抛出什
+么异常；</li>
+<li>checkNotNull直接返回检查的参数，让你可以在构造函数中保持字段的单行赋值风格：
+this.field = checkNotNull(field)</li>
+<li>简单的、参数可变的printf风格异常信息。鉴于这个优点，在JDK7已经引入
+Objects.requireNonNull的情况下，我们仍然建议你使用checkNotNull。</li>
+</ul>
+
+<p>
+在编码时，如果某个值有多重的前置条件，我们建议你把它们放到不同的行，这样有助于在
+调试时定位。此外，把每个前置条件放到不同的行，也可以帮助你编写清晰和有用的错误消
+息。
+</p>
+</div>
+</div>
+<div id="footnotes">
+<h2 class="footnotes">Footnotes: </h2>
+<div id="text-footnotes">
+
+<div class="footdef"><sup><a id="fn.1" class="footnum" href="#fnr.1">1</a></sup> <div class="footpara"><p class="footpara">
+索引值常用来查找列表、字符串或数组中的元素，如List.get(int), String.charAt(int)
+</p></div></div>
+
+<div class="footdef"><sup><a id="fn.2" class="footnum" href="#fnr.2">2</a></sup> <div class="footpara"><p class="footpara">
+位置值和位置范围常用来截取列表、字符串或数组，如List.subList(int，int), String.substring
+</p></div></div>
+
+
+</div>
+</div>
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

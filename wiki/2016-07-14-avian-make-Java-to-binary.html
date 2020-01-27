@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>avian make java to binary</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">avian make java to binary</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#java"><div class="category">java</div></a> </div>
+<div class="char-counter">2016-07-14</div>
+        <div id="content">
+<p>
+使用小型虚拟机avian将Java转为本地程序
+</p>
+
+<p>
+avian是一个小型的Java虚拟机，实现了Java的部分基本功能。具体 API 可以看这里。
+不过这个虚拟机只提供源代码，需要你在 linux、MSYS 或 Cygwin 下编译好后才能使
+用，我在 MSYS 下尝试了一下，总是报错，最后只好转到Ubuntu下面才成功编译。
+</p>
+
+<p>
+编译过程很简单，只要遵照他的提示就可以了，不过事先肯定是要装好 GCC 和 JDK 的
+（推荐 OpenJDK ），目标为 win32 平台时，还需要 win32 的头文件和库，可以从它
+的 git 站点下载。 下载后解压到和 avian 源文件夹并列放置。
+</p>
+
+<pre class="example">
+$ export JAVA_HOME=/usr/local/java #JDK位置
+$ make platform=windows arch=i386
+</pre>
+
+<p>
+make 后面的平台和架构都有其他的选项，比如 linux/darwin x86_64 等，具体参数可
+以看 这里，编译完成后在 build 目录下应该有个 windows-i386 文件夹，里面就是编
+译好的虚拟机和示例程序。使用avian的好处就在于它很小，可以直接转为本地程序，
+下面就是在 ubuntu 的 mingw 和 avian 环境下，编译 JAVA 程序并且将其转化为可以
+在 Window上运行的普通程序
+</p>
+
+<p>
+avian 小型 JAVA 虚拟机(window-i386 版本) mingw交叉编译环境（现在更加新的可以
+采用ming-w64来编译）
+</p>
+
+<ul class="org-ul">
+<li><p>
+步骤1 建立项目目录${project},复制必要文件。
+</p>
+
+<p>
+mkdir ${project} cd ${project} ar x ../windows-i386/libavian.a cp
+../windows-i386/classpath.jar boot.jar
+</p></li>
+
+<li>步骤2 这一步在eclipse里面完成比较方便，编写JAVA源文件${源代码},直接把
+JRE替换为avian,再加入其他包如SWT等,统一用eclipse编译，直接导出为JAR
+包，导出时将其他JAR也解开。</li>
+
+<li><p>
+步骤3 把上面生成的 JAR 包转为目标文件。
+</p>
+
+<p>
+../windows-i386/binaryToObject boot.jar boot-jar.o
+\_binary\_boot\_jar\_start \_binary\_boot\_jar\_end windows i386
+</p></li>
+
+<li><p>
+步骤4 建立main.cpp文件
+</p>
+
+<pre class="example">
+/*
+ * 调用Java类方法的模块
+ */
+
+#include "stdint.h"
+#include "jni.h"
+
+#if (defined __MINGW32__) || (defined _MSC_VER)
+#  define EXPORT __declspec(dllexport)
+#else
+#  define EXPORT __attribute__ ((visibility("default")))
+#endif
+
+#if (! defined __x86_64__) &amp;&amp; ((defined __MINGW32__) || (defined _MSC_VER))
+#  define SYMBOL(x) binary_boot_jar_##x
+#else
+#  define SYMBOL(x) _binary_boot_jar_##x
+#endif
+
+extern "C" {
+
+  extern const uint8_t SYMBOL(start)[];
+  extern const uint8_t SYMBOL(end)[];
+
+  EXPORT const uint8_t*
+  bootJar(unsigned* size)
+  {
+    *size = SYMBOL(end) - SYMBOL(start);
+    return SYMBOL(start);
+  }
+
+} // extern "C"
+
+int
+main(int ac, const char** av)
+{
+  JavaVMInitArgs vmArgs;
+  vmArgs.version = JNI_VERSION_1_2;
+  vmArgs.nOptions = 1;
+  vmArgs.ignoreUnrecognized = JNI_TRUE;
+
+  JavaVMOption options[vmArgs.nOptions];
+  vmArgs.options = options;
+
+  options[0].optionString = const_cast&lt;char*&gt;("-Xbootclasspath:[bootJar]");
+
+  JavaVM* vm;
+  void* env;
+  JNI_CreateJavaVM(&amp;vm, &amp;env, &amp;vmArgs);
+  JNIEnv* e = static_cast&lt;JNIEnv*&gt;(env);
+
+  jclass c = e-&gt;FindClass("Hello");//在这个地方替换包含main方法的类
+  if (not e-&gt;ExceptionCheck()) {
+    jmethodID m = e-&gt;GetStaticMethodID(c, "main", "([Ljava/lang/String;)V");
+    if (not e-&gt;ExceptionCheck()) {
+      jclass stringClass = e-&gt;FindClass("java/lang/String");
+      if (not e-&gt;ExceptionCheck()) {
+        jobjectArray a = e-&gt;NewObjectArray(ac-1, stringClass, 0);
+        if (not e-&gt;ExceptionCheck()) {
+          for (int i = 1; i &lt; ac; ++i) {
+            e-&gt;SetObjectArrayElement(a, i-1, e-&gt;NewStringUTF(av[i]));
+          }
+
+          e-&gt;CallStaticVoidMethod(c, m, a);
+        }
+      }
+    }
+  }
+
+  int exitCode = 0;
+  if (e-&gt;ExceptionCheck()) {
+    exitCode = -1;
+    e-&gt;ExceptionDescribe();
+  }
+
+  vm-&gt;DestroyJavaVM();
+
+  return exitCode;
+}
+</pre></li>
+
+<li><p>
+步骤5
+</p>
+
+<p>
+ 编译和链接，下面的程序名称如msvc++都是我取的别名，因为原名称实在太长了，
+应该是i586-mingw32msvc-c++（或者也有可能会是i686-xxx等，不一定），不同的
+mingw版本可能会有所不同，${project}就是你工程的名称。
+</p>
+<div class="org-src-container">
+<pre class="src src-bash"><span style="font-weight: bold;">export</span> <span style="font-weight: bold; font-style: italic;">JAVA_HOME</span>=/usr/lib/jvm/java-6-openjdk
+msvc++ -I$<span style="font-weight: bold; font-style: italic;">JAVA_HOME</span>/include -I$<span style="font-weight: bold; font-style: italic;">JAVA_HOME</span>/include/win32  -D_JNI_IMPLEMENTATION_ -c main.cpp -o main.o msdlltool -z ${<span style="font-weight: bold; font-style: italic;">project</span>}.def /.o msdlltool -d ${<span style="font-weight: bold; font-style: italic;">project</span>}.def -e ${<span style="font-weight: bold; font-style: italic;">project</span>}.exp
+msvc++ ${<span style="font-weight: bold; font-style: italic;">project</span>}.exp /.o -L../win32/lib -lmingwthrd -lm -lz -lws2_32 -mwindows -mconsole -o ${<span style="font-weight: bold; font-style: italic;">project</span>}.exe
+<span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">&#21435;&#25481;-mconsole&#21518;&#19981;&#20250;&#20986;&#29616;Console&#65292;&#30452;&#25509;&#26174;&#31034;GUI&#12290; msstrip --strip-all</span>
+${<span style="font-weight: bold; font-style: italic;">project</span>}.exe
+</pre>
+</div></li>
+</ul>
+
+<p>
+其中 java 可以是更高的版本，最后把 {project}.exe 复制回 Windows 即可，在只加
+入 SWT 的情况下，程序的大小是2M多。
+</p>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

@@ -1,0 +1,281 @@
+# -*- coding: utf-8-unix; -*-
+#+TITLE:       java Generic
+#+AUTHOR:      Bruce Asu
+#+EMAIL:       bruceasu@163.com
+#+DATE:        <2017-03-01 20:00>
+#+filetags:        java
+#+DESCRIPTION: 说说 java 泛型
+
+#+LANGUAGE:    en
+#+OPTIONS:     H:7 num:nil toc:t \n:nil ::t |:t ^:nil -:nil f:t *:t <:nil
+
+
+泛型的出现，让我们写一些容器的时候变的更爽了。比如我只想在列表中添加Message，非
+Message不能添加进来的话，我们就需要使用泛型了。再比如RxJava的出现，让泛型的使用
+更加出神入化了。
+
+泛型是从Java5开始被支持的，泛型的出现可以让编译器提前告知你类型错误，从而避免(减
+少)运行时出现类型错误等等。
+
+下面我们来先举个例子：
+#+BEGIN_SRC java
+// Case 1
+final List<Integer> integers = new ArrayList<>();
+final List<Object> objects = integers;
+
+// Case 2
+final Integer[] aI = new Integer[1];
+final Object[] aO = aI;
+#+END_SRC
+
+当我们IDE中写出如上语句的时候，你会发现Case 1会报错误，而Case 2不会报错。主要原
+因是Java中泛型默认是不允许协变，而数组是允许协变的。如果Case 1也能像Case 2一样的
+话，那么就破坏了泛型的安全性。
+
+* 类型擦除
+
+其实泛型是在编译器层面实现的，简单来说就是编译的时候编译器会将泛型给擦除，只留下
+RawType。比如：List<String>编译后会变成List。
+
+之所以会出现泛型擦除主要原因是泛型是Java1.5之后才出现的，也就是说我们之前写的代
+码是没法使用的。主要是兼容性方面的考虑，故而编译器编译的时候会进行泛型擦除。
+
+正因为会类型擦除，从而不会存在List<String>.class这种class发生。如果我们写代码的
+时候想要告诉调用的类型是这样的方式怎么办呢？一种方式是反射，一种是自己实现一个
+ParameterizedType。下面将Type的时候会讲到。
+
+* 通配符
+
+extends 表示的是类型的上界，即表示类型的最上层的超类。故而其表示的类型是其本身或
+者其子类。
+
+super 表示的是类型的下界，即表示类型的最下层的子类。故而其表示的是类型本身或者其
+超类，一直到Object。
+
+下面分别距离讲讲extent和super的读取逻辑。
+
+** extends
+
+#+BEGIN_SRC java
+// 可以使用Number本身
+List<? extends Number> list = new ArrayList<Number>();
+// Integer继承自Number
+List<? extends Number> list = new ArrayList<Integer>();
+// Long继承自Number
+List<? extends Number> list = new ArrayList<Long>();
+#+END_SRC
+
+读取的时候，以上面代码为例，列表可以保证的是读取的数据类型一定是Number或者其子类。
+
+但是使用 extend 方式的通配符没法进行写入，因为没法知道 list 具体是什么类型。比如
+你想往里面 add 一个 Number，但是 list 有可能是 ArrayList；如果你想往里面写入一个
+Integer 的时候，list 也有可能是 ArrayList。所以使用 extends 的时候是没法往 list
+里面写入的。
+
+但是，在list初始化的时候可以直接引用另一个list。比如：
+#+BEGIN_SRC java
+final List<? extends Number> list = new ArrayList<Long>();
+final List<? extends Number> list2 = list;
+
+#+END_SRC
+
+** super
+#+BEGIN_SRC java
+final Integer integer = Integer.valueOf(0);
+final List<? super Integer> numbers = new ArrayList<Number>();// Number是Integer的父类
+final List<? super Integer> objects = new ArrayList<Object>();// Object是所有对象的父类
+final List<? super Integer> integers = new ArrayList<Integer>();// 可以使用Integer本身
+numbers.add(integer);
+objects.add(integer);
+integers.add(integer);
+#+END_SRC
+
+读取的数据的时候，由于不知道具体的泛型是什么，所以没法确认其类型。但是可以肯定的
+是，必然是Object或者其子类(废话)。
+
+而 super 则可以直接往里面写入数据。如上，不论 list 是一个 ArrayList<Integer> 还
+是一个ArrayList<Number>，我们都可以往里面写入一个 Integer。因为可以确定的是 list
+中的泛型必然是 Integer 或者其父类。但是，Integer 的父类比如 Number 是不允许写入
+的，因为编译器不能确定 list 是一个 ArrayList<Number>，编译器只知道当前的泛型是
+Integer 或者其父类。
+
+* 协变
+
+前面提到了协变，在 Java 中数据时支持协变的。对于数组而言，Number 是 Integer 的父
+类，那么 Number[] 也是 Integer[] 的父类了。而泛型的出现就是为了让我们写代码的时
+候类型安全，如 果List 是 List 的父类的话，我们编译器会运行我们往 list 里面添加一
+个Long，但是它需要的是 Integer，故而就破坏了泛型的初衷：类型安全。所以默认泛型是
+不支持协变的。
+
+但是，使用通配符的时候泛型是支持协变的。比如:
+
+#+BEGIN_SRC java
+final List<Number> numbers = new ArrayList<>();
+final List<? extends Object> list = integers;
+
+#+END_SRC
+
+原因是使用 extends 的时候，编译器要求 list 的泛型必须是 Object 的子类，故而
+Number 可以支持。
+
+下面这种方式是逆变，它与协变是反过来的。
+
+#+BEGIN_SRC java
+final List<Number> numbers = new ArrayList<>();
+final List<? super Integer> list = numbers;
+
+#+END_SRC
+
+对了，开头提到的那种不能编译通过的方式是不变。
+
+* Type
+
+Type 是所有类型的父接口，比如 Class 本身就是继承自 Type 的。 在我们使用反射的时
+候通常会用到 Type。
+#+BEGIN_SRC java
+public final class Class<T> implements java.io.Serializable,
+                              java.lang.reflect.GenericDeclaration,
+                              java.lang.reflect.Type,
+                              java.lang.reflect.AnnotatedElement {}
+#+END_SRC
+
+它大概会分为下面几种方式：
+
+** Class
+
+除泛型之外Class本身就是一种Type，包括PrimitiveType也会被box成对应的Class对象。
+
+** PrimitiveType
+
+基本类型
+
+比如:
+
+boolean.class/byte.class/char.class/double.class/float.class/int.class/long.class/short.class
+。当我们反射需要用到的时候需要将其转换成对应的Class，比如Boolean.class等等。
+
+** ParameterizedType
+
+参数化类型。
+
+比如: List/Map<Integer,String>等等。
+
+主要三个方法：
+
+~Type[] getActualTypeArguments();~ 返回的是泛型的参数的类型，比如 ~List<String>~ 会
+返回 ~String~,如果是 ~Map<String,Integer>~ 则为 ~String~ 和 ~Integer~ 组成的数组~Type
+getRawType();~ 返回的是泛型擦除后的类型，比如上面的 ~List<String>~ 会返回~List~ ,
+~Type getOwnerType();~ 一般返回的是类的 ~Owner~ ，比如声明为A.B，则此处返回为A例如：
+#+BEGIN_SRC java
+public static class LIST<T extends View & Comparable & Cloneable> extends ArrayList<T> {
+    private T key;
+    private OBJ<T>[] array = new OBJ[0];
+}
+//
+public static class OBJ extends View implements Comparable<OBJ>, Cloneable {
+
+    public OBJ(Context context) {
+        super(context);
+    }
+
+    @Override
+    public int compareTo(@NonNull OBJ o) {
+        return 0;
+    }
+}
+//
+private final ReflectTypeFragment.LIST<OBJ> list = new ReflectTypeFragment.LIST<>();
+private void testParameterizedType() throws NoSuchFieldException {
+    final Field field = this.getClass().getDeclaredField("list");
+    final Type type = field.getGenericType();
+    final ParameterizedType pt = (ParameterizedType) type;
+    log(String.format("type = %s (%s)\nActualTypeArguments=%s\nOwnerType = %s", print(type), (type instanceof ParameterizedType), print(pt.getActualTypeArguments()), print(pt.getOwnerType())));
+}
+#+END_SRC
+
+最后的结果为：
+#+BEGIN_EXAMPLE
+> type = ReflectTypeFragment$LIST<ReflectTypeFragment$OBJ>(true)
+> ActualTypeArguments = class ReflectTypeFragment$OBJ
+> OwnerType = class ReflectTypeFragment
+
+#+END_EXAMPLE
+
+** TypeVariable
+类型变量
+
+~Type[] getBounds()~ , 返回的是泛型的上边界。也就是说是只能通过”extends”方式声明类型。
+~D getGenericDeclaration()~, 返回的是声明的此类型的地方。
+~String getName()~, 源码中定义泛型时的名字。
+例如：
+#+BEGIN_SRC java
+private void testVariable() throws NoSuchFieldException {
+    final Field field = LIST.class.getDeclaredField("key");
+    final Type type = field.getGenericType();
+    final TypeVariable t = (TypeVariable) type;
+    log(String.format("type = %s (%s)\nBounds = %s\nGenericDeclaration = %s\nName = %s", print(type), (type instanceof TypeVariable), print(t.getBounds()), t.getGenericDeclaration(), t.getName()));
+}
+#+END_SRC
+#+BEGIN_EXAMPLE
+> type = T (true)
+> Bounds = class android.view.View, interface java.lang.Comparable, interface java.lang.Cloneable
+> GenericDeclaration = class ReflectTypeFragment$LIST
+> Name = T
+> GenericArrayType
+
+#+END_EXAMPLE
+
+** 数组类型。
+
+需要注意的是，只能是 ~TypeVariable~ 或者是 ~ParameterizedType~ 的数组才能称得上是数
+组类型, 比如 ~String[]~ ， ~List~ 都不是。
+
+~Type getGenericComponentType();~ 返回的是数组的类型。
+#+BEGIN_SRC java
+private void testGenericArrayType() throws NoSuchFieldException {
+    final Field field = LIST.class.getDeclaredField("array");
+    final GenericArrayType t = (GenericArrayType) field.getGenericType();
+    log(String.format("testGenericArrayType:\ntype = %s\ngetGenericComponentType = %s", print(t), print(t.getGenericComponentType())));
+}
+#+END_SRC
+结果：
+#+BEGIN_EXAMPLE
+> type = [ GenericArrayType: ReflectTypeFragment$OBJ<T>[] ]
+> getGenericComponentType = [ ParameterizedType: ReflectTypeFragment$OBJ<T> ]
+> 可以看到t.getGenericComponentType()返回的是ParameterizedType。
+
+#+END_EXAMPLE
+
+** WildcardType
+
+通配符类型.
+
+~Type[] getUpperBounds()~ 获取到的是类型的上限，如果没有设定上限那么默认会是Object.class
+~Type[] getLowerBounds()~ 获取到的类型的下限，如果没通过super设定那么默认为null。
+例如:
+#+BEGIN_SRC java
+private final Map<? super View, ? extends View> map = new HashMap<>();
+private void testWildcardType() throws NoSuchFieldException {
+    final Field field = this.getClass().getDeclaredField("map");
+    final ParameterizedType pt = (ParameterizedType) field.getGenericType();
+    for (Type type : pt.getActualTypeArguments()) {
+        final WildcardType t = (WildcardType) type;
+        log(String.format("testWildcardType:\ntype = %s\ngetUpperBounds = %s\ngetLowerBounds = %s", print(t), print(t.getUpperBounds()), print(t.getLowerBounds())));
+    }
+}
+#+END_SRC
+打印结果如下:
+#+BEGIN_EXAMPLE
+> testWildcardType:
+> type = [ ? super android.view.View ]
+> getUpperBounds = [ class java.lang.Object ]
+> getLowerBounds = [ class android.view.View ]
+> testWildcardType:
+> type = [ ? extends android.view.View ]
+> getUpperBounds = [ class android.view.View ]
+> getLowerBounds = null
+
+#+END_EXAMPLE
+
+在这里使用了一个 Map，map 对象是一个 ParameterizedType，然后通过其
+getActualTypeArguments，获取里面的多个 Parameter。之后每个 Parameter 都是通配符。

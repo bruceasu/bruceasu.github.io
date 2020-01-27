@@ -1,0 +1,1458 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>openssl</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">openssl</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#openssl"><div class="category">openssl</div></a> </div>
+<div class="char-counter">2017-04-03</div>
+        <div id="content">
+<nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#org5b2d176">QUICK START</a></li>
+<li><a href="#org0d6822b">OPENSSL by default generate Private</a></li>
+<li><a href="#orgb60867f">OpenSSL 1.0.0生成p12、jks、crt等格式证书的命令个过程</a>
+<ul>
+<li><a href="#org58e64eb">此生成的证书可用于浏览器、java、tomcat、c++等。在此备忘！</a></li>
+<li><a href="#org3e1ab1c">生成客户端文件：</a></li>
+<li><a href="#orgac8390b">生成服务端文件：</a></li>
+</ul>
+</li>
+<li><a href="#org23e4916">使用 openssl 生成证书</a>
+<ul>
+<li><a href="#orgd619f2b">一、openssl 简介</a></li>
+<li><a href="#org1802b48">二、生成RSA密钥</a>
+<ul>
+<li><a href="#orgfd80d9e">生成RSA私钥</a></li>
+<li><a href="#org906393b">生成RSA公钥</a></li>
+<li><a href="#org3c1658e">将RSA私钥转换成PKCS8格式</a></li>
+<li><a href="#org34c6e08">生成加密的 RSA 私钥</a></li>
+<li><a href="#org6d59a92">解密 RSA 私钥</a></li>
+</ul>
+</li>
+<li><a href="#org02d6989">三、生成自签名证书</a>
+<ul>
+<li><a href="#orgdbd0cf6">生成 RSA 私钥和自签名证书</a></li>
+<li><a href="#org18f9699">使用 RSA 私钥生成自签名证书</a></li>
+<li><a href="#org6539402">查看 Cert 证书细节</a></li>
+<li><a href="#orge173231">转换 Cert 证书格式</a></li>
+</ul>
+</li>
+<li><a href="#orgdaef872">四、生成签名请求及CA 签名</a>
+<ul>
+<li><a href="#orgd48ae34">使用 RSA私钥生成 CSR 签名请求</a></li>
+<li><a href="#orgbe09f00">查看CSR 的细节</a></li>
+<li><a href="#orgd08c464">使用 根CA 证书 对请求签发证书进行签发，生成 x509证书</a></li>
+</ul>
+</li>
+<li><a href="#org5cd06c6">五、openssl 命令参考</a></li>
+</ul>
+</li>
+<li><a href="#orgdb3f9a0">algid parse error, not a sequence</a></li>
+<li><a href="#org03b9d59">OpenSSL 操作筆記 - 檔案格式轉換</a>
+<ul>
+<li><a href="#orgf120522">格式簡介</a>
+<ul>
+<li><a href="#org4129842">DER</a></li>
+<li><a href="#org621e2c9">PEM</a></li>
+<li><a href="#orgd902095">PKCS#7</a></li>
+<li><a href="#org597bc27">PKCS#12 (PFX)</a></li>
+</ul>
+</li>
+<li><a href="#orgda6a77c">格式轉換</a>
+<ul>
+<li><a href="#orgd9355ae">Certificate PEM 轉 DER</a></li>
+<li><a href="#orgf0cd4ec">Certificate DER 轉 PEM</a></li>
+<li><a href="#orgf32d72c">匯出 public key 指令</a></li>
+<li><a href="#orgc13f90a">PKCS#1/PKCS#8 轉換</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#orgc125945">Java Keytool 变通方法</a></li>
+<li><a href="#org287ec65">OpenSSL 的使用详解</a></li>
+</ul>
+</div>
+</nav>
+
+<div id="outline-container-org5b2d176" class="outline-2">
+<h2 id="org5b2d176">QUICK START</h2>
+<div class="outline-text-2" id="text-org5b2d176">
+<p>
+To start, I created an RSA private key, and checked it:
+</p>
+
+<pre class="example">
+&gt;openssl rsa -in newclient_privatekey.pem  -check
+RSA key ok
+writing RSA key
+-----BEGIN RSA PRIVATE KEY-----
+MIICXQIBAAKBgQCn/OlFk7vLRQ6dBiNQkvjnhm4pOYWo+GeAEmU4N1HPZj1dxv70
+4hm80eYc7h12xc7oVcDLBdHByGAGBpQfpjgdPyozC/zSqcuU6iBrvzDTpyG1zhIG
+76KrcjdbX6PlKAPO9r/dCRmUijFhVoUlY6ywGknmLBrtZkLkBhchgYnMswIDAQAB
+AoGAQaJ5aivspeEXcpahWavzAFLv27+Tz48usUV+stY6arRhqbBEkV19/N5t8EPA
+01U6IGDQ8QIXEIW/rtsHKM6DAZhAbakPDJhJRatcMzJ08ryIkP/c3+onkTquiveG
+brw7xzn6Xa8ls04aQ6VQR4jxXUjV5bB72pFZnGRoAmS2NiECQQDUoISbmTGjnHM+
+kEfunNTXbNmKklwTYhyZaSVsSptnD7CvLWB4qB/g4h2/HjsELag6Z7SlWuYr7tba
+H3nBYn35AkEAykFRudMqlBy3XmcGIpjxOD+7huyViPoUpy3ui/Bj3GbqsbEAt9cR
+PyOJa1VFa2JqShta1Tdep8LJv1QvgvY7CwJBAML+al5gAXvwEGhB3RXg0fi2JFLG
+opZMFbpDCUTkrtu3MeuVC7HbTVDpTSpmSO0uCed2D97NG+USZgsnbnuBHdECQQCw
+S3FWPXdetQ0srzaMz61rLzphaDULuZhpBMNqnTYeNmMaUcPjewagd3Rf52rkKFun
+juKE+Yd7SXGbYWEskT5zAkAD7tbNwe5ryD2CT71jrY/5uXMR2yg/A4Ry2ocZkQUp
+iGflLrHnODvHO5LYLBlSKpjanBceYHJLuMFNZruf7uBM
+-----END RSA PRIVATE KEY-----
+</pre>
+
+<p>
+(Oh, horrors! I've exposed a private key. Meh&#x2026;)
+</p>
+
+<p>
+I extract and display its public key:
+</p>
+
+<pre class="example">
+&gt;openssl rsa -in newclient_privatekey.pem -pubout
+writing RSA key
+-----BEGIN PUBLIC KEY-----
+MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCn/OlFk7vLRQ6dBiNQkvjnhm4p
+OYWo+GeAEmU4N1HPZj1dxv704hm80eYc7h12xc7oVcDLBdHByGAGBpQfpjgdPyoz
+C/zSqcuU6iBrvzDTpyG1zhIG76KrcjdbX6PlKAPO9r/dCRmUijFhVoUlY6ywGknm
+LBrtZkLkBhchgYnMswIDAQAB
+-----END PUBLIC KEY-----
+</pre>
+
+<p>
+It so happens there's another public key output parameter (as is
+mentioned in an earlier comment). I extract and display the public key
+using that keyword instead:
+</p>
+
+<pre class="example">
+&gt;openssl rsa -in newclient_privatekey.pem -RSAPublicKey_out
+writing RSA key
+-----BEGIN RSA PUBLIC KEY-----
+MIGJAoGBAKf86UWTu8tFDp0GI1CS+OeGbik5haj4Z4ASZTg3Uc9mPV3G/vTiGbzR
+5hzuHXbFzuhVwMsF0cHIYAYGlB+mOB0/KjML/NKpy5TqIGu/MNOnIbXOEgbvoqty
+N1tfo+UoA872v90JGZSKMWFWhSVjrLAaSeYsGu1mQuQGFyGBicyzAgMBAAE=
+-----END RSA PUBLIC KEY-----
+</pre>
+
+<p>
+Well, well. These two public key values aren't the same, though they're
+derived from the same private key. Or are they the same? I cut and paste
+the two public key strings into their own files, and then do a modulus
+check on each:
+</p>
+
+<pre class="example">
+&gt;openssl rsa -in newclient_publickey.pem -pubin -modulus
+Modulus=
+A7FCE94593BBCB450E9D06235092F8E7
+866E293985A8F867801265383751CF66
+3D5DC6FEF4E219BCD1E61CEE1D76C5CE
+E855C0CB05D1C1C8600606941FA6381D
+3F2A330BFCD2A9CB94EA206BBF30D3A7
+21B5CE1206EFA2AB72375B5FA3E52803
+CEF6BFDD0919948A316156852563ACB0
+1A49E62C1AED6642E40617218189CCB3
+writing RSA key
+-----BEGIN PUBLIC KEY-----
+MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCn/OlFk7vLRQ6dBiNQkvjnhm4p
+OYWo+GeAEmU4N1HPZj1dxv704hm80eYc7h12xc7oVcDLBdHByGAGBpQfpjgdPyoz
+C/zSqcuU6iBrvzDTpyG1zhIG76KrcjdbX6PlKAPO9r/dCRmUijFhVoUlY6ywGknm
+LBrtZkLkBhchgYnMswIDAQAB
+-----END PUBLIC KEY-----
+</pre>
+
+<p>
+The 'pubin' tells rsa that this really is supposed to be a public key,
+and don't complain that it's not a private key.
+</p>
+
+<p>
+Now we take the RSA public key, display the modulus, and transmogrify it
+into a plain old 'public key' (again, we have to tell it the input is a
+public key):
+</p>
+
+<pre class="example">
+&gt;openssl rsa -in newclient_rsapublickey.pem -RSAPublicKey_in -modulus
+Modulus=
+A7FCE94593BBCB450E9D06235092F8E7
+866E293985A8F867801265383751CF66
+3D5DC6FEF4E219BCD1E61CEE1D76C5CE
+E855C0CB05D1C1C8600606941FA6381D
+3F2A330BFCD2A9CB94EA206BBF30D3A7
+21B5CE1206EFA2AB72375B5FA3E52803
+CEF6BFDD0919948A316156852563ACB0
+1A49E62C1AED6642E40617218189CCB3
+writing RSA key
+-----BEGIN PUBLIC KEY-----
+MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCn/OlFk7vLRQ6dBiNQkvjnhm4p
+OYWo+GeAEmU4N1HPZj1dxv704hm80eYc7h12xc7oVcDLBdHByGAGBpQfpjgdPyoz
+C/zSqcuU6iBrvzDTpyG1zhIG76KrcjdbX6PlKAPO9r/dCRmUijFhVoUlY6ywGknm
+LBrtZkLkBhchgYnMswIDAQAB
+-----END PUBLIC KEY-----
+</pre>
+
+<p>
+Same modulus, and same 'public key' value displayed. To make things more
+interesting (for me, anyway), when we tack on the RSAPublicKey\<sub>out</sub>
+keyword we get:
+</p>
+
+<pre class="example">
+&gt;openssl rsa -in newclient_rsapublickey.pem -RSAPublicKey_in -modulus -RSAPublicKey_out
+Modulus=
+A7FCE94593BBCB450E9D06235092F8E7
+866E293985A8F867801265383751CF66
+3D5DC6FEF4E219BCD1E61CEE1D76C5CE
+E855C0CB05D1C1C8600606941FA6381D
+3F2A330BFCD2A9CB94EA206BBF30D3A7
+21B5CE1206EFA2AB72375B5FA3E52803
+CEF6BFDD0919948A316156852563ACB0
+1A49E62C1AED6642E40617218189CCB3
+writing RSA key
+-----BEGIN RSA PUBLIC KEY-----
+MIGJAoGBAKf86UWTu8tFDp0GI1CS+OeGbik5haj4Z4ASZTg3Uc9mPV3G/vTiGbzR
+5hzuHXbFzuhVwMsF0cHIYAYGlB+mOB0/KjML/NKpy5TqIGu/MNOnIbXOEgbvoqty
+N1tfo+UoA872v90JGZSKMWFWhSVjrLAaSeYsGu1mQuQGFyGBicyzAgMBAAE=
+-----END RSA PUBLIC KEY-----
+</pre>
+
+<p>
+&#x2026;and when we transmogrify the plain old 'public key' into an RSA
+public key:
+</p>
+
+<pre class="example">
+&gt;openssl rsa -in newclient_publickey.pem -pubin -RSAPublicKey_out
+writing RSA key
+-----BEGIN RSA PUBLIC KEY-----
+MIGJAoGBAKf86UWTu8tFDp0GI1CS+OeGbik5haj4Z4ASZTg3Uc9mPV3G/vTiGbzR
+5hzuHXbFzuhVwMsF0cHIYAYGlB+mOB0/KjML/NKpy5TqIGu/MNOnIbXOEgbvoqty
+N1tfo+UoA872v90JGZSKMWFWhSVjrLAaSeYsGu1mQuQGFyGBicyzAgMBAAE=
+-----END RSA PUBLIC KEY-----
+</pre>
+
+<p>
+&#x2026;marching on relentlessly, and although we just did this a few
+commands ago, to make the point we flip things around so the
+transmogrification is from RSA to plain old 'public key':
+</p>
+
+<pre class="example">
+&gt;openssl rsa -in newclient_rsapublickey.pem -RSAPublicKey_in -pubout
+writing RSA key
+-----BEGIN PUBLIC KEY-----
+MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCn/OlFk7vLRQ6dBiNQkvjnhm4p
+OYWo+GeAEmU4N1HPZj1dxv704hm80eYc7h12xc7oVcDLBdHByGAGBpQfpjgdPyoz
+C/zSqcuU6iBrvzDTpyG1zhIG76KrcjdbX6PlKAPO9r/dCRmUijFhVoUlY6ywGknm
+LBrtZkLkBhchgYnMswIDAQAB
+-----END PUBLIC KEY-----
+</pre>
+
+<p>
+&#x2026;which takes us right back where we started. What have we learned?
+</p>
+
+<p>
+Summary: the keys internally are the same, they just look different. An
+earlier comment pointed out the RSA key format was defined in PKCS#1,
+and the plain old 'public key' format was defined in PKCS#8. However,
+editing one form doesn't turn it into the other. Hopefully I've now
+beaten this distinction to death.
+</p>
+
+<p>
+In case there's still a spark of life left, though, let's flog this a
+bit more and reference the certificate that was originally generated
+with the RSA private key so long ago, examining its public key and
+modulus:
+</p>
+
+<pre class="example">
+&gt;openssl x509 -in newclient_cert.pem -pubkey -noout -modulus
+-----BEGIN PUBLIC KEY-----
+MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCn/OlFk7vLRQ6dBiNQkvjnhm4p
+OYWo+GeAEmU4N1HPZj1dxv704hm80eYc7h12xc7oVcDLBdHByGAGBpQfpjgdPyoz
+C/zSqcuU6iBrvzDTpyG1zhIG76KrcjdbX6PlKAPO9r/dCRmUijFhVoUlY6ywGknm
+LBrtZkLkBhchgYnMswIDAQAB
+-----END PUBLIC KEY-----
+Modulus=
+A7FCE94593BBCB450E9D06235092F8E7
+866E293985A8F867801265383751CF66
+3D5DC6FEF4E219BCD1E61CEE1D76C5CE
+E855C0CB05D1C1C8600606941FA6381D
+3F2A330BFCD2A9CB94EA206BBF30D3A7
+21B5CE1206EFA2AB72375B5FA3E52803
+CEF6BFDD0919948A316156852563ACB0
+1A49E62C1AED6642E40617218189CCB3
+</pre>
+
+<p>
+&#x2026;and they all lived happily ever after: the certificate has the same
+modulus value as the RSA public key, RSA private key, and plain old
+'public key'. The certificate contains the same plain old 'public key'
+value that we saw earlier, although it was signed with a file marked as
+an RSA private key. It's safe to say there's a consensus.
+</p>
+
+<p>
+There's no 'RSAPublicKey\<sub>out</sub>' equivalent keyword in the X509 quadrant
+of the OpenSSL galaxy, so we can't try that, although the modulus value
+is described as the "RSA key modulus" which I suppose is as close as
+we'll get.
+</p>
+
+<p>
+How this would all look with a DSA-signed certificate, I don't know.
+</p>
+
+<p>
+I realize this doesn't answer the original question, but perhaps it
+provides some useful background. If not, my apologies. At the very
+least, things not to do and assumptions not to make.
+</p>
+
+<p>
+No doubt one has noted the slightly irritating repetition of "writing
+RSA key", when it's not doing any such thing. I assume what's meant is
+that the rsa module recognizes the plain old public key as a true RSA
+key, and that's why it keeps harping on "RSA key" (plus it is the rsa
+module, after all). If I recall properly, the generic EVP\<sub>PKEY</sub>
+structure has a union for all the key types, with each key type having
+its own special set of values (the helpfully named g, w, q, and other
+consonants).
+</p>
+
+<p>
+In conclusion, I note there was a complaint regarding programming &amp;
+development; now, every OpenSSL command obviously has corresponding
+code, and if one wishes to explore all the wonders that is OpenSSL
+programming today, the command line would seem a reasonable place to
+start. In this particular case (as I'm using a recent cygwin at the
+moment) one might start by reviewing \openssl-1.0.2f\apps\rsa.c and
+(given one has a high tolerance for macros)
+\openssl-1.0.2f\crypto\pem\pem\<sub>all.c</sub>
+</p>
+</div>
+</div>
+
+<div id="outline-container-org0d6822b" class="outline-2">
+<h2 id="org0d6822b">OPENSSL by default generate Private</h2>
+<div class="outline-text-2" id="text-org0d6822b">
+<p>
+<b>OPENSSL by default generate Private Key in PKCS#1</b>
+</p>
+
+<pre class="example">
+-----BEGIN RSA PUBLIC KEY-----
+...
+-----END RSA PUBLIC KEY-----
+</pre>
+
+<p>
+You can convert Private Key to PKCS#8 format and this is as follows
+</p>
+
+<pre class="example">
+-----BEGIN PRIVATE KEY-----
+...
+-----END PRIVATE KEY-----
+</pre>
+
+<p>
+SSL Always export Public Key in X.509 format it's as follows
+</p>
+
+<pre class="example">
+-----BEGIN PUBLIC KEY-----
+...
+-----END PUBLIC KEY-----
+</pre>
+
+<p>
+I use this bat script for generate RSA keypair.
+</p>
+
+<pre class="example">
+@ECHO OFF
+SET mypath=%~dp0
+cd %mypath:~0,-1%
+ECHO === GENERATE PRIVATE KEY in PKCS#1 format ===
+openssl genrsa -f4 -out private.txt 4096
+ECHO === EXPORT PUBLIC KEY ===
+openssl rsa -in private.txt -outform PEM -pubout -out public.txt
+ECHO === EXPORT PRIVATE KEY to PKCS#8 format ==
+openssl pkcs8 -topk8 -inform pem -in private.txt -outform PEM -nocrypt -out private8.txt
+PAUSE
+</pre>
+</div>
+</div>
+
+<div id="outline-container-orgb60867f" class="outline-2">
+<h2 id="orgb60867f">OpenSSL 1.0.0生成p12、jks、crt等格式证书的命令个过程</h2>
+<div class="outline-text-2" id="text-orgb60867f">
+<p>
+OpenSSL 1.0.0生成p12、jks、crt等格式证书的命令个过程
+</p>
+</div>
+
+<div id="outline-container-org58e64eb" class="outline-3">
+<h3 id="org58e64eb">此生成的证书可用于浏览器、java、tomcat、c++等。在此备忘！</h3>
+<div class="outline-text-3" id="text-org58e64eb">
+<ol class="org-ol">
+<li><p>
+创建根证私钥
+</p>
+
+<pre class="example">
+openssl genrsa -out root-key.key 1024
+</pre></li>
+
+<li><p>
+创建根证书请求文件
+</p>
+
+<pre class="example">
+openssl req -new -out root-req.csr -key root-key.key -keyform PEM
+</pre></li>
+
+<li>自签根证书
+<code>bash  openssl x509 -req -in root-req.csr -out root-cert.cer -signkey root-key.key -CAcreateserial -days 3650</code></li>
+<li><p>
+导出p12格式根证书
+</p>
+
+<pre class="example">
+openssl pkcs12 -export -clcerts -in root-cert.cer -inkey root-key.key -out root.p12
+</pre></li>
+
+<li><p>
+生成root.jks文件
+</p>
+
+<pre class="example">
+keytool -import -v -trustcacerts -storepass 123456 -alias root -file root-cert.cer -keystore
+root.jks
+</pre></li>
+</ol>
+</div>
+</div>
+
+<div id="outline-container-org3e1ab1c" class="outline-3">
+<h3 id="org3e1ab1c">生成客户端文件：</h3>
+<div class="outline-text-3" id="text-org3e1ab1c">
+<ol class="org-ol">
+<li><p>
+生成客户端key
+</p>
+
+<pre class="example">
+openssl genrsa -out client-key.key 1024
+</pre></li>
+
+<li><p>
+生成客户端请求文件
+</p>
+
+<pre class="example">
+openssl req -new -out client-req.csr -key client-key.key
+</pre></li>
+
+<li><p>
+生成客户端证书（root证书，rootkey，客户端key，客户端请求文件这4个生成客户端证书）
+</p>
+
+<pre class="example">
+openssl x509 -req -in client-req.csr -out client-cert.cer -signkey client-key.key -CA root-cert.cer
+-CAkey root-key.key -CAcreateserial -days 3650
+</pre></li>
+
+<li><p>
+生成客户端p12格式根证书
+</p>
+
+<pre class="example">
+openssl pkcs12 -export -clcerts -in client-cert.cer -inkey client-key.key -out client.p12
+</pre>
+
+<p>
+客户端jks：
+</p>
+
+<pre class="example">
+ keytool -import -v -trustcacerts -storepass 123456 -alias client -file client-cert.cer -keystore
+client.jks
+</pre></li>
+</ol>
+</div>
+</div>
+
+<div id="outline-container-orgac8390b" class="outline-3">
+<h3 id="orgac8390b">生成服务端文件：</h3>
+<div class="outline-text-3" id="text-orgac8390b">
+<ol class="org-ol">
+<li><p>
+生成服务端key
+</p>
+
+<pre class="example">
+openssl genrsa -out server-key.key 1024
+</pre></li>
+
+<li><p>
+生成服务端请求文件
+</p>
+
+<pre class="example">
+openssl req -new -out server-req.csr -key server-key.key
+</pre></li>
+
+<li><p>
+生成服务端证书（root证书，rootkey，客户端key，客户端请求文件这4个生成客户端证书）
+</p>
+
+<pre class="example">
+openssl x509 -req -in server-req.csr -out server-cert.cer -signkey server-key.key -CA root-cert.cer
+-CAkey root-key.key -CAcreateserial -days 3650
+</pre></li>
+
+<li><p>
+生成服务端p12格式根证书
+</p>
+
+<pre class="example">
+openssl pkcs12 -export -clcerts -in server-cert.cer -inkey server-key.key -out server.p12
+</pre>
+
+<p>
+服务端JKS
+</p>
+
+<pre class="example">
+keytool -import -v -trustcacerts -storepass 123456 -alias server -file server-cert.cer -keystore
+server.jks
+</pre>
+
+<p>
+无密码key命令：
+</p>
+
+<pre class="example">
+openssl rsa -in client-key.key -out client-key.key.unsecure
+</pre></li>
+</ol>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org23e4916" class="outline-2">
+<h2 id="org23e4916">使用 openssl 生成证书</h2>
+<div class="outline-text-2" id="text-org23e4916">
+</div>
+<div id="outline-container-orgd619f2b" class="outline-3">
+<h3 id="orgd619f2b">一、openssl 简介</h3>
+<div class="outline-text-3" id="text-orgd619f2b">
+<p>
+目前最流行的 SSL 密码库工具 官网：<a href="https://www.openssl.org/source/">https://www.openssl.org/source/</a>
+</p>
+
+<p>
+构成部分
+</p>
+
+<p>
+密码算法库 密钥和证书封装管理功能 SSL通信API接口 用途
+</p>
+
+<p>
+建立 RSA、DH、DSA key 参数 建立 X.509
+证书、证书签名请求(CSR)和CRLs(证书回收列表) 计算消息摘要 使用各种
+Cipher加密/解密 SSL/TLS 客户端以及服务器的测试 处理S/MIME 或者加密邮件
+</p>
+</div>
+</div>
+
+<div id="outline-container-org1802b48" class="outline-3">
+<h3 id="org1802b48">二、生成RSA密钥</h3>
+<div class="outline-text-3" id="text-org1802b48">
+</div>
+<div id="outline-container-orgfd80d9e" class="outline-4">
+<h4 id="orgfd80d9e">生成RSA私钥</h4>
+<div class="outline-text-4" id="text-orgfd80d9e">
+<pre class="example">
+openssl genrsa -out rsa_private_key.pem 1024
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org906393b" class="outline-4">
+<h4 id="org906393b">生成RSA公钥</h4>
+<div class="outline-text-4" id="text-org906393b">
+<pre class="example">
+openssl rsa -in rsa_private_key.pem -pubout -out rsa_public_key.pem
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org3c1658e" class="outline-4">
+<h4 id="org3c1658e">将RSA私钥转换成PKCS8格式</h4>
+<div class="outline-text-4" id="text-org3c1658e">
+<pre class="example">
+openssl pkcs8 -topk8 -inform PEM -in rsa_private_key.pem -outform PEM -nocrypt
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org34c6e08" class="outline-4">
+<h4 id="org34c6e08">生成加密的 RSA 私钥</h4>
+<div class="outline-text-4" id="text-org34c6e08">
+<pre class="example">
+openssl genrsa -out rsa_desprv_key.pem 1024 -des3 -passout pass:111111
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org6d59a92" class="outline-4">
+<h4 id="org6d59a92">解密 RSA 私钥</h4>
+<div class="outline-text-4" id="text-org6d59a92">
+<pre class="example">
+openssl rsa -in rsa_desprv_key.pem -out rsa_nodesprv_key.pem -passin pass:111111
+</pre>
+
+<p>
+-passin; -passout 用于指定密码参数，若不包括则会弹出提示要求输入
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org02d6989" class="outline-3">
+<h3 id="org02d6989">三、生成自签名证书</h3>
+<div class="outline-text-3" id="text-org02d6989">
+</div>
+<div id="outline-container-orgdbd0cf6" class="outline-4">
+<h4 id="orgdbd0cf6">生成 RSA 私钥和自签名证书</h4>
+<div class="outline-text-4" id="text-orgdbd0cf6">
+<pre class="example">
+openssl req -x509 -nodes -days 365 -newkey rsa:1024 -keyout private_key.pem -out cert.crt
+</pre>
+
+<p>
+-nodes 指不采用des 加密
+</p>
+</div>
+</div>
+
+<div id="outline-container-org18f9699" class="outline-4">
+<h4 id="org18f9699">使用 RSA 私钥生成自签名证书</h4>
+<div class="outline-text-4" id="text-org18f9699">
+<pre class="example">
+openssl req -new -x509 -days 3650 -key private_key.pem -out cert.crt
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org6539402" class="outline-4">
+<h4 id="org6539402">查看 Cert 证书细节</h4>
+<div class="outline-text-4" id="text-org6539402">
+<pre class="example">
+openssl x509 -in cert.crt -noout -text
+</pre>
+</div>
+</div>
+
+<div id="outline-container-orge173231" class="outline-4">
+<h4 id="orge173231">转换 Cert 证书格式</h4>
+<div class="outline-text-4" id="text-orge173231">
+<pre class="example">
+openssl x509 -in cert.cer -inform DER -outform PEM -out cert.pem
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgdaef872" class="outline-3">
+<h3 id="orgdaef872">四、生成签名请求及CA 签名</h3>
+<div class="outline-text-3" id="text-orgdaef872">
+</div>
+<div id="outline-container-orgd48ae34" class="outline-4">
+<h4 id="orgd48ae34">使用 RSA私钥生成 CSR 签名请求</h4>
+<div class="outline-text-4" id="text-orgd48ae34">
+<pre class="example">
+openssl req -new -key private_key.pem -out cert.csr
+</pre>
+
+<p>
+此时生成的 csr签名请求文件可提交至 CA进行签发
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgbe09f00" class="outline-4">
+<h4 id="orgbe09f00">查看CSR 的细节</h4>
+<div class="outline-text-4" id="text-orgbe09f00">
+<pre class="example">
+openssl req -noout -text -in server.csr
+</pre>
+</div>
+</div>
+
+<div id="outline-container-orgd08c464" class="outline-4">
+<h4 id="orgd08c464">使用 根CA 证书 对请求签发证书进行签发，生成 x509证书</h4>
+<div class="outline-text-4" id="text-orgd08c464">
+<pre class="example">
+openssl x509 -req -days 3650 -in server.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out server.crt
+</pre>
+
+<p>
+CA 使用自有的证书(经过认证)及自有的私钥进行证书签署 ca.crt 为 ca
+证书，ca.key 为 ca 的私钥
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org5cd06c6" class="outline-3">
+<h3 id="org5cd06c6">五、openssl 命令参考</h3>
+<div class="outline-text-3" id="text-org5cd06c6">
+<div class="HTML">
+<p>
+&lt;pre&gt;
+</p>
+<ol class="org-ol">
+<li>openssl list-standard-commands(标准命令)</li>
+<li>asn1parse: asn1parse用于解释用ANS.1语法书写的语句(ASN一般用于定义语法的构成)</li>
+<li>ca: ca用于CA的管理</li>
+</ol>
+<p>
+openssl ca [options]:
+2.1) -selfsign
+使用对证书请求进行签名的密钥对来签发证书。即"自签名"，这种情况发生在生成证书的客户端、签发证书的CA都是同一台机器(也是我们大多数实验中的情况)，我们可以使用同一个
+密钥对来进行"自签名"
+2.2) -in file
+需要进行处理的PEM格式的证书
+2.3) -out file
+处理结束后输出的证书文件
+2.4) -cert file
+用于签发的根CA证书
+2.5) -days arg
+指定签发的证书的有效时间
+2.6) -keyfile arg
+CA的私钥证书文件
+2.7) -keyform arg
+CA的根私钥证书文件格式:
+2.7.1) PEM
+2.7.2) ENGINE
+2.8) -key arg
+CA的根私钥证书文件的解密密码(如果加密了的话)
+2.9) -config file
+配置文件
+example1: 利用CA证书签署请求证书
+openssl ca -in server.csr -out server.crt -cert ca.crt -keyfile ca.key
+</p>
+
+<ol class="org-ol">
+<li>req: X.509证书签发请求(CSR)管理</li>
+</ol>
+<p>
+openssl req [options] &lt;infile &gt;outfile
+3.1) -inform arg
+输入文件格式
+3.1.1) DER
+3.1.2) PEM
+3.2) -outform arg
+输出文件格式
+3.2.1) DER
+3.2.2) PEM
+3.3) -in arg
+待处理文件
+3.4) -out arg
+待输出文件
+3.5) -passin
+用于签名待生成的请求证书的私钥文件的解密密码
+3.6) -key file
+用于签名待生成的请求证书的私钥文件
+3.7) -keyform arg
+3.7.1) DER
+3.7.2) NET
+3.7.3) PEM
+3.8) -new
+新的请求
+3.9) -x509
+输出一个X509格式的证书
+3.10) -days
+X509证书的有效时间
+3.11) -newkey rsa:bits
+生成一个bits长度的RSA私钥文件，用于签发
+3.12) -[digest]
+HASH算法
+3.12.1) md5
+3.12.2) sha1
+3.12.3) md2
+3.12.4) mdc2
+3.12.5) md4
+3.13) -config file
+指定openssl配置文件
+3.14) -text: text显示格式
+example1: 利用CA的RSA密钥创建一个自签署的CA证书(X.509结构)
+openssl req -new -x509 -days 3650 -key server.key -out ca.crt
+example2: 用server.key生成证书签署请求CSR(这个CSR用于之外发送待CA中心等待签发)
+openssl req -new -key server.key -out server.csr
+example3: 查看CSR的细节
+openssl req -noout -text -in server.csr
+</p>
+
+<ol class="org-ol">
+<li>genrsa: 生成RSA参数</li>
+</ol>
+<p>
+openssl genrsa [args] [numbits]
+[args]
+4.1) 对生成的私钥文件是否要使用加密算法进行对称加密:
+4.1.1) -des: CBC模式的DES加密
+4.1.2) -des3: CBC模式的3DES加密
+4.1.3) -aes128: CBC模式的AES128加密
+4.1.4) -aes192: CBC模式的AES192加密
+4.1.5) -aes256: CBC模式的AES256加密
+4.2) -passout arg: arg为对称加密(des、3des、aes)的密码(使用这个参数就省去了console交互提示输入密码的环节)
+4.3) -out file: 输出证书私钥文件
+[numbits]: 密钥长度
+example: 生成一个1024位的RSA私钥，并用3DES加密(密码为1111)，保存为server.key文件
+openssl genrsa -out server.key -passout pass:1111 -des3 1024
+</p>
+
+<ol class="org-ol">
+<li>rsa: RSA数据管理</li>
+</ol>
+<p>
+openssl rsa [options] &lt;infile &gt;outfile
+5.1) -inform arg
+输入密钥文件格式:
+5.1.1) DER(ASN1)
+5.1.2) NET
+5.1.3) PEM(base64编码格式)
+5.2) -outform arg
+输出密钥文件格式
+5.2.1) DER
+5.2.2) NET
+5.2.3) PEM
+5.3) -in arg
+待处理密钥文件
+5.4) -passin arg
+输入这个加密密钥文件的解密密钥(如果在生成这个密钥文件的时候，选择了加密算法了的话)
+5.5) -out arg
+待输出密钥文件
+5.6) -passout arg
+如果希望输出的密钥文件继续使用加密算法的话则指定密码
+5.7) -des: CBC模式的DES加密
+5.8) -des3: CBC模式的3DES加密
+5.9) -aes128: CBC模式的AES128加密
+5.10) -aes192: CBC模式的AES192加密
+5.11) -aes256: CBC模式的AES256加密
+5.12) -text: 以text形式打印密钥key数据
+5.13) -noout: 不打印密钥key数据
+5.14) -pubin: 检查待处理文件是否为公钥文件
+5.15) -pubout: 输出公钥文件
+example1: 对私钥文件进行解密
+openssl rsa -in server.key -passin pass:111 -out server<sub>nopass.key</sub>
+example:2: 利用私钥文件生成对应的公钥文件
+openssl rsa -in server.key -passin pass:111 -pubout -out server<sub>public.key</sub>
+</p>
+
+<ol class="org-ol">
+<li>x509:</li>
+</ol>
+<p>
+本指令是一个功能很丰富的证书处理工具。可以用来显示证书的内容，转换其格式，给CSR签名等X.509证书的管理工作
+openssl x509 [args]
+6.1) -inform arg
+待处理X509证书文件格式
+6.1.1) DER
+6.1.2) NET
+6.1.3) PEM
+6.2) -outform arg
+待输出X509证书文件格式
+6.2.1) DER
+6.2.2) NET
+6.2.3) PEM
+6.3) -in arg
+待处理X509证书文件
+6.4) -out arg
+待输出X509证书文件
+6.5) -req
+表明输入文件是一个"请求签发证书文件(CSR)"，等待进行签发
+6.6) -days arg
+表明将要签发的证书的有效时间
+6.7) -CA arg
+指定用于签发请求证书的根CA证书
+6.8) -CAform arg
+根CA证书格式(默认是PEM)
+6.9) -CAkey arg
+指定用于签发请求证书的CA私钥证书文件，如果这个option没有参数输入，那么缺省认为私有密钥在CA证书文件里有
+6.10) -CAkeyform arg
+指定根CA私钥证书文件格式(默认为PEM格式)
+6.11) -CAserial arg
+指定序列号文件(serial number file)
+6.12) -CAcreateserial
+如果序列号文件(serial number file)没有指定，则自动创建它
+example1: 转换DER证书为PEM格式
+openssl x509 -in cert.cer -inform DER -outform PEM -out cert.pem
+example2: 使用根CA证书对"请求签发证书"进行签发，生成x509格式证书
+openssl x509 -req -days 3650 -in server.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out server.crt
+example3: 打印出证书的内容
+openssl x509 -in server.crt -noout -text
+</p>
+
+<ol class="org-ol">
+<li>crl: crl是用于管理CRL列表</li>
+</ol>
+<p>
+openssl crl [args]
+7.1) -inform arg
+输入文件的格式
+7.1.1) DER(DER编码的CRL对象)
+7.1.2) PEM(默认的格式)(base64编码的CRL对象)
+7.2) -outform arg
+指定文件的输出格式
+7.2.1) DER(DER编码的CRL对象)
+7.2.2) PEM(默认的格式)(base64编码的CRL对象)
+7.3) -text:
+以文本格式来打印CRL信息值。
+7.4) -in filename
+指定的输入文件名。默认为标准输入。
+7.5) -out filename
+指定的输出文件名。默认为标准输出。
+7.6) -hash
+输出颁发者信息值的哈希值。这一项可用于在文件中根据颁发者信息值的哈希值来查询CRL对象。
+7.7) -fingerprint
+打印CRL对象的标识。
+7.8) -issuer
+输出颁发者的信息值。
+7.9) -lastupdate
+输出上一次更新的时间。
+7.10) -nextupdate
+打印出下一次更新的时间。
+7.11) -CAfile file
+指定CA文件，用来验证该CRL对象是否合法。
+7.12) -verify
+是否验证证书。
+example1: 输出CRL文件，包括(颁发者信息HASH值、上一次更新的时间、下一次更新的时间)
+openssl crl -in crl.crl -text -issuer -hash -lastupdate –nextupdate
+example2: 将PEM格式的CRL文件转换为DER格式
+openssl crl -in crl.pem -outform DER -out crl.der
+</p>
+
+<ol class="org-ol">
+<li>crl2pkcs7: 用于CRL和PKCS#7之间的转换</li>
+</ol>
+<p>
+openssl crl2pkcs7 [options] &lt;infile &gt;outfile
+转换pem到spc
+openssl crl2pkcs7 -nocrl -certfile venus.pem -outform DER -out venus.spc
+<a href="https://www.openssl.org/docs/apps/crl2pkcs7.html">https://www.openssl.org/docs/apps/crl2pkcs7.html</a>
+</p>
+
+<ol class="org-ol">
+<li>pkcs12: PKCS#12数据的管理</li>
+</ol>
+<p>
+pkcs12文件工具，能生成和分析pkcs12文件。PKCS#12文件可以被用于多个项目，例如包含Netscape、 MSIE 和 MS Outlook
+openssl pkcs12 [options]
+<a href="http://blog.csdn.net/as3luyuan123/article/details/16105475">http://blog.csdn.net/as3luyuan123/article/details/16105475</a>
+<a href="https://www.openssl.org/docs/apps/pkcs12.html">https://www.openssl.org/docs/apps/pkcs12.html</a>
+</p>
+
+<ol class="org-ol">
+<li>pkcs7: PCKS#7数据的管理</li>
+</ol>
+<p>
+用于处理DER或者PEM格式的pkcs#7文件
+openssl pkcs7 [options] &lt;infile &gt;outfile
+<a href="http://blog.csdn.net/as3luyuan123/article/details/16105407">http://blog.csdn.net/as3luyuan123/article/details/16105407</a>
+<a href="https://www.openssl.org/docs/apps/pkcs7.html">https://www.openssl.org/docs/apps/pkcs7.html</a>
+</p>
+
+<ol class="org-ol">
+<li>openssl list-message-digest-commands(消息摘要命令)</li>
+<li>dgst: dgst用于计算消息摘要</li>
+</ol>
+<p>
+openssl dgst [args]
+1.1) -hex
+以16进制形式输出摘要
+1.2) -binary
+以二进制形式输出摘要
+1.3) -sign file
+以私钥文件对生成的摘要进行签名
+1.4) -verify file
+使用公钥文件对私钥签名过的摘要文件进行验证
+1.5) -prverify file
+以私钥文件对公钥签名过的摘要文件进行验证
+verify a signature using private key in file
+1.6) 加密处理
+1.6.1) -md5: MD5
+1.6.2) -md4: MD4
+1.6.3) -sha1: SHA1
+1.6.4) -ripemd160
+example1: 用SHA1算法计算文件file.txt的哈西值，输出到stdout
+openssl dgst -sha1 file.txt
+example2: 用dss1算法验证file.txt的数字签名dsasign.bin，验证的private key为DSA算法产生的文件dsakey.pem
+openssl dgst -dss1 -prverify dsakey.pem -signature dsasign.bin file.txt
+</p>
+
+<ol class="org-ol">
+<li>sha1: 用于进行RSA处理</li>
+</ol>
+<p>
+openssl sha1 [args]
+2.1) -sign file
+用于RSA算法的私钥文件
+2.2) -out file
+输出文件爱你
+2.3) -hex
+以16进制形式输出
+2.4) -binary
+以二进制形式输出
+example1: 用SHA1算法计算文件file.txt的HASH值,输出到文件digest.txt
+openssl sha1 -out digest.txt file.txt
+example2: 用sha1算法为文件file.txt签名,输出到文件rsasign.bin，签名的private key为RSA算法产生的文件rsaprivate.pem
+openssl sha1 -sign rsaprivate.pem -out rsasign.bin file.txt
+</p>
+
+<ol class="org-ol">
+<li>openssl list-cipher-commands (Cipher命令的列表)</li>
+<li>aes-128-cbc</li>
+<li>aes-128-ecb</li>
+<li>aes-192-cbc</li>
+<li>aes-192-ecb</li>
+<li>aes-256-cbc</li>
+<li>aes-256-ecb</li>
+<li>base64</li>
+<li>bf</li>
+<li>bf-cbc</li>
+<li>bf-cfb</li>
+<li>bf-ecb</li>
+<li>bf-ofb</li>
+<li>cast</li>
+<li>cast-cbc</li>
+<li>cast5-cbc</li>
+<li>cast5-cfb</li>
+<li>cast5-ecb</li>
+<li>cast5-ofb</li>
+<li>des</li>
+<li>des-cbc</li>
+<li>des-cfb</li>
+<li>des-ecb</li>
+<li>des-ede</li>
+<li>des-ede-cbc</li>
+<li>des-ede-cfb</li>
+<li>des-ede-ofb</li>
+<li>des-ede3</li>
+<li>des-ede3-cbc</li>
+<li>des-ede3-cfb</li>
+<li>des-ede3-ofb</li>
+<li>des-ofb</li>
+<li>des3</li>
+<li>desx</li>
+<li>rc2</li>
+<li>rc2-40-cbc</li>
+<li>rc2-64-cbc</li>
+<li>rc2-cbc</li>
+<li>rc2-cfb</li>
+<li>rc2-ecb</li>
+<li>rc2-ofb</li>
+<li>rc4</li>
+<li>rc4-40</li>
+</ol>
+<p>
+&lt;/pre&gt;
+</p>
+
+</div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgdb3f9a0" class="outline-2">
+<h2 id="orgdb3f9a0">algid parse error, not a sequence</h2>
+<div class="outline-text-2" id="text-orgdb3f9a0">
+<ol class="org-ol">
+<li><p>
+java rsa秘钥加密出错：algid parse error, not a sequence
+</p>
+
+<pre class="example">
+Exception in thread "main" java.security.spec.InvalidKeySpecException:         java.security.InvalidKeyException: IOException : algid parse error, not a       sequence
+at sun.security.rsa.RSAKeyFactory.engineGeneratePrivate(Unknown Source)
+at java.security.KeyFactory.generatePrivate(Unknown Source)
+at base54.encrypt.RSAToy.main(RSAToy.java:36)
+Caused by: java.security.InvalidKeyException: IOException : algid parse        error, not a sequence
+at sun.security.pkcs.PKCS8Key.decode(Unknown Source)
+at sun.security.pkcs.PKCS8Key.decode(Unknown Source)
+at sun.security.rsa.RSAPrivateCrtKeyImpl.(Unknown Source)
+at sun.security.rsa.RSAPrivateCrtKeyImpl.newKey(Unknown Source)
+at sun.security.rsa.RSAKeyFactory.generatePrivate(Unknown Source)
+</pre></li>
+
+<li><p>
+根据以上错误信息，很可能是你的秘钥文件格式问题（PKCS#1这种格式），你可以按照以下方法将秘钥文件改为PKCS#8。
+</p>
+
+<pre class="example">
+openssl pkcs8 -topk8 -inform PEM -outform PEM -in 你的秘钥文件.pem -out
+输出秘钥文件.pem -nocrypt
+</pre></li>
+
+<li>然后按照之前的方法，读取新的秘钥文件，应该就可以了。</li>
+</ol>
+</div>
+</div>
+
+<div id="outline-container-org03b9d59" class="outline-2">
+<h2 id="org03b9d59">OpenSSL 操作筆記 - 檔案格式轉換</h2>
+<div class="outline-text-2" id="text-org03b9d59">
+</div>
+<div id="outline-container-orgf120522" class="outline-3">
+<h3 id="orgf120522">格式簡介</h3>
+<div class="outline-text-3" id="text-orgf120522">
+<p>
+Certificate 和 key 可以存成多種格式, 常見的有 DER , PEM , PFX
+</p>
+</div>
+
+<div id="outline-container-org4129842" class="outline-4">
+<h4 id="org4129842">DER</h4>
+<div class="outline-text-4" id="text-org4129842">
+<p>
+將 certificate 或 key 用 DER ASN.1 編碼的原始格式, certificate
+就是依照X.509的方式編碼, key 則是又能分為PKCS#1 和PKCS#8
+</p>
+</div>
+</div>
+
+<div id="outline-container-org621e2c9" class="outline-4">
+<h4 id="org621e2c9">PEM</h4>
+<div class="outline-text-4" id="text-org621e2c9">
+<p>
+把 DER 格式的 certificate 或 key 使用 base64-encoded
+編碼後在頭尾補上資料標明檔案類型
+</p>
+
+<pre class="example">
+Certificate
+-----BEGIN PRIVATE KEY-----
+...
+-----END PRIVATE KEY-----
+
+RSA private key (PKCS#1)
+-----BEGIN RSA PRIVATE KEY-----
+-----END RSA PRIVATE KEY-----
+
+RSA public key (PKCS#1)
+-----BEGIN RSA PUBLIC KEY-----
+...
+-----END RSA PUBLIC KEY-----
+
+RSA private key (PKCS#8, key 沒加密 )
+-----BEGIN PRIVATE KEY-----
+...
+-----END PRIVATE KEY-----
+
+RSA public key (PKCS#8)
+-----BEGIN PUBLIC KEY-----
+...
+-----END PUBLIC KEY-----
+
+RSA private key (PKCS#8, key 有加密 )
+-----BEGIN ENCRYPTED PRIVATE KEY-----
+...
+-----END ENCRYPTED PRIVATE KEY-----
+</pre>
+</div>
+</div>
+
+<div id="outline-container-orgd902095" class="outline-4">
+<h4 id="orgd902095">PKCS#7</h4>
+<div class="outline-text-4" id="text-orgd902095">
+<p>
+這個格式用來傳遞簽署過或加密的資料,檔案裡可以包含整個用到的 certificate
+chain
+</p>
+</div>
+</div>
+
+<div id="outline-container-org597bc27" class="outline-4">
+<h4 id="org597bc27">PKCS#12 (PFX)</h4>
+<div class="outline-text-4" id="text-org597bc27">
+<p>
+這個格式可以把 private key和整個 certificate chain 存程一個檔案
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgda6a77c" class="outline-3">
+<h3 id="orgda6a77c">格式轉換</h3>
+<div class="outline-text-3" id="text-orgda6a77c">
+<p>
+openssl 預設輸入輸出的格式都是PEM, 要轉換格式很簡單,搭配 inform, outform
+參數就可以了
+</p>
+</div>
+
+<div id="outline-container-orgd9355ae" class="outline-4">
+<h4 id="orgd9355ae">Certificate PEM 轉 DER</h4>
+<div class="outline-text-4" id="text-orgd9355ae">
+<pre class="example">
+openssl x509 -in cert.pem -outform der -out cert.der
+</pre>
+</div>
+</div>
+
+<div id="outline-container-orgf0cd4ec" class="outline-4">
+<h4 id="orgf0cd4ec">Certificate DER 轉 PEM</h4>
+<div class="outline-text-4" id="text-orgf0cd4ec">
+<pre class="example">
+openssl x509 -inform der -in cert.der -outform der -out cert.pem
+</pre>
+
+<p>
+RSA key 的轉換比較多一些, 有 private/public key, PKCS#1/PKCS#8, DER/PEM,
+以下只都是用 PEM 格式, 要換 DER 只要加入 inform, outform 參數就可以了
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgf32d72c" class="outline-4">
+<h4 id="orgf32d72c">匯出 public key 指令</h4>
+<div class="outline-text-4" id="text-orgf32d72c">
+<p>
+從 certificate 匯出
+</p>
+
+<pre class="example">
+openssl x509 -in cert.pem -pubkey -noout &gt; public.pem
+</pre>
+
+<p>
+從 private key 匯出
+</p>
+
+<pre class="example">
+openssl rsa -in private.pem -pubout -out public.pem
+</pre>
+</div>
+</div>
+
+<div id="outline-container-orgc13f90a" class="outline-4">
+<h4 id="orgc13f90a">PKCS#1/PKCS#8 轉換</h4>
+<div class="outline-text-4" id="text-orgc13f90a">
+<p>
+openssl 有多個指令會產生 private
+key,genpkey會產生PKCS#8格式genrsa會產生PKCS#1格式, 上面兩個匯出 public
+key的指令都是PKCS#8格式
+</p>
+
+<p>
+Public key 格式轉換,主要是搭配 RSAPublicKey\<sub>in,RSAPublicKey</sub>\<sub>out</sub>,
+這兩個參數, rsa command的 help沒有顯示這兩個參數,說明文件才有
+</p>
+
+<ol class="org-ol">
+<li><p>
+Public key: PKCS#8 -&gt; PKCS#1
+</p>
+
+<pre class="example">
+openssl rsa -pubin -in public.pem -RSAPublicKey_out -out public_pkcs1.pem
+</pre></li>
+
+<li><p>
+Public key: PKCS#1 -&gt; PKCS#8
+</p>
+
+<pre class="example">
+openssl rsa  -RSAPublicKey_in -in public_pkcs1.pem  -out public_pkcs8.pem
+</pre>
+
+<p>
+也可以在從 private key 匯出時直接設定輸出格式
+</p>
+
+<pre class="example">
+openssl rsa -in private.pem -RSAPublicKey_out -out public_pkcs1.pem
+</pre>
+
+<p>
+Private key
+格式轉換,主要是用pkcs8指令,搭配topk8參數作轉換,若不加密就再補上nocrypt
+</p></li>
+
+<li><p>
+Private key: PKCS#1 -&gt; PKCS#8
+</p>
+
+<pre class="example">
+openssl pkcs8 -in private_pkcs1.pem -topk8 -nocrypt -out private_pkcs8.pem
+</pre></li>
+
+<li><p>
+Private key: PKCS#8 -&gt; PKCS#1
+</p>
+
+<pre class="example">
+openssl pkcs8 -in private_pkcs8.pem -nocrypt -out private_pkcs1.pem
+</pre>
+
+<p>
+用OpenSSL
+0.9.8可以,之後的版本用pkcs8這個指令輸出都是PKCS#8,這指令只是用於0.9.8
+</p></li>
+</ol>
+
+<p>
+用0.9.8之後的版本直接用rsa轉檔即可
+</p>
+
+<pre class="example">
+openssl rsa -in private_pkcs8.pem -out private_pkcs1.pem
+</pre>
+
+<ol class="org-ol">
+<li><p>
+從 PKCS#7 匯出 certificate 目前最常遇到的是 DOCSIS secure upgrade
+用的 Code File, 前面會有一段 DER 編碼的資料, 包含1～2張CVC
+</p>
+
+<pre class="example">
+openssl pkcs7 -in code.p7b -print_certs -out certs.pem
+</pre></li>
+
+<li><p>
+從 PKCS#12(PFS) 匯出 certificate 和 private key
+</p>
+
+<pre class="example">
+openssl pkcs12 -in key_cert.pfx -nodes -out key_cert.pem
+</pre>
+
+<p>
+打完指令會要求輸入 pfx file
+的密碼,若上述指令沒加入nodes,會再要求輸入匯出的 private key
+要用的密碼
+</p></li>
+
+<li><p>
+把 private key 和 certificate 以及 CA 打包成 PKCS#12
+這功能我是用來製作 FreeRADIUS client 端,給 windows 用的懶人包,輸入的
+private key (client.key), certificate (client.crt),
+certificate-chain(cert-chain.crt) 都是用 PEM 格式
+</p>
+
+<pre class="example">
+openssl pkcs12 -export -out client.p12 -inkey client.key -in client.crt -certfile cert-chain.crt
+</pre>
+
+<p>
+打完指令會要求輸入 pfx file 的密碼, 之後在 windows下直接開啟
+client.p12 敲完密碼,下一步到底,憑證就會放到對的地方了
+</p></li>
+</ol>
+</div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgc125945" class="outline-2">
+<h2 id="orgc125945">Java Keytool 变通方法</h2>
+<div class="outline-text-2" id="text-orgc125945">
+<p>
+缺省情况下，Java Keytool
+不提供用于导出专用密钥的直接方法。但是，如果您的实用程序版本支持将 JKS
+类型的密钥库导出为其他密钥库格式，那么您可以应用以下变通方法。
+关于此任务 注： 如果您的 Keytool
+不支持此密钥库导出，那么可以应用上一部分中的方法。 要使用 Java Keytool
+导出： 在以下示例中，JKS 密钥库将导出为 Tealeaf® 可使用的 pkcs12。 过程
+将密钥库导出到其他密钥库。在以下示例中，将使用单个命令将密钥库导出为
+pkcs12 类型：
+</p>
+
+<pre class="example">
+keytool -importkeystore -srckeystore test-app.keystore
+-destkeystore mystore.p12 -srcstoretype JKS -deststoretype PKCS12
+-srcstorepass test-app-pwd -deststorepass test-app-pwd
+-srcalias test-app -destalias test-app -srckeypass test-app-pwd
+-destkeypass test-app-pwd -noprompt
+</pre>
+
+<p>
+其中： test-app.keystore = 应用程序密钥库的路径 mystore.p12 = 目标
+pkcs12 密钥库的路径 JKS = 源密钥库类型。必须设置为 JKS。 PKCS12 =
+目标密钥库类型。导出至 pkcs12 时必须设置为 PKCS12。 test-app-pwd =
+密钥库的密码可以用于源密钥库和密钥密码，并且目标密钥库可以使用相同值。
+test-app = 密钥库的别名对于源和目标可以相同。 当密钥库导出为 PKCS12
+时，您使用 openssl 来从 pkcs12 格式化的密钥文件导出专用密钥： openssl
+pkcs12 -in mystore.p12 -out mystore.pem<br>
+-passin pass:test-app-pwd -passout pass:test-app-pwd
+受密码保护的专用密钥现在包含于 mystore.pem 中。 此专用密钥可以由 Tealeaf
+使用。 有关验证 PEM 密钥的更多信息，请参阅生成自签名证书。
+有关导入密钥的更多信息，请参阅已加密的 SSL 密钥设置。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org287ec65" class="outline-2">
+<h2 id="org287ec65">OpenSSL 的使用详解</h2>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

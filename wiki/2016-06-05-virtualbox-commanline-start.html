@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>VirtualBox通过命令启动虚拟机</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">VirtualBox通过命令启动虚拟机</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#virtualbox"><div class="category">virtualbox</div></a> </div>
+<div class="char-counter">2016-06-05</div>
+        <div id="content">
+<nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#org80ae484">查看主机上的可用虚拟机：</a></li>
+<li><a href="#org4097715">启动指定的可用虚拟机：</a>
+<ul>
+<li><a href="#org0298670">打开默认窗口的虚拟机：</a></li>
+<li><a href="#orgf9b5695">打开简单窗口的虚拟机：</a></li>
+<li><a href="#orge8b27cd">打开无窗口的虚拟机(无外设)：</a></li>
+</ul>
+</li>
+<li><a href="#orgd0d6df9">查看已经运行的虚拟机：</a></li>
+<li><a href="#org3ac35c6">控制已经运行的虚拟机：(暂停｜恢复｜重启｜关机｜休眠)</a></li>
+<li><a href="#orgd3c4c90">修改虚拟机配置：(&amp;#x2013;memory 取值单位MB)</a></li>
+<li><a href="#orgcdb4f85">创建一个虚拟磁盘：(&amp;#x2013;size 取值单位MB &amp;#x2013;sizebyte 取值单位字节)</a></li>
+<li><a href="#org00cbb32">更多命令用法详见 VBoxManage &amp;#x2013;help 输出的帮助。</a></li>
+</ul>
+</div>
+</nav>
+<p>
+通过命令行启动 VirtualBox，可以省去直接启动虚拟机显示图形界面的那部分资源。这种
+形式非常适用于在服务器上虚拟 n 台机器同时提供服务。使用 Host Interface 网络连接
+方式，可以让虚拟机的虚拟网卡获取和主机一样的网络地址等信息，从而可以直接对外提供
+服务。
+</p>
+
+<div id="outline-container-org80ae484" class="outline-2">
+<h2 id="org80ae484">查看主机上的可用虚拟机：</h2>
+<div class="outline-text-2" id="text-org80ae484">
+<p class="verse">
+$VBoxManage list vms<br>
+"Ubuntu10.10" {36ea7e92-35ec-432e-9d91-15941cc3aae5}<br>
+"meego-tablet-ia32" {dfef3c26-de81-4ae1-b98c-536394cbff61}<br>
+"Win2008_VS2008AndVC6" {6f3f0f1a-dfa8-4acf-8fdb-4d236f44d4e3}<br>
+"RedHat9" {937d825f-4a3f-46c3-a22b-9e20d15964ec}<br>
+<br>
+</p>
+
+<p>
+注： <b>VBoxManage list vms -l</b> 显示详细信息。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org4097715" class="outline-2">
+<h2 id="org4097715">启动指定的可用虚拟机：</h2>
+<div class="outline-text-2" id="text-org4097715">
+<pre class="example">
+VBoxManage startvm &lt;uuid&gt;|&lt;name&gt; [--type gui|sdl|headless]
+
+</pre>
+</div>
+<div id="outline-container-org0298670" class="outline-3">
+<h3 id="org0298670">打开默认窗口的虚拟机：</h3>
+<div class="outline-text-3" id="text-org0298670">
+<p class="verse">
+$VBoxManage startvm RedHat9 --type gui<br>
+Waiting for the VM to power on...<br>
+VM has been successfully started.<br>
+<br>
+</p>
+</div>
+</div>
+<div id="outline-container-orgf9b5695" class="outline-3">
+<h3 id="orgf9b5695">打开简单窗口的虚拟机：</h3>
+<div class="outline-text-3" id="text-orgf9b5695">
+<p class="verse">
+$VBoxManage startvm RedHat9 --type sdl<br>
+&#xa0;&#xa0;Waiting for the VM to power on...<br>
+&#xa0;&#xa0;VM has been successfully started.<br>
+<br>
+</p>
+</div>
+</div>
+
+<div id="outline-container-orge8b27cd" class="outline-3">
+<h3 id="orge8b27cd">打开无窗口的虚拟机(无外设)：</h3>
+<div class="outline-text-3" id="text-orge8b27cd">
+<p class="verse">
+$VBoxManage startvm RedHat9 --type headless<br>
+Waiting for the VM to power on...<br>
+VM has been successfully started.<br>
+<br>
+</p>
+
+<p>
+注：这种方式打开的虚拟机可以通过，如：远程桌面或 ssh 来登陆操作。
+</p>
+</div>
+</div>
+</div>
+<div id="outline-container-orgd0d6df9" class="outline-2">
+<h2 id="orgd0d6df9">查看已经运行的虚拟机：</h2>
+<div class="outline-text-2" id="text-orgd0d6df9">
+<p class="verse">
+$VBoxManage list runningvms<br>
+"RedHat9" {937d825f-4a3f-46c3-a22b-9e20d15964ec}<br>
+<br>
+</p>
+</div>
+</div>
+<div id="outline-container-org3ac35c6" class="outline-2">
+<h2 id="org3ac35c6">控制已经运行的虚拟机：(暂停｜恢复｜重启｜关机｜休眠)</h2>
+<div class="outline-text-2" id="text-org3ac35c6">
+<pre class="example">
+VBoxManage controlvm &lt;uuid&gt;|&lt;name&gt; pause|resume|reset|poweroff|savestate
+
+</pre>
+
+<p>
+注：更多参数详见 VBoxManage &amp;#x2013;help 输出的帮助。
+</p>
+</div>
+</div>
+<div id="outline-container-orgd3c4c90" class="outline-2">
+<h2 id="orgd3c4c90">修改虚拟机配置：(&amp;#x2013;memory 取值单位MB)</h2>
+<div class="outline-text-2" id="text-orgd3c4c90">
+<pre class="example">
+$VBoxManage modifyvm RedHat9 --memory 256 --acpi on --boot1 disk -nic1 bridged
+
+</pre>
+</div>
+</div>
+<div id="outline-container-orgcdb4f85" class="outline-2">
+<h2 id="orgcdb4f85">创建一个虚拟磁盘：(&amp;#x2013;size 取值单位MB &amp;#x2013;sizebyte 取值单位字节)</h2>
+<div class="outline-text-2" id="text-orgcdb4f85">
+<pre class="example">
+$VBoxManage createhd --filename RedHat9.vdi --size 30000
+
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org00cbb32" class="outline-2">
+<h2 id="org00cbb32">更多命令用法详见 VBoxManage &amp;#x2013;help 输出的帮助。</h2>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>利用 asm 获取类的方法名和参数名</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">利用 asm 获取类的方法名和参数名</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#java"><div class="category">java</div></a> </div>
+<div class="char-counter">2017-03-09</div>
+        <div id="content">
+<div class="org-src-container">
+<pre class="src src-java"><span style="font-weight: bold;">import</span> <span style="font-weight: bold; text-decoration: underline;">java</span>.<span style="font-weight: bold; text-decoration: underline;">io</span>.<span style="font-weight: bold; text-decoration: underline;">IOException</span>;
+<span style="font-weight: bold;">import</span> <span style="font-weight: bold; text-decoration: underline;">java</span>.<span style="font-weight: bold; text-decoration: underline;">io</span>.<span style="font-weight: bold; text-decoration: underline;">InputStream</span>;
+<span style="font-weight: bold;">import</span> <span style="font-weight: bold; text-decoration: underline;">java</span>.<span style="font-weight: bold; text-decoration: underline;">lang</span>.<span style="font-weight: bold; text-decoration: underline;">reflect</span>.<span style="font-weight: bold; text-decoration: underline;">Constructor</span>;
+<span style="font-weight: bold;">import</span> <span style="font-weight: bold; text-decoration: underline;">java</span>.<span style="font-weight: bold; text-decoration: underline;">lang</span>.<span style="font-weight: bold; text-decoration: underline;">reflect</span>.<span style="font-weight: bold; text-decoration: underline;">Method</span>;
+<span style="font-weight: bold;">import</span> <span style="font-weight: bold; text-decoration: underline;">java</span>.<span style="font-weight: bold; text-decoration: underline;">util</span>.<span style="font-weight: bold; text-decoration: underline;">ArrayList</span>;
+<span style="font-weight: bold;">import</span> <span style="font-weight: bold; text-decoration: underline;">java</span>.<span style="font-weight: bold; text-decoration: underline;">util</span>.<span style="font-weight: bold; text-decoration: underline;">Arrays</span>;
+<span style="font-weight: bold;">import</span> <span style="font-weight: bold; text-decoration: underline;">java</span>.<span style="font-weight: bold; text-decoration: underline;">util</span>.<span style="font-weight: bold; text-decoration: underline;">List</span>;
+<span style="font-weight: bold;">import</span> <span style="font-weight: bold; text-decoration: underline;">org</span>.<span style="font-weight: bold; text-decoration: underline;">objectweb</span>.<span style="font-weight: bold; text-decoration: underline;">asm</span>.<span style="font-weight: bold; text-decoration: underline;">ClassReader</span>;
+<span style="font-weight: bold;">import</span> <span style="font-weight: bold; text-decoration: underline;">org</span>.<span style="font-weight: bold; text-decoration: underline;">objectweb</span>.<span style="font-weight: bold; text-decoration: underline;">asm</span>.<span style="font-weight: bold; text-decoration: underline;">Type</span>;
+<span style="font-weight: bold;">import</span> <span style="font-weight: bold; text-decoration: underline;">org</span>.<span style="font-weight: bold; text-decoration: underline;">objectweb</span>.<span style="font-weight: bold; text-decoration: underline;">asm</span>.<span style="font-weight: bold; text-decoration: underline;">tree</span>.<span style="font-weight: bold; text-decoration: underline;">ClassNode</span>;
+<span style="font-weight: bold;">import</span> <span style="font-weight: bold; text-decoration: underline;">org</span>.<span style="font-weight: bold; text-decoration: underline;">objectweb</span>.<span style="font-weight: bold; text-decoration: underline;">asm</span>.<span style="font-weight: bold; text-decoration: underline;">tree</span>.<span style="font-weight: bold; text-decoration: underline;">LocalVariableNode</span>;
+<span style="font-weight: bold;">import</span> <span style="font-weight: bold; text-decoration: underline;">org</span>.<span style="font-weight: bold; text-decoration: underline;">objectweb</span>.<span style="font-weight: bold; text-decoration: underline;">asm</span>.<span style="font-weight: bold; text-decoration: underline;">tree</span>.<span style="font-weight: bold; text-decoration: underline;">MethodNode</span>;
+<span style="font-weight: bold;">public</span> <span style="font-weight: bold;">class</span> <span style="font-weight: bold; text-decoration: underline;">MethodParamNamesScanner</span> {
+    <span style="font-style: italic;">/**</span>
+<span style="font-style: italic;">     * &#33719;&#21462;&#26041;&#27861;&#21442;&#25968;&#21517;&#21015;&#34920;</span>
+<span style="font-style: italic;">     *</span>
+<span style="font-style: italic;">     * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@param</span><span style="font-style: italic;"> clazz</span>
+<span style="font-style: italic;">     * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@param</span><span style="font-style: italic;"> m</span>
+<span style="font-style: italic;">     * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@return</span>
+<span style="font-style: italic;">     * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@throws</span><span style="font-style: italic;"> IOException</span>
+<span style="font-style: italic;">     */</span>
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold; text-decoration: underline;">List</span>&lt;<span style="font-weight: bold; text-decoration: underline;">String</span>&gt; <span style="font-weight: bold;">getMethodParamNames</span>(<span style="font-weight: bold; text-decoration: underline;">Class</span>&lt;?&gt; <span style="font-weight: bold; font-style: italic;">clazz</span>, <span style="font-weight: bold; text-decoration: underline;">Method</span> <span style="font-weight: bold; font-style: italic;">m</span>) <span style="font-weight: bold;">throws</span> <span style="font-weight: bold; text-decoration: underline;">IOException</span> {
+        <span style="font-weight: bold;">try</span> (<span style="font-weight: bold; text-decoration: underline;">InputStream</span> <span style="font-weight: bold; font-style: italic;">in</span> = clazz.getResourceAsStream(<span style="font-style: italic;">"/"</span> + clazz.getName().replace(<span style="font-style: italic;">'.'</span>, <span style="font-style: italic;">'/'</span>) + <span style="font-style: italic;">".class"</span>)) {
+            <span style="font-weight: bold;">return</span> getMethodParamNames(in,m);
+        }
+    }
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold; text-decoration: underline;">List</span>&lt;<span style="font-weight: bold; text-decoration: underline;">String</span>&gt; <span style="font-weight: bold;">getMethodParamNames</span>(<span style="font-weight: bold; text-decoration: underline;">InputStream</span> <span style="font-weight: bold; font-style: italic;">in</span>, <span style="font-weight: bold; text-decoration: underline;">Method</span> <span style="font-weight: bold; font-style: italic;">m</span>) <span style="font-weight: bold;">throws</span> <span style="font-weight: bold; text-decoration: underline;">IOException</span> {
+        <span style="font-weight: bold;">try</span> (<span style="font-weight: bold; text-decoration: underline;">InputStream</span> <span style="font-weight: bold; font-style: italic;">ins</span>=in) {
+            <span style="font-weight: bold;">return</span> getParamNames(ins,
+                                 <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">EnclosingMetadata</span>(m.getName(),Type.getMethodDescriptor(m), m.getParameterTypes().length));
+        }
+    }
+    <span style="font-style: italic;">/**</span>
+<span style="font-style: italic;">     * &#33719;&#21462;&#26500;&#36896;&#22120;&#21442;&#25968;&#21517;&#21015;&#34920;</span>
+<span style="font-style: italic;">     *</span>
+<span style="font-style: italic;">     * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@param</span><span style="font-style: italic;"> clazz</span>
+<span style="font-style: italic;">     * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@param</span><span style="font-style: italic;"> constructor</span>
+<span style="font-style: italic;">     * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@return</span>
+<span style="font-style: italic;">     */</span>
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold; text-decoration: underline;">List</span>&lt;<span style="font-weight: bold; text-decoration: underline;">String</span>&gt; <span style="font-weight: bold;">getConstructorParamNames</span>(<span style="font-weight: bold; text-decoration: underline;">Class</span>&lt;?&gt; <span style="font-weight: bold; font-style: italic;">clazz</span>, <span style="font-weight: bold; text-decoration: underline;">Constructor</span>&lt;?&gt; <span style="font-weight: bold; font-style: italic;">constructor</span>) {
+        <span style="font-weight: bold;">try</span> (<span style="font-weight: bold; text-decoration: underline;">InputStream</span> <span style="font-weight: bold; font-style: italic;">in</span> = clazz.getResourceAsStream(<span style="font-style: italic;">"/"</span> + clazz.getName().replace(<span style="font-style: italic;">'.'</span>, <span style="font-style: italic;">'/'</span>) + <span style="font-style: italic;">".class"</span>)) {
+            <span style="font-weight: bold;">return</span> getConstructorParamNames(in, constructor);
+        } <span style="font-weight: bold;">catch</span> (<span style="font-weight: bold; text-decoration: underline;">IOException</span> <span style="font-weight: bold; font-style: italic;">e</span>) {
+            <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">TODO Auto-generated catch block</span>
+            e.printStackTrace();
+        }
+        <span style="font-weight: bold;">return</span> <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">ArrayList</span>&lt;<span style="font-weight: bold; text-decoration: underline;">String</span>&gt;();
+    }
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold; text-decoration: underline;">List</span>&lt;<span style="font-weight: bold; text-decoration: underline;">String</span>&gt; <span style="font-weight: bold;">getConstructorParamNames</span>(<span style="font-weight: bold; text-decoration: underline;">InputStream</span> <span style="font-weight: bold; font-style: italic;">ins</span>, <span style="font-weight: bold; text-decoration: underline;">Constructor</span>&lt;?&gt; <span style="font-weight: bold; font-style: italic;">constructor</span>) {
+        <span style="font-weight: bold;">try</span> (<span style="font-weight: bold; text-decoration: underline;">InputStream</span> <span style="font-weight: bold; font-style: italic;">in</span> = ins) {
+            <span style="font-weight: bold;">return</span> getParamNames(in, <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">EnclosingMetadata</span>(constructor.getName,Type.getConstructorDescriptor(constructor),
+                                                           constructor.getParameterTypes().length));
+        } <span style="font-weight: bold;">catch</span> (<span style="font-weight: bold; text-decoration: underline;">IOException</span> <span style="font-weight: bold; font-style: italic;">e1</span>) {
+            <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">TODO Auto-generated catch block</span>
+            e1.printStackTrace();
+        }
+        <span style="font-weight: bold;">return</span> <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">ArrayList</span>&lt;<span style="font-weight: bold; text-decoration: underline;">String</span>&gt;();
+    }
+    <span style="font-style: italic;">/**</span>
+<span style="font-style: italic;">     * &#33719;&#21462;&#21442;&#25968;&#21517;&#21015;&#34920;&#36741;&#21161;&#26041;&#27861;</span>
+<span style="font-style: italic;">     *</span>
+<span style="font-style: italic;">     * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@param</span><span style="font-style: italic;"> in</span>
+<span style="font-style: italic;">     * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@param</span><span style="font-style: italic;"> m</span>
+<span style="font-style: italic;">     * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@return</span>
+<span style="font-style: italic;">     * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@throws</span><span style="font-style: italic;"> IOException</span>
+<span style="font-style: italic;">     */</span>
+    <span style="font-weight: bold;">private</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold; text-decoration: underline;">List</span>&lt;<span style="font-weight: bold; text-decoration: underline;">String</span>&gt; <span style="font-weight: bold;">getParamNames</span>(<span style="font-weight: bold; text-decoration: underline;">InputStream</span> <span style="font-weight: bold; font-style: italic;">in</span>, <span style="font-weight: bold; text-decoration: underline;">EnclosingMetadata</span> <span style="font-weight: bold; font-style: italic;">m</span>) <span style="font-weight: bold;">throws</span> <span style="font-weight: bold; text-decoration: underline;">IOException</span> {
+        <span style="font-weight: bold; text-decoration: underline;">ClassReader</span> <span style="font-weight: bold; font-style: italic;">cr</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">ClassReader</span>(in);
+        <span style="font-weight: bold; text-decoration: underline;">ClassNode</span> <span style="font-weight: bold; font-style: italic;">cn</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">ClassNode</span>();
+        cr.accept(cn, <span style="font-weight: bold; text-decoration: underline;">ClassReader</span>.EXPAND_FRAMES);<span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#24314;&#35758;EXPAND_FRAMES</span>
+        <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">ASM&#26641;&#25509;&#21475;&#24418;&#24335;&#35775;&#38382;</span>
+        <span style="font-weight: bold; text-decoration: underline;">List</span>&lt;<span style="font-weight: bold; text-decoration: underline;">MethodNode</span>&gt; <span style="font-weight: bold; font-style: italic;">methods</span> = cn.methods;
+        <span style="font-weight: bold; text-decoration: underline;">List</span>&lt;<span style="font-weight: bold; text-decoration: underline;">String</span>&gt; <span style="font-weight: bold; font-style: italic;">list</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">ArrayList</span>&lt;<span style="font-weight: bold; text-decoration: underline;">String</span>&gt;();
+        <span style="font-weight: bold;">for</span> (<span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">i</span> = 0; i &lt; methods.<span style="font-weight: bold; text-decoration: underline;">size</span>(); ++i) {
+            <span style="font-weight: bold; text-decoration: underline;">List</span>&lt;<span style="font-weight: bold; text-decoration: underline;">LocalVariable</span>&gt; <span style="font-weight: bold; font-style: italic;">varNames</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">ArrayList</span>&lt;<span style="font-weight: bold; text-decoration: underline;">LocalVariable</span>&gt;();
+            <span style="font-weight: bold; text-decoration: underline;">MethodNode</span> <span style="font-weight: bold; font-style: italic;">method</span> = methods.get(i);
+            <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#39564;&#35777;&#26041;&#27861;&#31614;&#21517;</span>
+            <span style="font-weight: bold;">if</span> (method.desc.equals(m.desc)&amp;&amp;method.name.equals(m.name)) {
+<span style="font-weight: bold; font-style: italic;">//                </span><span style="font-weight: bold; font-style: italic;">System.out.println("desc-&gt;"+method.desc+":"+m.desc);</span>
+                <span style="font-weight: bold; text-decoration: underline;">List</span>&lt;<span style="font-weight: bold; text-decoration: underline;">LocalVariableNode</span>&gt; <span style="font-weight: bold; font-style: italic;">local_variables</span> = method.localVariables;
+                <span style="font-weight: bold;">for</span> (<span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">l</span> = 0; l &lt; local_variables.<span style="font-weight: bold; text-decoration: underline;">size</span>(); l++) {
+                    <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">varName</span> = local_variables.get(l).name;
+                    <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">index-&#35760;&#24405;&#20102;&#27491;&#30830;&#30340;&#26041;&#27861;&#26412;&#22320;&#21464;&#37327;&#32034;&#24341;&#12290;(&#26041;&#27861;&#26412;&#22320;&#21464;&#37327;&#39034;&#24207;&#21487;&#33021;&#20250;&#34987;&#25171;&#20081;&#12290;&#32780;index&#35760;&#24405;&#20102;&#21407;&#22987;&#30340;&#39034;&#24207;)</span>
+                    <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">index</span> = local_variables.get(l).index;
+                    <span style="font-weight: bold;">if</span> (!<span style="font-style: italic;">"this"</span>.equals(varName)) <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#38750;&#38745;&#24577;&#26041;&#27861;,&#31532;&#19968;&#20010;&#21442;&#25968;&#26159;this</span>
+                        varNames.add(<span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">LocalVariable</span>(index, varName));
+                }
+                <span style="font-weight: bold; text-decoration: underline;">LocalVariable</span>[] <span style="font-weight: bold; font-style: italic;">tmpArr</span> = varNames.toArray(<span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">LocalVariable</span>[varNames.size()]);
+                <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#26681;&#25454;index&#26469;&#37325;&#25490;&#24207;&#65292;&#20197;&#30830;&#20445;&#27491;&#30830;&#30340;&#39034;&#24207;</span>
+                Arrays.sort(tmpArr);
+                <span style="font-weight: bold;">for</span> (<span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">j</span> = 0; j &lt; m.<span style="font-weight: bold; text-decoration: underline;">size</span>; j++) {
+                    list.add(tmpArr[j].name);
+                }
+                <span style="font-weight: bold;">break</span>;
+            }
+        }
+        <span style="font-weight: bold;">return</span> list;
+    }
+    <span style="font-style: italic;">/**</span>
+<span style="font-style: italic;">     * &#26041;&#27861;&#26412;&#22320;&#21464;&#37327;&#32034;&#24341;&#21644;&#21442;&#25968;&#21517;&#23553;&#35013;</span>
+<span style="font-style: italic;">     * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@author</span><span style="font-style: italic;"> xby Administrator</span>
+<span style="font-style: italic;">     */</span>
+    <span style="font-weight: bold;">static</span> <span style="font-weight: bold;">class</span> <span style="font-weight: bold; text-decoration: underline;">LocalVariable</span> <span style="font-weight: bold;">implements</span> <span style="font-weight: bold; text-decoration: underline;">Comparable</span>&lt;<span style="font-weight: bold; text-decoration: underline;">LocalVariable</span>&gt; {
+        <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">index</span>;
+        <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">name</span>;
+        <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">LocalVariable</span>(<span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">index</span>, <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">name</span>) {
+            <span style="font-weight: bold;">this</span>.index = index;
+            <span style="font-weight: bold;">this</span>.name = name;
+        }
+        <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold;">compareTo</span>(<span style="font-weight: bold; text-decoration: underline;">LocalVariable</span> <span style="font-weight: bold; font-style: italic;">o</span>) {
+            <span style="font-weight: bold;">return</span> <span style="font-weight: bold;">this</span>.index - o.index;
+        }
+    }
+    <span style="font-style: italic;">/**</span>
+<span style="font-style: italic;">     * &#23553;&#35013;&#26041;&#27861;&#25551;&#36848;&#21644;&#21442;&#25968;&#20010;&#25968;</span>
+<span style="font-style: italic;">     *</span>
+<span style="font-style: italic;">     * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@author</span><span style="font-style: italic;"> xby Administrator</span>
+<span style="font-style: italic;">     */</span>
+    <span style="font-weight: bold;">static</span> <span style="font-weight: bold;">class</span> <span style="font-weight: bold; text-decoration: underline;">EnclosingMetadata</span> {
+        <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">method name</span>
+        <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">name</span>;
+        <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">method description</span>
+        <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">desc</span>;
+        <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">params size</span>
+        <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">size</span>;
+        <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">EnclosingMetadata</span>(<span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">name</span>,<span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">desc</span>, <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">size</span>) {
+            <span style="font-weight: bold;">this</span>.name=name;
+            <span style="font-weight: bold;">this</span>.desc = desc;
+            <span style="font-weight: bold;">this</span>.size = size;
+        }
+    }
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">main</span>(<span style="font-weight: bold; text-decoration: underline;">String</span>[] <span style="font-weight: bold; font-style: italic;">args</span>) <span style="font-weight: bold;">throws</span> <span style="font-weight: bold; text-decoration: underline;">IOException</span> {
+        <span style="font-weight: bold;">for</span> (<span style="font-weight: bold; text-decoration: underline;">Method</span> <span style="font-weight: bold;">m</span> : AdminController.<span style="font-weight: bold;">class</span>.getDeclaredMethods()) {
+            <span style="font-weight: bold; text-decoration: underline;">List</span>&lt;<span style="font-weight: bold; text-decoration: underline;">String</span>&gt; <span style="font-weight: bold; font-style: italic;">list</span> = getMethodParamNames(AdminController.<span style="font-weight: bold;">class</span>, m);
+            System.out.println(m.getName() + <span style="font-style: italic;">":"</span>);
+            <span style="font-weight: bold;">for</span> (<span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">str</span> : list) {
+                System.out.println(str);
+            }
+            System.out.println(<span style="font-style: italic;">"------------------------"</span>);
+        }
+    }
+}
+</pre>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

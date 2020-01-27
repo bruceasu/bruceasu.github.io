@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>MySQL中的insert ignore into, replace into等的一些用法总结</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">MySQL中的insert ignore into, replace into等的一些用法总结</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#mysql"><div class="category">mysql</div></a> </div>
+<div class="char-counter">2016-05-06</div>
+        <div id="content">
+
+<div id="outline-container-org6d6ef46" class="outline-2">
+<h2 id="org6d6ef46">MySQL replace into 有三种形式：</h2>
+<div class="outline-text-2" id="text-org6d6ef46">
+<ol class="org-ol">
+<li>replace into tbl_name(col_name, ...) values(...)</li>
+<li>replace into tbl_name(col_name, ...) select ...</li>
+<li>replace into tbl_name set col_name=value, ...</li>
+</ol>
+</div>
+</div>
+
+<div id="outline-container-org68d88f6" class="outline-2">
+<h2 id="org68d88f6">insert ignore into</h2>
+<div class="outline-text-2" id="text-org68d88f6">
+<p>
+当插入数据时，如出现错误时，如重复数据，将不返回错误，只以警告形式返回。所以使用
+ignore请确保语句本身没有问题，否则也会被忽略掉。例如：
+</p>
+<pre class="example">
+INSERT IGNORE INTO books (name) VALUES ('MySQL Manual')
+
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org66ca758" class="outline-2">
+<h2 id="org66ca758">on duplicate key update</h2>
+<div class="outline-text-2" id="text-org66ca758">
+<p>
+当primary或者unique重复时，则执行update语句，如update后为无用语句，如id=id，则同
+1功能相同，但错误不会被忽略掉。例如，为了实现name重复的数据插入不报错，可使用一
+下语句：
+</p>
+<pre class="example">
+INSERT INTO books (name) VALUES ('MySQL Manual') ON duplicate KEY UPDATE id = id
+
+</pre>
+</div>
+</div>
+
+<div id="outline-container-orga1733e2" class="outline-2">
+<h2 id="orga1733e2">insert … select … where not exist</h2>
+<div class="outline-text-2" id="text-orga1733e2">
+<p>
+根据select的条件判断是否插入，可以不光通过primary 和unique来判断，也可通过其它条
+件。例如：
+</p>
+<pre class="example">
+INSERT INTO books (name) SELECT 'MySQL Manual' FROM dual WHERE NOT EXISTS (SELECT id FROM books WHERE id = 1)
+
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org6b06d64" class="outline-2">
+<h2 id="org6b06d64">replace into</h2>
+<div class="outline-text-2" id="text-org6b06d64">
+<p>
+如果存在primary or unique相同的记录，则先删除掉。再插入新记录。
+</p>
+<pre class="example">
+REPLACE INTO books SELECT 1, 'MySQL Manual' FROM books
+
+</pre>
+</div>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

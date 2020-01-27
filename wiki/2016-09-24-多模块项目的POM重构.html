@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>多模块项目的POM重构</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">多模块项目的POM重构</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#java"><div class="category">java</div></a> <a href="https://bruceasu.github.io/tags.html#maven"><div class="category">maven</div></a> <a href="https://bruceasu.github.io/tags.html#reprint"><div class="category">reprint</div></a> </div>
+<div class="char-counter">2016-09-24</div>
+        <div id="content">
+<nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#org6f00057">重复，还是重复</a></li>
+<li><a href="#orgc784349">消除多模块依赖配置重复</a></li>
+<li><a href="#org67156fb">消除多模块插件配置重复</a></li>
+<li><a href="#org44e92cf">小结</a></li>
+<li><a href="#orgd77ad2c">关于作者</a></li>
+</ul>
+</div>
+</nav>
+<p>
+在本专栏的上一篇文章POM重构之增还是删中，我们讨论了一些简单实用的POM重构技巧，包
+括重构的前提——持续集成，以及如何通过添加或者删除内容来提高POM的可读性和构建的稳
+定性。但在实际的项目中，这些技巧还是不够的，特别值得一提的是，实际的Maven项目基
+本都是多模块的，如果仅仅重构单个POM而不考虑模块之间的关系，那就会造成无谓的重复。
+本文就讨论一些基于多模块的POM重构技巧。
+</p>
+
+
+<div id="outline-container-org6f00057" class="outline-2">
+<h2 id="org6f00057">重复，还是重复</h2>
+<div class="outline-text-2" id="text-org6f00057">
+<p>
+程序员应该有狗一般的嗅觉，要能嗅到重复这一最常见的坏味道，不管重复披着怎样的外衣，
+一旦发现，都应该毫不留情地彻底地将其干掉。不要因为POM不是产品代码而纵容重复在这
+里发酵，例如这样一段代码就有重复：
+</p>
+<div class="org-src-container">
+<pre class="src src-xml">&lt;<span style="font-weight: bold;">dependency</span>&gt;
+  &lt;<span style="font-weight: bold;">groupId</span>&gt;org.springframework&lt;/<span style="font-weight: bold;">groupId</span>&gt;
+  &lt;<span style="font-weight: bold;">artifactid</span>&gt;spring-beans&lt;/<span style="font-weight: bold;">artifactId</span>&gt;
+  &lt;<span style="font-weight: bold;">version</span>&gt;2.5&lt;/<span style="font-weight: bold;">version</span>&gt;
+&lt;/<span style="font-weight: bold;">dependency</span>&gt;
+&lt;<span style="font-weight: bold;">dependency</span>&gt;
+  &lt;<span style="font-weight: bold;">groupId</span>&gt;org.springframework&lt;/<span style="font-weight: bold;">groupId</span>&gt;
+  &lt;<span style="font-weight: bold;">artifactid</span>&gt;spring-context&lt;/<span style="font-weight: bold;">artifactId</span>&gt;
+  &lt;<span style="font-weight: bold;">version</span>&gt;2.5&lt;/<span style="font-weight: bold;">version</span>&gt;
+&lt;/<span style="font-weight: bold;">dependency</span>&gt;
+&lt;<span style="font-weight: bold;">dependency</span>&gt;
+  &lt;<span style="font-weight: bold;">groupId</span>&gt;org.springframework&lt;/<span style="font-weight: bold;">groupId</span>&gt;
+  &lt;<span style="font-weight: bold;">artifactid</span>&gt;spring-core&lt;/<span style="font-weight: bold;">artifactId</span>&gt;
+  &lt;<span style="font-weight: bold;">version</span>&gt;2.5&lt;/<span style="font-weight: bold;">version</span>&gt;
+&lt;/<span style="font-weight: bold;">dependency</span>&gt;
+
+</pre>
+</div>
+<p>
+你会在一个项目中使用不同版本的SpringFramework组件么？答案显然是不会。因此这里就
+没必要重复写三次&lt;version&gt;2.5&lt;/version&gt;，使用Maven属性将2.5提取出来如下：
+</p>
+<div class="org-src-container">
+<pre class="src src-xml">&lt;<span style="font-weight: bold;">properties</span>&gt;
+  &lt;<span style="font-weight: bold;">spring.version</span>&gt;2.5&lt;/<span style="font-weight: bold;">spring.version</span>&gt;
+&lt;/<span style="font-weight: bold;">properties</span>&gt;
+&lt;<span style="font-weight: bold;">depencencies</span>&gt;
+  &lt;<span style="font-weight: bold;">dependency</span>&gt;
+    &lt;<span style="font-weight: bold;">groupId</span>&gt;org.springframework&lt;/<span style="font-weight: bold;">groupId</span>&gt;
+    &lt;<span style="font-weight: bold;">artifactid</span>&gt;spring-beans&lt;/<span style="font-weight: bold;">artifactId</span>&gt;
+    &lt;<span style="font-weight: bold;">version</span>&gt;${spring.version}&lt;/<span style="font-weight: bold;">version</span>&gt;
+  &lt;/<span style="font-weight: bold;">dependency</span>&gt;
+  &lt;<span style="font-weight: bold;">dependency</span>&gt;
+    &lt;<span style="font-weight: bold;">groupId</span>&gt;org.springframework&lt;/<span style="font-weight: bold;">groupId</span>&gt;
+    &lt;<span style="font-weight: bold;">artifactid</span>&gt;spring-context&lt;/<span style="font-weight: bold;">artifactId</span>&gt;
+    &lt;<span style="font-weight: bold;">version</span>&gt;${spring.version}&lt;/<span style="font-weight: bold;">version</span>&gt;
+  &lt;/<span style="font-weight: bold;">dependency</span>&gt;
+  &lt;<span style="font-weight: bold;">dependency</span>&gt;
+    &lt;<span style="font-weight: bold;">groupId</span>&gt;org.springframework&lt;/<span style="font-weight: bold;">groupId</span>&gt;
+    &lt;<span style="font-weight: bold;">artifactid</span>&gt;spring-core&lt;/<span style="font-weight: bold;">artifactId</span>&gt;
+    &lt;<span style="font-weight: bold;">version</span>&gt;${spring.version}&lt;/<span style="font-weight: bold;">version</span>&gt;
+  &lt;/<span style="font-weight: bold;">dependency</span>&gt;
+&lt;/<span style="font-weight: bold;">depencencies</span>&gt;
+
+</pre>
+</div>
+<p>
+现在2.5只出现在一个地方，虽然代码稍微长了点，但重复消失了，日后升级依赖版本的时
+候，只需要修改一处，而且也能避免漏掉升级某个依赖。
+</p>
+
+<p>
+读者可能已经非常熟悉这个例子了，我这里再啰嗦一遍是为了给后面做铺垫，多模块POM重
+构的目的和该例一样，也是为了消除重复，模块越多，潜在的重复就越多，重构就越有必要。
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-orgc784349" class="outline-2">
+<h2 id="orgc784349">消除多模块依赖配置重复</h2>
+<div class="outline-text-2" id="text-orgc784349">
+<p>
+考虑这样一个不大不小的项目，它有10多个Maven模块，这些模块分工明确，各司其职，相
+互之间耦合度比较小，这样大家就能够专注在自己的模块中进行开发而不用过多考虑他人对
+自己的影响。（好吧，我承认这是比较理想的情况）那我开始对模块A进行编码了，首先就
+需要引入一些常见的依赖如JUnit、Log4j等等：
+</p>
+<div class="org-src-container">
+<pre class="src src-xml">&lt;<span style="font-weight: bold;">dependency</span>&gt;
+  &lt;<span style="font-weight: bold;">groupId</span>&gt;junit&lt;/<span style="font-weight: bold;">groupId</span>&gt;
+  &lt;<span style="font-weight: bold;">artifactid</span>&gt;junit&lt;/<span style="font-weight: bold;">artifactId</span>&gt;
+  &lt;<span style="font-weight: bold;">version</span>&gt;4.8.2&lt;/<span style="font-weight: bold;">version</span>&gt;
+  &lt;<span style="font-weight: bold;">scope</span>&gt;test&lt;/<span style="font-weight: bold;">scope</span>&gt;
+&lt;/<span style="font-weight: bold;">dependency</span>&gt;
+&lt;<span style="font-weight: bold;">dependency</span>&gt;
+  &lt;<span style="font-weight: bold;">groupId</span>&gt;log4j&lt;/<span style="font-weight: bold;">groupId</span>&gt;
+  &lt;<span style="font-weight: bold;">artifactid</span>&gt;log4j&lt;/<span style="font-weight: bold;">artifactId</span>&gt;
+  &lt;<span style="font-weight: bold;">version</span>&gt;1.2.16&lt;/<span style="font-weight: bold;">version</span>&gt;
+&lt;/<span style="font-weight: bold;">dependency</span>&gt;
+
+</pre>
+</div>
+
+<p>
+我的同事在开发模块B，他也要用JUnit和Log4j（我们开会讨论过了，统一单元测试框架为
+JUnit而不是TestNG，统一日志实现为Log4j而不是JUL，为什么做这个决定就不解释了，总
+之就这么定了）。同事就写了如下依赖配置：
+</p>
+<div class="org-src-container">
+<pre class="src src-xml">&lt;<span style="font-weight: bold;">dependency</span>&gt;
+  &lt;<span style="font-weight: bold;">groupId</span>&gt;junit&lt;/<span style="font-weight: bold;">groupId</span>&gt;
+  &lt;<span style="font-weight: bold;">artifactid</span>&gt;junit&lt;/<span style="font-weight: bold;">artifactId</span>&gt;
+  &lt;<span style="font-weight: bold;">version</span>&gt;3.8.2&lt;/<span style="font-weight: bold;">version</span>&gt;
+&lt;/<span style="font-weight: bold;">dependency</span>&gt;
+&lt;<span style="font-weight: bold;">dependency</span>&gt;
+  &lt;<span style="font-weight: bold;">groupId</span>&gt;log4j&lt;/<span style="font-weight: bold;">groupId</span>&gt;
+  &lt;<span style="font-weight: bold;">artifactid</span>&gt;log4j&lt;/<span style="font-weight: bold;">artifactId</span>&gt;
+  &lt;<span style="font-weight: bold;">version</span>&gt;1.2.9&lt;/<span style="font-weight: bold;">version</span>&gt;
+&lt;/<span style="font-weight: bold;">dependency</span>&gt;
+
+</pre>
+</div>
+
+<p>
+看出什么问题来没有？对的，他漏了JUnit依赖的scope，那是因为他不熟悉Maven。还有什
+么问题？对，版本！虽然他和我一样都依赖了JUnit及Log4j，但版本不一致啊。我们开会讨
+论没有细化到具体用什么版本，但如果一个项目同时依赖某个类库的多个版本，那是十分危
+险的！OK，现在只是两个模块的两个依赖，手动修复一下没什么问题，但如果是10个模块，
+每个模块10个依赖或者更多呢？看来这真是一个泥潭，一旦陷进去就难以收拾了。
+</p>
+
+<p>
+好在Maven提供了优雅的解决办法，使用继承机制以及dependencyManagement元素就能解决
+这个问题。注意，是dependencyMananget而非dependencies。也许你已经想到在父模块中配
+置dependencies，那样所有子模块都自动继承，不仅达到了依赖一致的目的，还省掉了大段
+代码，但这么做是有问题的，例如你将模块C的依赖spring-aop提取到了父模块中，但模块A
+和B虽然不需要spring-aop，但也直接继承了。dependencyManagement就没有这样的问题，
+dependencyManagement只会影响现有依赖的配置，但不会引入依赖。例如我们可以在父模块
+中配置如下：
+</p>
+<div class="org-src-container">
+<pre class="src src-xml">&lt;<span style="font-weight: bold;">dependencyManagement</span>&gt;
+  &lt;<span style="font-weight: bold;">dependencies</span>&gt;
+    &lt;<span style="font-weight: bold;">dependency</span>&gt;
+      &lt;<span style="font-weight: bold;">groupId</span>&gt;junit&lt;/<span style="font-weight: bold;">groupId</span>&gt;
+      &lt;<span style="font-weight: bold;">artifactid</span>&gt;junit&lt;/<span style="font-weight: bold;">artifactId</span>&gt;
+      &lt;<span style="font-weight: bold;">version</span>&gt;4.8.2&lt;/<span style="font-weight: bold;">version</span>&gt;
+      &lt;<span style="font-weight: bold;">scope</span>&gt;test&lt;/<span style="font-weight: bold;">scope</span>&gt;
+    &lt;/<span style="font-weight: bold;">dependency</span>&gt;
+    &lt;<span style="font-weight: bold;">dependency</span>&gt;
+      &lt;<span style="font-weight: bold;">groupId</span>&gt;log4j&lt;/<span style="font-weight: bold;">groupId</span>&gt;
+      &lt;<span style="font-weight: bold;">artifactid</span>&gt;log4j&lt;/<span style="font-weight: bold;">artifactId</span>&gt;
+      &lt;<span style="font-weight: bold;">version</span>&gt;1.2.16&lt;/<span style="font-weight: bold;">version</span>&gt;
+    &lt;/<span style="font-weight: bold;">dependency</span>&gt;
+  &lt;/<span style="font-weight: bold;">dependencies</span>&gt;
+&lt;/<span style="font-weight: bold;">dependencyManagement</span>&gt;
+
+</pre>
+</div>
+
+<p>
+这段配置不会给任何子模块引入依赖，但如果某个子模块需要使用JUnit和Log4j的时候，我
+们就可以简化依赖配置成这样：
+</p>
+<div class="org-src-container">
+<pre class="src src-xml">&lt;<span style="font-weight: bold;">dependency</span>&gt;
+  &lt;<span style="font-weight: bold;">groupId</span>&gt;junit&lt;/<span style="font-weight: bold;">groupId</span>&gt;
+  &lt;<span style="font-weight: bold;">artifactid</span>&gt;junit&lt;/<span style="font-weight: bold;">artifactId</span>&gt;
+&lt;/<span style="font-weight: bold;">dependency</span>&gt;
+&lt;<span style="font-weight: bold;">dependency</span>&gt;
+  &lt;<span style="font-weight: bold;">groupId</span>&gt;log4j&lt;/<span style="font-weight: bold;">groupId</span>&gt;
+  &lt;<span style="font-weight: bold;">artifactid</span>&gt;log4j&lt;/<span style="font-weight: bold;">artifactId</span>&gt;
+&lt;/<span style="font-weight: bold;">dependency</span>&gt;
+
+</pre>
+</div>
+<p>
+现在只需要groupId和artifactId，其它元素如version和scope都能通过继承父POM的
+dependencyManagement得到，如果有依赖配置了exclusions，那节省的代码就更加可观。但
+重点不在这，重点在于现在能够保证所有模块使用的JUnit和Log4j依赖配置是一致的。而且
+子模块仍然可以按需引入依赖，如果我不配置dependency，父模块中dependencyManagement
+下的spring-aop依赖不会对我产生任何影响。
+</p>
+
+<p>
+也许你已经意识到了，在多模块Maven项目中，dependencyManagement几乎是必不可少的，
+因为只有它是才能够有效地帮我们维护依赖一致性。
+</p>
+
+<p>
+本来关于dependencyManagement我想介绍的也差不多了，但几天前和Sunng的一次讨论让我有了更多的内容分享。那就是在使用dependencyManagement的时候，我们可以不从父模块继承，而是使用特殊的import scope依赖。Sunng将其列为自己的Maven Recipe #0，我再简单介绍下。
+</p>
+
+<p>
+我们知道Maven的继承和Java的继承一样，是无法实现多重继承的，如果10个、20个甚至更
+多模块继承自同一个模块，那么按照我们之前的做法，这个父模块的dependencyManagement
+会包含大量的依赖。如果你想把这些依赖分类以更清晰的管理，那就不可能了，import
+scope依赖能解决这个问题。你可以把dependencyManagement放到单独的专门用来管理依赖
+的POM中，然后在需要使用依赖的模块中通过import scope依赖，就可以引入
+dependencyManagement。例如可以写这样一个用于依赖管理的POM：
+</p>
+<div class="org-src-container">
+<pre class="src src-xml">&lt;<span style="font-weight: bold;">project</span>&gt;
+  &lt;<span style="font-weight: bold;">modelVersion</span>&gt;4.0.0&lt;/<span style="font-weight: bold;">modelVersion</span>&gt;
+  &lt;<span style="font-weight: bold;">groupId</span>&gt;com.juvenxu.sample&lt;/<span style="font-weight: bold;">groupId</span>&gt;
+  &lt;<span style="font-weight: bold;">artifactId</span>&gt;sample-dependency-infrastructure&lt;/<span style="font-weight: bold;">artifactId</span>&gt;
+  &lt;<span style="font-weight: bold;">packaging</span>&gt;pom&lt;/<span style="font-weight: bold;">packaging</span>&gt;
+  &lt;<span style="font-weight: bold;">version</span>&gt;1.0-SNAPSHOT&lt;/<span style="font-weight: bold;">version</span>&gt;
+  &lt;<span style="font-weight: bold;">dependencyManagement</span>&gt;
+    &lt;<span style="font-weight: bold;">dependencies</span>&gt;
+        &lt;<span style="font-weight: bold;">dependency</span>&gt;
+          &lt;<span style="font-weight: bold;">groupId</span>&gt;junit&lt;/<span style="font-weight: bold;">groupId</span>&gt;
+          &lt;<span style="font-weight: bold;">artifactid</span>&gt;junit&lt;/<span style="font-weight: bold;">artifactId</span>&gt;
+          &lt;<span style="font-weight: bold;">version</span>&gt;4.8.2&lt;/<span style="font-weight: bold;">version</span>&gt;
+          &lt;<span style="font-weight: bold;">scope</span>&gt;test&lt;/<span style="font-weight: bold;">scope</span>&gt;
+        &lt;/<span style="font-weight: bold;">dependency</span>&gt;
+        &lt;<span style="font-weight: bold;">dependency</span>&gt;
+          &lt;<span style="font-weight: bold;">groupId</span>&gt;log4j&lt;/<span style="font-weight: bold;">groupId</span>&gt;
+          &lt;<span style="font-weight: bold;">artifactid</span>&gt;log4j&lt;/<span style="font-weight: bold;">artifactId</span>&gt;
+          &lt;<span style="font-weight: bold;">version</span>&gt;1.2.16&lt;/<span style="font-weight: bold;">version</span>&gt;
+        &lt;/<span style="font-weight: bold;">dependency</span>&gt;
+    &lt;/<span style="font-weight: bold;">dependencies</span>&gt;
+  &lt;/<span style="font-weight: bold;">dependencyManagement</span>&gt;
+&lt;/<span style="font-weight: bold;">project</span>&gt;
+
+</pre>
+</div>
+
+<p>
+然后我就可以通过非继承的方式来引入这段依赖管理配置：
+</p>
+<div class="org-src-container">
+<pre class="src src-xml">&lt;<span style="font-weight: bold;">dependencyManagement</span>&gt;
+  &lt;<span style="font-weight: bold;">dependencies</span>&gt;
+      &lt;<span style="font-weight: bold;">dependency</span>&gt;
+        &lt;<span style="font-weight: bold;">groupId</span>&gt;com.juvenxu.sample&lt;/<span style="font-weight: bold;">groupId</span>&gt;
+        &lt;<span style="font-weight: bold;">artifactid</span>&gt;sample-dependency-infrastructure&lt;/<span style="font-weight: bold;">artifactId</span>&gt;
+        &lt;<span style="font-weight: bold;">version</span>&gt;1.0-SNAPSHOT&lt;/<span style="font-weight: bold;">version</span>&gt;
+        &lt;<span style="font-weight: bold;">type</span>&gt;pom&lt;/<span style="font-weight: bold;">type</span>&gt;
+        &lt;<span style="font-weight: bold;">scope</span>&gt;import&lt;/<span style="font-weight: bold;">scope</span>&gt;
+      &lt;/<span style="font-weight: bold;">dependency</span>&gt;
+  &lt;/<span style="font-weight: bold;">dependencies</span>&gt;
+&lt;/<span style="font-weight: bold;">dependencyManagement</span>&gt;
+
+&lt;<span style="font-weight: bold;">dependency</span>&gt;
+  &lt;<span style="font-weight: bold;">groupId</span>&gt;junit&lt;/<span style="font-weight: bold;">groupId</span>&gt;
+  &lt;<span style="font-weight: bold;">artifactid</span>&gt;junit&lt;/<span style="font-weight: bold;">artifactId</span>&gt;
+&lt;/<span style="font-weight: bold;">dependency</span>&gt;
+&lt;<span style="font-weight: bold;">dependency</span>&gt;
+  &lt;<span style="font-weight: bold;">groupId</span>&gt;log4j&lt;/<span style="font-weight: bold;">groupId</span>&gt;
+  &lt;<span style="font-weight: bold;">artifactid</span>&gt;log4j&lt;/<span style="font-weight: bold;">artifactId</span>&gt;
+&lt;/<span style="font-weight: bold;">dependency</span>&gt;
+
+</pre>
+</div>
+
+<p>
+这样，父模块的POM就会非常干净，由专门的packaging为pom的POM来管理依赖，也契合的面
+向对象设计中的单一职责原则。此外，我们还能够创建多个这样的依赖管理POM，以更细化
+的方式管理依赖。这种做法与面向对象设计中使用组合而非继承也有点相似的味道。
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-org67156fb" class="outline-2">
+<h2 id="org67156fb">消除多模块插件配置重复</h2>
+<div class="outline-text-2" id="text-org67156fb">
+<p>
+与dependencyManagement类似的，我们也可以使用pluginManagement元素管理插件。一个常
+见的用法就是我们希望项目所有模块的使用Maven Compiler Plugin的时候，都使用Java
+1.5，以及指定Java源文件编码为UTF-8，这时可以在父模块的POM中如下配置
+pluginManagement：
+</p>
+<div class="org-src-container">
+<pre class="src src-xml">&lt;<span style="font-weight: bold;">build</span>&gt;
+  &lt;<span style="font-weight: bold;">pluginManagement</span>&gt;
+    &lt;<span style="font-weight: bold;">plugins</span>&gt;
+      &lt;<span style="font-weight: bold;">plugin</span>&gt;
+        &lt;<span style="font-weight: bold;">groupId</span>&gt;org.apache.maven.plugins&lt;/<span style="font-weight: bold;">groupId</span>&gt;
+        &lt;<span style="font-weight: bold;">artifactId</span>&gt;maven-compiler-plugin&lt;/<span style="font-weight: bold;">artifactId</span>&gt;
+        &lt;<span style="font-weight: bold;">version</span>&gt;2.3.2&lt;/<span style="font-weight: bold;">version</span>&gt;
+        &lt;<span style="font-weight: bold;">configuration</span>&gt;
+          &lt;<span style="font-weight: bold;">source</span>&gt;1.5&lt;/<span style="font-weight: bold;">source</span>&gt;
+          &lt;<span style="font-weight: bold;">target</span>&gt;1.5&lt;/<span style="font-weight: bold;">target</span>&gt;
+          &lt;<span style="font-weight: bold;">encoding</span>&gt;UTF-8&lt;/<span style="font-weight: bold;">encoding</span>&gt;
+        &lt;/<span style="font-weight: bold;">configuration</span>&gt;
+      &lt;/<span style="font-weight: bold;">plugin</span>&gt;
+    &lt;/<span style="font-weight: bold;">plugins</span>&gt;
+  &lt;/<span style="font-weight: bold;">pluginManagement</span>&gt;
+&lt;/<span style="font-weight: bold;">build</span>&gt;
+
+</pre>
+</div>
+
+<p>
+这段配置会被应用到所有子模块的maven-compiler-plugin中，由于Maven内置了
+maven-compiler-plugin与生命周期的绑定，因此子模块就不再需要任何
+maven-compiler-plugin的配置了。
+</p>
+
+<p>
+与依赖配置不同的是，通常所有项目对于任意一个依赖的配置都应该是统一的，但插件却不
+是这样，例如你可以希望模块A运行所有单元测试，模块B要跳过一些测试，这时就需要配置
+maven-surefire-plugin来实现，那样两个模块的插件配置就不一致了。这也就是说，简单
+的把插件配置提取到父POM的pluginManagement中往往不适合所有情况，那我们在使用的时
+候就需要注意了，只有那些普适的插件配置才应该使用pluginManagement提取到父POM中。
+</p>
+
+<p>
+关于插件pluginManagement，Maven并没有提供与import scope依赖类似的方式管理，那我
+们只能借助继承关系，不过好在一般来说插件配置的数量远没有依赖配置那么多，因此这也
+不是一个问题。
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-org44e92cf" class="outline-2">
+<h2 id="org44e92cf">小结</h2>
+<div class="outline-text-2" id="text-org44e92cf">
+<p>
+关于Maven POM重构的介绍，在此就告一段落了。基本上如果你掌握了本篇和上一篇Maven专
+栏讲述的重构技巧，并理解了其背后的目的原则，那么你肯定能让项目的POM变得更清晰易
+懂，也能尽早避免一些潜在的风险。虽然Maven只是用来帮助你构建项目和管理依赖的工具，
+POM也并不是你正式产品代码的一部分。但我们也应该认真对待POM，这有点像测试代码，以
+前可能大家都觉得测试代码可有可无，更不会去用心重构优化测试代码，但随着敏捷开发和
+TDD等方式越来越被人接受，测试代码得到了开发人员越来越多的关注。因此这里我希望大
+家不仅仅满足于一个“能用”的POM，而是能够积极地去修复POM中的坏味道。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgd77ad2c" class="outline-2">
+<h2 id="orgd77ad2c">关于作者</h2>
+<div class="outline-text-2" id="text-orgd77ad2c">
+<p>
+许晓斌（Juven Xu），国内社区公认的Maven技术专家、Maven中文用户组创始人、Maven技
+术的先驱和积极推动者。对Maven有深刻的认识，实战经验丰富，不仅撰写了大量关于Maven
+的技术文章，而且还翻译了开源书籍《Maven权威指南》，对Maven技术在国内的普及和发展
+做出了很大的贡献。就职于Maven之父的公司，负责维护Maven中央仓库，是Maven仓库管理
+器Nexus（著名开源软件）的核心开发者之一，曾多次受邀到淘宝等大型企业开展Maven方面
+的培训。此外，他还是开源技术的积极倡导者和推动者，擅长Java开发和敏捷开发实践。他
+的个人网站是：<a href="http://www.juvenxu.com">http://www.juvenxu.com</a>。
+</p>
+</div>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

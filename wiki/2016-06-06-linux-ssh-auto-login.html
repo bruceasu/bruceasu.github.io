@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>ssh auto login</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">ssh auto login</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#linux"><div class="category">linux</div></a> </div>
+<div class="char-counter">2016-06-06</div>
+        <div id="content">
+<nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#orge337227">安装expect</a></li>
+<li><a href="#orgc71c5c7">使用expect脚本运行</a></li>
+<li><a href="#org2afd837">使用命令行参数运行expect</a></li>
+<li><a href="#orgc314dc6">expect与scp使用</a></li>
+<li><a href="#orgda8e172">python中使用expect命令</a></li>
+<li><a href="#org72fcee3">其他的相关知识</a></li>
+</ul>
+</div>
+</nav>
+
+
+<div id="outline-container-orge337227" class="outline-2">
+<h2 id="orge337227">安装expect</h2>
+<div class="outline-text-2" id="text-orge337227">
+<p>
+机器上一般是没有这个命令的，需要安装expect
+</p>
+<pre class="example">
+sudo apt-get install expect
+yum install expect
+
+</pre>
+
+<p>
+经常看到一些脚本有会expect、spawn、send关键字，这几个关键字都是在
+expect程序里面使用的。
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-orgc71c5c7" class="outline-2">
+<h2 id="orgc71c5c7">使用expect脚本运行</h2>
+<div class="outline-text-2" id="text-orgc71c5c7">
+<div class="org-src-container">
+<pre class="src src-sh"><span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">!/usr/bin/</span><span style="font-weight: bold;">expect</span>
+
+<span style="font-weight: bold;">set</span> timeout 5
+<span style="font-weight: bold; font-style: italic;">password</span>=ppp
+spawn ssh user@localhost -p 22
+expect {
+    <span style="font-style: italic;">"(yes/no)"</span> { send <span style="font-style: italic;">"yes\r"</span>; exp_continue }
+    <span style="font-style: italic;">"password:"</span> { send <span style="font-style: italic;">"$password\r"</span> }
+}
+expect user@*   {send <span style="font-style: italic;">\"</span> ls -l \r<span style="font-style: italic;">\"</span> }  ;
+expect user@*  { send exit\r } ;
+expect 100% ;
+expect eof ;
+
+</pre>
+</div>
+
+<ul class="org-ul">
+<li>注意第一行使用的是#!/usr/bin/expect而不是普通的bash脚本那样</li>
+<li>expect都是使用{}，且{、}使用时，前后需要留空格</li>
+<li>例子使用花括号，表示使用一组并列表达式，只要其中一项符合，就会执行该项，类似
+switch</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-org2afd837" class="outline-2">
+<h2 id="org2afd837">使用命令行参数运行expect</h2>
+<div class="outline-text-2" id="text-org2afd837">
+<p>
+有时候写个expect脚本比较麻烦，直接只用命令行参数去执行命令，或者嵌套在shell脚本、
+python脚本中，这样可以减少expect脚本的数量
+</p>
+
+<p>
+一下是一个登录并执行一个ls命令的demo：
+</p>
+<div class="org-src-container">
+<pre class="src src-sh">expect -c <span style="font-style: italic;">"</span>
+<span style="font-style: italic;">           set timeout 1;</span>
+<span style="font-style: italic;">           spawn ssh user@localhost -p 22  ;</span>
+<span style="font-style: italic;">           expect {</span>
+<span style="font-style: italic;">               yes/no { send \"yes\r\"; exp_continue }</span>
+<span style="font-style: italic;">               *assword* { send \"password\r\" }</span>
+<span style="font-style: italic;">           } ;</span>
+<span style="font-style: italic;">           expect user@*   {send \" ls -l \r\" }  ;</span>
+<span style="font-style: italic;">           expect user@*  { send exit\r } ;</span>
+<span style="font-style: italic;">           expect 100% ;</span>
+<span style="font-style: italic;">           expect eof ;</span>
+<span style="font-style: italic;">       "</span>
+
+</pre>
+</div>
+
+<p>
+expect的参数-c后面是字符串，里面就相当于脚本里面的内容了。
+</p>
+<ul class="org-ul">
+<li>用;分号隔开，可以在同一行里。</li>
+<li>里面的"引号，使用\\"来代替。</li>
+<li>第9行的exit最好要有。退出ssh，这样程序不会阻塞。我如果没有使用，在这
+个shell命令执行完，无法立刻输入字符。</li>
+<li>expect脚本必须以interact或expect eof结束，执行自动化任务通常expect
+eof就够了</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-orgc314dc6" class="outline-2">
+<h2 id="orgc314dc6">expect与scp使用</h2>
+<div class="outline-text-2" id="text-orgc314dc6">
+<p>
+expect一般用于登录ssh服务器，除了ssh命令输入密码外，还有scp也是需要密码输入的，
+因此expect与scp结合起来使用的场景也是很多的。
+</p>
+<div class="org-src-container">
+<pre class="src src-sh">expect -c <span style="font-style: italic;">"</span>
+<span style="font-style: italic;">           set timeout 1;</span>
+<span style="font-style: italic;">           spawn scp -P 22 user@remoteHost:/tmp/file.txt ~/  ;</span>
+<span style="font-style: italic;">           expect {</span>
+<span style="font-style: italic;">               yes/no { send \"yes\r\"; exp_continue }</span>
+<span style="font-style: italic;">               *assword* { send \"password\r\" }</span>
+<span style="font-style: italic;">           } ;</span>
+<span style="font-style: italic;">           expect user@*   {send \" ls -l \r\" }  ;</span>
+<span style="font-style: italic;">           expect user@*  { send exit\r } ;</span>
+<span style="font-style: italic;">           expect 100% ;</span>
+<span style="font-style: italic;">           expect eof ;</span>
+<span style="font-style: italic;">       "</span>
+</pre>
+</div>
+
+
+<p>
+注意：scp的制定端口使用大写的-P。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgda8e172" class="outline-2">
+<h2 id="orgda8e172">python中使用expect命令</h2>
+<div class="outline-text-2" id="text-orgda8e172">
+<div class="org-src-container">
+<pre class="src src-python"><span style="font-weight: bold; font-style: italic;">SCP_CMD_BASE</span> = r<span style="font-style: italic;">"""</span>
+<span style="font-style: italic;">            expect -c "</span>
+<span style="font-style: italic;">            set timeout 1;</span>
+<span style="font-style: italic;">            spawn scp -P {port} {username}@{host}:/tmp/{{filename}} ./proxydownload/  ;</span>
+<span style="font-style: italic;">            expect *assword* {{{{ send {password}\r }}}}  ;</span>
+<span style="font-style: italic;">            expect *\r</span>
+<span style="font-style: italic;">            expect \r</span>
+<span style="font-style: italic;">            expect eof</span>
+<span style="font-style: italic;">            "</span>
+<span style="font-style: italic;">    """</span>.<span style="font-weight: bold;">format</span>(username=username,password=password,host=host,port=port)
+
+<span style="font-weight: bold; font-style: italic;">cmd</span> = SCP_CMD_BASE.<span style="font-weight: bold;">format</span>(filename = filename)
+<span style="font-weight: bold;">print</span> <span style="font-style: italic;">"cmd="</span>, cmd
+<span style="font-weight: bold; font-style: italic;">p</span>  = subprocess.Popen( cmd , stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=<span style="font-weight: bold; text-decoration: underline;">True</span>)
+(output, err) = p.communicate()
+
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org72fcee3" class="outline-2">
+<h2 id="org72fcee3">其他的相关知识</h2>
+<div class="outline-text-2" id="text-org72fcee3">
+<p>
+Python对expect也有类库支持，也就是说你可以直接使用python编写expect，而不用安装
+expect程序了。可以执行搜索一下python pexpect。
+</p>
+
+<p>
+用expect速度会比较慢，因为需要等待返回的数据，然后输入命令执行。没有ssh密钥登录
+的快速。
+</p>
+</div>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

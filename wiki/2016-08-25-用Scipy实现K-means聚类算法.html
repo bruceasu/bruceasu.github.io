@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>用SCIPY实现K-MEANS聚类算法</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">用SCIPY实现K-MEANS聚类算法</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#reprint"><div class="category">reprint</div></a> </div>
+<div class="char-counter">2016-08-25</div>
+        <div id="content">
+<p>
+用Scipy实现K-means聚类算法
+</p>
+
+<p>
+这是我之前写过的一篇文章，使用k-均值聚类算法给明星的身材分分类，由于技艺不精，写
+得着实不好。今天在stackoverflow上发现，原来 scipy有聚类的相关包，还挺方便的。不
+过，貌似网上似乎都没有它的使用介绍。我忙了一下午，终于搞好了，我的数据如下：
+</p>
+
+<table>
+
+
+<colgroup>
+<col  class="org-left">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">名字 </th>
+<th scope="col" class="org-right">身高</th>
+<th scope="col" class="org-right">体重</th>
+<th scope="col" class="org-right">胸围</th>
+<th scope="col" class="org-right">腰围</th>
+<th scope="col" class="org-right">臀围</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">金巧巧</td>
+<td class="org-right">164</td>
+<td class="org-right">112.5</td>
+<td class="org-right">34.0</td>
+<td class="org-right">25.0</td>
+<td class="org-right">34.0</td>
+</tr>
+
+<tr>
+<td class="org-left">杨幂</td>
+<td class="org-right">168</td>
+<td class="org-right">99.0</td>
+<td class="org-right">32.0</td>
+<td class="org-right">24.0</td>
+<td class="org-right">32.0</td>
+</tr>
+
+<tr>
+<td class="org-left">钟丽缇</td>
+<td class="org-right">168</td>
+<td class="org-right">108.0</td>
+<td class="org-right">36.0</td>
+<td class="org-right">24.0</td>
+<td class="org-right">35.0</td>
+</tr>
+
+<tr>
+<td class="org-left">朱茵</td>
+<td class="org-right">160</td>
+<td class="org-right">95.0</td>
+<td class="org-right">33.0</td>
+<td class="org-right">22.0</td>
+<td class="org-right">33.0</td>
+</tr>
+
+<tr>
+<td class="org-left">赵薇</td>
+<td class="org-right">166</td>
+<td class="org-right">105.0</td>
+<td class="org-right">33.0</td>
+<td class="org-right">23.0</td>
+<td class="org-right">33.0</td>
+</tr>
+
+<tr>
+<td class="org-left">李珊珊</td>
+<td class="org-right">175</td>
+<td class="org-right">115.0</td>
+<td class="org-right">36.0</td>
+<td class="org-right">24.0</td>
+<td class="org-right">36.0</td>
+</tr>
+
+<tr>
+<td class="org-left">佘诗曼</td>
+<td class="org-right">164</td>
+<td class="org-right">96.0</td>
+<td class="org-right">33.0</td>
+<td class="org-right">22.0</td>
+<td class="org-right">34.0</td>
+</tr>
+
+<tr>
+<td class="org-left">郭羡妮</td>
+<td class="org-right">166</td>
+<td class="org-right">103.0</td>
+<td class="org-right">33.0</td>
+<td class="org-right">23.0</td>
+<td class="org-right">34.0</td>
+</tr>
+
+<tr>
+<td class="org-left">郑秀文</td>
+<td class="org-right">165</td>
+<td class="org-right">100.0</td>
+<td class="org-right">31.0</td>
+<td class="org-right">22.0</td>
+<td class="org-right">32.0</td>
+</tr>
+
+<tr>
+<td class="org-left">林嘉欣</td>
+<td class="org-right">163</td>
+<td class="org-right">108.0</td>
+<td class="org-right">33.0</td>
+<td class="org-right">24.0</td>
+<td class="org-right">34.0</td>
+</tr>
+
+<tr>
+<td class="org-left">韩君婷</td>
+<td class="org-right">168</td>
+<td class="org-right">108.0</td>
+<td class="org-right">34.0</td>
+<td class="org-right">24.0</td>
+<td class="org-right">35.0</td>
+</tr>
+
+<tr>
+<td class="org-left">安雅</td>
+<td class="org-right">163</td>
+<td class="org-right">104.0</td>
+<td class="org-right">34.5</td>
+<td class="org-right">24.0</td>
+<td class="org-right">35.0</td>
+</tr>
+
+<tr>
+<td class="org-left">林志玲</td>
+<td class="org-right">174</td>
+<td class="org-right">117.0</td>
+<td class="org-right">34.0</td>
+<td class="org-right">24.0</td>
+<td class="org-right">36.0</td>
+</tr>
+
+<tr>
+<td class="org-left">萧蔷</td>
+<td class="org-right">170</td>
+<td class="org-right">108.0</td>
+<td class="org-right">34.0</td>
+<td class="org-right">23.0</td>
+<td class="org-right">35.0</td>
+</tr>
+
+<tr>
+<td class="org-left">林嘉绮</td>
+<td class="org-right">180</td>
+<td class="org-right">126.0</td>
+<td class="org-right">34.0</td>
+<td class="org-right">25.0</td>
+<td class="org-right">35.0</td>
+</tr>
+
+<tr>
+<td class="org-left">姚乐怡</td>
+<td class="org-right">163</td>
+<td class="org-right">101.0</td>
+<td class="org-right">34.0</td>
+<td class="org-right">24.0</td>
+<td class="org-right">34.0</td>
+</tr>
+
+<tr>
+<td class="org-left">关之琳</td>
+<td class="org-right">170</td>
+<td class="org-right">117.0</td>
+<td class="org-right">35.0</td>
+<td class="org-right">24.0</td>
+<td class="org-right">35.0</td>
+</tr>
+
+<tr>
+<td class="org-left">巩俐</td>
+<td class="org-right">168</td>
+<td class="org-right">126.0</td>
+<td class="org-right">38.0</td>
+<td class="org-right">30.0</td>
+<td class="org-right">36.0</td>
+</tr>
+
+<tr>
+<td class="org-left">彭丹</td>
+<td class="org-right">169</td>
+<td class="org-right">125.0</td>
+<td class="org-right">36.0</td>
+<td class="org-right">24.0</td>
+<td class="org-right">36.0</td>
+</tr>
+
+<tr>
+<td class="org-left">张柏芝</td>
+<td class="org-right">165</td>
+<td class="org-right">101.0</td>
+<td class="org-right">33.0</td>
+<td class="org-right">25.0</td>
+<td class="org-right">34.0</td>
+</tr>
+
+<tr>
+<td class="org-left">章子怡</td>
+<td class="org-right">164</td>
+<td class="org-right">108.0</td>
+<td class="org-right">32.0</td>
+<td class="org-right">24.0</td>
+<td class="org-right">34.0</td>
+</tr>
+
+<tr>
+<td class="org-left">何洁</td>
+<td class="org-right">157</td>
+<td class="org-right">104.0</td>
+<td class="org-right">32.0</td>
+<td class="org-right">20.0</td>
+<td class="org-right">45.0</td>
+</tr>
+
+<tr>
+<td class="org-left">蔡依林</td>
+<td class="org-right">158</td>
+<td class="org-right">92.0</td>
+<td class="org-right">32.0</td>
+<td class="org-right">24.0</td>
+<td class="org-right">32.0</td>
+</tr>
+
+<tr>
+<td class="org-left">阿娇</td>
+<td class="org-right">160</td>
+<td class="org-right">101.0</td>
+<td class="org-right">32.0</td>
+<td class="org-right">24.0</td>
+<td class="org-right">33.0</td>
+</tr>
+
+<tr>
+<td class="org-left">阿Sa</td>
+<td class="org-right">165</td>
+<td class="org-right">100.0</td>
+<td class="org-right">32.0</td>
+<td class="org-right">23.0</td>
+<td class="org-right">33.5</td>
+</tr>
+
+<tr>
+<td class="org-left">高圆圆</td>
+<td class="org-right">167</td>
+<td class="org-right">108.0</td>
+<td class="org-right">33.0</td>
+<td class="org-right">24.0</td>
+<td class="org-right">34.0</td>
+</tr>
+
+<tr>
+<td class="org-left">奥黛丽赫本</td>
+<td class="org-right">170</td>
+<td class="org-right">103.5</td>
+<td class="org-right">32.0</td>
+<td class="org-right">20.0</td>
+<td class="org-right">35.0</td>
+</tr>
+
+<tr>
+<td class="org-left">温碧霞</td>
+<td class="org-right">164</td>
+<td class="org-right">106.0</td>
+<td class="org-right">33.0</td>
+<td class="org-right">23.0</td>
+<td class="org-right">33.0</td>
+</tr>
+
+<tr>
+<td class="org-left">安吉利娜-朱丽</td>
+<td class="org-right">173</td>
+<td class="org-right">130.0</td>
+<td class="org-right">36.0</td>
+<td class="org-right">27.0</td>
+<td class="org-right">36.0</td>
+</tr>
+
+<tr>
+<td class="org-left">巩新亮</td>
+<td class="org-right">168</td>
+<td class="org-right">101.0</td>
+<td class="org-right">34.0</td>
+<td class="org-right">22.0</td>
+<td class="org-right">33.0</td>
+</tr>
+
+<tr>
+<td class="org-left">舒淇</td>
+<td class="org-right">168</td>
+<td class="org-right">115.0</td>
+<td class="org-right">34.0</td>
+<td class="org-right">24.0</td>
+<td class="org-right">35.0</td>
+</tr>
+
+<tr>
+<td class="org-left">范冰冰</td>
+<td class="org-right">168</td>
+<td class="org-right">112.0</td>
+<td class="org-right">33.0</td>
+<td class="org-right">22.0</td>
+<td class="org-right">32.0</td>
+</tr>
+
+<tr>
+<td class="org-left">阿朵</td>
+<td class="org-right">166</td>
+<td class="org-right">115.0</td>
+<td class="org-right">38.0</td>
+<td class="org-right">30.0</td>
+<td class="org-right">38.0</td>
+</tr>
+
+<tr>
+<td class="org-left">白歆惠</td>
+<td class="org-right">175</td>
+<td class="org-right">112.0</td>
+<td class="org-right">33.0</td>
+<td class="org-right">23.0</td>
+<td class="org-right">35.0</td>
+</tr>
+
+<tr>
+<td class="org-left">韩艺瑟</td>
+<td class="org-right">166</td>
+<td class="org-right">101.0</td>
+<td class="org-right">33.0</td>
+<td class="org-right">24.0</td>
+<td class="org-right">33.0</td>
+</tr>
+
+<tr>
+<td class="org-left">幸田来未</td>
+<td class="org-right">156</td>
+<td class="org-right">92.0</td>
+<td class="org-right">33.0</td>
+<td class="org-right">22.0</td>
+<td class="org-right">33.0</td>
+</tr>
+
+<tr>
+<td class="org-left">饭岛爱</td>
+<td class="org-right">161</td>
+<td class="org-right">100.0</td>
+<td class="org-right">33.5</td>
+<td class="org-right">22.0</td>
+<td class="org-right">33.5</td>
+</tr>
+
+<tr>
+<td class="org-left">苍井空</td>
+<td class="org-right">155</td>
+<td class="org-right">101.0</td>
+<td class="org-right">35.0</td>
+<td class="org-right">22.4</td>
+<td class="org-right">32.7</td>
+</tr>
+
+<tr>
+<td class="org-left">衫本彩</td>
+<td class="org-right">168</td>
+<td class="org-right">124.0</td>
+<td class="org-right">33.9</td>
+<td class="org-right">22.6</td>
+<td class="org-right">33.6</td>
+</tr>
+
+<tr>
+<td class="org-left">宋慧乔</td>
+<td class="org-right">161</td>
+<td class="org-right">101.0</td>
+<td class="org-right">33.0</td>
+<td class="org-right">24.0</td>
+<td class="org-right">32.0</td>
+</tr>
+
+<tr>
+<td class="org-left">李慧珍</td>
+<td class="org-right">160</td>
+<td class="org-right">92.0</td>
+<td class="org-right">33.0</td>
+<td class="org-right">24.0</td>
+<td class="org-right">32.0</td>
+</tr>
+
+<tr>
+<td class="org-left">陈怡蓉</td>
+<td class="org-right">160</td>
+<td class="org-right">101.0</td>
+<td class="org-right">32.0</td>
+<td class="org-right">25.0</td>
+<td class="org-right">34.0</td>
+</tr>
+
+<tr>
+<td class="org-left">张梓林</td>
+<td class="org-right">182</td>
+<td class="org-right">128.0</td>
+<td class="org-right">34.7</td>
+<td class="org-right">25.0</td>
+<td class="org-right">34.8</td>
+</tr>
+
+<tr>
+<td class="org-left">斯嘉丽·约翰逊</td>
+<td class="org-right">160</td>
+<td class="org-right">108.0</td>
+<td class="org-right">35.5</td>
+<td class="org-right">24.6</td>
+<td class="org-right">35.5</td>
+</tr>
+
+<tr>
+<td class="org-left">霍莉·威洛比</td>
+<td class="org-right">170</td>
+<td class="org-right">123.8</td>
+<td class="org-right">29.3</td>
+<td class="org-right">23.4</td>
+<td class="org-right">30.1</td>
+</tr>
+
+<tr>
+<td class="org-left">碧昂斯</td>
+<td class="org-right">170</td>
+<td class="org-right">126.0</td>
+<td class="org-right">35.2</td>
+<td class="org-right">23.8</td>
+<td class="org-right">34.4</td>
+</tr>
+
+<tr>
+<td class="org-left">蕾哈娜</td>
+<td class="org-right">173</td>
+<td class="org-right">108.0</td>
+<td class="org-right">30.0</td>
+<td class="org-right">24.0</td>
+<td class="org-right">32.0</td>
+</tr>
+
+<tr>
+<td class="org-left">玛丽莲</td>
+<td class="org-right">166</td>
+<td class="org-right">120.4</td>
+<td class="org-right">35.0</td>
+<td class="org-right">22.0</td>
+<td class="org-right">35.0</td>
+</tr>
+
+<tr>
+<td class="org-left">黛塔·范·提思</td>
+<td class="org-right">168</td>
+<td class="org-right">107.0</td>
+<td class="org-right">34.0</td>
+<td class="org-right">22.0</td>
+<td class="org-right">34.0</td>
+</tr>
+
+<tr>
+<td class="org-left">凯蒂·派瑞</td>
+<td class="org-right">173</td>
+<td class="org-right">130.0</td>
+<td class="org-right">34.0</td>
+<td class="org-right">27.0</td>
+<td class="org-right">33.0</td>
+</tr>
+
+<tr>
+<td class="org-left">碧姬·芭铎</td>
+<td class="org-right">170</td>
+<td class="org-right">128.0</td>
+<td class="org-right">35.0</td>
+<td class="org-right">23.0</td>
+<td class="org-right">35.0</td>
+</tr>
+
+<tr>
+<td class="org-left">金·卡戴珊</td>
+<td class="org-right">175</td>
+<td class="org-right">128.0</td>
+<td class="org-right">35.5</td>
+<td class="org-right">25.0</td>
+<td class="org-right">36.0</td>
+</tr>
+
+<tr>
+<td class="org-left">拉拉·斯通</td>
+<td class="org-right">173</td>
+<td class="org-right">112.5</td>
+<td class="org-right">34.0</td>
+<td class="org-right">24.0</td>
+<td class="org-right">35.0</td>
+</tr>
+
+<tr>
+<td class="org-left">洪欣</td>
+<td class="org-right">167</td>
+<td class="org-right">124.0</td>
+<td class="org-right">33.0</td>
+<td class="org-right">25.0</td>
+<td class="org-right">35.0</td>
+</tr>
+
+<tr>
+<td class="org-left">王祖贤</td>
+<td class="org-right">172</td>
+<td class="org-right">128.0</td>
+<td class="org-right">33.0</td>
+<td class="org-right">25.0</td>
+<td class="org-right">33.0</td>
+</tr>
+
+<tr>
+<td class="org-left">林心如</td>
+<td class="org-right">167</td>
+<td class="org-right">103.5</td>
+<td class="org-right">33.0</td>
+<td class="org-right">22.0</td>
+<td class="org-right">34.0</td>
+</tr>
+
+<tr>
+<td class="org-left">孟广美</td>
+<td class="org-right">178</td>
+<td class="org-right">129.0</td>
+<td class="org-right">34.0</td>
+<td class="org-right">26.0</td>
+<td class="org-right">36.0</td>
+</tr>
+
+<tr>
+<td class="org-left">应采儿</td>
+<td class="org-right">175</td>
+<td class="org-right">112.5</td>
+<td class="org-right">33.0</td>
+<td class="org-right">24.5</td>
+<td class="org-right">34.0</td>
+</tr>
+
+<tr>
+<td class="org-left">张韶涵</td>
+<td class="org-right">158</td>
+<td class="org-right">90.0</td>
+<td class="org-right">32.0</td>
+<td class="org-right">23.5</td>
+<td class="org-right">32.0</td>
+</tr>
+
+<tr>
+<td class="org-left">徐若瑄</td>
+<td class="org-right">161</td>
+<td class="org-right">114.0</td>
+<td class="org-right">33.0</td>
+<td class="org-right">25.0</td>
+<td class="org-right">33.0</td>
+</tr>
+
+<tr>
+<td class="org-left">桂纶镁</td>
+<td class="org-right">164</td>
+<td class="org-right">103.5</td>
+<td class="org-right">32.0</td>
+<td class="org-right">23.0</td>
+<td class="org-right">34.5</td>
+</tr>
+
+<tr>
+<td class="org-left">陈乔恩</td>
+<td class="org-right">165</td>
+<td class="org-right">90.0</td>
+<td class="org-right">33.0</td>
+<td class="org-right">22.0</td>
+<td class="org-right">33.3</td>
+</tr>
+
+<tr>
+<td class="org-left">杨丞琳</td>
+<td class="org-right">161</td>
+<td class="org-right">99.0</td>
+<td class="org-right">32.0</td>
+<td class="org-right">23.0</td>
+<td class="org-right">33.0</td>
+</tr>
+
+<tr>
+<td class="org-left">廖碧儿</td>
+<td class="org-right">171</td>
+<td class="org-right">117.0</td>
+<td class="org-right">35.0</td>
+<td class="org-right">24.0</td>
+<td class="org-right">34.0</td>
+</tr>
+
+<tr>
+<td class="org-left">李玟</td>
+<td class="org-right">162</td>
+<td class="org-right">105.0</td>
+<td class="org-right">35.0</td>
+<td class="org-right">22.5</td>
+<td class="org-right">35.0</td>
+</tr>
+
+<tr>
+<td class="org-left">Maggie</td>
+<td class="org-right">170</td>
+<td class="org-right">106.0</td>
+<td class="org-right">34.0</td>
+<td class="org-right">24.0</td>
+<td class="org-right">34.0</td>
+</tr>
+
+<tr>
+<td class="org-left">张曼玉</td>
+<td class="org-right">168</td>
+<td class="org-right">115.0</td>
+<td class="org-right">32.4</td>
+<td class="org-right">23.0</td>
+<td class="org-right">34.0</td>
+</tr>
+</tbody>
+</table>
+
+<p>
+上述数据用csv格式存储，代码如下：
+</p>
+<div class="org-src-container">
+<pre class="src src-python"><span style="font-weight: bold;">import</span> pandas <span style="font-weight: bold;">as</span> pd
+<span style="font-weight: bold;">from</span> scipy.cluster.vq <span style="font-weight: bold;">import</span> vq, kmeans, whiten,kmeans2
+<span style="font-weight: bold; font-style: italic;">data</span> = pd.read_csv(<span style="font-style: italic;">'/home/rickey/&#25991;&#26723;/&#23398;&#20064;/&#25968;&#25454;&#25366;&#25496;&#19982;&#25968;&#25454;&#20179;&#24211;/&#25968;&#25454;&#25366;&#25496;&#20316;&#19994;/&#19977;&#22260;&#25968;&#25454;'</span>,sep=<span style="font-style: italic;">'t'</span>,index_col=0)
+<span style="font-weight: bold; font-style: italic;">matData</span> = data.as_matrix()
+<span style="font-weight: bold; font-style: italic;">whitened</span> = whiten(matData)
+<span style="font-weight: bold; font-style: italic;">center</span> = kmeans(whitened,12)[0]
+<span style="font-weight: bold; font-style: italic;">result</span> = vq(whitened,center)[0]
+<span style="font-weight: bold; font-style: italic;">dicResult</span> = {}
+<span style="font-weight: bold; font-style: italic;">resultList</span> = result.tolist()
+<span style="font-weight: bold; font-style: italic;">i</span> = 0
+<span style="font-weight: bold;">for</span> i <span style="font-weight: bold;">in</span> <span style="font-weight: bold;">range</span>(<span style="font-weight: bold;">len</span>(resultList)):
+    <span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">print i</span>
+    <span style="font-weight: bold;">if</span> dicResult.has_key(resultList[i]):
+        dicResult[result[i]].append(i)
+    <span style="font-weight: bold;">else</span>:
+        dicResult[result[i]] = [i]
+<span style="font-weight: bold;">for</span> i <span style="font-weight: bold;">in</span> dicResult:
+    <span style="font-weight: bold;">for</span> j <span style="font-weight: bold;">in</span> dicResult[i]:
+        <span style="font-weight: bold;">print</span> data.index[j],
+    <span style="font-weight: bold;">print</span> <span style="font-style: italic;">'nnn'</span>
+
+</pre>
+</div>
+
+
+<p>
+现在的代码量相对于之前的，真的是少了很多很多呀。下面我介绍一下一些主要函数的说明：
+我这里使用了scipy，pandas两个包，read<sub>csv读取csv文件的效果我觉得比numpy和scipy都</sub>
+要好。data里面包含了人 名，列名，所以用matData获取纯数据部分。whiten函数比较坑爹，
+它的文档的例子是错误的，我是看了它的源代码才知道什么意思的，实际上，它是 先算出
+matData各列的标准差，形成一个新的数组，比如上面的数据有四列，该新的数组就有四个
+元素，每个元素分别是对应列的标准差。然后，用 matData处于该标准差数据，就得出了
+whitened这个结果了。center获得的是聚类中心所形成的数组。，这里，可以用kmeans，也
+可以用kmeans2。他们两个的区别我还没有去细致区分。kmeans返回的结果是一个有两个元
+素的元组，第一个元素是聚类中心数组，第二个元素是单个数字，我不太明白它的意思。
+result则是聚类的结果。这里，vq需要两个参数，分别是whitened，center，通过vq，可以
+获取每个人所属的类，返回的也是如kmeans一样的元组结果，第一个元素如下：
+</p>
+<pre class="example">
+array([ 6, 11,  7,  3, 11,  7,  3, 11, 11,  6,  7,  8,  7,  7, 10,  6,  7,
+        0,  2,  6,  6,  1,  5,  5, 11,  6, 11, 11, 10, 11,  7, 11,  0,  7,
+        6,  5,  3,  9,  2,  5,  5,  6, 10,  8,  4,  2,  4,  2, 11, 10,  2,
+       10,  7,  2,  2, 11, 10,  7,  5,  6, 11,  3,  5,  7,  8,  7, 11])
+
+</pre>
+
+<p>
+这个数组的意思是说，第一个人属于聚类中心6,第二个人属于聚类中心11。后面的那些代码，
+主要是用来输出人名的，与聚类算法已经无关了，获得的结果会变，貌似即使是同样的k值，
+结果还是会有点不一样的，k值也比较难以确定，我分的是12个，结果如下：
+</p>
+
+<p>
+巩俐 阿朵
+</p>
+
+<p>
+何洁
+</p>
+
+<p>
+彭丹 衫本彩 碧昂斯 玛丽莲 碧姬&amp;middot;芭铎 洪欣 王祖贤
+</p>
+
+<p>
+朱茵 佘诗曼 饭岛爱 陈乔恩
+</p>
+
+<p>
+霍莉&amp;middot;威洛比 蕾哈娜
+</p>
+
+<p>
+蔡依林 阿娇 幸田来未 宋慧乔 李慧珍 张韶涵 杨丞琳
+</p>
+
+<p>
+金巧巧 林嘉欣 姚乐怡 张柏芝 章子怡 高圆圆 韩艺瑟 陈怡蓉 徐若瑄
+</p>
+
+<p>
+钟丽缇 李珊珊 韩君婷 林志玲 萧蔷 关之琳 舒淇 白歆惠 拉拉&amp;middot;斯通 应采儿 廖碧儿 Maggie
+</p>
+
+<p>
+安雅 斯嘉丽&amp;middot;约翰逊 李玟
+</p>
+
+<p>
+苍井空
+</p>
+
+<p>
+林嘉绮 安吉利娜-朱丽 张梓林 凯蒂&amp;middot;派瑞 金&amp;middot;卡戴珊 孟广美
+</p>
+
+<p>
+杨幂 赵薇 郭羡妮 郑秀文 阿Sa 奥黛丽赫本 温碧霞 巩新亮 范冰冰 黛塔&amp;middot;范&amp;middot;提思 林心如 桂纶镁 张曼玉
+</p>
+
+<p>
+总体来讲，感觉不然我之前的那个算法分得准确。
+</p>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

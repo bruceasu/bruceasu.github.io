@@ -1,0 +1,2007 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>超级实用且不花哨的js代码大全</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">超级实用且不花哨的js代码大全</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#javascript"><div class="category">javascript</div></a> </div>
+<div class="char-counter">2016-08-10</div>
+        <div id="content">
+
+<div id="outline-container-orgdf1d71e" class="outline-2">
+<h2 id="orgdf1d71e">一般应用</h2>
+<div class="outline-text-2" id="text-orgdf1d71e">
+</div>
+<div id="outline-container-orgbb6aa25" class="outline-3">
+<h3 id="orgbb6aa25">事件源对象</h3>
+<div class="outline-text-3" id="text-orgbb6aa25">
+<pre class="example">
+event.srcElement.tagName
+event.srcElement.type
+
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org04d0e21" class="outline-3">
+<h3 id="org04d0e21">捕获释放</h3>
+<div class="outline-text-3" id="text-org04d0e21">
+<pre class="example">
+event.srcElement.setCapture();
+event.srcElement.releaseCapture();
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org456f0db" class="outline-3">
+<h3 id="org456f0db">事件按键</h3>
+<div class="outline-text-3" id="text-org456f0db">
+<pre class="example">
+event.keyCode
+event.shiftKey
+event.altKey
+event.ctrlKey
+
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org2d9da4f" class="outline-3">
+<h3 id="org2d9da4f">事件返回值</h3>
+<div class="outline-text-3" id="text-org2d9da4f">
+<pre class="example">
+event.returnValue
+
+</pre>
+</div>
+</div>
+
+<div id="outline-container-orgf405deb" class="outline-3">
+<h3 id="orgf405deb">鼠标位置</h3>
+<div class="outline-text-3" id="text-orgf405deb">
+<pre class="example">
+event.x
+event.y
+
+</pre>
+</div>
+</div>
+<div id="outline-container-orgba9dec8" class="outline-3">
+<h3 id="orgba9dec8">窗体活动元素</h3>
+<div class="outline-text-3" id="text-orgba9dec8">
+<pre class="example">
+document.activeElement
+
+</pre>
+</div>
+</div>
+<div id="outline-container-org3682601" class="outline-3">
+<h3 id="org3682601">绑定事件</h3>
+<div class="outline-text-3" id="text-org3682601">
+<pre class="example">
+document.captureEvents(Event.KEYDOWN);
+
+</pre>
+</div>
+</div>
+
+<div id="outline-container-orgb96ba24" class="outline-3">
+<h3 id="orgb96ba24">访问窗体元素</h3>
+<div class="outline-text-3" id="text-orgb96ba24">
+<pre class="example">
+document.all("txt").focus();
+document.all("txt").select();
+
+</pre>
+</div>
+</div>
+
+<div id="outline-container-orgde03e3d" class="outline-3">
+<h3 id="orgde03e3d">窗体命令</h3>
+<div class="outline-text-3" id="text-orgde03e3d">
+<pre class="example">
+document.execCommand
+
+</pre>
+</div>
+</div>
+<div id="outline-container-orgc9fdf3d" class="outline-3">
+<h3 id="orgc9fdf3d">窗体COOKIE</h3>
+<div class="outline-text-3" id="text-orgc9fdf3d">
+<pre class="example">
+document.cookie
+
+</pre>
+</div>
+</div>
+
+<div id="outline-container-orgecb9a53" class="outline-3">
+<h3 id="orgecb9a53">菜单事件</h3>
+<div class="outline-text-3" id="text-orgecb9a53">
+<pre class="example">
+document.oncontextmenu
+
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org56259c4" class="outline-3">
+<h3 id="org56259c4">创建元素</h3>
+<div class="outline-text-3" id="text-org56259c4">
+<pre class="example">
+document.createElement("SPAN");
+
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org599387d" class="outline-3">
+<h3 id="org599387d">根据鼠标获得元素：</h3>
+<div class="outline-text-3" id="text-org599387d">
+<pre class="example">
+document.elementFromPoint(event.x,event.y).tagName=="TD
+document.elementFromPoint(event.x,event.y).appendChild(ms)
+
+</pre>
+</div>
+</div>
+<div id="outline-container-orgedd65c8" class="outline-3">
+<h3 id="orgedd65c8">窗体图片</h3>
+<div class="outline-text-3" id="text-orgedd65c8">
+<pre class="example">
+document.images[索引]
+
+</pre>
+</div>
+</div>
+<div id="outline-container-orge113c20" class="outline-3">
+<h3 id="orge113c20">窗体事件绑定</h3>
+<div class="outline-text-3" id="text-orge113c20">
+<pre class="example">
+document.onmousedown=scrollwindow;
+
+</pre>
+</div>
+</div>
+<div id="outline-container-org34b2361" class="outline-3">
+<h3 id="org34b2361">元素</h3>
+<div class="outline-text-3" id="text-org34b2361">
+<pre class="example">
+document.窗体.elements[索引]
+
+</pre>
+</div>
+</div>
+<div id="outline-container-org0a11498" class="outline-3">
+<h3 id="org0a11498">对象绑定事件</h3>
+<div class="outline-text-3" id="text-org0a11498">
+<pre class="example">
+document.all.xxx.detachEvent('onclick',a);
+
+</pre>
+</div>
+</div>
+<div id="outline-container-org2b06d27" class="outline-3">
+<h3 id="org2b06d27">插件数目</h3>
+<div class="outline-text-3" id="text-org2b06d27">
+<pre class="example">
+navigator.plugins
+
+</pre>
+</div>
+</div>
+<div id="outline-container-orgbca952c" class="outline-3">
+<h3 id="orgbca952c">取变量类型</h3>
+<div class="outline-text-3" id="text-orgbca952c">
+<pre class="example">
+typeof($js_libpath) == "undefined"
+
+</pre>
+</div>
+</div>
+<div id="outline-container-orga3289bd" class="outline-3">
+<h3 id="orga3289bd">下拉框</h3>
+<div class="outline-text-3" id="text-orga3289bd">
+<pre class="example">
+下拉框.options[索引]
+下拉框.options.length
+
+</pre>
+</div>
+</div>
+<div id="outline-container-org120ad7d" class="outline-3">
+<h3 id="org120ad7d">查找对象</h3>
+<div class="outline-text-3" id="text-org120ad7d">
+<pre class="example">
+document.getElementsByName("r1");
+document.getElementById(id);
+
+</pre>
+</div>
+</div>
+<div id="outline-container-orge08dd4b" class="outline-3">
+<h3 id="orge08dd4b">定时</h3>
+<div class="outline-text-3" id="text-orge08dd4b">
+<pre class="example">
+timer=setInterval('scrollwindow()',delay);
+clearInterval(timer);
+
+</pre>
+</div>
+</div>
+<div id="outline-container-orgb778ac8" class="outline-3">
+<h3 id="orgb778ac8">UNCODE编码</h3>
+<div class="outline-text-3" id="text-orgb778ac8">
+<pre class="example">
+escape() ,unescape
+
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org8930ea6" class="outline-3">
+<h3 id="org8930ea6">父对象</h3>
+<div class="outline-text-3" id="text-org8930ea6">
+<pre class="example">
+obj.parentElement(dhtml)
+obj.parentNode(dom)
+
+</pre>
+</div>
+</div>
+<div id="outline-container-orge36d729" class="outline-3">
+<h3 id="orge36d729">交换表的行</h3>
+<div class="outline-text-3" id="text-orge36d729">
+<pre class="example">
+TableID.moveRow(2,1)
+
+</pre>
+</div>
+</div>
+<div id="outline-container-org6ef3b07" class="outline-3">
+<h3 id="org6ef3b07">替换CSS</h3>
+<div class="outline-text-3" id="text-org6ef3b07">
+<pre class="example">
+document.all.csss.href = "a.css";
+
+</pre>
+</div>
+</div>
+<div id="outline-container-org30be8a7" class="outline-3">
+<h3 id="org30be8a7">并排显示</h3>
+<div class="outline-text-3" id="text-org30be8a7">
+<pre class="example">
+display:inline
+
+</pre>
+</div>
+</div>
+<div id="outline-container-org9540f6e" class="outline-3">
+<h3 id="org9540f6e">隐藏焦点</h3>
+<div class="outline-text-3" id="text-org9540f6e">
+<pre class="example">
+hidefocus=true
+
+</pre>
+</div>
+</div>
+<div id="outline-container-org64389f9" class="outline-3">
+<h3 id="org64389f9">根据宽度换行</h3>
+<div class="outline-text-3" id="text-org64389f9">
+<pre class="example">
+style="word-break:break-all"
+
+</pre>
+</div>
+</div>
+<div id="outline-container-orgf700463" class="outline-3">
+<h3 id="orgf700463">自动刷新</h3>
+<div class="outline-text-3" id="text-orgf700463">
+<pre class="example">
+&lt;meta HTTP-EQUIV="refresh" C&gt;
+
+</pre>
+</div>
+</div>
+<div id="outline-container-org1ef44c8" class="outline-3">
+<h3 id="org1ef44c8">简单邮件</h3>
+<div class="outline-text-3" id="text-org1ef44c8">
+<pre class="example">
+&lt;a href="mailto:aaa@bbb.com?subject=ccc&amp;body=xxxyyy"&gt;
+
+</pre>
+</div>
+</div>
+<div id="outline-container-orgb3120af" class="outline-3">
+<h3 id="orgb3120af">快速转到位置</h3>
+<div class="outline-text-3" id="text-orgb3120af">
+<pre class="example">
+obj.scrollIntoView(true)
+
+</pre>
+</div>
+</div>
+<div id="outline-container-org0272b62" class="outline-3">
+<h3 id="org0272b62">锚</h3>
+<div class="outline-text-3" id="text-org0272b62">
+<pre class="example">
+&lt;a name="first"&gt;
+&lt;a href="#first"&gt;anchors&lt;/a&gt;
+
+</pre>
+</div>
+</div>
+<div id="outline-container-org90d6ec9" class="outline-3">
+<h3 id="org90d6ec9">网页传递参数</h3>
+<div class="outline-text-3" id="text-org90d6ec9">
+<pre class="example">
+location.search();
+
+</pre>
+</div>
+</div>
+<div id="outline-container-orga30e5c5" class="outline-3">
+<h3 id="orga30e5c5">可编辑</h3>
+<div class="outline-text-3" id="text-orga30e5c5">
+<pre class="example">
+obj.contenteditable=true
+
+</pre>
+</div>
+</div>
+<div id="outline-container-orgdf86e20" class="outline-3">
+<h3 id="orgdf86e20">执行菜单命令</h3>
+<div class="outline-text-3" id="text-orgdf86e20">
+<pre class="example">
+obj.execCommand
+
+</pre>
+</div>
+</div>
+<div id="outline-container-org2e6429f" class="outline-3">
+<h3 id="org2e6429f">双字节字符</h3>
+<div class="outline-text-3" id="text-org2e6429f">
+<pre class="example">
+/[^\x00-\xff]/
+
+</pre>
+</div>
+</div>
+<div id="outline-container-org84685bf" class="outline-3">
+<h3 id="org84685bf">汉字</h3>
+<div class="outline-text-3" id="text-org84685bf">
+<pre class="example">
+/[\u4e00-\u9fa5]/
+
+</pre>
+</div>
+</div>
+<div id="outline-container-org0932b04" class="outline-3">
+<h3 id="org0932b04">让英文字符串超出表格宽度自动换行</h3>
+<div class="outline-text-3" id="text-org0932b04">
+<pre class="example">
+word-wrap: break-word; word-break: break-all;
+
+</pre>
+</div>
+</div>
+<div id="outline-container-org64a62d0" class="outline-3">
+<h3 id="org64a62d0">透明背景</h3>
+<div class="outline-text-3" id="text-org64a62d0">
+<pre class="example">
+&lt;IFRAME src="1.htm" width=300 height=180 allowtransparency&gt;&lt;/iframe&gt;
+
+</pre>
+</div>
+</div>
+<div id="outline-container-orgf089c7b" class="outline-3">
+<h3 id="orgf089c7b">获得style内容</h3>
+<div class="outline-text-3" id="text-orgf089c7b">
+<pre class="example">
+obj.style.cssText
+
+</pre>
+</div>
+</div>
+<div id="outline-container-org53dc4a3" class="outline-3">
+<h3 id="org53dc4a3">HTML标签</h3>
+<div class="outline-text-3" id="text-org53dc4a3">
+<pre class="example">
+document.documentElement.innerHTML
+
+</pre>
+</div>
+</div>
+<div id="outline-container-orgefd328c" class="outline-3">
+<h3 id="orgefd328c">第一个style标签</h3>
+<div class="outline-text-3" id="text-orgefd328c">
+<pre class="example">
+document.styleSheets[0]
+
+</pre>
+</div>
+</div>
+<div id="outline-container-orgea00588" class="outline-3">
+<h3 id="orgea00588">style标签里的第一个样式</h3>
+<div class="outline-text-3" id="text-orgea00588">
+<pre class="example">
+document.styleSheets[0].rules[0]
+
+</pre>
+</div>
+</div>
+<div id="outline-container-org1e1b650" class="outline-3">
+<h3 id="org1e1b650">防止点击空链接时，页面往往重置到页首端。</h3>
+<div class="outline-text-3" id="text-org1e1b650">
+<pre class="example">
+&lt;a href="javascript:function()"&gt;word&lt;/a&gt;
+
+</pre>
+</div>
+</div>
+<div id="outline-container-org1788f90" class="outline-3">
+<h3 id="org1788f90">上一网页源</h3>
+<div class="outline-text-3" id="text-org1788f90">
+<pre class="example">
+asp:
+request.servervariables("HTTP_REFERER")
+javascript:
+document.referrer
+
+</pre>
+</div>
+</div>
+<div id="outline-container-orga9eeac9" class="outline-3">
+<h3 id="orga9eeac9">释放内存</h3>
+<div class="outline-text-3" id="text-orga9eeac9">
+<pre class="example">
+CollectGarbage();
+
+</pre>
+</div>
+</div>
+<div id="outline-container-org00dce94" class="outline-3">
+<h3 id="org00dce94">禁止右键</h3>
+<div class="outline-text-3" id="text-org00dce94">
+<pre class="example">
+document.oncontextmenu = function() { return false;}
+
+</pre>
+</div>
+</div>
+<div id="outline-container-org01b4eae" class="outline-3">
+<h3 id="org01b4eae">禁止保存</h3>
+<div class="outline-text-3" id="text-org01b4eae">
+<pre class="example">
+&lt;noscript&gt;&lt;iframe src="*.htm"&gt;&lt;/iframe&gt;&lt;/noscript&gt;
+
+</pre>
+</div>
+</div>
+<div id="outline-container-org539a28e" class="outline-3">
+<h3 id="org539a28e">禁止选取</h3>
+<div class="outline-text-3" id="text-org539a28e">
+<p class="verse">
+&lt;body Shortcut Icon" href="favicon.ico"&gt;<br>
+favicon.ico 名字最好不变16*16的16色,放虚拟目录根目录下<br>
+<br>
+</p>
+</div>
+</div>
+<div id="outline-container-org9acbc45" class="outline-3">
+<h3 id="org9acbc45">收藏栏图标</h3>
+<div class="outline-text-3" id="text-org9acbc45">
+<pre class="example">
+&lt;link rel="Bookmark" href="favicon.ico"&gt;
+
+</pre>
+</div>
+</div>
+<div id="outline-container-org455c84d" class="outline-3">
+<h3 id="org455c84d">查看源码</h3>
+<div class="outline-text-3" id="text-org455c84d">
+<pre class="example">
+&lt;input type=button value=查看网页源代码 &gt;
+
+</pre>
+</div>
+</div>
+<div id="outline-container-orgea40298" class="outline-3">
+<h3 id="orgea40298">关闭输入法</h3>
+<div class="outline-text-3" id="text-orgea40298">
+<pre class="example">
+&lt;input style="ime-mode:disabled"&gt;
+
+</pre>
+</div>
+</div>
+<div id="outline-container-orgb8b0b78" class="outline-3">
+<h3 id="orgb8b0b78">自动全选</h3>
+<div class="outline-text-3" id="text-orgb8b0b78">
+<pre class="example">
+&lt;input type=text name=text1 value="123" &gt;
+
+</pre>
+</div>
+</div>
+<div id="outline-container-org52a10f9" class="outline-3">
+<h3 id="org52a10f9">ENTER键可以让光标移到下一个输入框</h3>
+<div class="outline-text-3" id="text-org52a10f9">
+<pre class="example">
+&lt;input &gt;
+
+</pre>
+</div>
+</div>
+<div id="outline-container-org549e3a5" class="outline-3">
+<h3 id="org549e3a5">文本框的默认值</h3>
+<div class="outline-text-3" id="text-org549e3a5">
+<pre class="example">
+&lt;input type=text value="123" &gt;
+
+</pre>
+</div>
+</div>
+<div id="outline-container-org2623cf5" class="outline-3">
+<h3 id="org2623cf5">title换行</h3>
+<div class="outline-text-3" id="text-org2623cf5">
+<pre class="example">
+obj.title = "123 sdfs "
+
+</pre>
+</div>
+</div>
+<div id="outline-container-orgaf41a47" class="outline-3">
+<h3 id="orgaf41a47">获得时间所代表的微秒</h3>
+<div class="outline-text-3" id="text-orgaf41a47">
+<pre class="example">
+var n1 = new Date("2004-10-10".replace(/-/g, "\/")).getTime()
+
+</pre>
+</div>
+</div>
+<div id="outline-container-org6dc601d" class="outline-3">
+<h3 id="org6dc601d">窗口是否关闭</h3>
+<div class="outline-text-3" id="text-org6dc601d">
+<pre class="example">
+win.closed
+
+</pre>
+</div>
+</div>
+<div id="outline-container-org7962822" class="outline-3">
+<h3 id="org7962822">checkbox扁平</h3>
+<div class="outline-text-3" id="text-org7962822">
+<pre class="example">
+&lt;input type=checkbox style="position: absolute; clip:rect(5px 15px 15px 5px)"&gt;&lt;br&gt;
+
+</pre>
+</div>
+</div>
+<div id="outline-container-orgea11362" class="outline-3">
+<h3 id="orgea11362">获取选中内容</h3>
+<div class="outline-text-3" id="text-orgea11362">
+<pre class="example">
+document.selection.createRange().duplicate().text
+
+</pre>
+</div>
+</div>
+<div id="outline-container-orge90eddb" class="outline-3">
+<h3 id="orge90eddb">自动完成功能</h3>
+<div class="outline-text-3" id="text-orge90eddb">
+<pre class="example">
+&lt;input type=text autocomplete=on&gt;打开该功能
+&lt;input type=text autocomplete=off&gt;关闭该功能
+
+</pre>
+</div>
+</div>
+<div id="outline-container-orgd0b5f3c" class="outline-3">
+<h3 id="orgd0b5f3c">窗口最大化</h3>
+<div class="outline-text-3" id="text-orgd0b5f3c">
+<pre class="example">
+&lt;body &gt;
+无关闭按钮IE window.open("aa.htm", "meizz", "fullscreen=7");
+
+</pre>
+</div>
+</div>
+<div id="outline-container-orgfb86d97" class="outline-3">
+<h3 id="orgfb86d97">统一编码/解码</h3>
+<div class="outline-text-3" id="text-orgfb86d97">
+<pre class="example">
+alert(decodeURIComponent(encodeURIComponent("http://你好.com?as= hehe")))
+encodeURIComponent对":"、"/"、";" 和 "?"也编码
+
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-org4da4c68" class="outline-2">
+<h2 id="org4da4c68">高级应用(一)</h2>
+<div class="outline-text-2" id="text-org4da4c68">
+</div>
+<div id="outline-container-org41f1b25" class="outline-3">
+<h3 id="org41f1b25">各种尺寸</h3>
+<div class="outline-text-3" id="text-org41f1b25">
+<p class="verse">
+网页可见区域宽： document.body.clientWidth<br>
+网页可见区域高： document.body.clientHeight<br>
+网页可见区域高： document.body.offsetWeight 包括边线的宽<br>
+网页可见区域高： document.body.offsetHeight 包括边线的宽<br>
+网页正文全文宽： document.body.scrollWidth<br>
+网页正文全文高： document.body.scrollHeight<br>
+网页被卷去的高： document.body.scrollTop<br>
+网页被卷去的左： document.body.scrollLeft<br>
+网页正文部分上： window.screenTop<br>
+网页正文部分左： window.screenLeft<br>
+屏幕分辨率的高： window.screen.height<br>
+屏幕分辨率的宽： window.screen.width<br>
+屏幕可用工作区高度： window.screen.availHeight<br>
+屏幕可用工作区宽度： window.screen.availWidth<br>
+<br>
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-orgf0d326b" class="outline-3">
+<h3 id="orgf0d326b">过滤数字</h3>
+<div class="outline-text-3" id="text-orgf0d326b">
+<pre class="example">
+&lt;input type=text onkeypress="return event.keyCode&gt;=48&amp;&amp;event.keyCode&lt;=57||(this.value.indexOf('.')&lt;0?event.keyCode==46:false)" onpaste="return !clipboardData.getData('text').match(/\D/)" ondragenter="return false"&gt;
+
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org829b2f8" class="outline-3">
+<h3 id="org829b2f8">特殊用途</h3>
+<div class="outline-text-3" id="text-org829b2f8">
+<p class="verse">
+&lt;input type=button value=导入收藏夹 onclick="window.external.ImportExportFavorites(true,'http://localhost');"&gt;<br>
+&lt;input type=button value=导出收藏夹 onclick="window.external.ImportExportFavorites(false,'http://localhost');"&gt;<br>
+&lt;input type=button value=整理收藏夹 onclick="window.external.ShowBrowserUI('OrganizeFavorites', null)"&gt;<br>
+&lt;input type=button value=语言设置 onclick="window.external.ShowBrowserUI('LanguageDialog', null)"&gt;<br>
+&lt;input type=button value=加入收藏夹 onclick="window.external.AddFavorite('http://www.google.com/', 'google')"&gt;<br>
+&lt;input type=button value=加入到频道 onclick="window.external.addChannel('http://www.google.com/')"&gt;<br>
+&lt;input type=button value=加入到频道 onclick="window.external.showBrowserUI('PrivacySettings',null)"&gt;<br>
+<br>
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-orge89c303" class="outline-3">
+<h3 id="orge89c303">不缓存</h3>
+<div class="outline-text-3" id="text-orge89c303">
+<p class="verse">
+&lt;META HTTP-EQUIV="pragma" CONTENT="no-cache"&gt;<br>
+&lt;META HTTP-EQUIV="Cache-Control" CONTENT="no-cache, must-revalidate"&gt;<br>
+&lt;META HTTP-EQUIV="expires" CONTENT="0"&gt;<br>
+<br>
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-org58f84a2" class="outline-3">
+<h3 id="org58f84a2">正则匹配</h3>
+<div class="outline-text-3" id="text-org58f84a2">
+<p class="verse">
+匹配中文字符的正则表达式： [\u4e00-\u9fa5]<br>
+匹配双字节字符(包括汉字在内)：[^\x00-\xff]<br>
+匹配空行的正则表达式：\n[\s| ]*\r<br>
+匹配HTML标记的正则表达式：/&lt;(.*)&gt;.*&lt;\/\1&gt;|&lt;(.*) \/&gt;/<br>
+匹配首尾空格的正则表达式：(^\s*)|(\s*$)（像vbscript那样的trim函数）<br>
+匹配Email地址的正则表达式：\w+([-<del>.]\w</del>)*@\w+([-.]\w+)*\.\w+([-.]\w+)*<br>
+匹配网址URL的正则表达式：<a href="http://">http://</a>([\w-]+\.)+[\w-]+(<i>[\w- .</i>?%&amp;=]*)?<br>
+以下是例子：<br>
+利用正则表达式限制网页表单里的文本框输入内容：<br>
+用正则表达式限制只能输入中文：onkeyup="value=value.replace(<i>[^\u4E00-\u9FA5]/g,'')" onbeforepaste="clipboardData.setData('text',clipboardData.getData('text').replace(</i>[^\u4E00-\u9FA5]/g,''))"<br>
+1.用正则表达式限制只能输入全角字符： onkeyup="value=value.replace(<i>[^\uFF00-\uFFFF]/g,'')" onbeforepaste="clipboardData.setData('text',clipboardData.getData('text').replace(</i>[^\uFF00-\uFFFF]/g,''))"<br>
+2.用正则表达式限制只能输入数字：onkeyup="value=value.replace(<i>[^\d]/g,'') "onbeforepaste="clipboardData.setData('text',clipboardData.getData('text').replace(</i>[^\d]/g,''))"<br>
+3.用正则表达式限制只能输入数字和英文：onkeyup="value=value.replace(<i>[\W]/g,'') "onbeforepaste="clipboardData.setData('text',clipboardData.getData('text').replace(</i>[^\d]/g,''))"<br>
+<br>
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-org7f5a301" class="outline-3">
+<h3 id="org7f5a301">消除图像工具栏</h3>
+<div class="outline-text-3" id="text-org7f5a301">
+<p class="verse">
+&lt;IMG SRC="mypicture.jpg" HEIGHT="100px" WIDTH="100px" GALLERYIMG="false"&gt;<br>
+or<br>
+&lt;head&gt;<br>
+&lt;meta http-equiv="imagetoolbar" content="no"&gt;<br>
+&lt;/head&gt;<br>
+</p>
+</div>
+</div>
+
+<div id="outline-container-org9cf4758" class="outline-3">
+<h3 id="org9cf4758">无提示关闭</h3>
+<div class="outline-text-3" id="text-org9cf4758">
+<div class="org-src-container">
+<pre class="src src-javascript"><span style="font-weight: bold;">function</span> <span style="font-weight: bold;">Close</span>()
+{
+    <span style="font-weight: bold;">var</span> <span style="font-weight: bold; font-style: italic;">ua</span>=navigator.userAgent
+    <span style="font-weight: bold;">var</span> <span style="font-weight: bold; font-style: italic;">ie</span>=navigator.appName==<span style="font-style: italic;">"Microsoft Internet Explorer"</span>?<span style="font-weight: bold; text-decoration: underline;">true</span>:<span style="font-weight: bold; text-decoration: underline;">false</span>
+    <span style="font-weight: bold;">if</span>(ie)
+    {
+        <span style="font-weight: bold;">var</span> <span style="font-weight: bold; font-style: italic;">IEversion</span>=parseFloat(ua.substring(ua.indexOf(<span style="font-style: italic;">"MSIE "</span>)+5,ua.indexOf(<span style="font-style: italic;">";"</span>,ua.indexOf(<span style="font-style: italic;">"MSIE "</span>))))
+        <span style="font-weight: bold;">if</span>(IEversion&lt; 5.5)
+        {
+            <span style="font-weight: bold;">var</span> <span style="font-weight: bold; font-style: italic;">str</span> = <span style="font-style: italic;">'&lt;object id=noTipClose classid="clsid:ADB880A6-D8FF-11CF-9377-00AA003B7A11"&gt;'</span>
+            str += <span style="font-style: italic;">'&lt;param name="Command" value="Close"&gt;&lt;/object&gt;'</span>;
+            document.body.insertAdjacentHTML(<span style="font-style: italic;">"beforeEnd"</span>, str);
+            document.all.noTipClose.Click();
+        }
+        <span style="font-weight: bold;">else</span>
+        {
+            window.opener =<span style="font-weight: bold; text-decoration: underline;">null</span>;
+            window.close();
+        }
+    }
+    <span style="font-weight: bold;">else</span>
+    {
+        window.close()
+    }
+}
+
+</pre>
+</div>
+</div>
+</div>
+
+
+<div id="outline-container-orgc6e0bc9" class="outline-3">
+<h3 id="orgc6e0bc9">取得控件得绝对位置(1)</h3>
+<div class="outline-text-3" id="text-orgc6e0bc9">
+<div class="org-src-container">
+<pre class="src src-javascript">
+<span style="font-weight: bold;">function</span> <span style="font-weight: bold;">getoffset</span>(<span style="font-weight: bold; font-style: italic;">e</span>)
+{
+    <span style="font-weight: bold;">var</span> <span style="font-weight: bold; font-style: italic;">t</span>=e.offsetTop;
+    <span style="font-weight: bold;">var</span> <span style="font-weight: bold; font-style: italic;">l</span>=e.offsetLeft;
+    <span style="font-weight: bold;">while</span>(e=e.offsetParent)
+    {
+        t+=e.offsetTop;
+        l+=e.offsetLeft;
+    }
+    <span style="font-weight: bold;">var</span> <span style="font-weight: bold; font-style: italic;">rec</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">Array</span>(1);
+    rec[0] = t;
+    rec[1] = l;
+    <span style="font-weight: bold;">return</span> rec
+}
+
+</pre>
+</div>
+</div>
+</div>
+
+
+
+<div id="outline-container-orge7c73af" class="outline-3">
+<h3 id="orge7c73af">获得控件的绝对位置(2)</h3>
+<div class="outline-text-3" id="text-orge7c73af">
+<pre class="example">
+oRect = obj.getBoundingClientRect();
+oRect.left
+oRect.
+</pre>
+</div>
+</div>
+
+<div id="outline-container-orgb51b89e" class="outline-3">
+<h3 id="orgb51b89e">最小化,最大化,关闭</h3>
+<div class="outline-text-3" id="text-orgb51b89e">
+<div class="org-src-container">
+<pre class="src src-html">&lt;<span style="font-weight: bold;">object</span> id=min <span style="font-weight: bold; font-style: italic;">classid</span>=<span style="font-style: italic;">"clsid:ADB880A6-D8FF-11CF-9377-00AA003B7A11"</span>&gt;
+&lt;<span style="font-weight: bold;">param</span> <span style="font-weight: bold; font-style: italic;">name</span>=<span style="font-style: italic;">"Command"</span> <span style="font-weight: bold; font-style: italic;">value</span>=<span style="font-style: italic;">"Minimize"</span>&gt;&lt;/<span style="font-weight: bold;">object</span>&gt;
+&lt;<span style="font-weight: bold;">object</span> id=max <span style="font-weight: bold; font-style: italic;">classid</span>=<span style="font-style: italic;">"clsid:ADB880A6-D8FF-11CF-9377-00AA003B7A11"</span>&gt;
+&lt;<span style="font-weight: bold;">param</span> <span style="font-weight: bold; font-style: italic;">name</span>=<span style="font-style: italic;">"Command"</span> <span style="font-weight: bold; font-style: italic;">value</span>=<span style="font-style: italic;">"Maximize"</span>&gt;&lt;/<span style="font-weight: bold;">object</span>&gt;
+&lt;<span style="font-weight: bold;">OBJECT</span> id=close <span style="font-weight: bold; font-style: italic;">classid</span>=<span style="font-style: italic;">"clsid:adb880a6-d8ff-11cf-9377-00aa003b7a11"</span>&gt;
+&lt;<span style="font-weight: bold;">PARAM</span> <span style="font-weight: bold; font-style: italic;">NAME</span>=<span style="font-style: italic;">"Command"</span> <span style="font-weight: bold; font-style: italic;">value</span>=<span style="font-style: italic;">"Close"</span>&gt;&lt;/<span style="font-weight: bold;">OBJECT</span>&gt;
+&lt;<span style="font-weight: bold;">input</span> type=button value=&#26368;&#23567;&#21270; onclick=min.Click()&gt;
+&lt;<span style="font-weight: bold;">input</span> type=button value=&#26368;&#22823;&#21270; onclick=max.Click()&gt;
+&lt;<span style="font-weight: bold;">input</span> type=button value=&#20851;&#38381; onclick=close.Click()&gt;
+</pre>
+</div>
+</div>
+</div>
+
+
+<div id="outline-container-org267d696" class="outline-3">
+<h3 id="org267d696">光标停在文字最后</h3>
+<div class="outline-text-3" id="text-org267d696">
+<div class="org-src-container">
+<pre class="src src-html">&lt;<span style="font-weight: bold;">script</span> <span style="font-weight: bold; font-style: italic;">language</span>=<span style="font-style: italic;">"javascript"</span>&gt;
+  function cc() {
+    var e = event.srcElement;
+    var r =e.createTextRange();
+    r.moveStart('character',e.value.length);
+    r.collapse(true);
+    r.select();
+  }
+&lt;/<span style="font-weight: bold;">script</span>&gt;
+&lt;<span style="font-weight: bold;">input</span> type=text name=text1 <span style="font-weight: bold; font-style: italic;">value</span>=<span style="font-style: italic;">"123"</span> <span style="font-weight: bold; font-style: italic;">onfocus</span>=<span style="font-style: italic;">"cc()"</span>&gt;
+
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org8c73e3a" class="outline-3">
+<h3 id="org8c73e3a">页面进入和退出的特效</h3>
+<div class="outline-text-3" id="text-org8c73e3a">
+<p class="verse">
+进入页面&lt;meta http-equiv="Page-Enter" content="revealTrans(duration=x, transition=y)"&gt;<br>
+推出页面&lt;meta http-equiv="Page-Exit" content="revealTrans(duration=x, transition=y)"&gt;<br>
+这个是页面被载入和调出时的一些特效。duration表示特效的持续时间，以秒为单位。transition表示使<br>
+用哪种特效，取值为1-23:<br>
+　　0 矩形缩小<br>
+　　1 矩形扩大<br>
+　　2 圆形缩小<br>
+　　3 圆形扩大<br>
+　　4 下到上刷新<br>
+　　5 上到下刷新<br>
+　　6 左到右刷新<br>
+　　7 右到左刷新<br>
+　　8 竖百叶窗<br>
+　　9 横百叶窗<br>
+　　10 错位横百叶窗<br>
+　　11 错位竖百叶窗<br>
+　　12 点扩散<br>
+　　13 左右到中间刷新<br>
+　　14 中间到左右刷新<br>
+　　15 中间到上下<br>
+　　16 上下到中间<br>
+　　17 右下到左上<br>
+　　18 右上到左下<br>
+　　19 左上到右下<br>
+　　20 左下到右上<br>
+　　21 横条<br>
+　　22 竖条<br>
+　　23<br>
+<br>
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-org3b495a0" class="outline-3">
+<h3 id="org3b495a0">网页是否被检索</h3>
+<div class="outline-text-3" id="text-org3b495a0">
+<p class="verse">
+&lt;meta name="ROBOTS" content="属性值"&gt;<br>
+　　其中属性值有以下一些:<br>
+　　属性值为"all": 文件将被检索，且页上链接可被查询；<br>
+　　属性值为"none": 文件不被检索，而且不查询页上的链接；<br>
+　　属性值为"index": 文件将被检索；<br>
+　　属性值为"follow": 查询页上的链接；<br>
+　　属性值为"noindex": 文件不检索，但可被查询链接；<br>
+　　属性值为"nofollow":<br>
+<br>
+</p>
+</div>
+</div>
+<div id="outline-container-orgb57cce8" class="outline-3">
+<h3 id="orgb57cce8">打印分页</h3>
+<div class="outline-text-3" id="text-orgb57cce8">
+<pre class="example">
+&lt;p style="page-break-after:always"&gt;page1&lt;/p&gt;
+&lt;p style="page-break-after:always"&gt;page2&lt;/p&gt;
+
+</pre>
+</div>
+</div>
+<div id="outline-container-orge05b8ff" class="outline-3">
+<h3 id="orge05b8ff">设置打印</h3>
+<div class="outline-text-3" id="text-orge05b8ff">
+<div class="org-src-container">
+<pre class="src src-html">&lt;<span style="font-weight: bold;">object</span> <span style="font-weight: bold; font-style: italic;">id</span>=<span style="font-style: italic;">"factory"</span> <span style="font-weight: bold; font-style: italic;">style</span>=<span style="font-style: italic;">"display:none"</span> viewastext
+        <span style="font-weight: bold; font-style: italic;">classid</span>=<span style="font-style: italic;">"clsid:1663ed61-23eb-11d2-b92f-008048fdd814"</span>
+        <span style="font-weight: bold; font-style: italic;">codebase</span>=<span style="font-style: italic;">"http://www.meadroid.com/scriptx/ScriptX.cab#Version=5,60,0,360"</span>
+        &gt;&lt;/<span style="font-weight: bold;">object</span>&gt;
+&lt;<span style="font-weight: bold;">input</span> type=button value=&#39029;&#38754;&#35774;&#32622; <span style="font-weight: bold; font-style: italic;">onclick</span>=<span style="font-style: italic;">"factory.printing.PageSetup()"</span>&gt;
+&lt;<span style="font-weight: bold;">input</span> type=button value=&#25171;&#21360;&#39044;&#35272; <span style="font-weight: bold; font-style: italic;">onclick</span>=<span style="font-style: italic;">"factory.printing.Preview()"</span>&gt;
+
+&lt;<span style="font-weight: bold;">script</span> language=javascript&gt;
+  function window.onload()
+  {
+  // -- advanced features
+  factory.printing.SetMarginMeasure(2) // measure margins in inches
+  factory.printing.SetPageRange(false, 1, 3) // need pages from 1 to 3
+  factory.printing.printer = <span style="font-style: italic;">"HP DeskJet 870C"</span>
+  factory.printing.copies = 2
+  factory.printing.collate = true
+  factory.printing.paperSize = <span style="font-style: italic;">"A4"</span>
+  factory.printing.paperSource = <span style="font-style: italic;">"Manual feed"</span>
+  // -- basic features
+  factory.printing.header = <span style="font-style: italic;">"&#23621;&#24038;&#26174;&#31034;&amp;b&#23621;&#20013;&#26174;&#31034;&amp;b&#23621;&#21491;&#26174;&#31034;&#39029;&#30721;&#65292;&#31532;&amp;p&#39029;/&#20849;&amp;P&#39029;"</span>
+  factory.printing.footer = <span style="font-style: italic;">"&#65288;&#33258;&#23450;&#20041;&#39029;&#33050;&#65289;"</span>
+  factory.printing.portrait = false
+  factory.printing.leftMargin = 0.75
+  factory.printing.topMargin = 1.5
+  factory.printing.rightMargin = 0.75
+  factory.printing.bottomMargin = 1.5
+  }
+  function Print(frame) {
+  factory.printing.Print(true, frame) // print with prompt
+  }
+&lt;/<span style="font-weight: bold;">script</span>&gt;
+&lt;<span style="font-weight: bold;">input</span> type=button <span style="font-weight: bold; font-style: italic;">value</span>=<span style="font-style: italic;">"&#25171;&#21360;&#26412;&#39029;"</span> <span style="font-weight: bold; font-style: italic;">onclick</span>=<span style="font-style: italic;">"factory.printing.Print(false)"</span>&gt;
+&lt;<span style="font-weight: bold;">input</span> type=button <span style="font-weight: bold; font-style: italic;">value</span>=<span style="font-style: italic;">"&#39029;&#38754;&#35774;&#32622;"</span> <span style="font-weight: bold; font-style: italic;">onclick</span>=<span style="font-style: italic;">"factory.printing.PageSetup()"</span>&gt;
+&lt;<span style="font-weight: bold;">input</span> type=button <span style="font-weight: bold; font-style: italic;">value</span>=<span style="font-style: italic;">"&#25171;&#21360;&#39044;&#35272;"</span> <span style="font-weight: bold; font-style: italic;">onclick</span>=<span style="font-style: italic;">"factory.printing.Preview()"</span>&gt;&lt;<span style="font-weight: bold;">br</span>&gt;
+&lt;<span style="font-weight: bold;">a</span> <span style="font-weight: bold; font-style: italic;">href</span>=<span style="font-style: italic;">"http://www.meadroid.com/scriptx/docs/printdoc.htm?static"</span> target=_blank&gt;&#20855;&#20307;&#20351;&#29992;&#25163;&#20876;&#65292;&#26356;&#22810;&#20449;&#24687;&#65292;&#28857;&#36825;&#37324;&lt;/<span style="font-weight: bold;">a</span>&gt;
+
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org8c4b733" class="outline-3">
+<h3 id="org8c4b733">自带的打印预览</h3>
+<div class="outline-text-3" id="text-org8c4b733">
+<div class="org-src-container">
+<pre class="src src-html">&lt;<span style="font-weight: bold;">script</span> <span style="font-weight: bold; font-style: italic;">lang</span>=<span style="font-style: italic;">"javascript"</span> <span style="font-weight: bold; font-style: italic;">type</span>=<span style="font-style: italic;">"text/javscript"</span>&gt;
+  WebBrowser.ExecWB(1,1) // &#25171;&#24320;
+  Web.ExecWB(2,1)        // &#20851;&#38381;&#29616;&#22312;&#25152;&#26377;&#30340;IE&#31383;&#21475;&#65292;&#24182;&#25171;&#24320;&#19968;&#20010;&#26032;&#31383;&#21475;
+  Web.ExecWB(4,1)        // &#20445;&#23384;&#32593;&#39029;
+  Web.ExecWB(6,1)        // &#25171;&#21360;
+  Web.ExecWB(7,1)        // &#25171;&#21360;&#39044;&#35272;
+  Web.ExecWB(8,1)        // &#25171;&#21360;&#39029;&#38754;&#35774;&#32622;
+  Web.ExecWB(10,1)       // &#26597;&#30475;&#39029;&#38754;&#23646;&#24615;
+  Web.ExecWB(15,1)       // &#22909;&#20687;&#26159;&#25764;&#38144;&#65292;&#26377;&#24453;&#30830;&#35748;
+  Web.ExecWB(17,1)       // &#20840;&#36873;
+  Web.ExecWB(22,1)       // &#21047;&#26032;
+  Web.ExecWB(45,1)       // &#20851;&#38381;&#31383;&#20307;&#26080;&#25552;&#31034;
+&lt;/<span style="font-weight: bold;">script</span>&gt;
+&lt;<span style="font-weight: bold;">style</span> media=print&gt;
+  .Noprint{display:none;}<span style="font-weight: bold; font-style: italic;">&lt;!--</span><span style="font-weight: bold; font-style: italic;">&#29992;&#26412;&#26679;&#24335;&#22312;&#25171;&#21360;&#26102;&#38544;&#34255;&#38750;&#25171;&#21360;&#39033;&#30446;</span><span style="font-weight: bold; font-style: italic;">--&gt;</span>
+  .PageNext{page-break-after: always;}<span style="font-weight: bold; font-style: italic;">&lt;!--</span><span style="font-weight: bold; font-style: italic;">&#25511;&#21046;&#20998;&#39029;</span><span style="font-weight: bold; font-style: italic;">--&gt;</span>
+&lt;/<span style="font-weight: bold;">style</span>&gt;
+&lt;<span style="font-weight: bold;">object</span>
+  <span style="font-weight: bold; font-style: italic;">id</span>=<span style="font-style: italic;">"WebBrowser"</span>
+  width=0
+  height=0
+  <span style="font-weight: bold; font-style: italic;">classid</span>=<span style="font-style: italic;">"CLSID:8856F961-340A-11D0-A96B-00C04FD705A2"</span>&gt;
+&lt;/<span style="font-weight: bold;">object</span>&gt;
+
+&lt;<span style="font-weight: bold;">center</span> <span style="font-weight: bold; font-style: italic;">class</span>=<span style="font-style: italic;">"Noprint"</span> &gt;
+  &lt;<span style="font-weight: bold;">p</span>&gt;
+    &lt;<span style="font-weight: bold;">input</span> type=button value=&#25171;&#21360; onclick=document.all.WebBrowser.ExecWB(6,1)&gt;
+    &lt;<span style="font-weight: bold;">input</span> type=button value=&#30452;&#25509;&#25171;&#21360; onclick=document.all.WebBrowser.ExecWB(6,6)&gt;
+   &lt;<span style="font-weight: bold;">input</span> type=button value=&#39029;&#38754;&#35774;&#32622; onclick=document.all.WebBrowser.ExecWB(8,1)&gt;
+  &lt;/<span style="font-weight: bold;">p</span> &gt;
+  &lt;<span style="font-weight: bold;">p</span>&gt;
+    &lt;<span style="font-weight: bold;">input</span> type=button value=&#25171;&#21360;&#39044;&#35272; onclick=document.all.WebBrowser.ExecWB(7,1)&gt;
+  &lt;/<span style="font-weight: bold;">p</span>&gt;
+&lt;/<span style="font-weight: bold;">center</span>&gt;
+
+</pre>
+</div>
+</div>
+</div>
+
+
+<div id="outline-container-orgd1aed09" class="outline-3">
+<h3 id="orgd1aed09">去掉打印时的页眉页脚</h3>
+<div class="outline-text-3" id="text-orgd1aed09">
+<div class="org-src-container">
+<pre class="src src-html">&lt;<span style="font-weight: bold;">script</span> <span style="font-weight: bold; font-style: italic;">language</span>=<span style="font-style: italic;">"JavaScript"</span>&gt;
+  var HKEY_Root,HKEY_Path,HKEY_Key;
+  <span style="font-weight: bold; font-style: italic;">HKEY_Root</span>="HKEY_CURRENT_USER";
+  <span style="font-weight: bold; font-style: italic;">HKEY_Path</span>="\\Software\\Microsoft\\Internet Explorer\\PageSetup\\";
+  //&#35774;&#32622;&#32593;&#39029;&#25171;&#21360;&#30340;&#39029;&#30473;&#39029;&#33050;&#20026;&#31354;
+  function PageSetup_Null() {
+    try {
+      var Wsh=new ActiveXObject(<span style="font-style: italic;">"WScript.Shell"</span>);
+      <span style="font-weight: bold; font-style: italic;">HKEY_Key</span>=<span style="font-style: italic;">"header"</span>;
+      Wsh.RegWrite(HKEY_Root+HKEY_Path+HKEY_Key,<span style="font-style: italic;">""</span>);
+      <span style="font-weight: bold; font-style: italic;">HKEY_Key</span>=<span style="font-style: italic;">"footer"</span>;
+      Wsh.RegWrite(HKEY_Root+HKEY_Path+HKEY_Key,<span style="font-style: italic;">""</span>);
+    } catch(e){}
+  }
+  //&#35774;&#32622;&#32593;&#39029;&#25171;&#21360;&#30340;&#39029;&#30473;&#39029;&#33050;&#20026;&#40664;&#35748;&#20540;
+  function PageSetup_Default() {
+    try {
+      var Wsh=new ActiveXObject(<span style="font-style: italic;">"WScript.Shell"</span>);
+      <span style="font-weight: bold; font-style: italic;">HKEY_Key</span>=<span style="font-style: italic;">"header"</span>;
+      Wsh.RegWrite(HKEY_Root+HKEY_Path+HKEY_Key,<span style="font-style: italic;">"&amp;w&amp;b&#39029;&#30721;,&amp;p/&amp;P"</span>);
+      <span style="font-weight: bold; font-style: italic;">HKEY_Key</span>=<span style="font-style: italic;">"footer"</span>;
+      Wsh.RegWrite(HKEY_Root+HKEY_Path+HKEY_Key,<span style="font-style: italic;">"&amp;u&amp;b&amp;d"</span>);
+    } catch(e){}
+  }
+&lt;/<span style="font-weight: bold;">script</span>&gt;
+&lt;<span style="font-weight: bold;">input</span> <span style="font-weight: bold; font-style: italic;">type</span>=<span style="font-style: italic;">"button"</span> <span style="font-weight: bold; font-style: italic;">value</span>=<span style="font-style: italic;">"&#28165;&#31354;&#39029;&#30721;"</span> onclick=PageSetup_Null()&gt;
+&lt;<span style="font-weight: bold;">input</span> <span style="font-weight: bold; font-style: italic;">type</span>=<span style="font-style: italic;">"button"</span> <span style="font-weight: bold; font-style: italic;">value</span>=<span style="font-style: italic;">"&#24674;&#22797;&#39029;&#30721;"</span> onclick=PageSetup_Default()&gt;
+
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orged7367d" class="outline-3">
+<h3 id="orged7367d">浏览器验证</h3>
+<div class="outline-text-3" id="text-orged7367d">
+<div class="org-src-container">
+<pre class="src src-javascript"><span style="font-weight: bold;">function</span> <span style="font-weight: bold;">checkBrowser</span>()
+{
+    <span style="font-weight: bold; text-decoration: underline;">this</span>.ver=navigator.appVersion
+    <span style="font-weight: bold; text-decoration: underline;">this</span>.dom=document.getElementById?1:0
+    <span style="font-weight: bold; text-decoration: underline;">this</span>.ie6=(<span style="font-weight: bold; text-decoration: underline;">this</span>.ver.indexOf(<span style="font-style: italic;">"MSIE 6"</span>)&gt;-1 &amp;&amp; <span style="font-weight: bold; text-decoration: underline;">this</span>.dom)?1:0;
+    <span style="font-weight: bold; text-decoration: underline;">this</span>.ie5=(<span style="font-weight: bold; text-decoration: underline;">this</span>.ver.indexOf(<span style="font-style: italic;">"MSIE 5"</span>)&gt;-1 &amp;&amp; <span style="font-weight: bold; text-decoration: underline;">this</span>.dom)?1:0;
+    <span style="font-weight: bold; text-decoration: underline;">this</span>.ie4=(document.all &amp;&amp; !<span style="font-weight: bold; text-decoration: underline;">this</span>.dom)?1:0;
+    <span style="font-weight: bold; text-decoration: underline;">this</span>.ns5=(<span style="font-weight: bold; text-decoration: underline;">this</span>.dom &amp;&amp; parseInt(<span style="font-weight: bold; text-decoration: underline;">this</span>.ver) &gt;= 5) ?1:0;
+    <span style="font-weight: bold; text-decoration: underline;">this</span>.ns4=(document.layers &amp;&amp; !<span style="font-weight: bold; text-decoration: underline;">this</span>.dom)?1:0;
+    <span style="font-weight: bold; text-decoration: underline;">this</span>.mac=(<span style="font-weight: bold; text-decoration: underline;">this</span>.ver.indexOf(<span style="font-style: italic;">'Mac'</span>) &gt; -1) ?1:0;
+    <span style="font-weight: bold; text-decoration: underline;">this</span>.ope=(navigator.userAgent.indexOf(<span style="font-style: italic;">'Opera'</span>)&gt;-1);
+    <span style="font-weight: bold; text-decoration: underline;">this</span>.ie=(<span style="font-weight: bold; text-decoration: underline;">this</span>.ie6 || <span style="font-weight: bold; text-decoration: underline;">this</span>.ie5 || <span style="font-weight: bold; text-decoration: underline;">this</span>.ie4)
+    <span style="font-weight: bold; text-decoration: underline;">this</span>.ns=(<span style="font-weight: bold; text-decoration: underline;">this</span>.ns4 || <span style="font-weight: bold; text-decoration: underline;">this</span>.ns5)
+    <span style="font-weight: bold; text-decoration: underline;">this</span>.bw=(<span style="font-weight: bold; text-decoration: underline;">this</span>.ie6 || <span style="font-weight: bold; text-decoration: underline;">this</span>.ie5 || <span style="font-weight: bold; text-decoration: underline;">this</span>.ie4 || <span style="font-weight: bold; text-decoration: underline;">this</span>.ns5 || <span style="font-weight: bold; text-decoration: underline;">this</span>.ns4 || <span style="font-weight: bold; text-decoration: underline;">this</span>.mac || <span style="font-weight: bold; text-decoration: underline;">this</span>.ope)
+    <span style="font-weight: bold; text-decoration: underline;">this</span>.nbw=(!<span style="font-weight: bold; text-decoration: underline;">this</span>.bw)
+    <span style="font-weight: bold;">return</span> <span style="font-weight: bold; text-decoration: underline;">this</span>;
+}
+</pre>
+</div>
+</div>
+</div>
+
+
+<div id="outline-container-org6b7684c" class="outline-3">
+<h3 id="org6b7684c">计算内容宽和高</h3>
+<div class="outline-text-3" id="text-org6b7684c">
+<div class="org-src-container">
+<pre class="src src-html">&lt;<span style="font-weight: bold;">SCRIPT</span> <span style="font-weight: bold; font-style: italic;">language</span>=<span style="font-style: italic;">"javascript"</span>&gt;
+  function test(obj)
+  {
+  var range = obj.createTextRange();
+  alert(<span style="font-style: italic;">"&#20869;&#23481;&#21306;&#23485;&#24230;: "</span> + range.boundingWidth
+  + <span style="font-style: italic;">"px\r\n&#20869;&#23481;&#21306;&#39640;&#24230;: "</span> + range.boundingHeight + <span style="font-style: italic;">"px"</span>);
+
+  }
+&lt;/<span style="font-weight: bold;">SCRIPT</span>&gt;
+&lt;<span style="font-weight: bold;">BODY</span>&gt;
+  &lt;<span style="font-weight: bold;">Textarea</span> <span style="font-weight: bold; font-style: italic;">id</span>=<span style="font-style: italic;">"txt"</span> <span style="font-weight: bold; font-style: italic;">height</span>=<span style="font-style: italic;">"150"</span>&gt;sdf&lt;/<span style="font-weight: bold;">textarea</span>&gt;&lt;<span style="font-weight: bold;">INPUT</span> <span style="font-weight: bold; font-style: italic;">type</span>=<span style="font-style: italic;">"button"</span> <span style="font-weight: bold; font-style: italic;">value</span>=<span style="font-style: italic;">"&#35745;&#31639;&#20869;&#23481;&#23485;&#24230;"</span> <span style="font-weight: bold; font-style: italic;">onClick</span>=<span style="font-style: italic;">"test(txt)"</span>&gt;
+&lt;/<span style="font-weight: bold;">BODY</span>&gt;
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-org80a0647" class="outline-3">
+<h3 id="org80a0647">无模式的提示框</h3>
+<div class="outline-text-3" id="text-org80a0647">
+<div class="org-src-container">
+<pre class="src src-javascript"><span style="font-weight: bold;">function</span> <span style="font-weight: bold;">modelessAlert</span>(<span style="font-weight: bold; font-style: italic;">Msg</span>)
+{
+  window.showModelessDialog(<span style="font-style: italic;">"javascript:alert(\""</span>+escape(Msg)+<span style="font-style: italic;">"\");window.close();"</span>,<span style="font-style: italic;">""</span>,<span style="font-style: italic;">"status:no;resizable:no;help:no;dialogHeight:height:30px;dialogHeight:40px;"</span>);
+}
+
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org96995e0" class="outline-3">
+<h3 id="org96995e0">屏蔽按键</h3>
+<div class="outline-text-3" id="text-org96995e0">
+<div class="org-src-container">
+<pre class="src src-html">&lt;<span style="font-weight: bold;">html</span>&gt;
+  &lt;<span style="font-weight: bold;">head</span>&gt;
+    &lt;<span style="font-weight: bold;">meta</span> <span style="font-weight: bold; font-style: italic;">http-equiv</span>=<span style="font-style: italic;">"Content-Type"</span> <span style="font-weight: bold; font-style: italic;">content</span>=<span style="font-style: italic;">"text/html; charset=gb2312"</span>&gt;
+    &lt;<span style="font-weight: bold;">noscript</span>&gt;&lt;<span style="font-weight: bold;">meta</span> <span style="font-weight: bold; font-style: italic;">http-equiv</span>=<span style="font-style: italic;">"refresh"</span> <span style="font-weight: bold; font-style: italic;">content</span>=<span style="font-style: italic;">"0;url=about:noscript"</span>&gt;&lt;/<span style="font-weight: bold;">noscript</span>&gt;
+    &lt;<span style="font-weight: bold;">title</span>&gt;<span style="font-weight: bold; text-decoration: underline;">&#23631;&#34109;&#40736;&#26631;&#21491;&#38190;&#12289;Ctrl+N&#12289;Shift+F10&#12289;Alt+F4&#12289;F11&#12289;F5&#21047;&#26032;&#12289;&#36864;&#26684;&#38190;</span>&lt;/<span style="font-weight: bold;">title</span>&gt;
+  &lt;/<span style="font-weight: bold;">head</span>&gt;
+  &lt;<span style="font-weight: bold;">body</span>&gt;
+    &lt;<span style="font-weight: bold;">script</span> <span style="font-weight: bold; font-style: italic;">language</span>=<span style="font-style: italic;">"Javascript"</span>&gt;
+      <span style="font-weight: bold; font-style: italic;">&lt;!-- </span><span style="font-weight: bold; font-style: italic;">//</span>
+<span style="font-weight: bold; font-style: italic;">          //&#23631;&#34109;&#40736;&#26631;&#21491;&#38190;&#12289;Ctrl+N&#12289;Shift+F10&#12289;F11&#12289;F5&#21047;&#26032;&#12289;&#36864;&#26684;&#38190;</span>
+<span style="font-weight: bold; font-style: italic;">          //Author: meizz(&#26757;&#33457;&#38632;) 2002-6-18</span>
+<span style="font-weight: bold; font-style: italic;">          function document.oncontextmenu(){event.returnValue=false;}//&#23631;&#34109;&#40736;&#26631;&#21491;&#38190;</span>
+<span style="font-weight: bold; font-style: italic;">          function window.onhelp(){return false} //&#23631;&#34109;F1&#24110;&#21161;</span>
+<span style="font-weight: bold; font-style: italic;">          function document.onkeydown()</span>
+<span style="font-weight: bold; font-style: italic;">          {</span>
+<span style="font-weight: bold; font-style: italic;">          if ((window.event.altKey)&amp;&amp;</span>
+<span style="font-weight: bold; font-style: italic;">          ((window.event.keyCode==37)|| //&#23631;&#34109; Alt+ &#26041;&#21521;&#38190; &#8592;</span>
+<span style="font-weight: bold; font-style: italic;">          (window.event.keyCode==39))) //&#23631;&#34109; Alt+ &#26041;&#21521;&#38190; &#8594;</span>
+<span style="font-weight: bold; font-style: italic;">          {</span>
+<span style="font-weight: bold; font-style: italic;">          alert("&#19981;&#20934;&#20320;&#20351;&#29992;ALT+&#26041;&#21521;&#38190;&#21069;&#36827;&#25110;&#21518;&#36864;&#32593;&#39029;&#65281;");</span>
+<span style="font-weight: bold; font-style: italic;">          event.returnValue=false;</span>
+<span style="font-weight: bold; font-style: italic;">          }</span>
+<span style="font-weight: bold; font-style: italic;">          /* &#27880;&#65306;&#36825;&#36824;&#19981;&#26159;&#30495;&#27491;&#22320;&#23631;&#34109; Alt+ &#26041;&#21521;&#38190;&#65292;</span>
+<span style="font-weight: bold; font-style: italic;">          &#22240;&#20026; Alt+ &#26041;&#21521;&#38190;&#24377;&#20986;&#35686;&#21578;&#26694;&#26102;&#65292;&#25353;&#20303; Alt &#38190;&#19981;&#25918;&#65292;</span>
+<span style="font-weight: bold; font-style: italic;">          &#29992;&#40736;&#26631;&#28857;&#25481;&#35686;&#21578;&#26694;&#65292;&#36825;&#31181;&#23631;&#34109;&#26041;&#27861;&#23601;&#22833;&#25928;&#20102;&#12290;&#20197;&#21518;&#33509;</span>
+<span style="font-weight: bold; font-style: italic;">          &#26377;&#21738;&#20301;&#39640;&#25163;&#26377;&#30495;&#27491;&#23631;&#34109; Alt &#38190;&#30340;&#26041;&#27861;&#65292;&#35831;&#21578;&#30693;&#12290;*/</span>
+<span style="font-weight: bold; font-style: italic;">          if ((event.keyCode==8) || //&#23631;&#34109;&#36864;&#26684;&#21024;&#38500;&#38190;</span>
+<span style="font-weight: bold; font-style: italic;">          (event.keyCode==116)|| //&#23631;&#34109; F5 &#21047;&#26032;&#38190;</span>
+<span style="font-weight: bold; font-style: italic;">          (event.ctrlKey &amp;&amp; event.keyCode==82)){ //Ctrl + R</span>
+<span style="font-weight: bold; font-style: italic;">          event.keyCode=0;</span>
+<span style="font-weight: bold; font-style: italic;">          event.returnValue=false;</span>
+<span style="font-weight: bold; font-style: italic;">          }</span>
+<span style="font-weight: bold; font-style: italic;">          if (event.keyCode==122){event.keyCode=0;event.returnValue=false;} //&#23631;&#34109;F11</span>
+<span style="font-weight: bold; font-style: italic;">          if (event.ctrlKey &amp;&amp; event.keyCode==78) event.returnValue=false; //&#23631;&#34109; Ctrl+n</span>
+<span style="font-weight: bold; font-style: italic;">          if (event.shiftKey &amp;&amp; event.keyCode==121)event.returnValue=false; //&#23631;&#34109; shift+F10</span>
+<span style="font-weight: bold; font-style: italic;">          if (window.event.srcElement.tagName == "A" &amp;&amp; window.event.shiftKey)</span>
+<span style="font-weight: bold; font-style: italic;">          window.event.returnValue = false; //&#23631;&#34109; shift &#21152;&#40736;&#26631;&#24038;&#38190;&#26032;&#24320;&#19968;&#32593;&#39029;</span>
+<span style="font-weight: bold; font-style: italic;">          if ((window.event.altKey)&amp;&amp;(window.event.keyCode==115)) //&#23631;&#34109;Alt+F4</span>
+<span style="font-weight: bold; font-style: italic;">          {</span>
+<span style="font-weight: bold; font-style: italic;">          window.showModelessDialog("about:blank","","dialogWidth:1px;dialogheight:1px");</span>
+<span style="font-weight: bold; font-style: italic;">          return false;</span>
+<span style="font-weight: bold; font-style: italic;">          }</span>
+<span style="font-weight: bold; font-style: italic;">          }</span>
+<span style="font-weight: bold; font-style: italic;">      // </span><span style="font-weight: bold; font-style: italic;">--&gt;</span>
+    &lt;/<span style="font-weight: bold;">script</span>&gt;
+    &#23631;&#34109;&#40736;&#26631;&#21491;&#38190;&#12289;Ctrl+N&#12289;Shift+F10&#12289;Alt+F4&#12289;F11&#12289;F5&#21047;&#26032;&#12289;&#36864;&#26684;&#38190;
+  &lt;/<span style="font-weight: bold;">body</span>&gt;
+&lt;/<span style="font-weight: bold;">html</span>&gt;
+
+</pre>
+</div>
+</div>
+</div>
+
+
+<div id="outline-container-orgdc7f7d9" class="outline-3">
+<h3 id="orgdc7f7d9">移动的图层，拖动</h3>
+<div class="outline-text-3" id="text-orgdc7f7d9">
+<ol class="org-ol">
+<li></li>
+</ol>
+<div class="org-src-container">
+<pre class="src src-html">&lt;<span style="font-weight: bold;">span</span> <span style="font-weight: bold; font-style: italic;">style</span>='position:absolute;width:200;height:200;background:red' onmousedown=MouseDown(this) onmousemove=MouseMove() onmouseup=MouseUp()&gt;meizz&lt;/<span style="font-weight: bold;">span</span>&gt;
+&lt;<span style="font-weight: bold;">script</span> language=javascript&gt;
+  var Obj;
+  function MouseDown(obj)
+  {
+  Obj=obj;
+  Obj.setCapture();
+  Obj.l=event.x-Obj.style.pixelLeft;
+  Obj.t=event.y-Obj.style.pixelTop;
+  }
+  function MouseMove()
+  {
+  if(Obj!=null)
+  {
+  Obj.style.left = event.x-Obj.l;
+  Obj.style.top = event.y-Obj.t;
+  }
+  }
+  function MouseUp()
+  {
+  if(Obj!=null)
+  {
+  Obj.releaseCapture();
+  Obj=null;
+  }
+  }
+&lt;/<span style="font-weight: bold;">script</span>&gt;
+
+</pre>
+</div>
+
+<ol class="org-ol">
+<li></li>
+</ol>
+<div class="org-src-container">
+<pre class="src src-html">&lt;<span style="font-weight: bold;">div</span> <span style="font-weight: bold; font-style: italic;">id</span>=<span style="font-style: italic;">"myDiv"</span> <span style="font-weight: bold; font-style: italic;">src</span>=<span style="font-style: italic;">"logo.gif"</span> <span style="font-weight: bold; font-style: italic;">ondrag</span>=<span style="font-style: italic;">"doDrag();"</span> <span style="font-weight: bold; font-style: italic;">onmouseover</span>=<span style="font-style: italic;">"this.style.cursor='hand'"</span> <span style="font-weight: bold; font-style: italic;">style</span>=<span style="font-style: italic;">"position:absolute;left=100;top=100;"</span> <span style="font-weight: bold; font-style: italic;">onmousedown</span>=<span style="font-style: italic;">"doMouseDown();"</span>&gt;
+  &lt;<span style="font-weight: bold;">a</span> <span style="font-weight: bold; font-style: italic;">href</span>=<span style="font-style: italic;">"#"</span> <span style="font-weight: bold; font-style: italic;">onclick</span>=<span style="font-style: italic;">"return false"</span>&gt;&lt;<span style="font-weight: bold;">h1</span>&gt;<span style="font-weight: bold; text-decoration: underline;">wlecome</span>&lt;/<span style="font-weight: bold;">h1</span>&gt;&lt;/<span style="font-weight: bold;">a</span>&gt;
+&lt;/<span style="font-weight: bold;">div</span>&gt;
+&lt;<span style="font-weight: bold;">script</span> <span style="font-weight: bold; font-style: italic;">language</span>=<span style="font-style: italic;">"JavaScript"</span> <span style="font-weight: bold; font-style: italic;">type</span>=<span style="font-style: italic;">"text/javascript"</span>&gt;
+  var orgMouseX;
+  var orgMouseY;
+  var orgObjX;
+  var orgObjY;
+  function doDrag()
+  {
+  var myObject=document.all.myDiv;
+
+  var x=event.clientX;
+  var y=event.clientY;
+  myObject.style.left=x-(orgMouseX-orgObjX);
+  myObject.style.top=y-(orgMouseY-orgObjY);
+
+  }
+  function doMouseDown()
+  {
+  orgMouseX=event.clientX;
+  orgMouseY=event.clientY;
+  orgObjX=parseInt(document.all.myDiv.style.left);
+  orgObjY=parseInt(document.all.myDiv.style.top);
+  }
+
+&lt;/<span style="font-weight: bold;">script</span>&gt;
+
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org9a9e0b4" class="outline-3">
+<h3 id="org9a9e0b4">文档状态改变</h3>
+<div class="outline-text-3" id="text-org9a9e0b4">
+<div class="org-src-container">
+<pre class="src src-html">&lt;<span style="font-weight: bold;">iframe</span> <span style="font-weight: bold; font-style: italic;">src</span>=<span style="font-style: italic;">"a.html"</span> <span style="font-weight: bold; font-style: italic;">id</span>=<span style="font-style: italic;">"f"</span> <span style="font-weight: bold; font-style: italic;">name</span>=<span style="font-style: italic;">"f"</span> <span style="font-weight: bold; font-style: italic;">scrolling</span>=<span style="font-style: italic;">"no"</span> frameborder=0 marginwidth=0 marginheight=0&gt;&lt;/<span style="font-weight: bold;">iframe</span>&gt;
+&lt;<span style="font-weight: bold;">script</span>&gt;
+  var doc=window.frames[<span style="font-style: italic;">"f"</span>].document;
+  function s(){
+  if (doc.readyState==<span style="font-style: italic;">"complete"</span>){
+  document.all.f.style.height=doc.body.scrollHeight
+  document.all.f.style.width=doc.body.scrollWidth
+  }
+  }
+  doc.onreadystatechange=s
+&lt;/<span style="font-weight: bold;">script</span>&gt;
+
+</pre>
+</div>
+</div>
+</div>
+
+
+<div id="outline-container-org9f30e1a" class="outline-3">
+<h3 id="org9f30e1a">刷新后不变的文本框</h3>
+<div class="outline-text-3" id="text-org9f30e1a">
+<div class="org-src-container">
+<pre class="src src-html">&lt;<span style="font-weight: bold;">HTML</span>&gt;
+&lt;<span style="font-weight: bold;">HEAD</span>&gt;
+&lt;<span style="font-weight: bold;">META</span> <span style="font-weight: bold; font-style: italic;">NAME</span>=<span style="font-style: italic;">"save"</span> <span style="font-weight: bold; font-style: italic;">CONTENT</span>=<span style="font-style: italic;">"history"</span>&gt;
+&lt;<span style="font-weight: bold;">STYLE</span>&gt;
+.sHistory {behavior:url(#default#savehistory);}
+&lt;/<span style="font-weight: bold;">STYLE</span>&gt;
+&lt;/<span style="font-weight: bold;">HEAD</span>&gt;
+&lt;<span style="font-weight: bold;">BODY</span>&gt;
+&lt;<span style="font-weight: bold;">INPUT</span> class=sHistory type=text id=oPersistInput&gt;
+&lt;/<span style="font-weight: bold;">BODY</span>&gt;
+&lt;/<span style="font-weight: bold;">HTML</span>&gt;
+
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orge88e52b" class="outline-3">
+<h3 id="orge88e52b">访问剪贴板</h3>
+<div class="outline-text-3" id="text-orge88e52b">
+<pre class="example">
+event.dataTransfer.setData("URL", oImage.src);
+sImageURL = event.dataTransfer.getData("URL")
+
+</pre>
+
+<p>
+普通访问
+</p>
+<pre class="example">
+window.clipboardData.setData("Text",oSource.innerText);
+window.clipboardData.getData("Text");
+
+</pre>
+</div>
+</div>
+
+
+<div id="outline-container-orge58ea78" class="outline-3">
+<h3 id="orge58ea78">操作COOKIE</h3>
+<div class="outline-text-3" id="text-orge58ea78">
+<div class="org-src-container">
+<pre class="src src-javascript"><span style="font-weight: bold;">function</span> <span style="font-weight: bold;">SetCookie</span>(<span style="font-weight: bold; font-style: italic;">sName</span>, <span style="font-weight: bold; font-style: italic;">sValue</span>)
+{
+    document.cookie = sName + <span style="font-style: italic;">"="</span> + escape(sValue) + <span style="font-style: italic;">"; "</span>;
+}
+<span style="font-weight: bold;">function</span> <span style="font-weight: bold;">GetCookie</span>(<span style="font-weight: bold; font-style: italic;">sName</span>)
+{
+    <span style="font-weight: bold;">var</span> <span style="font-weight: bold; font-style: italic;">aCookie</span> = document.cookie.split(<span style="font-style: italic;">"; "</span>);
+    <span style="font-weight: bold;">for</span> (<span style="font-weight: bold;">var</span> <span style="font-weight: bold; font-style: italic;">i</span>=0; i &lt; aCookie.length; i++)
+    {
+
+        <span style="font-weight: bold;">var</span> <span style="font-weight: bold; font-style: italic;">aCrumb</span> = aCookie.split(<span style="font-style: italic;">"="</span>);
+        <span style="font-weight: bold;">if</span> (sName == aCrumb[0])
+            <span style="font-weight: bold;">return</span> unescape(aCrumb[1]);
+    }
+
+}
+<span style="font-weight: bold;">function</span> <span style="font-weight: bold;">DelCookie</span>(<span style="font-weight: bold; font-style: italic;">sName</span>)
+{
+    document.cookie = sName + <span style="font-style: italic;">"="</span> + escape(sValue) + <span style="font-style: italic;">"; expires=Fri, 31 Dec 1999 23:59:59 GMT;"</span>;
+}
+
+</pre>
+</div>
+</div>
+</div>
+
+
+<div id="outline-container-org8c7899a" class="outline-3">
+<h3 id="org8c7899a">setTimeout增加参数</h3>
+<div class="outline-text-3" id="text-org8c7899a">
+<div class="org-src-container">
+<pre class="src src-javascript"><span style="font-weight: bold;">var</span> <span style="font-weight: bold; font-style: italic;">_st</span> = window.setTimeout;
+window.setTimeout = <span style="font-weight: bold;">function</span>(<span style="font-weight: bold; font-style: italic;">fRef</span>, <span style="font-weight: bold; font-style: italic;">mDelay</span>) {
+    <span style="font-weight: bold;">if</span>(<span style="font-weight: bold;">typeof</span> fRef == <span style="font-style: italic;">'function'</span>){
+        <span style="font-weight: bold;">var</span> <span style="font-weight: bold; font-style: italic;">argu</span> = Array.<span style="font-weight: bold; text-decoration: underline;">prototype</span>.slice.call(<span style="font-weight: bold; text-decoration: underline;">arguments</span>,2);
+        <span style="font-weight: bold;">var</span> <span style="font-weight: bold; font-style: italic;">f</span> = (<span style="font-weight: bold;">function</span>(){ fRef.apply(<span style="font-weight: bold; text-decoration: underline;">null</span>, argu); });
+        <span style="font-weight: bold;">return</span> _st(f, mDelay);
+    }
+    <span style="font-weight: bold;">return</span> _st(fRef,mDelay);
+}
+<span style="font-weight: bold;">function</span> <span style="font-weight: bold;">test</span>(<span style="font-weight: bold; font-style: italic;">x</span>){
+    alert(x);
+}
+window.setTimeout(test,1000,<span style="font-style: italic;">'fason'</span>);
+
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org07a721b" class="outline-3">
+<h3 id="org07a721b">自定义的apply,call</h3>
+<div class="outline-text-3" id="text-org07a721b">
+<div class="org-src-container">
+<pre class="src src-javascript">Function.<span style="font-weight: bold; text-decoration: underline;">prototype</span>.apply = <span style="font-weight: bold;">function</span> (<span style="font-weight: bold; font-style: italic;">obj</span>, <span style="font-weight: bold; font-style: italic;">argu</span>) {
+<span style="font-weight: bold;">if</span> (obj) obj.constructor.<span style="font-weight: bold; text-decoration: underline;">prototype</span>._caller = <span style="font-weight: bold; text-decoration: underline;">this</span>;
+<span style="font-weight: bold;">var</span> <span style="font-weight: bold; font-style: italic;">argus</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">Array</span>();
+<span style="font-weight: bold;">for</span> (<span style="font-weight: bold;">var</span> <span style="font-weight: bold; font-style: italic;">i</span>=0;i&lt;argu.length;i++)
+argus = <span style="font-style: italic;">"argu["</span> + i + <span style="font-style: italic;">"]"</span>;
+<span style="font-weight: bold;">var</span> <span style="font-weight: bold; font-style: italic;">r</span>;
+eval(<span style="font-style: italic;">"r = "</span> + (obj ? (<span style="font-style: italic;">"obj._caller("</span> + argus.join(<span style="font-style: italic;">","</span>) + <span style="font-style: italic;">");"</span>) : (<span style="font-style: italic;">"this("</span> + argus.join(<span style="font-style: italic;">","</span>) + <span style="font-style: italic;">");"</span>)));
+<span style="font-weight: bold;">return</span> r;
+};
+Function.<span style="font-weight: bold; text-decoration: underline;">prototype</span>.call = <span style="font-weight: bold;">function</span> (<span style="font-weight: bold; font-style: italic;">obj</span>) {
+<span style="font-weight: bold;">var</span> <span style="font-weight: bold; font-style: italic;">argu</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">Array</span>();
+<span style="font-weight: bold;">for</span> (<span style="font-weight: bold;">var</span> <span style="font-weight: bold; font-style: italic;">i</span>=1;i&lt;<span style="font-weight: bold; text-decoration: underline;">arguments</span>.length;i++)
+argu[i-1] = <span style="font-weight: bold; text-decoration: underline;">arguments</span>;
+<span style="font-weight: bold;">return</span> <span style="font-weight: bold; text-decoration: underline;">this</span>.apply(obj, argu);
+};
+
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-org7e0e7bd" class="outline-3">
+<h3 id="org7e0e7bd">下载文件</h3>
+<div class="outline-text-3" id="text-org7e0e7bd">
+<div class="org-src-container">
+<pre class="src src-javascript"><span style="font-weight: bold;">function</span> <span style="font-weight: bold;">DownURL</span>(<span style="font-weight: bold; font-style: italic;">strRemoteURL</span>,<span style="font-weight: bold; font-style: italic;">strLocalURL</span>)
+{
+    <span style="font-weight: bold;">try</span>
+    {
+        <span style="font-weight: bold;">var</span> <span style="font-weight: bold; font-style: italic;">xmlHTTP</span>=<span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">ActiveXObject</span>(<span style="font-style: italic;">"Microsoft.XMLHTTP"</span>);
+        xmlHTTP.open(<span style="font-style: italic;">"Get"</span>,strRemoteURL,<span style="font-weight: bold; text-decoration: underline;">false</span>);
+        xmlHTTP.send();
+        <span style="font-weight: bold;">var</span> <span style="font-weight: bold; font-style: italic;">adodbStream</span>=<span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">ActiveXObject</span>(<span style="font-style: italic;">"ADODB.Stream"</span>);
+        adodbStream.Type=1;<span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">1=adTypeBinary</span>
+        adodbStream.Open();
+        adodbStream.write(xmlHTTP.responseBody);
+        adodbStream.SaveToFile(strLocalURL,2);
+        adodbStream.Close();
+        adodbStream=<span style="font-weight: bold; text-decoration: underline;">null</span>;
+        xmlHTTP=<span style="font-weight: bold; text-decoration: underline;">null</span>;
+
+    }
+    <span style="font-weight: bold;">catch</span>(e)
+    {
+        window.confirm(<span style="font-style: italic;">"&#19979;&#36733;URL&#20986;&#38169;!"</span>);
+    }
+    <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">window.confirm("&#19979;&#36733;&#23436;&#25104;.");</span>
+}
+
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgabaf3f8" class="outline-3">
+<h3 id="orgabaf3f8">检验连接是否有效</h3>
+<div class="outline-text-3" id="text-orgabaf3f8">
+<div class="org-src-container">
+<pre class="src src-javascript"><span style="font-weight: bold;">function</span> <span style="font-weight: bold;">getXML</span>(<span style="font-weight: bold; font-style: italic;">URL</span>)
+{
+    <span style="font-weight: bold;">var</span> <span style="font-weight: bold; font-style: italic;">xmlhttp</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">ActiveXObject</span>(<span style="font-style: italic;">"microsoft.xmlhttp"</span>);
+    xmlhttp.Open(<span style="font-style: italic;">"GET"</span>,URL, <span style="font-weight: bold; text-decoration: underline;">false</span>);
+    <span style="font-weight: bold;">try</span>
+    {
+        xmlhttp.Send();
+    }
+    <span style="font-weight: bold;">catch</span>(e){}
+    <span style="font-weight: bold;">finally</span>
+    {
+        <span style="font-weight: bold;">var</span> <span style="font-weight: bold; font-style: italic;">result</span> = xmlhttp.responseText;
+        <span style="font-weight: bold;">if</span>(result)
+        {
+            <span style="font-weight: bold;">if</span>(xmlhttp.Status==200)
+            {
+                <span style="font-weight: bold;">return</span>(<span style="font-weight: bold; text-decoration: underline;">true</span>);
+            }
+            <span style="font-weight: bold;">else</span>
+            {
+                <span style="font-weight: bold;">return</span>(<span style="font-weight: bold; text-decoration: underline;">false</span>);
+            }
+        }
+        <span style="font-weight: bold;">else</span>
+        {
+            <span style="font-weight: bold;">return</span>(<span style="font-weight: bold; text-decoration: underline;">false</span>);
+        }
+    }
+}
+
+</pre>
+</div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org6e71db4" class="outline-2">
+<h2 id="org6e71db4">高级应用（二）</h2>
+<div class="outline-text-2" id="text-org6e71db4">
+</div>
+<div id="outline-container-orgcde326b" class="outline-3">
+<h3 id="orgcde326b">组件是否安装</h3>
+<div class="outline-text-3" id="text-orgcde326b">
+<pre class="example">
+isComponentInstalled("{6B053A4B-A7EC-4D3D-4567-B8FF8A1A5739}", "componentID"))
+
+</pre>
+</div>
+</div>
+<div id="outline-container-orgd7f6664" class="outline-3">
+<h3 id="orgd7f6664">可编辑SELECT</h3>
+<div class="outline-text-3" id="text-orgd7f6664">
+<div class="org-src-container">
+<pre class="src src-html">&lt;<span style="font-weight: bold;">input</span> type=text name=re_name <span style="font-weight: bold; font-style: italic;">style</span>=<span style="font-style: italic;">"width:100px;height:21px;font-size:10pt;"</span>&gt;
+&lt;<span style="font-weight: bold;">span</span> <span style="font-weight: bold; font-style: italic;">style</span>=<span style="font-style: italic;">"width:18px;border:0px solid red;"</span>&gt;
+  &lt;<span style="font-weight: bold;">select</span> <span style="font-weight: bold; font-style: italic;">name</span>=<span style="font-style: italic;">"r00"</span> <span style="font-weight: bold; font-style: italic;">style</span>=<span style="font-style: italic;">"margin-left:-100px;width:118px; background-color:#FFEEEE;"</span>
+      <span style="font-weight: bold; font-style: italic;">onChange</span>=<span style="font-style: italic;">"document.all.re_name.value=this.value;"</span>&gt;
+    &lt;<span style="font-weight: bold;">option</span> <span style="font-weight: bold; font-style: italic;">value</span>=<span style="font-style: italic;">"1"</span>&gt;11111111&lt;<span style="font-weight: bold;">option</span>&gt;
+    &lt;<span style="font-weight: bold;">option</span> <span style="font-weight: bold; font-style: italic;">value</span>=<span style="font-style: italic;">"2"</span>&gt;222222&lt;/<span style="font-weight: bold;">option</span>&gt;
+    &lt;<span style="font-weight: bold;">option</span> <span style="font-weight: bold; font-style: italic;">value</span>=<span style="font-style: italic;">"3"</span>&gt;333333&lt;/<span style="font-weight: bold;">option</span>&gt;
+  &lt;/<span style="font-weight: bold;">select</span>&gt;
+&lt;/<span style="font-weight: bold;">span</span>&gt;
+
+</pre>
+</div>
+</div>
+</div>
+
+
+<div id="outline-container-orgde42e93" class="outline-3">
+<h3 id="orgde42e93">设置光标位置</h3>
+<div class="outline-text-3" id="text-orgde42e93">
+<div class="org-src-container">
+<pre class="src src-javascript"><span style="font-weight: bold;">function</span> <span style="font-weight: bold;">getCaret</span>(<span style="font-weight: bold; font-style: italic;">textbox</span>)
+{
+    <span style="font-weight: bold;">var</span> <span style="font-weight: bold; font-style: italic;">control</span> = document.activeElement;
+    textbox.focus();
+    <span style="font-weight: bold;">var</span> <span style="font-weight: bold; font-style: italic;">rang</span> = document.selection.createRange();
+    rang.setEndPoint(<span style="font-style: italic;">"StartToStart"</span>,textbox.createTextRange())
+    control.focus();
+    <span style="font-weight: bold;">return</span> rang.text.length;
+}
+<span style="font-weight: bold;">function</span> <span style="font-weight: bold;">setCaret</span>(<span style="font-weight: bold; font-style: italic;">textbox</span>,<span style="font-weight: bold; font-style: italic;">pos</span>)
+{
+    <span style="font-weight: bold;">try</span>
+    {
+        <span style="font-weight: bold;">var</span> <span style="font-weight: bold; font-style: italic;">r</span> =textbox.createTextRange();
+        r.moveStart(<span style="font-style: italic;">'character'</span>,pos);
+        r.collapse(<span style="font-weight: bold; text-decoration: underline;">true</span>);
+        r.select();
+    }
+    <span style="font-weight: bold;">catch</span>(e)
+    {}
+}
+<span style="font-weight: bold;">function</span> <span style="font-weight: bold;">selectLength</span>(<span style="font-weight: bold; font-style: italic;">textbox</span>,<span style="font-weight: bold; font-style: italic;">start</span>,<span style="font-weight: bold; font-style: italic;">len</span>)
+{
+    <span style="font-weight: bold;">try</span>
+    {
+        <span style="font-weight: bold;">var</span> <span style="font-weight: bold; font-style: italic;">r</span> =textbox.createTextRange();
+
+        r.moveEnd(<span style="font-style: italic;">'character'</span>,len-(textbox.value.length-start));
+        r.moveStart(<span style="font-style: italic;">'character'</span>,start);
+
+        r.select();
+    }
+    <span style="font-weight: bold;">catch</span>(e)
+
+        }
+<span style="font-weight: bold;">function</span> <span style="font-weight: bold;">insertAtCaret</span>(<span style="font-weight: bold; font-style: italic;">textbox</span>,<span style="font-weight: bold; font-style: italic;">text</span>)
+{
+    textbox.focus();
+    document.selection.createRange().text = text;
+}
+
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org149ee6e" class="outline-3">
+<h3 id="org149ee6e">页内查找</h3>
+<div class="outline-text-3" id="text-org149ee6e">
+<div class="org-src-container">
+<pre class="src src-javascript"><span style="font-weight: bold;">function</span> <span style="font-weight: bold;">findInPage</span>(<span style="font-weight: bold; font-style: italic;">str</span>)
+{
+    <span style="font-weight: bold;">var</span> <span style="font-weight: bold; font-style: italic;">txt</span>, <span style="font-weight: bold; font-style: italic;">i</span>, <span style="font-weight: bold; font-style: italic;">found</span>,<span style="font-weight: bold; font-style: italic;">n</span> = 0;
+    <span style="font-weight: bold;">if</span> (str == <span style="font-style: italic;">""</span>)
+    {
+        <span style="font-weight: bold;">return</span> <span style="font-weight: bold; text-decoration: underline;">false</span>;
+    }
+    txt = document.body.createTextRange();
+    <span style="font-weight: bold;">for</span> (i = 0; i &lt;= n &amp;&amp; (found = txt.findText(str)) != <span style="font-weight: bold; text-decoration: underline;">false</span>; i++)
+    {
+        txt.moveStart(<span style="font-style: italic;">"character"</span>, 1);
+        txt.moveEnd(<span style="font-style: italic;">"textedit"</span>);
+    }
+    <span style="font-weight: bold;">if</span> (found)
+    {
+        txt.moveStart(<span style="font-style: italic;">"character"</span>, -1);
+        txt.findText(str);
+        txt.select();
+        txt.scrollIntoView();
+        n++;
+    }
+    <span style="font-weight: bold;">else</span>
+    {
+        <span style="font-weight: bold;">if</span> (n &gt; 0)
+        {
+            n = 0;
+            findInPage(str);
+        }
+        <span style="font-weight: bold;">else</span>
+        {
+            alert(str + <span style="font-style: italic;">"... &#24744;&#35201;&#25214;&#30340;&#25991;&#23383;&#19981;&#23384;&#22312;&#12290;\n \n&#35831;&#35797;&#30528;&#36755;&#20837;&#39029;&#38754;&#20013;&#30340;&#20851;&#38190;&#23383;&#20877;&#27425;&#26597;&#25214;&#65281;"</span>);
+        }
+    }
+    <span style="font-weight: bold;">return</span> <span style="font-weight: bold; text-decoration: underline;">false</span>;
+}
+
+</pre>
+</div>
+
+
+
+
+<p>
+//操作EXECL
+```
+&lt;script language="javascript"&gt;
+function jStartExcel() {
+var xls = new ActiveXObject ( "Excel.Application" );
+xls.visible = true;
+var newBook = xls.Workbooks.Add;
+newBook.Worksheets.Add;
+newBook.Worksheets(1).Activate;
+xls.ActiveWorkBook.ActiveSheet.PageSetup.Orientation = 2;
+xls.ActiveWorkBook.ActiveSheet.PageSetup.PaperSize = 5;
+newBook.Worksheets(1).Columns("A").columnwidth=50;
+newBook.Worksheets(1).Columns("A").WrapText = true;
+newBook.Worksheets(1).Columns("B").columnwidth=50;
+newBook.Worksheets(1).Columns("B").WrapText = true;
+newBook.Worksheets(1).Range("A1:B1000").NumberFormat = "0";
+newBook.Worksheets(1).Range("A1:B1000").HorizontalAlignment = -4131;
+newBook.Worksheets(1).Cells(1,1).Interior.ColorIndex="15";
+newBook.Worksheets(1).Cells(1,1).value="First Column, First Cell";
+newBook.Worksheets(1).Cells(2,1).value="First Column, Second Cell";
+newBook.Worksheets(1).Cells(1,2).value="Second Column, First Cell";
+newBook.Worksheets(1).Cells(2,2).value="Second Column, Second Cell";
+newBook.Worksheets(1).Name="My First WorkSheet";
+}
+&lt;/script&gt;
+```
+</p>
+
+<p>
+//自定义提示条
+```
+&lt;a href="#" title="这是提示"&gt;tip&lt;/a&gt;
+&lt;script Language="JavaScript"&gt;
+//***********默认设置定义.*********************
+tPopWait=50;//停留tWait豪秒后显示提示。
+tPopShow=5000;//显示tShow豪秒后关闭提示
+showPopStep=20;
+popOpacity=99;
+//***************内部变量定义*****************
+sPop=null;
+curShow=null;
+tFadeOut=null;
+tFadeIn=null;
+tFadeWaiting=null;
+document.write("&lt;style type='text/css'id='defaultPopStyle'&gt;");
+document.write(".cPopText { background-color: #F8F8F5;color:#000000; border: 1px #000000 solid;font-color: font-size: 12px; padding-right: 4px; padding-left: 4px; height: 20px; padding-top: 2px; padding-bottom: 2px; filter: Alpha(Opacity=0)}");
+document.write("&lt;/style&gt;");
+document.write("&lt;div id='dypopLayer' style='position:absolute;z-index:1000;' class='cPopText'&gt;&lt;/div&gt;");
+</p>
+
+<p>
+function showPopupText(){
+var o=event.srcElement;
+MouseX=event.x;
+MouseY=event.y;
+if(o.alt!=null &amp;&amp; o.alt!=""){o.dypop=o.alt;o.alt=""};
+if(o.title!=null &amp;&amp; o.title!=""){o.dypop=o.title;o.title=""};
+if(o.dypop!=sPop) {
+sPop=o.dypop;
+clearTimeout(curShow);
+clearTimeout(tFadeOut);
+clearTimeout(tFadeIn);
+clearTimeout(tFadeWaiting);
+if(sPop==null || sPop=="") {
+dypopLayer.innerHTML="";
+dypopLayer.style.filter="Alpha()";
+dypopLayer.filters.Alpha.opacity=0;
+}
+else {
+if(o.dyclass!=null) popStyle=o.dyclass
+else popStyle="cPopText";
+curShow=setTimeout("showIt()",tPopWait);
+}
+}
+}
+function showIt(){
+dypopLayer.className=popStyle;
+dypopLayer.innerHTML=sPop;
+popWidth=dypopLayer.clientWidth;
+popHeight=dypopLayer.clientHeight;
+if(MouseX+12+popWidth&gt;document.body.clientWidth) popLeftAdjust=-popWidth-24
+else popLeftAdjust=0;
+if(MouseY+12+popHeight&gt;document.body.clientHeight) popTopAdjust=-popHeight-24
+else popTopAdjust=0;
+dypopLayer.style.left=MouseX+12+document.body.scrollLeft+popLeftAdjust;
+dypopLayer.style.top=MouseY+12+document.body.scrollTop+popTopAdjust;
+dypopLayer.style.filter="Alpha(Opacity=0)";
+fadeOut();
+}
+function fadeOut(){
+if(dypopLayer.filters.Alpha.opacity&lt;popOpacity) {
+dypopLayer.filters.Alpha.opacity+=showPopStep;
+tFadeOut=setTimeout("fadeOut()",1);
+}
+else {
+dypopLayer.filters.Alpha.opacity=popOpacity;
+tFadeWaiting=setTimeout("fadeIn()",tPopShow);
+}
+}
+function fadeIn(){
+if(dypopLayer.filters.Alpha.opacity&gt;0) {
+dypopLayer.filters.Alpha.opacity-=1;
+tFadeIn=setTimeout("fadeIn()",1);
+}
+}
+document.onmouseover=showPopupText;
+&lt;/script&gt;
+```
+</p>
+
+<p>
+//插入文字
+```
+document.onclick =function(){
+var oSource = window.event.srcElement;
+if(oSource.tagName!="DIV")
+return false;
+var sel = document.selection;
+if (sel!=null) {
+var rng = sel.createRange();
+if (rng!=null)
+rng.pasteHTML("&lt;font color=red&gt;插入文字&lt;/font&gt;");
+}
+}
+</p>
+
+<p>
+```
+</p>
+
+<p>
+//netscapte下操作xml
+```
+doc = new ActiveXObject("Msxml2.DOMDocument");
+doc = new ActiveXObject("Microsoft.XMLDOM")
+-&gt;&gt;
+doc = (new DOMParser()).parseFromString(sXML,'text/xml')
+```
+</p>
+
+<p>
+//禁止FSO
+```
+1.注销组件
+regsvr32 /u scrrun.dll
+2.修改PROGID
+HKEY_CLASSES_ROOT\Scripting.FileSystemObject
+Scripting.FileSystemObject
+3.对于使用object的用户，修改HKEY_CLASSES_ROOT\Scripting.
+```
+</p>
+
+<p>
+//省略号
+```
+&lt;DIV STYLE="width: 120px; height: 50px; border: 1px solid blue;
+overflow: hidden; text-overflow:ellipsis"&gt;
+&lt;NOBR&gt;就是比如有一行文字，很长，表格内一行显示不下.&lt;/NOBR&gt;
+&lt;/DIV&gt;
+```
+</p>
+
+<p>
+//判断键值
+```
+&lt;html&gt;
+&lt;meta http-equiv="Content-Type" content="text/html; charset=gb2312"&gt;
+&lt;head&gt;
+&lt;script language="javascript"&gt;
+var ie <code>navigator.appName=</code>"Microsoft Internet Explorer"?true:false;
+</p>
+
+<p>
+function keyDown(e)
+{
+if(!ie)
+{
+var nkey=e.which;
+var iekey='现在是ns浏览器';
+var realkey=String.fromCharCode(e.which);
+}
+if(ie)
+{
+var iekey=event.keyCode;
+var nkey='现在是ie浏览器';
+var realkey=String.fromCharCode(event.keyCode);
+if(event.keyCode==32){realkey='\' 空格\''}
+if(event.keyCode==13){realkey='\' 回车\''}
+if(event.keyCode==27){realkey='\' Esc\''}
+if(event.keyCode==16){realkey='\' Shift\''}
+if(event.keyCode==17){realkey='\' Ctrl\''}
+if(event.keyCode==18){realkey='\' Alt\''}
+}
+alert('ns浏览器中键值:'<del>nkey</del>'\n'<del>'ie浏览器中键值:'+iekey</del>'\n'+'实际键为'+realkey);
+}
+document.onkeydown = keyDown;
+&lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;
+//Javascript Document.
+&lt;hr&gt;
+&lt;center&gt;
+&lt;h3&gt;请按任意一个键。。。。&lt;/h3&gt;
+&lt;/center&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+```
+</p>
+
+
+<p>
+//检测media play版本
+```
+&lt;IE:clientCaps ID="oClientCaps" style="{behavior:url(#default#clientcaps)}" /&gt;
+&lt;SCRIPT&gt;
+var flash="";
+WMPVersion= oClientCaps.getComponentVersion("{22D6F312-B0F6-11D0-94AB-0080C74C7E95}","ComponentID");
+if (WMPVersion != "") {
+flash = "";
+var version = WMPVersion.split(",");
+var i;
+for (i = 0; i &lt; version.length; i++) {
+if (i != 0)
+flash += ".";
+flash += version;
+}
+document.write("您的Windows Media Player 版本是:"<del>flash</del>"&lt;p&gt;");
+}
+&lt;/SCRIPT&gt;
+```
+</p>
+
+
+<p>
+//图象按比例
+```
+&lt;script language="JavaScript"&gt;
+&lt;!--
+//图片按比例缩放
+var flag=false;
+function DrawImage(ImgD){
+var image=new Image();
+var iwidth = 80; //定义允许图片宽度
+var iheight = 80; //定义允许图片高度
+image.src=ImgD.src;
+if(image.width&gt;0 &amp;&amp; image.height&gt;0){
+flag=true;
+if(image.width/image.height&gt;= iwidth/iheight){
+if(image.width&gt;iwidth){
+ImgD.width=iwidth;
+ImgD.height=(image.height*iwidth)/image.width;
+}else{
+ImgD.width=image.width;
+ImgD.height=image.height;
+}
+ImgD.alt=image.width+"×"+image.height;
+}
+else{
+if(image.height&gt;iheight){
+ImgD.height=iheight;
+ImgD.width=(image.width*iheight)/image.height;
+}else{
+ImgD.width=image.width;
+ImgD.height=image.height;
+}
+ImgD.alt=image.width+"×"+image.height;
+}
+}
+}
+//--&gt;
+&lt;/script&gt;
+&lt;img src=".." onload = "DrawImage(this)"&gt;
+```
+</p>
+
+
+<p>
+//细线SELECT
+```
+&lt;span style="border:1px solid #000000; position:absolute; overflow:hidden;" &gt;
+&lt;select style="margin:-2px;"&gt;
+&lt;option&gt;1111&lt;/option&gt;
+&lt;option&gt;11111111111111&lt;/option&gt;
+&lt;option&gt;111111111&lt;/option&gt;
+&lt;/select&gt;&lt;/span&gt;
+```
+</p>
+
+<p>
+//Import
+```
+function Import() {
+for( var i=0; i&lt;arguments.length; i++ ) {
+var file = arguments;
+if ( file.match(/\.js$/i))
+document.write('&lt;script type=\"text/javascript\" src=\"' + file + '\"&gt;&lt;/sc' + 'ript&gt;');
+else
+document.write('&lt;style type=\"text/css\"&gt;@import \"' + file + '\" ;&lt;/style&gt;');
+}
+};
+```
+</p>
+
+<p>
+//js枚举
+```
+function getComputerName()
+{
+var objWMIService = GetObject("Winmgmts:root\cimv2");
+for(e = new Enumerator(objWMIService) ; !e.atEnd() ; e.moveNext())
+{
+var getComputer = e.item();
+return getComputer.Name;
+}
+}
+```
+</p>
+
+<p>
+//条件编译
+```
+&lt;script language=javascript&gt;
+<i><b>@cc_on @</b></i>
+/*@if (@_win32 &amp;&amp; @_jscript_version&gt;5)
+function window.confirm(str)
+{
+execScript("n = msgbox('"+ str +"', 257)", "vbscript");
+return(n == 1);
+}
+@end @*/
+&lt;/script&gt;
+```
+</p>
+
+<p>
+//取得innerText
+</p>
+
+<p>
+```
+&lt;SCRIPT LANGUAGE="JavaScript"&gt;
+&lt;!--
+var xmlDoc = new ActiveXObject("Msxml2.DOMDocument.4.0");
+var currNode;
+xmlDoc.async = false;
+xmlDoc.async = false;
+xmlDoc.loadXML("&lt;TABLENAME&gt; 你好你阿三 大法 司法等四 &lt;/TABLENAME&gt;");
+currNode = xmlDoc.documentElement;
+</p>
+
+<p>
+var s = currNode.xml;
+var r = <i>\&lt;([^\&gt;\s]*?)[^\&gt;]*?\&gt;([^\&lt;]*?)\&lt;\</i>\1\&gt;/
+var b = s.replace(r,"$2");
+alert(b);
+//--&gt;
+&lt;/SCRIPT&gt;
+```
+</p>
+
+<p>
+//mergeAttributes 复制所有读/写标签属性到指定元素。
+```
+&lt;SCRIPT&gt;
+function fnMerge(){
+oSource.children[1].mergeAttributes(oSource.children[0]);
+}
+&lt;/SCRIPT&gt;
+&lt;SPAN ID=oSource&gt;
+&lt;DIV
+ID="oDiv"
+ATTRIBUTE1="true"
+ATTRIBUTE2="true"
+onclick="alert('click');"
+onmouseover="this.style.color='#0000FF';"
+onmouseout="this.style.color='#000000';"
+&gt;
+This is a sample &lt;B&gt;DIV&lt;/B&gt; element.
+&lt;/DIV&gt;
+&lt;DIV ID="oDiv2"&gt;
+This is another sample &lt;B&gt;DIV&lt;/B&gt; element.
+&lt;/DIV&gt;
+&lt;/SPAN&gt;
+&lt;INPUT
+TYPE="button"
+VALUE="Merge Attributes"
+onclick="fnMerge()"
+&gt;
+```
+</p>
+</div>
+</div>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

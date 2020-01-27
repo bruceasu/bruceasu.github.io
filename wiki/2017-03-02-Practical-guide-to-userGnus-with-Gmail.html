@@ -1,0 +1,1458 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>Practitcal guide to user for gnus with gmail</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">Practitcal guide to user for gnus with gmail</div>
+<div class="char-counter">2017-03-02</div>
+        <div id="content">
+<nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#org03b8078">Introduction</a></li>
+<li><a href="#org1b0f496">Why (OPTIONAL)</a></li>
+<li><a href="#org6fc8316">Quick start</a>
+<ul>
+<li>
+<ul>
+<li><a href="#org6d58f2e">Things you need to know at first</a></li>
+<li><a href="#org33fdc8c">Sample setup</a></li>
+<li><a href="#org2f73316">Usage</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#org4e714b9">Essential 5%</a>
+<ul>
+<li>
+<ul>
+<li><a href="#org29edc3c">Search mails</a></li>
+<li><a href="#org884ce84">Filter mails locally</a></li>
+<li><a href="#org78ad6bc">Subscribe groups</a></li>
+<li><a href="#orge39c899">Reply email</a></li>
+<li><a href="#orgbd52bfc">Compose new email</a></li>
+<li><a href="#org3c42fe3">Re-send as new mail</a></li>
+<li><a href="#orgdd24827">Attach a file</a></li>
+<li><a href="#org30d1728">Save attachment</a></li>
+<li><a href="#org0af68d5">Open attachment</a></li>
+<li><a href="#org5209781">Send email</a></li>
+<li><a href="#orga7d4869">Refresh “Summary Buffer” (check new mails)</a></li>
+<li><a href="#org7b4f575">Make all mails visible (IMPORTANT)</a></li>
+<li><a href="#orgf2298db">Forward mail</a></li>
+<li><a href="#org02246f6">Mark mails as read</a></li>
+<li><a href="#org6ae9bfe">Tree view of mail folders</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#org46cb98a">Advanced tips</a>
+<ul>
+<li>
+<ul>
+<li><a href="#org9f4f406">Windows setup</a></li>
+<li><a href="#org1341fd3">Microsoft Outlook</a></li>
+<li><a href="#org0242caf">Auto-complete mail address</a></li>
+<li><a href="#orge6cf5eb">Synchronize from Gmail contacts</a></li>
+<li><a href="#orgbb5e54f">Customize “From” field</a></li>
+<li><a href="#orga38082e">Classify email</a></li>
+<li><a href="#org34d9e25">Write HTML mail</a></li>
+<li><a href="#orga34a799">Usage is simple. Write mail in org format and M-x org-mime-htmlize.</a></li>
+<li><a href="#org5777e65">Read HTML mail</a></li>
+<li><a href="#org2a45159">Read mail offline</a></li>
+<li><a href="#org3a53881">Multiple accounts</a></li>
+<li><a href="#orgf02018f">Why Gnus displays more mails than Gmail</a></li>
+<li><a href="#org00a185f">Subscribe “[Gmail]/Sent Mail” folder</a></li>
+<li><a href="#orgff38ba0">Reconnect mail server</a></li>
+<li><a href="#orgb480049">Use Hydra to avoid remembering key bindings</a></li>
+<li><a href="#org4d6617d">Use Gwene to read RSS/Atom feed as a news group</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#org5a1b414">My setup</a></li>
+</ul>
+</div>
+</nav>
+
+<div id="outline-container-org03b8078" class="outline-2">
+<h2 id="org03b8078">Introduction</h2>
+<div class="outline-text-2" id="text-org03b8078">
+<p>
+Gnus is a good email client.
+</p>
+
+<p>
+But many newbies get lost in its features. It would be much easier if
+they had learned the essential 5% features and ignored the remaining 95%
+at the beginning.
+</p>
+
+<p>
+Here is my guide on that 5%.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org1b0f496" class="outline-2">
+<h2 id="org1b0f496">Why (OPTIONAL)</h2>
+<div class="outline-text-2" id="text-org1b0f496">
+<ul class="org-ul">
+<li>Gnus is solid</li>
+<li>Works on all platforms</li>
+<li>Less hardware resource required</li>
+<li>Searcher and filter is great</li>
+<li>Built it Emacs</li>
+<li>Mail can be viewed when offline. See the “offline” part in the
+section “Advanced tips”</li>
+<li>Powerful combined with other Emacs plugins like yasnippet</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-org6fc8316" class="outline-2">
+<h2 id="org6fc8316">Quick start</h2>
+<div class="outline-text-2" id="text-org6fc8316">
+</div>
+<div id="outline-container-org6d58f2e" class="outline-4">
+<h4 id="org6d58f2e">Things you need to know at first</h4>
+<div class="outline-text-4" id="text-org6d58f2e">
+<ul class="org-ul">
+<li>This guide applies to Emacs24+</li>
+<li>You need install GnuTLS and OpenSSH on Linux/Mac/Window(Cygwin)</li>
+<li>C means Ctrl and M means Alt. For example, M-x means pressing Alt and
+x together.</li>
+<li>M-x mycommand means pressing Alt and x, input “mycommand”, and press
+Enter key.</li>
+<li>RET means Enter key</li>
+<li>Group means the mail folder</li>
+<li>Group buffer is the buffer listing folders</li>
+<li>Summary buffer is the buffer listing mails</li>
+<li>~ means HOME directory. The full path of ~ is setup in the
+environment variable HOME. For example, ~/.gnus.el means a file named
+.gnus.el is placed in HOME directory. <i>Only</i> on windows, you must
+setup HOME environment variable manually. So if you are a windows
+user, please setup HOME right now!</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-org33fdc8c" class="outline-4">
+<h4 id="org33fdc8c">Sample setup</h4>
+<div class="outline-text-4" id="text-org33fdc8c">
+<p>
+<code>M-x gnus</code> will load <code>~/.gnus.el</code>. Usually we place all setup code in
+<code>~/.gnus.el</code> so third party libraries used only by Gnus is not loaded
+during Emacs startup.
+</p>
+
+<p>
+Before start Gnus, you must have .gnus.el ready. Either use
+<a href="http://www.emacswiki.org/emacs/GnusGmail">http://www.emacswiki.org/emacs/GnusGmail</a> or my setup at the end of this
+article for your .gnus.el.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org2f73316" class="outline-4">
+<h4 id="org2f73316">Usage</h4>
+<div class="outline-text-4" id="text-org2f73316">
+<p>
+After starting Gnus by M-x gnus, you come to the “Group Buffer”. The
+“Group Buffer” lists the mail folders. In Gnus, the folder is called
+“Group”. By default, the folders are invisible!
+</p>
+
+<p>
+You need subscribe the groups to make it visible. For example, INBOX is
+named “nnimap+gmail:INBOX” in “Group Buffer” and it's invisible at the
+beginning!. I admit it's confusing.
+</p>
+
+<p>
+Check section “Subscribe groups” for details.
+</p>
+
+<p>
+At minimum, you need subscribe INBOX group. The subscribed groups could
+still be invisible if they contains NO unread mails. Yes, I agree with
+you this makes no sense for a modern email client!
+</p>
+
+<p>
+You need C-u 5 M-x gnus-group-list-all-groups to solve this problem.
+</p>
+
+<p>
+You can insert below code into ~/.gnus to create hotkey o for C-u 5 M-x
+gnus-group-list-all-groups :
+</p>
+
+<div class="org-src-container">
+<pre class="src src-lisp">(<span style="font-weight: bold;">defun</span> <span style="font-weight: bold;">my-gnus-group-list-subscribed-groups</span> ()
+  <span style="font-style: italic;">"List all subscribed groups with or without un-read messages"</span>
+  (interactive)
+  (gnus-group-list-all-groups 5))
+
+(define-key gnus-group-mode-map
+  <span style="font-weight: bold; font-style: italic;">;; </span><span style="font-weight: bold; font-style: italic;">list all the subscribed groups even they contain zero un-read messages</span>
+  (kbd <span style="font-style: italic;">"o"</span>) 'my-gnus-group-list-subscribed-groups)
+</pre>
+</div>
+
+<p>
+In the “Group Buffer”, you can enter a folder by pressing RET. But I
+strongly suggest using C-u RET in order to see all the mails instead of
+unread mails.
+</p>
+
+<p>
+In the folder, you are viewing “Summary Buffer” which is, as I said
+before, the list of your mails.
+</p>
+
+<p>
+Now it's simple. Press RET to see the mail. Press q to quit “Summary
+Buffer”.
+</p>
+
+<p>
+In short, “Group Buffer” lists mail folders. “Summary Buffer” lists
+mails in one folder.
+</p>
+
+<p>
+That's all you need to know. You could go to section “My Gnus
+configuration (for Gmail)” to use Gnus now without reading remaining
+sections.
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org4e714b9" class="outline-2">
+<h2 id="org4e714b9">Essential 5%</h2>
+<div class="outline-text-2" id="text-org4e714b9">
+<p>
+Don't memorize all key bindings. Only pick up what you actually use.
+</p>
+
+<p>
+At the end of this article, I provides my Hydra setup so you don't need
+remembering key binding any more.
+</p>
+
+<p>
+Please check section “Use Hydra to avoid remembering key bindings” for
+more details.
+</p>
+</div>
+
+<div id="outline-container-org29edc3c" class="outline-4">
+<h4 id="org29edc3c">Search mails</h4>
+<div class="outline-text-4" id="text-org29edc3c">
+<p>
+Press G G or M-x gnus-group-make-nnir-group to search mails at server
+side in “Group Buffer”.
+</p>
+
+<p>
+You can press # to mark the groups. Search will be limited to marked
+groups. M-# to un-mark.
+</p>
+
+<p>
+If no group marked, the group under cursor is searched.
+</p>
+
+<p>
+Place the cursor before the first group, all groups will be searched.
+</p>
+
+<p>
+To search certain fields in the mail, press C-u G G or C-u M-x
+gnus-group-make-nnir-group instead. This is a very useful technique.
+</p>
+
+<p>
+You can apply more advanced search syntax (RFC3501 section SEARCH
+command) by:
+</p>
+
+<ul class="org-ul">
+<li>Press C-u G G or C-u M-x gnus-group-make-nnir-group</li>
+<li>Input query statements, press Enter</li>
+<li>Type imap, press Enter</li>
+</ul>
+
+<p>
+For example, I can use query like TEXT github SINCE 1-Jan-2016 FROM
+chenbin to search mails which are sent by me and contains keyword github
+on year 2016.
+</p>
+
+<p>
+People who dislike “friendly” RFC3501 could use Gmail syntax for search
+(Roy Hashimoto provides this tip),
+</p>
+
+<div class="org-src-container">
+<pre class="src src-lisp"><span style="font-weight: bold; font-style: italic;">;; </span><span style="font-weight: bold; font-style: italic;">Let Gnus know Gmail search syntax</span>
+(add-to-list 'nnir-imap-search-arguments '(<span style="font-style: italic;">"gmail"</span> . <span style="font-style: italic;">"X-GM-RAW"</span>))
+<span style="font-weight: bold; font-style: italic;">;; </span><span style="font-weight: bold; font-style: italic;">`</span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">gnus-group-make-nnir-group</span><span style="font-weight: bold; font-style: italic;">' use Gmail search syntax *by default*.</span>
+<span style="font-weight: bold; font-style: italic;">;; </span><span style="font-weight: bold; font-style: italic;">You can press `G G` instead `C-u G G` instead.</span>
+(setq nnir-imap-default-search-key <span style="font-style: italic;">"gmail"</span>)
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org884ce84" class="outline-4">
+<h4 id="org884ce84">Filter mails locally</h4>
+<div class="outline-text-4" id="text-org884ce84">
+<p>
+Press / / to limit the mails by subject at “Summary Buffer”. “Limiting”
+means filtering mails locally.
+</p>
+
+<p>
+Press / a to limit the mails by author.
+</p>
+
+<p>
+/ w to cancel the current filter.
+</p>
+
+<p>
+You can apply the limits sequentially and cancel them in reverse order
+by pressing / w multiple times.
+</p>
+
+<p>
+“Limiting” is cool. See
+<a href="http://www.gnu.org/software/emacs/manual/html%5C_mono/gnus.html#Limiting">http://www.gnu.org/software/emacs/manual/html\_mono/gnus.html#Limiting</a>
+for more Limiting tricks.
+</p>
+
+<p>
+You can also see
+<a href="http://sachachua.com/blog/2008/05/emacs-gnus-searching-mail/">http://sachachua.com/blog/2008/05/emacs-gnus-searching-mail/</a> for
+technical details.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org78ad6bc" class="outline-4">
+<h4 id="org78ad6bc">Subscribe groups</h4>
+<div class="outline-text-4" id="text-org78ad6bc">
+<p>
+Press A A or M-x gnus-group-list-active in “Group Buffer” to fetch
+groups at all connected server. It take a while. I suggest pressing “L”
+to use local cache instead after A A once.
+</p>
+
+<p>
+After A A or L, press u to subscribe/unsubscribe specific group.
+</p>
+
+<p>
+In order to see all the mails in “INBOX” folder/group, you need MANUALLY
+subscribe the group “INBOX”!
+</p>
+
+<p>
+Pressing o is much better. It is the hotkey I created for C-u 5 M-x
+gnus-group-list-all-groups, as mentioned in previous sections.
+</p>
+
+<p>
+Press g or M-x gnus-group-get-new-news to refresh groups list.
+</p>
+
+<p>
+You can also subscribe groups programmatically. Insert below code into
+~/.gnus.el:
+</p>
+
+<pre class="example">
+(defvar gnus-subscribe-groups-done nil
+  "Only subscribe groups once.  Or else Gnus will NOT restart.")
+(unless gnus-subscribe-groups-done
+  (gnus-subscribe-hierarchically "nnimap+hotmail:Inbox")
+  (setq gnus-subscribe-groups-done t))
+</pre>
+</div>
+</div>
+
+<div id="outline-container-orge39c899" class="outline-4">
+<h4 id="orge39c899">Reply email</h4>
+<div class="outline-text-4" id="text-orge39c899">
+<p>
+Press R or M-x gnus-summary-reply-with-original to reply WITH quoted
+text. Press r or M-x gnus-summary-reply to reply WITHOUT quoted text.
+</p>
+
+<p>
+Press S W (capitalized S then capitalized W) or M-x
+gnus-summary-wide-reply-with-original to reply all WITH quoted text.
+It's called “wide reply” in Emacs.
+</p>
+
+<p>
+Press S w or M-x gnus-summary-wide-reply to reply all WITHOUT quoted
+text.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgbd52bfc" class="outline-4">
+<h4 id="orgbd52bfc">Compose new email</h4>
+<div class="outline-text-4" id="text-orgbd52bfc">
+<p>
+Press m or M-x gnus-new-mail in “Summary Buffer”.
+</p>
+
+<p>
+You could also C-x m or M-x compose-mail anywhere in Emacs without
+bugging Gnus.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org3c42fe3" class="outline-4">
+<h4 id="org3c42fe3">Re-send as new mail</h4>
+<div class="outline-text-4" id="text-org3c42fe3">
+<p>
+Press S D e or M-x gnus-summary-resend-message-edit. For example, you
+may need re-send mail in Draft folder.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgdd24827" class="outline-4">
+<h4 id="orgdd24827">Attach a file</h4>
+<div class="outline-text-4" id="text-orgdd24827">
+<p>
+Press C-c C-a or M-x mml-attach-file.
+</p>
+
+<p>
+The attached file is actually plain text embedded in mail body. You can
+copy and modify the text.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org30d1728" class="outline-4">
+<h4 id="org30d1728">Save attachment</h4>
+<div class="outline-text-4" id="text-org30d1728">
+<p>
+Move focus over the attachment and press o or M-x gnus-mime-save-part.
+See ”Using Mime” in Emacs manual for details.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org0af68d5" class="outline-4">
+<h4 id="org0af68d5">Open attachment</h4>
+<div class="outline-text-4" id="text-org0af68d5">
+<p>
+Move focus over the attachment and press Enter or M-x
+gnus-article-press-button.
+</p>
+
+<p>
+The variable mailcap-mime-data defines the program to open the
+attachment.
+</p>
+
+<p>
+You can tweak the variable on Windows or OSX.
+</p>
+
+<p>
+On Linux, I press M-x mailcap-parse-mailcaps to load data from
+~/.mailcap into mailcap-mime-data instead of tweaking mailcap-mime-data
+directly.
+</p>
+
+<p>
+My ~/.mailcap:
+</p>
+
+<pre class="example">
+# url
+text/html; w3m -I %{charset} -T text/html; copiousoutput;
+
+# image viewer
+image/*; feh -F -d -S filename '%s';
+
+# pdf
+application/pdf; zathura '%s';
+image/pdf; zathura '%s'
+
+# video
+video/* ; mplayer '%s'
+audio/* ; mplayer '%s'
+
+# Office files.
+application/msword; soffice '%s'
+application/rtf; soffice '%s'
+text/richtext; soffice '%s'
+application/vnd.ms-excel; soffice '%s'
+application/vnd.ms-powerpoint; soffice '%s'
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org5209781" class="outline-4">
+<h4 id="org5209781">Send email</h4>
+<div class="outline-text-4" id="text-org5209781">
+<p>
+Press C-c C-c or M-x message-send-and-exit.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orga7d4869" class="outline-4">
+<h4 id="orga7d4869">Refresh “Summary Buffer” (check new mails)</h4>
+<div class="outline-text-4" id="text-orga7d4869">
+<p>
+Press / N or M-x gnus-summary-insert-new-articles.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org7b4f575" class="outline-4">
+<h4 id="org7b4f575">Make all mails visible (IMPORTANT)</h4>
+<div class="outline-text-4" id="text-org7b4f575">
+<p>
+Press C-u RET on the selected group in “Group Buffer”, or C-u M-g in
+“Summary Buffer”.
+</p>
+
+<p>
+That's the most important part of this article! By default, Gnus only
+displays unread mails.
+</p>
+
+<p>
+Check
+<a href="http://stackoverflow.com/questions/4982831/i-dont-want-to-expire-mail-in-gnus">http://stackoverflow.com/questions/4982831/i-dont-want-to-expire-mail-in-gnus</a>
+for details.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgf2298db" class="outline-4">
+<h4 id="orgf2298db">Forward mail</h4>
+<div class="outline-text-4" id="text-orgf2298db">
+<p>
+Press C-c C-f or M-x gnus-summary-mail-forward in “Summary Buffer”.
+</p>
+
+<p>
+You can mark multiple mails to forward (hotkey is “#”) and forward them
+in one mail. Holger Schauer provided the tip.
+</p>
+
+<p>
+After the forwarded email is created, you may copy the body of that
+email without sending it. The copied content could be inserted into new
+mail.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org02246f6" class="outline-4">
+<h4 id="org02246f6">Mark mails as read</h4>
+<div class="outline-text-4" id="text-org02246f6">
+<p>
+Press c either in “Summary Buffer” or “Group Buffer”. This is my
+favorite used command which it's more efficient than average mail
+client.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org6ae9bfe" class="outline-4">
+<h4 id="org6ae9bfe">Tree view of mail folders</h4>
+<div class="outline-text-4" id="text-org6ae9bfe">
+<p>
+Group Topics is used to re-organize the mail folder into tree view.
+</p>
+
+<p>
+For example, you can place mail folders from Gmail into “gmail” topic,
+mails from Outlook.com into “hotmail” topic, place “gmail” and “hotmail”
+under root topic “Gnus”.
+</p>
+
+<p>
+The setup is only one line,
+</p>
+
+<p>
+(add-hook 'gnus-group-mode-hook 'gnus-topic-mode) After setup, you can
+read its official manual to learn its commands to organize mail folders
+manually.
+</p>
+
+<p>
+It's tiresome to do this folder organizing thing again and again on
+different computers.
+</p>
+
+<p>
+So you'd better use my way.
+</p>
+
+<p>
+All you need to do is to insert below code into ~/.gnus.el,
+</p>
+
+<div class="org-src-container">
+<pre class="src src-lisp">(eval-after-load 'gnus-topic
+  '(<span style="font-weight: bold;">progn</span>
+     (setq gnus-message-archive-group '((format-time-string <span style="font-style: italic;">"sent.%Y"</span>)))
+     (setq gnus-topic-topology '((<span style="font-style: italic;">"Gnus"</span> visible)
+                                 ((<span style="font-style: italic;">"misc"</span> visible))
+                                 ((<span style="font-style: italic;">"hotmail"</span> visible nil nil))
+                                 ((<span style="font-style: italic;">"gmail"</span> visible nil nil))))
+
+     <span style="font-weight: bold; font-style: italic;">;; </span><span style="font-weight: bold; font-style: italic;">Please not the key of topic is specified in my sample setup</span>
+     (setq gnus-topic-alist '((<span style="font-style: italic;">"hotmail"</span> <span style="font-weight: bold; font-style: italic;">; the key of topic</span>
+                               <span style="font-style: italic;">"nnimap+hotmail:Inbox"</span>
+                               <span style="font-style: italic;">"nnimap+hotmail:Drafts"</span>
+                               <span style="font-style: italic;">"nnimap+hotmail:Sent"</span>)
+                              (<span style="font-style: italic;">"gmail"</span> <span style="font-weight: bold; font-style: italic;">; the key of topic</span>
+                               <span style="font-style: italic;">"INBOX"</span>
+                               <span style="font-style: italic;">"[Gmail]/Sent Mail"</span>
+                               <span style="font-style: italic;">"Drafts"</span>)
+                              (<span style="font-style: italic;">"misc"</span> <span style="font-weight: bold; font-style: italic;">; the key of topic</span>
+                               <span style="font-style: italic;">"nnfolder+archive:sent.2015-12"</span>
+                               <span style="font-style: italic;">"nnfolder+archive:sent.2016"</span>
+                               <span style="font-style: italic;">"nndraft:drafts"</span>)
+                              (<span style="font-style: italic;">"Gnus"</span>)))))
+</pre>
+</div>
+
+<p>
+Instead of remembering extra commands, editing above snippet is more
+straightforward. The only requirement is a little bit of Emacs Lisp
+knowledge.
+</p>
+
+<p>
+The flag gnus-message-archive-group defines local archive folder of sent
+mails. By default new folder is created monthly. My setup creates the
+folder yearly.
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org46cb98a" class="outline-2">
+<h2 id="org46cb98a">Advanced tips</h2>
+<div class="outline-text-2" id="text-org46cb98a">
+</div>
+<div id="outline-container-org9f4f406" class="outline-4">
+<h4 id="org9f4f406">Windows setup</h4>
+<div class="outline-text-4" id="text-org9f4f406">
+<p>
+It's 100% usable if you install Cygwin at first.
+</p>
+
+<p>
+Gnus from Cygwin version of Emacs works out of the box.
+</p>
+
+<p>
+Native Emacs for Windows need a little setup:
+</p>
+
+<ul class="org-ul">
+<li>Right-click “My Computer” and go to “Properties -&gt; Advanced -&gt;
+Environmental Variables”</li>
+<li>Setup user variables which does not require Administrator right</li>
+<li>Set the variable “HOME” to the parent directory of your “.emacs.d”
+directory</li>
+<li>Set the variable “PATH” to the “C:\cygwin64\bin”. I suppose Cygwin is
+installed at driver C.</li>
+<li>Install GnuTLS and OpenSSH through Cygwin package manager</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-org1341fd3" class="outline-4">
+<h4 id="org1341fd3">Microsoft Outlook</h4>
+<div class="outline-text-4" id="text-org1341fd3">
+<p>
+If your Exchange Server is not using standard protocol like IMAP or you
+can't access IMAP port behind firewall, you can use DavMail. DavMail is
+a “POP/IMAP/SMTP/CalDAV/CardDAV/LDAP exchange gateway”.
+</p>
+
+<p>
+Please read its manual, it's easy to setup.
+</p>
+
+<p>
+Here are a few tips for DavMail setup.
+</p>
+
+<p>
+The Administrator might use non-standard OWA url, you can use EWSEditor
+to find out the url.
+</p>
+
+<p>
+The IMAP setup should set nnimap-stream to plain by default.
+</p>
+
+<p>
+Here is a sample setup for Davmail:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-lisp">(setq gnus-select-method
+      '(nnimap <span style="font-style: italic;">"companyname"</span>
+               (nnimap-address <span style="font-style: italic;">"127.0.0.1"</span>)
+               (nnimap-server-port 1143)
+               (nnimap-stream plain)
+               (nnir-search-engine imap)))
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org0242caf" class="outline-4">
+<h4 id="org0242caf">Auto-complete mail address</h4>
+<div class="outline-text-4" id="text-org0242caf">
+<p>
+Install BBDB through melpa. It is a email address database written in
+Emacs Lisp.
+</p>
+
+<p>
+You can always use M-x bbdb-complete-name and M-x bbdb-complete-mail
+provided by BBDB.
+</p>
+
+<p>
+But there are other better plugins based on BBDB (so you still need
+install BBDB at first):
+</p>
+
+<ul class="org-ul">
+<li>counsel-bbdb (counsel-bbdb is a lightweight alternative developed by
+me)</li>
+<li>company-mode</li>
+<li>bbdb-handy</li>
+</ul>
+
+<p>
+You only need one of above packages.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orge6cf5eb" class="outline-4">
+<h4 id="orge6cf5eb">Synchronize from Gmail contacts</h4>
+<div class="outline-text-4" id="text-orge6cf5eb">
+<p>
+Please,
+</p>
+
+<ul class="org-ul">
+<li>Go to <a href="https://www.google.com/contacts/">https://www.google.com/contacts/</a></li>
+<li>Click “More -&gt; Export -&gt; vCard Format -&gt; Export”</li>
+<li>Install <a href="https://github.com/redguardtoo/gmail2bbdb">https://github.com/redguardtoo/gmail2bbdb</a> (developed by me)
+and press M-x gmail2bbdb-import-file. The contacts will be output
+into ~/.bbdb which is automatically detected by Emacs</li>
+</ul>
+
+<p>
+Other plugins are strict on versions of BBDB. Mine doesn't have such
+issue.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgbb5e54f" class="outline-4">
+<h4 id="orgbb5e54f">Customize “From” field</h4>
+<div class="outline-text-4" id="text-orgbb5e54f">
+<p>
+Easiest solution is to switch the FROM field dynamically by M-x
+toggle-mail-from-field:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-lisp">(<span style="font-weight: bold;">defun</span> <span style="font-weight: bold;">toggle-mail-from-field</span> ()
+  (interactive)
+  (<span style="font-weight: bold;">cond</span>
+   ((string= <span style="font-style: italic;">"personal@gmail.com"</span> user-mail-address)
+    (setq user-mail-address <span style="font-style: italic;">"myname@office.com"</span>))
+   (t
+    (setq user-mail-address <span style="font-style: italic;">"personal@gmail.com"</span>)))
+  (message <span style="font-style: italic;">"Mail FROM: %s"</span> user-mail-address))
+</pre>
+</div>
+
+<p>
+A more complex solution is setup FROM field by the computer you are
+using:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-lisp"><span style="font-weight: bold; font-style: italic;">;; </span><span style="font-weight: bold; font-style: italic;">(getenv "HOSTNAME") won't work because $HOSTNAME is not an env variable</span>
+<span style="font-weight: bold; font-style: italic;">;; </span><span style="font-weight: bold; font-style: italic;">(system-name) won't work because my /etc/hosts has some weird setup in office</span>
+(setq my-hostname (with-temp-buffer
+        (shell-command <span style="font-style: italic;">"hostname"</span> t)
+        (goto-char (point-max))
+        (delete-char -1)
+        (buffer-string)))
+
+(<span style="font-weight: bold;">defun</span> <span style="font-weight: bold;">at-office</span> ()
+  (interactive)
+  (and (string= my-hostname <span style="font-style: italic;">"my-sydney-workpc"</span>)
+       (not (or (string= my-hostname <span style="font-style: italic;">"homepc"</span>)
+                (string= my-hostname <span style="font-style: italic;">"eee"</span>)))))
+
+(setq user-full-name <span style="font-style: italic;">"My Name"</span>
+      user-mail-address (<span style="font-weight: bold;">if</span> (at-office) <span style="font-style: italic;">"me@mycompany.com"</span> <span style="font-style: italic;">"me@gmail.com"</span>))
+</pre>
+</div>
+
+<p>
+Please note,
+</p>
+
+<ul class="org-ul">
+<li>Command line program hostname is better than Emacs function
+(system-name)</li>
+<li>I works on several computers which do not belong to me, so I cannot
+change /etc/hosts which (system-name) try to access</li>
+<li>Please verify your email address at Gmail if you use Google's SMTP
+server</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-orga38082e" class="outline-4">
+<h4 id="orga38082e">Classify email</h4>
+<div class="outline-text-4" id="text-orga38082e">
+<p>
+Popfile.
+</p>
+
+<p>
+You may think Google Inbox equals to Popfile. Trust me, it's not. You
+only need Popfile!
+</p>
+
+<p>
+Popfile is open source software. The data is stored locally with my full
+control. For example, the algorithm trained by Gmail can be used to
+classify mails from Microsoft Exchange Mail Server.
+</p>
+
+<p>
+Check <a href="http://blog.binchen.org/posts/use-popfile-at-linux.html">http://blog.binchen.org/posts/use-popfile-at-linux.html</a> for
+details.
+</p>
+
+<p>
+The command I use to start popfile,
+</p>
+
+<p>
+cd ~/bin/popfile/ &amp;&amp; perl popfile.pl
+</p>
+</div>
+</div>
+
+<div id="outline-container-org34d9e25" class="outline-4">
+<h4 id="org34d9e25">Write HTML mail</h4>
+<div class="outline-text-4" id="text-org34d9e25">
+<p>
+Use org-mime.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orga34a799" class="outline-4">
+<h4 id="orga34a799">Usage is simple. Write mail in org format and M-x org-mime-htmlize.</h4>
+<div class="outline-text-4" id="text-orga34a799">
+<p>
+Please use my patched org-mime which supports Emacs 24.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org5777e65" class="outline-4">
+<h4 id="org5777e65">Read HTML mail</h4>
+<div class="outline-text-4" id="text-org5777e65">
+<p>
+Install w3m and emacs-w3m.
+</p>
+
+<p>
+Then insert below code into ~/.emacs,
+</p>
+
+<p>
+(setq mm-text-html-renderer 'w3m) If we don't specify the w3m as html
+render, Emacs will use its built in browser shr to render HTML since
+version 24.4.
+</p>
+
+<p>
+I prefer w3m because it has powerful APIs and available on all operating
+systems.
+</p>
+
+<p>
+Some people prefer shr because it can display HTML colors. The libxml is
+required if you used shr. On windows, libxml need be installed manually.
+</p>
+
+<p>
+If you use Cygwin on Windows (as I said before, you have to install
+Cygwin because that's the easiest way to install GnuTLS and OpenSSH),
+you can install w3m through Cygwin.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org2a45159" class="outline-4">
+<h4 id="org2a45159">Read mail offline</h4>
+<div class="outline-text-4" id="text-org2a45159">
+<p>
+Go to “Summary Buffer”.
+</p>
+
+<p>
+You need mark the mails by pressing ! or M-x
+gnus-summary-tick-article-forward.
+</p>
+
+<p>
+The marked mails enter the disk cache. They can be read offline.
+</p>
+
+<p>
+M-x gnus-summary-put-mark-as-read to remove the cached mail.
+</p>
+
+<p>
+You also need insert below code into ~/.emacs,
+</p>
+
+<p>
+(setq gnus-use-cache t) Above code uses the cache to the full extent by
+“wasting” tens of megabytes of disk space.
+</p>
+
+<p>
+The disk cache is located at “~/News/cache/”. You can back it up with
+GitHub private repository.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org3a53881" class="outline-4">
+<h4 id="org3a53881">Multiple accounts</h4>
+<div class="outline-text-4" id="text-org3a53881">
+<p>
+You only need copy the code containing “gnus-secondary-select-methods”
+from my setup.
+</p>
+
+<p>
+Here is a sample setup,
+</p>
+
+<div class="org-src-container">
+<pre class="src src-lisp">(add-to-list 'gnus-secondary-select-methods
+             '(nnimap <span style="font-style: italic;">"gmail-second"</span>
+                      (nnimap-address <span style="font-style: italic;">"imap.gmail.com"</span>)
+                      (nnimap-server-port 993)
+                      (nnimap-stream ssl)
+                      (nnir-search-engine imap)
+                      <span style="font-weight: bold; font-style: italic;">; @see http://www.gnu.org/software/emacs/manual/html_node/gnus/Expiring-Mail.html</span>
+                      <span style="font-weight: bold; font-style: italic;">;; </span><span style="font-weight: bold; font-style: italic;">press 'E' to expire email</span>
+                      (nnmail-expiry-target <span style="font-style: italic;">"nnimap+gmail:[Gmail]/Trash"</span>)
+                      (nnmail-expiry-wait 90)))
+</pre>
+</div>
+
+<p>
+gnus-secondary-select-methods is the list of your email accounts.
+</p>
+
+<p>
+The information of multiple accounts is stored at ~/.authinfo.gpg.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgf02018f" class="outline-4">
+<h4 id="orgf02018f">Why Gnus displays more mails than Gmail</h4>
+<div class="outline-text-4" id="text-orgf02018f">
+<p>
+Gnus counts by individual mail. Gmail counts by mail thread.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org00a185f" class="outline-4">
+<h4 id="org00a185f">Subscribe “[Gmail]/Sent Mail” folder</h4>
+<div class="outline-text-4" id="text-org00a185f">
+<p>
+You can see your sent mails in Gnus.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgff38ba0" class="outline-4">
+<h4 id="orgff38ba0">Reconnect mail server</h4>
+<div class="outline-text-4" id="text-orgff38ba0">
+<p>
+Press M-x gnus-group-enter-server-mode to go into server list.
+</p>
+
+<p>
+Move the cursor to the offline server and M-x gnus-server-open-server.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgb480049" class="outline-4">
+<h4 id="orgb480049">Use Hydra to avoid remembering key bindings</h4>
+<div class="outline-text-4" id="text-orgb480049">
+<ul class="org-ul">
+<li>Install Hydra through <a href="http://melpa.org/">http://melpa.org/</a></li>
+<li>Insert below code into ~/.emacs. Then press C-c C-y when composing
+mail. Press y in other modes ```lisp (eval-after-load 'gnus-group
+'(progn (defhydra hydra-gnus-group (:color blue) "Do?" ("a"
+gnus-group-list-active "REMOTE groups A A") ("l"
+gnus-group-list-all-groups "LOCAL groups L") ("c"
+gnus-topic-catchup-articles "Read all c") ("G"
+gnus-group-make-nnir-group "Search server G G") ("g"
+gnus-group-get-new-news "Refresh g") ("s"
+gnus-group-enter-server-mode "Servers") ("m" gnus-group-new-mail
+"Compose m OR C-x m") ("#" gnus-topic-mark-topic "mark #") ("q" nil
+"cancel")) ;; y is not used by default (define-key
+gnus-group-mode-map "y" 'hydra-gnus-group/body)))</li>
+</ul>
+
+<p>
+;; gnus-summary-mode (eval-after-load 'gnus-sum '(progn (defhydra
+hydra-gnus-summary (:color blue) "Do?" ("s" gnus-summary-show-thread
+"Show thread") ("h" gnus-summary-hide-thread "Hide thread") ("n"
+gnus-summary-insert-new-articles "Refresh / N") ("f"
+gnus-summary-mail-forward "Forward C-c C-f") ("!"
+gnus-summary-tick-article-forward "Mail -&gt; disk !") ("p"
+gnus-summary-put-mark-as-read "Mail &lt;- disk") ("c"
+gnus-summary-catchup-and-exit "Read all c") ("e"
+gnus-summary-resend-message-edit "Resend S D e") ("R"
+gnus-summary-reply-with-original "Reply with original R") ("r"
+gnus-summary-reply "Reply r") ("W" gnus-summary-wide-reply-with-original
+"Reply all with original S W") ("w" gnus-summary-wide-reply "Reply all S
+w") ("#" gnus-topic-mark-topic "mark #") ("q" nil "cancel")) ;; y is not
+used by default (define-key gnus-summary-mode-map "y"
+'hydra-gnus-summary/body)))
+</p>
+
+<p>
+;; gnus-article-mode (eval-after-load 'gnus-art '(progn (defhydra
+hydra-gnus-article (:color blue) "Do?" ("f" gnus-summary-mail-forward
+"Forward") ("R" gnus-article-reply-with-original "Reply with original
+R") ("r" gnus-article-reply "Reply r") ("W"
+gnus-article-wide-reply-with-original "Reply all with original S W")
+("o" gnus-mime-save-part "Save attachment at point o") ("w"
+gnus-article-wide-reply "Reply all S w") ("q" nil "cancel")) ;; y is not
+used by default (define-key gnus-article-mode-map "y"
+'hydra-gnus-article/body)))
+</p>
+
+<p>
+(eval-after-load 'message '(progn (defhydra hydra-message (:color blue)
+"Do?" ("ca" mml-attach-file "Attach C-c C-a") ("cc"
+message-send-and-exit "Send C-c C-c") ("q" nil "cancel"))
+(global-set-key (kbd "C-c C-y") 'hydra-message/body))) ```
+</p>
+</div>
+</div>
+
+<div id="outline-container-org4d6617d" class="outline-4">
+<h4 id="org4d6617d">Use Gwene to read RSS/Atom feed as a news group</h4>
+<div class="outline-text-4" id="text-org4d6617d">
+<p>
+You can either submit single RSS/Atom feed url or upload OMPL file.
+</p>
+
+<p>
+I suggest using emacs-w3m to upload OPML file because it's easy to
+select the links created by Gwene.
+</p>
+
+<p>
+Then you can use techniques I introduced in previous section “Tree view
+of mail folders” to organize the feeds. Please make up your mind before
+uploading.
+</p>
+
+<p>
+To view/download embedded video/audio in feed, you can use mplayer if
+its support for network streaming is enabled. It's enabled by default at
+most Linux distributions, OSX, and Windows.
+</p>
+
+<p>
+There are also CLI tricks to open images at different OS. Check my code
+for details.
+</p>
+
+<p>
+Here are three commands w3mext-open-with-mplayer,
+w3mext-download-rss-stream, and w3mext-open-link-or-image-or-url to
+process multimedia:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-lisp"><span style="font-weight: bold; font-style: italic;">;; </span><span style="font-weight: bold; font-style: italic;">https://www.emacswiki.org/emacs/emacs-w3m</span>
+(<span style="font-weight: bold;">require</span> '<span style="font-weight: bold; text-decoration: underline;">w3m</span>)
+<span style="font-weight: bold; font-style: italic;">;; </span><span style="font-weight: bold; font-style: italic;">Install https://github.com/rolandwalker/simpleclip for clipboard support</span>
+(<span style="font-weight: bold;">require</span> '<span style="font-weight: bold; text-decoration: underline;">simpleclip</span>)
+
+(<span style="font-weight: bold;">defun</span> <span style="font-weight: bold;">my-buffer-str</span> ()
+  (buffer-substring-no-properties (point-min) (point-max)))
+
+(<span style="font-weight: bold;">defun</span> <span style="font-weight: bold;">my-guess-image-viewer-path</span> (file <span style="font-weight: bold; text-decoration: underline;">&amp;optional</span> is-stream)
+  (<span style="font-weight: bold;">let</span> ((rlt <span style="font-style: italic;">"mplayer"</span>))
+    (<span style="font-weight: bold;">cond</span>
+     (*is-a-mac*
+      (setq rlt
+            (format <span style="font-style: italic;">"open %s &amp;"</span> file)))
+     (*linux*
+      (setq rlt
+            (<span style="font-weight: bold;">if</span> is-stream (format <span style="font-style: italic;">"curl -L %s | feh -F - &amp;"</span> file) (format <span style="font-style: italic;">"feh -F %s &amp;"</span> file))))
+     (*cygwin* (setq rlt <span style="font-style: italic;">"feh -F"</span>))
+     (t <span style="font-weight: bold; font-style: italic;">; windows</span>
+      (setq rlt
+            (format <span style="font-style: italic;">"rundll32.exe %SystemRoot%\\\\System32\\\\\shimgvw.dll, ImageView_Fullscreen %s &amp;"</span> file))))
+    rlt))
+
+(<span style="font-weight: bold;">defun</span> <span style="font-weight: bold;">my-guess-mplayer-path</span> ()
+  (<span style="font-weight: bold;">let*</span> ((rlt <span style="font-style: italic;">"mplayer"</span>))
+    (<span style="font-weight: bold;">cond</span>
+     (*is-a-mac* (setq rlt <span style="font-style: italic;">"mplayer -quiet"</span>))
+     (*linux* (setq rlt <span style="font-style: italic;">"mplayer -quiet -stop-xscreensaver"</span>))
+     (*cygwin*
+      (<span style="font-weight: bold;">if</span> (file-executable-p <span style="font-style: italic;">"/cygdrive/c/mplayer/mplayer.exe"</span>)
+          (setq rlt <span style="font-style: italic;">"/cygdrive/c/mplayer/mplayer.exe -quiet"</span>)
+        (setq rlt <span style="font-style: italic;">"/cygdrive/d/mplayer/mplayer.exe -quiet"</span>)))
+     (t <span style="font-weight: bold; font-style: italic;">; windows</span>
+      (<span style="font-weight: bold;">if</span> (file-executable-p <span style="font-style: italic;">"c:\\\\mplayer\\\\mplayer.exe"</span>)
+          (setq rlt <span style="font-style: italic;">"c:\\\\mplayer\\\\mplayer.exe -quiet"</span>)
+        (setq rlt <span style="font-style: italic;">"d:\\\\mplayer\\\\mplayer.exe -quiet"</span>))))
+    rlt))
+
+(<span style="font-weight: bold;">defun</span> <span style="font-weight: bold;">w3mext-subject-to-target-filename</span> ()
+  (<span style="font-weight: bold;">let</span> (rlt str)
+    (save-excursion
+      (goto-char (point-min))
+      <span style="font-weight: bold; font-style: italic;">;; </span><span style="font-weight: bold; font-style: italic;">first line in email could be some hidden line containing NO to field</span>
+      (setq str (my-buffer-str)))
+    (<span style="font-weight: bold;">if</span> (string-match <span style="font-style: italic;">"^Subject: \\(.+\\)"</span> str)
+        (setq rlt (match-string 1 str)))
+    <span style="font-weight: bold; font-style: italic;">;; </span><span style="font-weight: bold; font-style: italic;">clean the timestamp at the end of subject</span>
+    (setq rlt (replace-regexp-in-string <span style="font-style: italic;">"[ 0-9_.'/-]+$"</span> <span style="font-style: italic;">""</span> rlt))
+    (setq rlt (replace-regexp-in-string <span style="font-style: italic;">"'s "</span> <span style="font-style: italic;">" "</span> rlt))
+    (setq rlt (replace-regexp-in-string <span style="font-style: italic;">"[ ,_'/-]+"</span> <span style="font-style: italic;">"-"</span> rlt))
+    rlt))
+
+(<span style="font-weight: bold;">defun</span> <span style="font-weight: bold;">w3mext-download-rss-stream</span> ()
+  (interactive)
+  (<span style="font-weight: bold;">let</span> (url cmd)
+    (<span style="font-weight: bold;">when</span> (or (string= major-mode <span style="font-style: italic;">"w3m-mode"</span>) (string= major-mode <span style="font-style: italic;">"gnus-article-mode"</span>))
+      (setq url (w3m-anchor))
+      (<span style="font-weight: bold;">cond</span>
+       ((or (not url) (string= url <span style="font-style: italic;">"buffer://"</span>))
+        (message <span style="font-style: italic;">"This link is not video/audio stream."</span>))
+       (t
+        (setq cmd (format <span style="font-style: italic;">"curl -L %s &gt; %s.%s"</span>  url (w3mext-subject-to-target-filename) (file-name-extension url)))
+        (kill-new cmd)
+        (simpleclip-set-contents cmd)
+        (message <span style="font-style: italic;">"%s =&gt; clipd/kill-ring"</span> cmd))))))
+
+(<span style="font-weight: bold;">defun</span> <span style="font-weight: bold;">w3mext-open-link-or-image-or-url</span> ()
+  <span style="font-style: italic;">"Opens the current link or image or current page's uri or any url-like text under cursor in firefox."</span>
+  (interactive)
+  (<span style="font-weight: bold;">let*</span> (url)
+    (<span style="font-weight: bold;">when</span> (or (string= major-mode <span style="font-style: italic;">"w3m-mode"</span>) (string= major-mode <span style="font-style: italic;">"gnus-article-mode"</span>))
+      (setq url (w3m-anchor))
+      (<span style="font-weight: bold;">if</span> (or (not url) (string= url <span style="font-style: italic;">"buffer://"</span>))
+          (setq url (or (w3m-image) w3m-current-url))))
+    (browse-url-generic (<span style="font-weight: bold;">if</span> url url (car (browse-url-interactive-arg <span style="font-style: italic;">"URL: "</span>))))))
+
+(<span style="font-weight: bold;">defun</span> <span style="font-weight: bold;">w3mext-encode-specials</span> (str)
+  (setq str (replace-regexp-in-string <span style="font-style: italic;">"("</span> <span style="font-style: italic;">"%28"</span> str))
+  (setq str (replace-regexp-in-string <span style="font-style: italic;">")"</span> <span style="font-style: italic;">"%29"</span> str))
+  (setq str (replace-regexp-in-string <span style="font-style: italic;">")"</span> <span style="font-style: italic;">"%20"</span> str)))
+
+(<span style="font-weight: bold;">defun</span> <span style="font-weight: bold;">w3mext-open-with-mplayer</span> ()
+  (interactive)
+  (<span style="font-weight: bold;">let</span> (url cmd str)
+    (<span style="font-weight: bold;">when</span> (or (string= major-mode <span style="font-style: italic;">"w3m-mode"</span>) (string= major-mode <span style="font-style: italic;">"gnus-article-mode"</span>))
+      <span style="font-weight: bold; font-style: italic;">;; </span><span style="font-weight: bold; font-style: italic;">weird, `</span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">w3m-anchor</span><span style="font-weight: bold; font-style: italic;">' fail to extract url while `</span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">w3m-image</span><span style="font-weight: bold; font-style: italic;">' can</span>
+      (setq url (or (w3m-anchor) (w3m-image)))
+      (<span style="font-weight: bold;">unless</span> url
+        (save-excursion
+          (goto-char (point-min))
+          (<span style="font-weight: bold;">when</span> (string-match <span style="font-style: italic;">"^Archived-at: &lt;?\\([</span><span style="font-style: italic;">^</span><span style="font-style: italic;"> &lt;&gt;]*\\)&gt;?"</span> (setq str (my-buffer-str)))
+            (setq url (match-string 1 str)))))
+      (setq url (w3mext-encode-specials url))
+      (setq cmd (format <span style="font-style: italic;">"%s -cache 2000 %s &amp;"</span> (my-guess-mplayer-path) url))
+      (<span style="font-weight: bold;">when</span> (string= url <span style="font-style: italic;">"buffer://"</span>)
+        <span style="font-weight: bold; font-style: italic;">;; </span><span style="font-weight: bold; font-style: italic;">cache 2M data and don't block UI</span>
+        (setq cmd (my-guess-image-viewer-path url t))))
+    (<span style="font-weight: bold;">if</span> url (shell-command cmd))))
+</pre>
+</div>
+
+<p>
+Please note these commands require (setq mm-text-html-renderer 'w3m) in
+your setup.
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org5a1b414" class="outline-2">
+<h2 id="org5a1b414">My setup</h2>
+<div class="outline-text-2" id="text-org5a1b414">
+<p>
+This setup requires Emacs 24.3+.
+</p>
+
+<p>
+My ~/.gnus.el,
+</p>
+
+<div class="org-src-container">
+<pre class="src src-lisp">(<span style="font-weight: bold;">require</span> '<span style="font-weight: bold; text-decoration: underline;">nnir</span>)
+
+<span style="font-weight: bold; font-style: italic;">;; </span><span style="font-weight: bold; font-style: italic;">@see http://www.emacswiki.org/emacs/GnusGmail#toc1</span>
+(setq gnus-select-method '(nntp <span style="font-style: italic;">"news.gmane.org"</span>)) <span style="font-weight: bold; font-style: italic;">;; </span><span style="font-weight: bold; font-style: italic;">if you read news groups</span>
+
+<span style="font-weight: bold; font-style: italic;">;; </span><span style="font-weight: bold; font-style: italic;">ask encryption password once</span>
+(setq epa-file-cache-passphrase-for-symmetric-encryption t)
+
+<span style="font-weight: bold; font-style: italic;">;; </span><span style="font-weight: bold; font-style: italic;">@see http://gnus.org/manual/gnus_397.html</span>
+(add-to-list 'gnus-secondary-select-methods
+             '(nnimap <span style="font-style: italic;">"gmail"</span>
+                      (nnimap-address <span style="font-style: italic;">"imap.gmail.com"</span>)
+                      (nnimap-server-port 993)
+                      (nnimap-stream ssl)
+                      (nnir-search-engine imap)
+                      <span style="font-weight: bold; font-style: italic;">; @see http://www.gnu.org/software/emacs/manual/html_node/gnus/Expiring-Mail.html</span>
+                      <span style="font-weight: bold; font-style: italic;">;; </span><span style="font-weight: bold; font-style: italic;">press 'E' to expire email</span>
+                      (nnmail-expiry-target <span style="font-style: italic;">"nnimap+gmail:[Gmail]/Trash"</span>)
+                      (nnmail-expiry-wait 90)))
+
+<span style="font-weight: bold; font-style: italic;">;; </span><span style="font-weight: bold; font-style: italic;">OPTIONAL, the setup for Microsoft Hotmail</span>
+(add-to-list 'gnus-secondary-select-methods
+             '(nnimap <span style="font-style: italic;">"hotmail"</span>
+                      (nnimap-address <span style="font-style: italic;">"imap-mail.outlook.com"</span>)
+                      (nnimap-server-port 993)
+                      (nnimap-stream ssl)
+                      (nnir-search-engine imap)
+                      (nnmail-expiry-wait 90)))
+
+(setq gnus-thread-sort-functions
+      '(gnus-thread-sort-by-most-recent-date
+        (not gnus-thread-sort-by-number)))
+
+<span style="font-weight: bold; font-style: italic;">; </span><span style="font-weight: bold; font-style: italic;">NO 'passive</span>
+(setq gnus-use-cache t)
+
+<span style="font-weight: bold; font-style: italic;">;; </span><span style="font-weight: bold; font-style: italic;">BBDB: Address list</span>
+(add-to-list 'load-path <span style="font-style: italic;">"/where/you/place/bbdb/"</span>)
+(<span style="font-weight: bold;">require</span> '<span style="font-weight: bold; text-decoration: underline;">bbdb</span>)
+(bbdb-initialize 'message 'gnus 'sendmail)
+(add-hook 'gnus-startup-hook 'bbdb-insinuate-gnus)
+(setq bbdb/mail-auto-create-p t
+      bbdb/news-auto-create-p t)
+
+<span style="font-weight: bold; font-style: italic;">;; </span><span style="font-weight: bold; font-style: italic;">auto-complete emacs address using bbdb UI</span>
+(add-hook 'message-mode-hook
+          '(<span style="font-weight: bold;">lambda</span> ()
+             (flyspell-mode t)
+             (local-set-key (kdb <span style="font-style: italic;">"TAB"</span>) 'bbdb-complete-name)))
+
+<span style="font-weight: bold; font-style: italic;">;; </span><span style="font-weight: bold; font-style: italic;">Fetch only part of the article if we can.</span>
+<span style="font-weight: bold; font-style: italic;">;; </span><span style="font-weight: bold; font-style: italic;">I saw this in someone's .gnus</span>
+(setq gnus-read-active-file 'some)
+
+<span style="font-weight: bold; font-style: italic;">;; </span><span style="font-weight: bold; font-style: italic;">open attachment</span>
+(eval-after-load 'mailcap
+  '(<span style="font-weight: bold;">progn</span>
+     (<span style="font-weight: bold;">cond</span>
+      <span style="font-weight: bold; font-style: italic;">;; </span><span style="font-weight: bold; font-style: italic;">on OSX, maybe change mailcap-mime-data?</span>
+      ((eq system-type 'darwin))
+      <span style="font-weight: bold; font-style: italic;">;; </span><span style="font-weight: bold; font-style: italic;">on Windows, maybe change mailcap-mime-data?</span>
+      ((eq system-type 'windows-nt))
+      (t
+       <span style="font-weight: bold; font-style: italic;">;; </span><span style="font-weight: bold; font-style: italic;">Linux, read ~/.mailcap</span>
+       (mailcap-parse-mailcaps)))))
+
+<span style="font-weight: bold; font-style: italic;">;; </span><span style="font-weight: bold; font-style: italic;">Tree view for groups.</span>
+(add-hook 'gnus-group-mode-hook 'gnus-topic-mode)
+
+<span style="font-weight: bold; font-style: italic;">;; </span><span style="font-weight: bold; font-style: italic;">Threads!  I hate reading un-threaded email -- especially mailing</span>
+<span style="font-weight: bold; font-style: italic;">;; </span><span style="font-weight: bold; font-style: italic;">lists.  This helps a ton!</span>
+(setq gnus-summary-thread-gathering-function 'gnus-gather-threads-by-subject)
+
+<span style="font-weight: bold; font-style: italic;">;; </span><span style="font-weight: bold; font-style: italic;">Also, I prefer to see only the top level message.  If a message has</span>
+<span style="font-weight: bold; font-style: italic;">;; </span><span style="font-weight: bold; font-style: italic;">several replies or is part of a thread, only show the first message.</span>
+<span style="font-weight: bold; font-style: italic;">;; </span><span style="font-weight: bold; font-style: italic;">`</span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">gnus-thread-ignore-subject</span><span style="font-weight: bold; font-style: italic;">' will ignore the subject and</span>
+<span style="font-weight: bold; font-style: italic;">;; </span><span style="font-weight: bold; font-style: italic;">look at 'In-Reply-To:' and 'References:' headers.</span>
+(setq gnus-thread-hide-subtree t)
+(setq gnus-thread-ignore-subject t)
+
+<span style="font-weight: bold; font-style: italic;">;; </span><span style="font-weight: bold; font-style: italic;">Personal Information</span>
+(setq user-full-name <span style="font-style: italic;">"My Name"</span>
+      user-mail-address <span style="font-style: italic;">"username@gmail.com"</span>)
+
+<span style="font-weight: bold; font-style: italic;">;; </span><span style="font-weight: bold; font-style: italic;">Read HTML mail:</span>
+<span style="font-weight: bold; font-style: italic;">;; </span><span style="font-weight: bold; font-style: italic;">You need install the command line web browser 'w3m' and Emacs plugin 'w3m'</span>
+<span style="font-weight: bold; font-style: italic;">;; </span><span style="font-weight: bold; font-style: italic;">manually. It specify the html render as w3m so my setup works on all versions</span>
+<span style="font-weight: bold; font-style: italic;">;; </span><span style="font-weight: bold; font-style: italic;">of Emacs.</span>
+<span style="font-weight: bold; font-style: italic;">;;</span>
+<span style="font-weight: bold; font-style: italic;">;; </span><span style="font-weight: bold; font-style: italic;">Since Emacs 24+, a default html rendering engine `</span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">shr</span><span style="font-weight: bold; font-style: italic;">' is provided:</span>
+<span style="font-weight: bold; font-style: italic;">;;   </span><span style="font-weight: bold; font-style: italic;">- It works out of box without any cli program dependency or setup</span>
+<span style="font-weight: bold; font-style: italic;">;;   </span><span style="font-weight: bold; font-style: italic;">- It can render html color</span>
+<span style="font-weight: bold; font-style: italic;">;; </span><span style="font-weight: bold; font-style: italic;">So below line is optional.</span>
+(setq mm-text-html-renderer 'w3m) <span style="font-weight: bold; font-style: italic;">; OPTIONAL</span>
+
+<span style="font-weight: bold; font-style: italic;">;; </span><span style="font-weight: bold; font-style: italic;">Send email through SMTP</span>
+(setq message-send-mail-function 'smtpmail-send-it
+      smtpmail-default-smtp-server <span style="font-style: italic;">"smtp.gmail.com"</span>
+      smtpmail-smtp-service 587
+      smtpmail-local-domain <span style="font-style: italic;">"homepc"</span>)
+<span style="font-weight: bold; font-style: italic;">;; </span><span style="font-weight: bold; font-style: italic;">http://www.gnu.org/software/emacs/manual/html_node/gnus/_005b9_002e2_005d.html</span>
+(setq gnus-use-correct-string-widths nil)
+
+<span style="font-weight: bold; font-style: italic;">;; </span><span style="font-weight: bold; font-style: italic;">Sample on how to organize mail folders.</span>
+<span style="font-weight: bold; font-style: italic;">;; </span><span style="font-weight: bold; font-style: italic;">It's dependent on `</span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">gnus-topic-mode</span><span style="font-weight: bold; font-style: italic;">'.</span>
+(eval-after-load 'gnus-topic
+  '(<span style="font-weight: bold;">progn</span>
+     (setq gnus-message-archive-group '((format-time-string <span style="font-style: italic;">"sent.%Y"</span>)))
+     (setq gnus-server-alist '((<span style="font-style: italic;">"archive"</span> nnfolder <span style="font-style: italic;">"archive"</span> (nnfolder-directory <span style="font-style: italic;">"~/Mail/archive"</span>)
+                                (nnfolder-active-file <span style="font-style: italic;">"~/Mail/archive/active"</span>)
+                                (nnfolder-get-new-mail nil)
+                                (nnfolder-inhibit-expiry t))))
+
+     <span style="font-weight: bold; font-style: italic;">;; </span><span style="font-weight: bold; font-style: italic;">"Gnus" is the root folder, and there are three mail accounts, "misc", "hotmail", "gmail"</span>
+     (setq gnus-topic-topology '((<span style="font-style: italic;">"Gnus"</span> visible)
+                                 ((<span style="font-style: italic;">"misc"</span> visible))
+                                 ((<span style="font-style: italic;">"hotmail"</span> visible nil nil))
+                                 ((<span style="font-style: italic;">"gmail"</span> visible nil nil))))
+
+     <span style="font-weight: bold; font-style: italic;">;; </span><span style="font-weight: bold; font-style: italic;">each topic corresponds to a public imap folder</span>
+     (setq gnus-topic-alist '((<span style="font-style: italic;">"hotmail"</span> <span style="font-weight: bold; font-style: italic;">; the key of topic</span>
+                               <span style="font-style: italic;">"nnimap+hotmail:Inbox"</span>
+                               <span style="font-style: italic;">"nnimap+hotmail:Drafts"</span>
+                               <span style="font-style: italic;">"nnimap+hotmail:Sent"</span>
+                               <span style="font-style: italic;">"nnimap+hotmail:Junk"</span>
+                               <span style="font-style: italic;">"nnimap+hotmail:Deleted"</span>)
+                              (<span style="font-style: italic;">"gmail"</span> <span style="font-weight: bold; font-style: italic;">; the key of topic</span>
+                               <span style="font-style: italic;">"INBOX"</span>
+                               <span style="font-style: italic;">"[Gmail]/Sent Mail"</span>
+                               <span style="font-style: italic;">"[Gmail]/Trash"</span>
+                               <span style="font-style: italic;">"Sent Messages"</span>
+                               <span style="font-style: italic;">"Drafts"</span>)
+                              (<span style="font-style: italic;">"misc"</span> <span style="font-weight: bold; font-style: italic;">; the key of topic</span>
+                               <span style="font-style: italic;">"nnfolder+archive:sent.2015-12"</span>
+                               <span style="font-style: italic;">"nnfolder+archive:sent.2016"</span>
+                               <span style="font-style: italic;">"nnfolder+archive:sent.2017"</span>
+                               <span style="font-style: italic;">"nndraft:drafts"</span>)
+                              (<span style="font-style: italic;">"Gnus"</span>)))))
+</pre>
+</div>
+
+<p>
+Your login and password is stored at ~/.authinfo.gpg which is read by
+Gnus. Please press C-h v auth-sources for more information.
+</p>
+
+<p>
+Multiple mail accounts share one .authinfo.gpg,
+</p>
+
+<blockquote>
+<p>
+machine imap.gmail.com login username@gmail.com password
+my-secret-password port 993 machine smtp.gmail.com login
+username@gmail.com password my-secret-password port 587 machine
+imap-mail.outlook.com login username@hotmail.com password
+my-secret-password port 993
+</p>
+</blockquote>
+
+<p>
+Please note “.authinfo.gpg” is encrypted by default. Emacs will do the
+encryption/description automatically if file extension is “.gpg”. See
+<a href="http://emacswiki.org/emacs/EasyPG">http://emacswiki.org/emacs/EasyPG</a> for details.
+</p>
+</div>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

@@ -1,0 +1,86 @@
+# -*- coding: utf-8-unix; -*-
+#+TITLE:       git rebase
+#+AUTHOR:      Bruce Asu
+#+EMAIL:       bruceasu@163.com
+#+DATE:        <2017-03-07 20:48>
+#+filetags:        git
+
+#+LANGUAGE:    en
+#+OPTIONS:     H:7 num:nil toc:t \n:nil ::t |:t ^:nil -:nil f:t *:t <:nil
+
+* 用rebase合并
+
+合并issue3分支的时候，使用rebase可以使提交的历史记录显得更简洁。
+
+现在暂时取消刚才的合并。
+
+: $ `git reset --hard HEAD~`
+
+[[file:images/git-rebase-2017-03-07/capture_stepup2_8_1_1.png]]
+
+
+切换到issue3分支后，对master执行rebase。
+
+: $ `git checkout issue3`
+: Switched to branch 'issue3'
+
+: $ `git rebase master`
+#+BEGIN_VERSE
+First, rewinding head to replay your work on top of it...
+Applying: 添加pull的说明
+Using index info to reconstruct a base tree...
+<stdin>:13: new blank line at EOF.
++
+warning: 1 line adds whitespace errors.
+Falling back to patching base and 3-way merge...
+Auto-merging myfile.txt
+CONFLICT (content): Merge conflict in myfile.txt
+Failed to merge in the changes.
+Patch failed at 0001 添加pull的说明
+When you have resolved this problem run "git rebase --continue".
+If you would prefer to skip this patch, instead run "git rebase --skip".
+To check out the original branch and stop rebasing run "git rebase --abort".
+
+#+END_VERSE
+
+和 merge 时的操作相同，修改在 myfile.txt 发生冲突的部分。
+#+BEGIN_VERSE
+连猴子都懂的Git命令
+add 把变更录入到索引中
+<<<<<<< HEAD
+commit 记录索引的状态
+=======
+pull 取得远端数据库的内容
+>>>>>>> issue3
+
+#+END_VERSE
+
+rebase 的时候，修改冲突后的提交不是使用 commit 命令，而是执行 rebase 命令指定
+=--continue= 选项。若要取消 rebase，指定 =--abort= 选项。
+#+BEGIN_EXAMPLE
+$ `git add myfile.txt`
+$ `git rebase --continue`
+
+#+END_EXAMPLE
+
+Applying: 添加pull的说明
+
+[[./images/git-rebase-2017-03-07/capture_stepup2_8_1.png]]
+
+
+这样，在master分支的issue3分支就可以fast-forward合并了。切换到master分支后执行合
+并。
+#+BEGIN_VERSE
+$ `git checkout master`
+Switched to branch 'master'
+
+$ `git merge issue3`
+Updating 8f7aa27..96a0ff0
+Fast-forward
+ myfile.txt |    1 +
+1 files changed, 1 insertions(+), 0 deletions(-)
+
+#+END_VERSE
+
+myfile.txt的最终内容和merge是一样的，但是历史记录如下。
+[[./images/git-rebase-2017-03-07/capture_stepup2_8_2.png]]

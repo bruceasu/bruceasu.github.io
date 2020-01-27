@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>Netty ip filter</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">Netty ip filter</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#java"><div class="category">java</div></a> <a href="https://bruceasu.github.io/tags.html#netty"><div class="category">netty</div></a> </div>
+<div class="char-counter">2016-06-19</div>
+        <div id="content">
+<nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#orga75dc19">我们经常需要用到ip白名单,ip黑名单。</a></li>
+<li><a href="#org9a6ca76">官方中实例:</a></li>
+<li><a href="#org0eb8e3a">CIDR参考:</a></li>
+</ul>
+</div>
+</nav>
+
+
+<div id="outline-container-orga75dc19" class="outline-2">
+<h2 id="orga75dc19">我们经常需要用到ip白名单,ip黑名单。</h2>
+<div class="outline-text-2" id="text-orga75dc19">
+<p>
+netty本身就帮我实现了一套验证机制，提供了IpFilterRuleHandler类:
+</p>
+<pre class="example">
+public class IpFilterRuleHandler extends IpFilteringHandlerImpl
+
+public abstract class IpFilteringHandlerImpl implements ChannelUpstreamHandler, IpFilteringHandler
+</pre>
+
+<p>
+该类和我们经常使用的解码器(decoder)以及逻辑处理handler一样都继承于
+ChannelUpstreamHandler，所以可以很方便的把它加入到我们的
+ChannelPipeline中。例如:
+</p>
+<pre class="example">
+ChannelPipeline p = Channels.pipeline();
+//ip过滤
+IpFilterRuleHandler ipFilterRuleHandler = new IpFilterRuleHandler();
+ipFilterRuleHandler.addAll(new IpFilterRuleList("+i:192.168.*"+ ", -i:*"));
+p.addLast("ipFilter", ipFilterRuleHandler);
+
+</pre>
+
+<p>
+netty的ip过滤一共提供3中过滤:[i,n,c]
+</p>
+<ul class="org-ul">
+<li>i 对应的是ip地址，相应的 +i 表示allow(允许),-i 表示deny(否认)</li>
+<li>n 对应的是地址名称，相应的 +n 表示allow(允许),-n 表示deny(否认)</li>
+<li>c 对应的是CIDR (Classless Inter-Domain Routing)无分类域间路由选择，相
+应的 +c 表示allow(允许),-c表示deny(否认)</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-org9a6ca76" class="outline-2">
+<h2 id="org9a6ca76">官方中实例:</h2>
+<div class="outline-text-2" id="text-org9a6ca76">
+<div class="org-src-container">
+<pre class="src src-java"><span style="font-weight: bold;">package</span> org.jboss.netty.handler.<span style="font-weight: bold; text-decoration: underline;">ipfilter</span>;
+
+<span style="font-weight: bold;">import</span> <span style="font-weight: bold; text-decoration: underline;">java</span>.<span style="font-weight: bold; text-decoration: underline;">net</span>.<span style="font-weight: bold; text-decoration: underline;">InetAddress</span>;
+<span style="font-weight: bold;">import</span> <span style="font-weight: bold; text-decoration: underline;">java</span>.<span style="font-weight: bold; text-decoration: underline;">net</span>.<span style="font-weight: bold; text-decoration: underline;">InetSocketAddress</span>;
+
+<span style="font-weight: bold;">public</span> <span style="font-weight: bold;">class</span> <span style="font-weight: bold; text-decoration: underline;">IpFilterRuleTest</span> {
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold; text-decoration: underline;">boolean</span> <span style="font-weight: bold;">accept</span>(<span style="font-weight: bold; text-decoration: underline;">IpFilterRuleHandler</span> <span style="font-weight: bold; font-style: italic;">h</span>, <span style="font-weight: bold; text-decoration: underline;">InetSocketAddress</span> <span style="font-weight: bold; font-style: italic;">addr</span>)
+            <span style="font-weight: bold;">throws</span> <span style="font-weight: bold; text-decoration: underline;">Exception</span> {
+        <span style="font-weight: bold;">return</span> h.accept(<span style="font-weight: bold; text-decoration: underline;">null</span>, <span style="font-weight: bold; text-decoration: underline;">null</span>, addr);
+    }
+
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">main</span>(<span style="font-weight: bold; text-decoration: underline;">String</span>[] <span style="font-weight: bold; font-style: italic;">args</span>) <span style="font-weight: bold;">throws</span> <span style="font-weight: bold; text-decoration: underline;">Exception</span> {
+        <span style="font-weight: bold; text-decoration: underline;">IpFilterRuleHandler</span> <span style="font-weight: bold; font-style: italic;">h</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">IpFilterRuleHandler</span>();
+        h.addAll(<span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">IpFilterRuleList</span>(<span style="font-style: italic;">"+n:localhost, -n:*"</span>));
+        <span style="font-weight: bold; text-decoration: underline;">InetSocketAddress</span> <span style="font-weight: bold; font-style: italic;">addr</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">InetSocketAddress</span>(
+                InetAddress.getLocalHost(), 8080);
+        System.out.println(accept(h, addr));
+        addr = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">InetSocketAddress</span>(InetAddress.getByName(<span style="font-style: italic;">"127.0.0.2"</span>), 8080);
+        System.out.println(accept(h, addr));
+        addr = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">InetSocketAddress</span>(InetAddress.getByName(InetAddress
+                .getLocalHost().getHostName()), 8080);
+        System.out.println(accept(h, addr));
+
+        h.clear();
+        h.addAll(<span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">IpFilterRuleList</span>(<span style="font-style: italic;">"+n:*"</span>
+                + InetAddress.getLocalHost().getHostName().substring(1)
+                + <span style="font-style: italic;">", -n:*"</span>));
+        addr = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">InetSocketAddress</span>(InetAddress.getLocalHost(), 8080);
+        System.out.println(accept(h, addr));
+        addr = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">InetSocketAddress</span>(InetAddress.getByName(<span style="font-style: italic;">"127.0.0.2"</span>), 8080);
+        System.out.println(accept(h, addr));
+        addr = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">InetSocketAddress</span>(InetAddress.getByName(InetAddress
+                .getLocalHost().getHostName()), 8080);
+        System.out.println(accept(h, addr));
+
+        h.clear();
+        h.addAll(<span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">IpFilterRuleList</span>(<span style="font-style: italic;">"+c:"</span>
+                + InetAddress.getLocalHost().getHostAddress() + <span style="font-style: italic;">"/32, -n:*"</span>));
+        addr = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">InetSocketAddress</span>(InetAddress.getLocalHost(), 8080);
+        System.out.println(accept(h, addr));
+        addr = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">InetSocketAddress</span>(InetAddress.getByName(<span style="font-style: italic;">"127.0.0.2"</span>), 8080);
+        System.out.println(accept(h, addr));
+        addr = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">InetSocketAddress</span>(InetAddress.getByName(InetAddress
+                .getLocalHost().getHostName()), 8080);
+        System.out.println(accept(h, addr));
+
+        h.clear();
+        h.addAll(<span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">IpFilterRuleList</span>(<span style="font-style: italic;">""</span>));
+        addr = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">InetSocketAddress</span>(InetAddress.getLocalHost(), 8080);
+        System.out.println(accept(h, addr));
+        addr = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">InetSocketAddress</span>(InetAddress.getByName(<span style="font-style: italic;">"127.0.0.2"</span>), 8080);
+        System.out.println(accept(h, addr));
+        addr = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">InetSocketAddress</span>(InetAddress.getByName(InetAddress
+                .getLocalHost().getHostName()), 8080);
+        System.out.println(accept(h, addr));
+
+        h.clear();
+        addr = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">InetSocketAddress</span>(InetAddress.getLocalHost(), 8080);
+        System.out.println(accept(h, addr));
+        addr = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">InetSocketAddress</span>(InetAddress.getByName(<span style="font-style: italic;">"127.0.0.2"</span>), 8080);
+        System.out.println(accept(h, addr));
+        addr = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">InetSocketAddress</span>(InetAddress.getByName(InetAddress
+                .getLocalHost().getHostName()), 8080);
+        System.out.println(accept(h, addr));
+    }
+}
+
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org0eb8e3a" class="outline-2">
+<h2 id="org0eb8e3a">CIDR参考:</h2>
+<div class="outline-text-2" id="text-org0eb8e3a">
+<p>
+<a href="http://blog.csdn.net/yaoyao4959/article/details/10084973">http://blog.csdn.net/yaoyao4959/article/details/10084973</a>
+</p>
+</div>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

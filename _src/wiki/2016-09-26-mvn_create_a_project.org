@@ -1,0 +1,5 @@
+#+title: mvn create a project
+#+date: <2016-09-26 20:48>
+#+filetags: maven java
+
+: mvn archetype:generate -DgroupId=me.asu.db -DartifactId=db-client -DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false

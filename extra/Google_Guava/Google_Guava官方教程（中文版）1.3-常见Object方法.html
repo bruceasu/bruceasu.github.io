@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>Google_Guava官方教程（中文版）1.3-常见Object方法</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">Google_Guava官方教程（中文版）1.3-常见Object方法</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#reprint"><div class="category">reprint</div></a> </div>
+<div class="char-counter">2010-10-01</div>
+        <div id="content">
+<nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#orgfba604f">常见Object方法</a>
+<ul>
+<li><a href="#orgbad209a">equals</a></li>
+<li><a href="#org334005a">hashCode</a></li>
+<li><a href="#org3d882ab">toString</a></li>
+<li><a href="#org71ac0bf">compare/compareTo</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</nav>
+
+<div id="outline-container-orgfba604f" class="outline-2">
+<h2 id="orgfba604f">常见Object方法</h2>
+<div class="outline-text-2" id="text-orgfba604f">
+</div>
+<div id="outline-container-orgbad209a" class="outline-3">
+<h3 id="orgbad209a">equals</h3>
+<div class="outline-text-3" id="text-orgbad209a">
+<p>
+当一个对象中的字段可以为null时，实现Object.equals方法会很痛苦，因为不得不分别对
+它们进行null检查。使用Objects.equal帮助你执行null敏感的equals判断，从而避免抛出
+NullPointerException。例如:
+</p>
+<pre class="example">
+Objects.equal("a", "a");  //// returns true
+Objects.equal(null, "a"); //// returns false
+Objects.equal("a", null); //// returns false
+Objects.equal(null, null); // returns true
+</pre>
+
+<p>
+注意：JDK7引入的Objects类提供了一样的方法Objects.equals。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org334005a" class="outline-3">
+<h3 id="org334005a">hashCode</h3>
+<div class="outline-text-3" id="text-org334005a">
+<p>
+用对象的所有字段作散列[hash]运算应当更简单。Guava的Objects.hashCode(Object&#x2026;)会
+对传入的字段序列计算出合理的、顺序敏感的散列值。你可以使用
+</p>
+<pre class="example">
+Objects.hashCode(field1, field2, …, fieldn)
+
+</pre>
+<p>
+来代替手动计算散列值。注意：JDK7引入的Objects类提供了一样的方法
+</p>
+<pre class="example">
+Objects.hash(Object...)
+
+</pre>
+</div>
+</div>
+<div id="outline-container-org3d882ab" class="outline-3">
+<h3 id="org3d882ab">toString</h3>
+<div class="outline-text-3" id="text-org3d882ab">
+<p>
+好的toString方法在调试时是无价之宝，但是编写toString方法有时候却很痛苦。使用
+</p>
+<pre class="example">
+Objects.toStringHelper
+
+</pre>
+<p>
+可以轻松编写有用的toString方法。例如：
+</p>
+<pre class="example">
+// Returns "ClassName{x=1}"
+Objects.toStringHelper(this).add("x", 1).toString();
+// Returns "MyObject{x=1}"
+Objects.toStringHelper("MyObject").add("x", 1).toString();
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org71ac0bf" class="outline-3">
+<h3 id="org71ac0bf">compare/compareTo</h3>
+<div class="outline-text-3" id="text-org71ac0bf">
+<p>
+实现一个比较器[Comparator]，或者直接实现Comparable接口有时也伤不起。考虑一下这种
+情况：
+</p>
+<pre class="example">
+class Person implements Comparable&lt;Person&gt; {
+  private String lastName;
+  private String firstName;
+  private int zipCode;
+  public int compareTo(Person other) {
+    int cmp = lastName.compareTo(other.lastName);
+    if (cmp != 0) {
+      return cmp;
+    }
+    cmp = firstName.compareTo(other.firstName);
+    if (cmp != 0) {
+      return cmp;
+    }
+    return Integer.compare(zipCode, other.zipCode);
+  }
+}
+</pre>
+
+
+<p>
+这部分代码太琐碎了，因此很容易搞乱，也很难调试。我们应该能把这种代码变得更优雅，
+为此，Guava提供了ComparisonChain。ComparisonChain执行一种懒比较：它执行比较操作
+直至发现非零的结果，在那之后的比较输入将被忽略。
+</p>
+<pre class="example">
+public int compareTo(Foo that) {
+    return ComparisonChain.start()
+            .compare(this.aString, that.aString)
+            .compare(this.anInt, that.anInt)
+            .compare(this.anEnum, that.anEnum, Ordering.natural().nullsLast())
+            .result();
+}
+</pre>
+
+<p>
+这种Fluent接口风格的可读性更高，发生错误编码的几率更小，并且能避免做不必要的工作。
+更多Guava排序器工具可以在下一节里找到。
+</p>
+</div>
+</div>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

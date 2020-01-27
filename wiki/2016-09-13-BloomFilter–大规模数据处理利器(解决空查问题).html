@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>BloomFilter–大规模数据处理利器(解决空查问题)</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">BloomFilter–大规模数据处理利器(解决空查问题)</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#reprint"><div class="category">reprint</div></a> </div>
+<div class="char-counter">2016-09-13</div>
+        <div id="content">
+<nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#orgd7c1dc4">BloomFilter–大规模数据处理利器</a></li>
+<li><a href="#org9f974a8">实例</a></li>
+<li><a href="#org0bba1d0">Bloom Filter的算法</a></li>
+<li><a href="#org73a51e8">Bloom Filter参数选择</a></li>
+<li><a href="#org09a591c">Bloom Filter实现代码（简易版）</a></li>
+<li><a href="#org380db97">Bloom Filter的优点及应用。</a>
+<ul>
+<li><a href="#org8a3c4c7">优缺点分析</a>
+<ul>
+<li><a href="#orgfe47aed">优点：</a></li>
+<li><a href="#orgf4aef9d">缺点：</a></li>
+</ul>
+</li>
+<li><a href="#org122e39e">使用场景</a></li>
+</ul>
+</li>
+<li><a href="#org7a72dd9">实施方案思考</a></li>
+<li><a href="#org572393f">Bloom Fitler C 语言实现</a>
+<ul>
+<li><a href="#org20d70dd">This program is a code dump.</a></li>
+<li><a href="#orgb954028">SOURCE</a>
+<ul>
+<li><a href="#org0cf4fde">bloom.h</a></li>
+<li><a href="#org6459273">bloom.c</a></li>
+<li><a href="#org06f9760">test.c</a></li>
+<li><a href="#orgf82512a">Makefile</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#org6d83932">Bloom Filter Java 语言实现</a></li>
+</ul>
+</div>
+</nav>
+
+<div id="outline-container-orgd7c1dc4" class="outline-2">
+<h2 id="orgd7c1dc4">BloomFilter–大规模数据处理利器</h2>
+<div class="outline-text-2" id="text-orgd7c1dc4">
+<p>
+Bloom Filter是由Bloom在1970年提出的一种多哈希函数映射的快速查找算法。
+通常应用在一些需要快速判断某个元素是否属于集合，但是并不严格要求100%正
+确的场合。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org9f974a8" class="outline-2">
+<h2 id="org9f974a8">实例</h2>
+<div class="outline-text-2" id="text-org9f974a8">
+<p>
+为了说明Bloom Filter存在的重要意义，举一个实例：
+</p>
+
+<p>
+假设要你写一个网络爬虫程序（web crawler）。由于网络间的链接错综复杂，
+爬虫在网络间爬行很可能会形成“环”。为了避免形成“环”，就需要知道爬虫程序
+已经访问过那些URL。给一个URL，怎样知道爬虫程序是否已经访问过呢？稍微想
+想，就会有如下几种方案：
+</p>
+
+<ol class="org-ol">
+<li>将访问过的URL保存到数据库。</li>
+<li>用HashSet将访问过的URL保存起来。那只需接近O(1)的代价就可以查到一个URL是否被访问过了。</li>
+<li>URL经过MD5或SHA-1等单向哈希后再保存到HashSet或数据库。</li>
+<li>Bit-Map方法。建立一个BitSet，将每个URL经过一个哈希函数映射到某一位。</li>
+</ol>
+
+<p>
+方法1~3都是将访问过的URL完整保存，方法4则只标记URL的一个映射位。
+</p>
+
+<p>
+以上方法在数据量较小的情况下都能完美解决问题，但是当数据量变得非常庞大
+时问题就来了。
+</p>
+
+<p>
+方法1的缺点：数据量变得非常庞大后关系型数据库查询的效率会变得很低。而
+且每来一个URL就启动一次数据库查询是不是太小题大做了？
+</p>
+
+<p>
+方法2的缺点：太消耗内存。随着URL的增多，占用的内存会越来越多。就算只有
+1亿个URL，每个URL只算50个字符，就需要5GB内存。
+</p>
+
+<p>
+方法3：由于字符串经过MD5处理后的信息摘要长度只有128Bit，SHA-1处理后也
+只有160Bit，因此方法3比方法2节省了好几倍的内存。
+</p>
+
+<p>
+方法4消耗内存是相对较少的，但缺点是单一哈希函数发生冲突的概率太高。还
+记得数据结构课上学过的Hash表冲突的各种解决方法么？若要降低冲突发生的概
+率到1%，就要将BitSet的长度设置为URL个数的100倍。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org0bba1d0" class="outline-2">
+<h2 id="org0bba1d0">Bloom Filter的算法</h2>
+<div class="outline-text-2" id="text-org0bba1d0">
+<p>
+废话说到这里，下面引入本篇的主角–Bloom Filter。其实上面方法4的思想已经
+很接近Bloom Filter了。方法四的致命缺点是冲突概率高，为了降低冲突的概念，
+Bloom Filter使用了多个哈希函数，而不是一个。
+</p>
+
+<p>
+Bloom Filter算法如下：
+</p>
+
+<p>
+创建一个m位BitSet，先将所有位初始化为0，然后选择k个不同的哈希函数。第i
+个哈希函数对字符串str哈希的结果记为h（i，str），且h（i，str）的范围是0
+到m-1 。
+</p>
+
+<ol class="org-ol">
+<li><p>
+加入字符串过程
+下面是每个字符串处理的过程，首先是将字符串str“记录”到BitSet中的过程：
+</p>
+<blockquote>
+<p>
+   对于字符串str，分别计算h（1，str），h（2，str）…… h（k，str）。然后
+将BitSet的第h（1，str）、h（2，str）…… h（k，str）位设为1。
+</p>
+</blockquote>
+<p>
+很简单吧？这样就将字符串str映射到BitSet中的k个二进制位了。
+</p></li>
+
+<li><p>
+检查字符串是否存在的过程
+下面是检查字符串str是否被BitSet记录过的过程：
+</p>
+<blockquote>
+<p>
+   对于字符串str，分别计算h（1，str），h（2，str）…… h（k，str）。然后
+检查BitSet的第h（1，str）、h（2，str）…… h（k，str）位是否为1，若其中
+任何一位不为1则可以判定str一定没有被记录过。若全部位都是1，则“认为”字
+符串str存在。
+</p>
+
+<p>
+若一个字符串对应的Bit不全为1，则可以肯定该字符串一定没有被Bloom
+Filter记录过。（这是显然的，因为字符串被记录过，其对应的二进制位肯定全
+部被设为1了）
+</p>
+
+<p>
+但是若一个字符串对应的Bit全为1，实际上是不能100%的肯定该字符串被
+Bloom Filter记录过的。（因为有可能该字符串的所有位都刚好是被其他字符串
+所对应）这种将该字符串划分错的情况，称为false positive 。
+</p>
+</blockquote></li>
+<li><p>
+删除字符串过程
+</p>
+
+<p>
+字符串加入了就被不能删除了，因为删除会影响到其他字符串。实在需要删
+除字符串的可以使用Counting bloomfilter(CBF)，这是一种基本Bloom
+Filter的变体，CBF将基本Bloom Filter每一个Bit改为一个计数器，这样就
+可以实现删除字符串的功能了。　Bloom Filter跟单哈希函数Bit-Map不同之
+处在于：Bloom Filter使用了k个哈希函数，每个字符串跟k个bit对应。从而
+降低了冲突的概率。
+</p></li>
+</ol>
+</div>
+</div>
+
+<div id="outline-container-org73a51e8" class="outline-2">
+<h2 id="org73a51e8">Bloom Filter参数选择</h2>
+<div class="outline-text-2" id="text-org73a51e8">
+<ol class="org-ol">
+<li>哈希函数选择
+哈希函数的选择对性能的影响应该是很大的，一个好的哈希函数要能近似等
+概率的将字符串映射到各个Bit。选择k个不同的哈希函数比较麻烦，一种简
+单的方法是选择一个哈希函数，然后送入k个不同的参数。</li>
+
+<li><p>
+m,n,k值，我们如何取值
+我们定义：
+</p>
+<ol class="org-ol">
+<li>可能把不属于这个集合的元素误认为属于这个集合（False Positive）</li>
+<li>不会把属于这个集合的元素误认为不属于这个集合（False Negative）。</li>
+</ol>
+
+<p>
+哈希函数的个数k、位数组大小m、加入的字符串数量n的关系。哈希函数个数k
+取10，位数组大小m设为字符串个数n的20倍时，false positive发生的概率
+是0.0000889 ，即10万次的判断中，会存在9次误判，对于一天1亿次的查询，
+误判的次数为9000次。
+</p>
+
+<p>
+算法分析：
+</p>
+<blockquote>
+<p>
+我们假设kn&lt;m且各个哈希函数是完全随机的。当集合S={x1, x2,…,xn}的所有
+元素都被k个哈希函数映射到m位的位数组中时，这个位数组中某一位还是0的
+概率是：
+</p>
+
+<p>
+False Positive的概率是：
+</p>
+<ol class="org-ol">
+<li>p’表示1的概率,k次方表示8次hash都为1的概率。</li>
+<li>当 k = ln 2 * m/n 时，右边的等式值最小，此时等式转变成:
+(1/2)<sup>k</sup> = (0.6185)<sup>(m/2)</sup></li>
+</ol>
+</blockquote></li>
+</ol>
+</div>
+</div>
+
+<div id="outline-container-org09a591c" class="outline-2">
+<h2 id="org09a591c">Bloom Filter实现代码（简易版）</h2>
+<div class="outline-text-2" id="text-org09a591c">
+<p>
+下面给出一个简单的Bloom Filter的Java实现代码：
+</p>
+<div class="org-src-container">
+<pre class="src src-java"><span style="font-weight: bold;">package</span> org.magnus.<span style="font-weight: bold; text-decoration: underline;">utils</span>;
+<span style="font-weight: bold;">import</span> <span style="font-weight: bold; text-decoration: underline;">java</span>.<span style="font-weight: bold; text-decoration: underline;">util</span>.<span style="font-weight: bold; text-decoration: underline;">BitSet</span>;
+<span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#20256;&#32479;&#30340;Bloom filter &#19981;&#25903;&#25345;&#20174;&#38598;&#21512;&#20013;&#21024;&#38500;&#25104;&#21592;&#12290;</span>
+<span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">Counting Bloom filter&#30001;&#20110;&#37319;&#29992;&#20102;&#35745;&#25968;&#65292;&#22240;&#27492;&#25903;&#25345;remove&#25805;&#20316;&#12290;</span>
+<span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#22522;&#20110;BitSet&#26469;&#23454;&#29616;&#65292;&#24615;&#33021;&#19978;&#21487;&#33021;&#23384;&#22312;&#38382;&#39064;</span>
+<span style="font-weight: bold;">public</span> <span style="font-weight: bold;">class</span> <span style="font-weight: bold; text-decoration: underline;">SimpleBloomFilter</span> {
+    <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">DEFAULT_SIZE&#20026;2&#30340;25&#27425;&#26041;</span>
+    <span style="font-weight: bold;">private</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold;">final</span> <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">DEFAULT_SIZE</span> = 2 &lt;&lt; 24;
+    <span style="font-weight: bold; font-style: italic;">/* </span><span style="font-weight: bold; font-style: italic;">&#19981;&#21516;&#21704;&#24076;&#20989;&#25968;&#30340;&#31181;&#23376;&#65292;&#19968;&#33324;&#24212;&#21462;&#36136;&#25968;,seeds&#25968;&#25454;&#20849;&#26377;7&#20010;&#20540;&#65292;&#21017;&#20195;&#34920;&#37319;&#29992;7&#31181;&#19981;&#21516;&#30340;HASH&#31639;&#27861; */</span>
+    <span style="font-weight: bold;">private</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold;">final</span> <span style="font-weight: bold; text-decoration: underline;">int</span>[] <span style="font-weight: bold; font-style: italic;">seeds</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">int</span>[] { 5, 7, 11, 13, 31, 37, 61 };
+    <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">BitSet&#23454;&#38469;&#26159;&#30001;&#8220;&#20108;&#36827;&#21046;&#20301;&#8221;&#26500;&#25104;&#30340;&#19968;&#20010;Vector&#12290;&#20551;&#22914;&#24076;&#26395;&#39640;&#25928;&#29575;&#22320;&#20445;&#23384;&#22823;&#37327;&#8220;&#24320;&#65293;&#20851;&#8221;&#20449;&#24687;&#65292;&#23601;&#24212;&#20351;&#29992;BitSet.</span>
+    <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">BitSet&#30340;&#26368;&#23567;&#38271;&#24230;&#26159;&#19968;&#20010;&#38271;&#25972;&#25968;&#65288;Long&#65289;&#30340;&#38271;&#24230;&#65306;64&#20301;</span>
+    <span style="font-weight: bold;">private</span> <span style="font-weight: bold; text-decoration: underline;">BitSet</span> <span style="font-weight: bold; font-style: italic;">bits</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">BitSet</span>(DEFAULT_SIZE);
+    <span style="font-weight: bold; font-style: italic;">/* </span><span style="font-weight: bold; font-style: italic;">&#21704;&#24076;&#20989;&#25968;&#23545;&#35937; */</span>
+    <span style="font-weight: bold;">private</span> <span style="font-weight: bold; text-decoration: underline;">SimpleHash</span>[] <span style="font-weight: bold; font-style: italic;">func</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">SimpleHash</span>[seeds.length];
+
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">main</span>(<span style="font-weight: bold; text-decoration: underline;">String</span>[] <span style="font-weight: bold; font-style: italic;">args</span>) {
+       <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">value</span> = <span style="font-style: italic;">"stone2083@yahoo.cn"</span>;
+       <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#23450;&#20041;&#19968;&#20010;filter&#65292;&#23450;&#20041;&#30340;&#26102;&#20505;&#20250;&#35843;&#29992;&#26500;&#36896;&#20989;&#25968;&#65292;&#21363;&#21021;&#22987;&#21270;&#19971;&#20010;hash&#20989;&#25968;&#23545;&#35937;&#25152;&#38656;&#35201;&#30340;&#20449;&#24687;&#12290;</span>
+       <span style="font-weight: bold; text-decoration: underline;">SimpleBloomFilter</span> <span style="font-weight: bold; font-style: italic;">filter</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">SimpleBloomFilter</span>();
+       <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#21028;&#26029;&#26159;&#21542;&#21253;&#21547;&#22312;&#37324;&#38754;&#12290;&#22240;&#20026;&#27809;&#26377;&#35843;&#29992;add&#26041;&#27861;&#65292;&#25152;&#20197;&#32943;&#23450;&#26159;&#36820;&#22238;false</span>
+       System.out.println(filter.contains(value));
+       filter.add(value);
+       System.out.println(filter.contains(value));
+    }
+    <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#26500;&#36896;&#20989;&#25968;</span>
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">SimpleBloomFilter</span>() {
+       <span style="font-weight: bold;">for</span> (<span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">i</span> = 0; i &lt; seeds.<span style="font-weight: bold; text-decoration: underline;">length</span>; i++) {
+           <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#32473;&#20986;&#25152;&#26377;&#30340;hash&#20540;&#65292;&#20849;&#35745;seeds.length&#20010;hash&#20540;&#12290;&#20849;7&#20301;&#12290;</span>
+           <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#36890;&#36807;&#35843;&#29992;SimpleHash.hash(),&#21487;&#20197;&#24471;&#21040;&#26681;&#25454;7&#31181;hash&#20989;&#25968;&#35745;&#31639;&#24471;&#20986;&#30340;hash&#20540;&#12290;</span>
+           <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#20256;&#20837;DEFAULT_SIZE(&#26368;&#32456;&#23383;&#31526;&#20018;&#30340;&#38271;&#24230;&#65289;&#65292;seeds[i](&#19968;&#20010;&#25351;&#23450;&#30340;&#36136;&#25968;)&#21363;&#21487;&#24471;&#21040;&#38656;&#35201;&#30340;&#37027;&#20010;hash&#20540;&#30340;&#20301;&#32622;&#12290;</span>
+           func[i] = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">SimpleHash</span>(DEFAULT_SIZE, seeds[i]);
+       }
+    }
+
+    <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#23558;&#23383;&#31526;&#20018;&#26631;&#35760;&#21040;bits&#20013;&#65292;&#21363;&#35774;&#32622;&#23383;&#31526;&#20018;&#30340;7&#20010;hash&#20540;&#20989;&#25968;&#20026;1</span>
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">add</span>(<span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">value</span>) {
+       <span style="font-weight: bold;">for</span> (<span style="font-weight: bold; text-decoration: underline;">SimpleHash</span> <span style="font-weight: bold; font-style: italic;">f</span> : func) {
+           bits.set(f.hash(value), <span style="font-weight: bold; text-decoration: underline;">true</span>);
+       }
+    }
+
+    <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#21028;&#26029;&#23383;&#31526;&#20018;&#26159;&#21542;&#24050;&#32463;&#34987;bits&#26631;&#35760;</span>
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">boolean</span> <span style="font-weight: bold;">contains</span>(<span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">value</span>) {
+       <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#30830;&#20445;&#20256;&#20837;&#30340;&#19981;&#26159;&#31354;&#20540;</span>
+       <span style="font-weight: bold;">if</span> (value == <span style="font-weight: bold; text-decoration: underline;">null</span>) {
+           <span style="font-weight: bold;">return</span> <span style="font-weight: bold; text-decoration: underline;">false</span>;
+       }
+       <span style="font-weight: bold; text-decoration: underline;">boolean</span> <span style="font-weight: bold; font-style: italic;">ret</span> = <span style="font-weight: bold; text-decoration: underline;">true</span>;
+       <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#35745;&#31639;7&#31181;hash&#31639;&#27861;&#19979;&#21508;&#33258;&#23545;&#24212;&#30340;hash&#20540;&#65292;&#24182;&#21028;&#26029;</span>
+       <span style="font-weight: bold;">for</span> (<span style="font-weight: bold; text-decoration: underline;">SimpleHash</span> <span style="font-weight: bold; font-style: italic;">f</span> : func) {
+           <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&amp;&amp;&#26159;boolen&#36816;&#31639;&#31526;&#65292;&#21482;&#35201;&#26377;&#19968;&#20010;&#20026;0&#65292;&#21017;&#20026;0&#12290;&#21363;&#38656;&#35201;&#25152;&#26377;&#30340;&#20301;&#37117;&#20026;1&#65292;&#25165;&#20195;&#34920;&#21253;&#21547;&#22312;&#37324;&#38754;&#12290;</span>
+           <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">f.hash(value)&#36820;&#22238;hash&#23545;&#24212;&#30340;&#20301;&#25968;&#20540;</span>
+           <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">bits.get&#20989;&#25968;&#36820;&#22238;bitset&#20013;&#23545;&#24212;position&#30340;&#20540;&#12290;&#21363;&#36820;&#22238;hash&#20540;&#26159;&#21542;&#20026;0&#25110;1&#12290;</span>
+           ret = ret &amp;&amp; bits.get(f.hash(value));
+       }
+       <span style="font-weight: bold;">return</span> ret;
+    }
+    <span style="font-weight: bold; font-style: italic;">/* </span><span style="font-weight: bold; font-style: italic;">&#21704;&#24076;&#20989;&#25968;&#31867; */</span>
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold;">class</span> <span style="font-weight: bold; text-decoration: underline;">SimpleHash</span> {
+       <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">cap&#20026;DEFAULT_SIZE&#30340;&#20540;&#65292;&#21363;&#29992;&#20110;&#32467;&#26524;&#30340;&#26368;&#22823;&#30340;&#23383;&#31526;&#20018;&#38271;&#24230;&#12290;</span>
+       <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">seed&#20026;&#35745;&#31639;hash&#20540;&#30340;&#19968;&#20010;&#32473;&#23450;key&#65292;&#20855;&#20307;&#23545;&#24212;&#19978;&#38754;&#23450;&#20041;&#30340;seeds&#25968;&#32452;</span>
+       <span style="font-weight: bold;">private</span> <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">cap</span>;
+       <span style="font-weight: bold;">private</span> <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">seed</span>;
+
+       <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">SimpleHash</span>(<span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">cap</span>, <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">seed</span>) {
+           <span style="font-weight: bold;">this</span>.cap = cap;
+           <span style="font-weight: bold;">this</span>.seed = seed;
+       }
+
+       <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#35745;&#31639;hash&#20540;&#30340;&#20855;&#20307;&#31639;&#27861;,hash&#20989;&#25968;&#65292;&#37319;&#29992;&#31616;&#21333;&#30340;&#21152;&#26435;&#21644;hash</span>
+       <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold;">hash</span>(<span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">value</span>) {
+           <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">int&#30340;&#33539;&#22260;&#26368;&#22823;&#26159;2&#30340;31&#27425;&#26041;&#20943;1&#65292;&#25110;&#36229;&#36807;&#20540;&#21017;&#29992;&#36127;&#25968;&#26469;&#34920;&#31034;</span>
+           <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">result</span> = 0;
+           <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">len</span> = value.length();
+           <span style="font-weight: bold;">for</span> (<span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">i</span> = 0; i &lt; <span style="font-weight: bold; text-decoration: underline;">len</span>; i++) {
+              <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#25968;&#23383;&#21644;&#23383;&#31526;&#20018;&#30456;&#21152;&#65292;&#23383;&#31526;&#20018;&#36716;&#25442;&#25104;&#20026;ASCII&#30721;</span>
+              result = seed * result + value.charAt(i);
+              <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">System.out.println(result+"--"+seed+"*"+result+"+"+value.charAt(i));</span>
+           }
+       <span style="font-weight: bold; font-style: italic;">//  </span><span style="font-weight: bold; font-style: italic;">System.out.println("result="+result+";"+((cap - 1) &amp; result));</span>
+       <span style="font-weight: bold; font-style: italic;">//  </span><span style="font-weight: bold; font-style: italic;">System.out.println(414356308*61+'h');  &#25191;&#34892;&#27492;&#36816;&#31639;&#32467;&#26524;&#20026;&#36127;&#25968;&#65292;&#20026;&#20160;&#20040;&#65311;</span>
+           <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&amp;&#26159;java&#20013;&#30340;&#20301;&#36923;&#36753;&#36816;&#31639;&#65292;&#29992;&#20110;&#36807;&#28388;&#36127;&#25968;&#65288;&#36127;&#25968;&#19982;&#36827;&#31639;&#36716;&#25442;&#25104;&#21453;&#30721;&#36827;&#34892;&#65289;&#12290;</span>
+           <span style="font-weight: bold;">return</span> (cap - 1) &amp; result;
+       }
+    }
+}
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org380db97" class="outline-2">
+<h2 id="org380db97">Bloom Filter的优点及应用。</h2>
+<div class="outline-text-2" id="text-org380db97">
+</div>
+<div id="outline-container-org8a3c4c7" class="outline-3">
+<h3 id="org8a3c4c7">优缺点分析</h3>
+<div class="outline-text-3" id="text-org8a3c4c7">
+</div>
+<div id="outline-container-orgfe47aed" class="outline-4">
+<h4 id="orgfe47aed">优点：</h4>
+<div class="outline-text-4" id="text-orgfe47aed">
+<p>
+节约缓存空间（空值的映射），不再需要空值映射。
+减少数据库或缓存的请求次数。
+提升业务的处理效率以及业务隔离性。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgf4aef9d" class="outline-4">
+<h4 id="orgf4aef9d">缺点：</h4>
+<div class="outline-text-4" id="text-orgf4aef9d">
+<p>
+存在误判的概率。
+传统的Bloom Filter不能作删除操作。
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org122e39e" class="outline-3">
+<h3 id="org122e39e">使用场景</h3>
+<div class="outline-text-3" id="text-org122e39e">
+<p>
+适用于特定场景，能够有效的解决数据库空查问题。以公司的某小表查询为例，
+该表每天查询量20亿次左右，且数据库中存在大量的下面的空查:目前表中的记
+录为8w,即n的值为8w, m=20*n=160w，占用空间大小195KB。以type||CONTENT复
+合键作为key值，假设HASH次数k取值为6,误判率为:0.0303%(10000次中存在3次
+误判)。HASH次数的最优解为14，当k=14时，误判率为：0.014%(10000次中存在
+1-2次误判)。测试过程及结果如下（源代码见附件）：
+</p>
+
+<ol class="org-ol">
+<li>测试场景1：
+<ol class="org-ol">
+<li>参数：
+m=1600000;n=80000;最优解k=14;m/n=20;k的次数为:6;对1000w数据进行判定:</li>
+<li>测试结果：
+2000w数据误判的记录为：3035，误判率约为0.03035%（和理
+论值0.0303%相差不大）。判断2000万数据的时间为25秒。平均一次判断
+时间为:2.5微秒。平均一次hash时间为0.417微秒。</li>
+</ol></li>
+<li>测试场景2：
+<ol class="org-ol">
+<li>参数：
+m=1600000;n=80000;最优解k=14;m/n=20;k的次数为:6;对2000w数据进行判定:</li>
+<li>测试结果：
+2000w数据误判的记录为：5839，误判率约为0.029%（理论值为0. 0303%）。
+判断1000万数据的时间为51秒。平均一次判断时间为:2.55微秒。平均一
+次hash时间为0.425微秒。</li>
+</ol></li>
+<li>测试场景3：
+<ol class="org-ol">
+<li>参数：
+m=1600000;n=80000;最优解k=14;m/n=20;k的次数为:14;对1000w数据进行判定 :</li>
+<li>测试结果：
+1000w数据误判的记录为：605，误判率约为0.00605%（和理论值0. 014%
+相差不大）。判断1000万数据的时间为37秒。平均一次判断时间为:3.7微秒。
+平均一次hash时间为0.265微秒。</li>
+</ol></li>
+<li>测试场景4：
+<ol class="org-ol">
+<li>参数：
+m=1600000;n=80000;最优解k=14;m/n=20;k的次数为:14;对2000w数据进行判定:</li>
+<li>测试结果：
+2000w数据误判的记录为：1224，误判率约为0.00612%（理论值为0.014%）。
+判断1000万数据的时间为84秒。平均一次判断时间为:4.2微秒。
+平均一次hash时间为0.3微秒。</li>
+</ol></li>
+<li>其它测试略。</li>
+</ol>
+
+
+<p>
+结论:
+</p>
+
+<table>
+
+
+<colgroup>
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-left">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-right">测试</th>
+<th scope="col" class="org-right">m/n</th>
+<th scope="col" class="org-right">K（括号内为最优解）</th>
+<th scope="col" class="org-left">数据基数</th>
+<th scope="col" class="org-right">误判数</th>
+<th scope="col" class="org-right">误判率</th>
+<th scope="col" class="org-right">理论值</th>
+<th scope="col" class="org-right">用时（单位：秒）</th>
+<th scope="col" class="org-right">一次判定时间(单位：微秒)</th>
+<th scope="col" class="org-right">一次Hash时间(单位：微秒.估参考)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-right">1</td>
+<td class="org-right">20</td>
+<td class="org-right">6(14)</td>
+<td class="org-left">1000W</td>
+<td class="org-right">3035</td>
+<td class="org-right">0.03035%</td>
+<td class="org-right">0.0303%</td>
+<td class="org-right">25</td>
+<td class="org-right">2.5</td>
+<td class="org-right">0.417</td>
+</tr>
+
+<tr>
+<td class="org-right">2</td>
+<td class="org-right">20</td>
+<td class="org-right">6(14)</td>
+<td class="org-left">2000W</td>
+<td class="org-right">5839</td>
+<td class="org-right">0.029%</td>
+<td class="org-right">0.0303%</td>
+<td class="org-right">51</td>
+<td class="org-right">2.55</td>
+<td class="org-right">0.425</td>
+</tr>
+
+<tr>
+<td class="org-right">3</td>
+<td class="org-right">20</td>
+<td class="org-right">14(14)</td>
+<td class="org-left">1000W</td>
+<td class="org-right">605</td>
+<td class="org-right">0.00605%</td>
+<td class="org-right">0.014%</td>
+<td class="org-right">37</td>
+<td class="org-right">3.7</td>
+<td class="org-right">0.265</td>
+</tr>
+
+<tr>
+<td class="org-right">4</td>
+<td class="org-right">20</td>
+<td class="org-right">14(14)</td>
+<td class="org-left">2000W</td>
+<td class="org-right">1224</td>
+<td class="org-right">0.00612%</td>
+<td class="org-right">0.014%</td>
+<td class="org-right">84</td>
+<td class="org-right">4.2</td>
+<td class="org-right">0.3</td>
+</tr>
+
+<tr>
+<td class="org-right">5</td>
+<td class="org-right">20</td>
+<td class="org-right">20(14)</td>
+<td class="org-left">1000W</td>
+<td class="org-right">914</td>
+<td class="org-right">0.00914%</td>
+<td class="org-right">不计算</td>
+<td class="org-right">48</td>
+<td class="org-right">4.8</td>
+<td class="org-right">0.24</td>
+</tr>
+
+<tr>
+<td class="org-right">6</td>
+<td class="org-right">20</td>
+<td class="org-right">20(14)</td>
+<td class="org-left">2000W</td>
+<td class="org-right">1881</td>
+<td class="org-right">0.00941%</td>
+<td class="org-right">不计算</td>
+<td class="org-right">99</td>
+<td class="org-right">4.95</td>
+<td class="org-right">0.2475</td>
+</tr>
+
+<tr>
+<td class="org-right">7</td>
+<td class="org-right">10</td>
+<td class="org-right">7（7）</td>
+<td class="org-left">1000w</td>
+<td class="org-right">517854</td>
+<td class="org-right">0.786%</td>
+<td class="org-right">0.819%</td>
+<td class="org-right">41</td>
+<td class="org-right">4.1</td>
+<td class="org-right">0.59</td>
+</tr>
+
+<tr>
+<td class="org-right">8</td>
+<td class="org-right">5</td>
+<td class="org-right">3（3）</td>
+<td class="org-left">1000w</td>
+<td class="org-right">901411</td>
+<td class="org-right">9.014%</td>
+<td class="org-right">9.2%</td>
+<td class="org-right">31</td>
+<td class="org-right">3.1</td>
+<td class="org-right">1.033</td>
+</tr>
+
+<tr>
+<td class="org-right">9</td>
+<td class="org-right">2</td>
+<td class="org-right">1(1)</td>
+<td class="org-left">1000w</td>
+<td class="org-right">3910726</td>
+<td class="org-right">39.107%</td>
+<td class="org-right">39.3%</td>
+<td class="org-right">29</td>
+<td class="org-right">2.9</td>
+<td class="org-right">2.9</td>
+</tr>
+
+<tr>
+<td class="org-right">10</td>
+<td class="org-right">2</td>
+<td class="org-right">2(1)</td>
+<td class="org-left">1000w</td>
+<td class="org-right">3961065</td>
+<td class="org-right">39.61%</td>
+<td class="org-right">40%</td>
+<td class="org-right">30</td>
+<td class="org-right">3.0</td>
+<td class="org-right">3.0</td>
+</tr>
+
+<tr>
+<td class="org-right">11</td>
+<td class="org-right">2</td>
+<td class="org-right">5(1)</td>
+<td class="org-left">1000w</td>
+<td class="org-right">6436696</td>
+<td class="org-right">64.37%</td>
+<td class="org-right">不计算</td>
+<td class="org-right">76</td>
+<td class="org-right">7.6</td>
+<td class="org-right">1.52</td>
+</tr>
+</tbody>
+</table>
+
+<p>
+一次判断时间计算方式为：总时间/总次数 <br>
+一次HASH所需时间计算方式为：一次判定时间/每次判断需要的hash数。<br>
+一次HASH所需时间，当执行hash次数越少，基数越小，误差越大。当一次判断所需的hash次数越大时，一次hash时间越精确。
+</p>
+
+<p>
+结论：
+</p>
+
+<p>
+m/n的比值越大越好，比较越大，误判率会越代，但同时会使用更多的空间成本。
+Hash次数增加带来的收益并不大。需要在条件允许的情况下，尽量的扩大m/n的值。
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org7a72dd9" class="outline-2">
+<h2 id="org7a72dd9">实施方案思考</h2>
+<div class="outline-text-2" id="text-org7a72dd9">
+<p>
+适用于一些黑名单,垃圾邮件等的过滤。
+</p>
+
+<p>
+当位数组较小时，可以作本地jvm缓存。
+</p>
+
+<p>
+当位数组较大时，可以做基于tair的缓存，此时可能需要开辟单独的应用来提供查询支持。
+</p>
+
+<p>
+此方案，适用的应用场景需要能够容忍，位数组和的延时。
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-org572393f" class="outline-2">
+<h2 id="org572393f">Bloom Fitler C 语言实现</h2>
+<div class="outline-text-2" id="text-org572393f">
+</div>
+<div id="outline-container-org20d70dd" class="outline-3">
+<h3 id="org20d70dd">This program is a code dump.</h3>
+<div class="outline-text-3" id="text-org20d70dd">
+<p>
+Code dumps are articles with little or no documentation or
+rearrangement of code. Please help to turn it into a literate
+program. Also make sure that the source of this code does consent to
+release it under the CC0 license.
+</p>
+
+<p>
+This is an implementation of a Bloom filter in C.
+</p>
+</div>
+</div>
+<div id="outline-container-orgb954028" class="outline-3">
+<h3 id="orgb954028">SOURCE</h3>
+<div class="outline-text-3" id="text-orgb954028">
+</div>
+<div id="outline-container-org0cf4fde" class="outline-4">
+<h4 id="org0cf4fde">bloom.h</h4>
+<div class="outline-text-4" id="text-org0cf4fde">
+<div class="org-src-container">
+<pre class="src src-c"><span style="font-weight: bold;">#if</span><span style="font-weight: bold;">n</span><span style="font-weight: bold;">def</span> __BLOOM_H__
+<span style="font-weight: bold;">#define</span> <span style="font-weight: bold; font-style: italic;">__BLOOM_H__</span>
+
+<span style="font-weight: bold;">#include</span><span style="font-style: italic;">&lt;stdlib.h&gt;</span>
+
+<span style="font-weight: bold;">typedef</span> <span style="font-weight: bold; text-decoration: underline;">unsigned</span> <span style="font-weight: bold; text-decoration: underline;">int</span> (*<span style="font-weight: bold; text-decoration: underline;">hashfunc_t</span>)(<span style="font-weight: bold;">const</span> <span style="font-weight: bold; text-decoration: underline;">char</span> *);
+<span style="font-weight: bold;">typedef</span> <span style="font-weight: bold;">struct</span> {
+    <span style="font-weight: bold; text-decoration: underline;">size_t</span> <span style="font-weight: bold; font-style: italic;">asize</span>;
+    <span style="font-weight: bold; text-decoration: underline;">unsigned</span> <span style="font-weight: bold; text-decoration: underline;">char</span> *<span style="font-weight: bold; font-style: italic;">a</span>;
+    <span style="font-weight: bold; text-decoration: underline;">size_t</span> <span style="font-weight: bold; font-style: italic;">nfuncs</span>;
+    <span style="font-weight: bold; text-decoration: underline;">hashfunc_t</span> *<span style="font-weight: bold; font-style: italic;">funcs</span>;
+} <span style="font-weight: bold; text-decoration: underline;">BLOOM</span>;
+
+<span style="font-weight: bold; text-decoration: underline;">BLOOM</span> *<span style="font-weight: bold;">bloom_create</span>(<span style="font-weight: bold; text-decoration: underline;">size_t</span> <span style="font-weight: bold; font-style: italic;">size</span>, <span style="font-weight: bold; text-decoration: underline;">size_t</span> <span style="font-weight: bold; font-style: italic;">nfuncs</span>, ...);
+<span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold;">bloom_destroy</span>(<span style="font-weight: bold; text-decoration: underline;">BLOOM</span> *<span style="font-weight: bold; font-style: italic;">bloom</span>);
+<span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold;">bloom_add</span>(<span style="font-weight: bold; text-decoration: underline;">BLOOM</span> *<span style="font-weight: bold; font-style: italic;">bloom</span>, <span style="font-weight: bold;">const</span> <span style="font-weight: bold; text-decoration: underline;">char</span> *<span style="font-weight: bold; font-style: italic;">s</span>);
+<span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold;">bloom_check</span>(<span style="font-weight: bold; text-decoration: underline;">BLOOM</span> *<span style="font-weight: bold; font-style: italic;">bloom</span>, <span style="font-weight: bold;">const</span> <span style="font-weight: bold; text-decoration: underline;">char</span> *<span style="font-weight: bold; font-style: italic;">s</span>);
+
+<span style="font-weight: bold;">#endif</span>
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org6459273" class="outline-4">
+<h4 id="org6459273">bloom.c</h4>
+<div class="outline-text-4" id="text-org6459273">
+<div class="org-src-container">
+<pre class="src src-c"><span style="font-weight: bold;">#include</span><span style="font-style: italic;">&lt;limits.h&gt;</span>
+<span style="font-weight: bold;">#include</span><span style="font-style: italic;">&lt;stdarg.h&gt;</span>
+
+<span style="font-weight: bold;">#include</span><span style="font-style: italic;">"bloom.h"</span>
+
+<span style="font-weight: bold;">#define</span> <span style="font-weight: bold;">SETBIT</span>(<span style="font-weight: bold; font-style: italic;">a</span>, <span style="font-weight: bold; font-style: italic;">n</span>) (a[n/CHAR_BIT] |= (1&lt;&lt;(n%CHAR_BIT)))
+<span style="font-weight: bold;">#define</span> <span style="font-weight: bold;">GETBIT</span>(<span style="font-weight: bold; font-style: italic;">a</span>, <span style="font-weight: bold; font-style: italic;">n</span>) (a[n/CHAR_BIT] &amp; (1&lt;&lt;(n%CHAR_BIT)))
+
+<span style="font-weight: bold; text-decoration: underline;">BLOOM</span> *<span style="font-weight: bold;">bloom_create</span>(<span style="font-weight: bold; text-decoration: underline;">size_t</span> <span style="font-weight: bold; font-style: italic;">size</span>, <span style="font-weight: bold; text-decoration: underline;">size_t</span> <span style="font-weight: bold; font-style: italic;">nfuncs</span>, ...)
+{
+    <span style="font-weight: bold; text-decoration: underline;">BLOOM</span> *<span style="font-weight: bold; font-style: italic;">bloom</span>;
+    <span style="font-weight: bold; text-decoration: underline;">va_list</span> <span style="font-weight: bold; font-style: italic;">l</span>;
+    <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">n</span>;
+
+    <span style="font-weight: bold;">if</span>(!(bloom=malloc(<span style="font-weight: bold;">sizeof</span>(BLOOM)))) <span style="font-weight: bold;">return</span> <span style="font-weight: bold; text-decoration: underline;">NULL</span>;
+    <span style="font-weight: bold;">if</span>(!(bloom-&gt;a=calloc((size+CHAR_BIT-1)/CHAR_BIT, <span style="font-weight: bold;">sizeof</span>(<span style="font-weight: bold; text-decoration: underline;">char</span>)))) {
+        free(bloom);
+        <span style="font-weight: bold;">return</span> <span style="font-weight: bold; text-decoration: underline;">NULL</span>;
+    }
+    <span style="font-weight: bold;">if</span>(!(bloom-&gt;funcs=(<span style="font-weight: bold; text-decoration: underline;">hashfunc_t</span>*)malloc(<span style="font-weight: bold; text-decoration: underline;">nfuncs</span>*<span style="font-weight: bold;">sizeof</span>(hashfunc_t)))) {
+        free(bloom-&gt;a);
+        free(bloom);
+        <span style="font-weight: bold;">return</span> <span style="font-weight: bold; text-decoration: underline;">NULL</span>;
+    }
+
+    va_start(l, nfuncs);
+    <span style="font-weight: bold;">for</span>(n=0; n&lt;nfuncs; ++n) {
+        bloom-&gt;funcs[n]=va_arg(l, hashfunc_t);
+    }
+    va_end(l);
+
+    bloom-&gt;nfuncs=nfuncs;
+    bloom-&gt;asize=size;
+
+    <span style="font-weight: bold;">return</span> bloom;
+}
+
+<span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold;">bloom_destroy</span>(<span style="font-weight: bold; text-decoration: underline;">BLOOM</span> *<span style="font-weight: bold; font-style: italic;">bloom</span>)
+{
+    free(bloom-&gt;a);
+    free(bloom-&gt;funcs);
+    free(bloom);
+
+    <span style="font-weight: bold;">return</span> 0;
+}
+
+<span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold;">bloom_add</span>(<span style="font-weight: bold; text-decoration: underline;">BLOOM</span> *<span style="font-weight: bold; font-style: italic;">bloom</span>, <span style="font-weight: bold;">const</span> <span style="font-weight: bold; text-decoration: underline;">char</span> *<span style="font-weight: bold; font-style: italic;">s</span>)
+{
+    <span style="font-weight: bold; text-decoration: underline;">size_t</span> <span style="font-weight: bold; font-style: italic;">n</span>;
+
+    <span style="font-weight: bold;">for</span>(n=0; n&lt;bloom-&gt;nfuncs; ++n) {
+        SETBIT(bloom-&gt;a, bloom-&gt;funcs[n](s)%bloom-&gt;asize);
+    }
+
+    <span style="font-weight: bold;">return</span> 0;
+}
+
+<span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold;">bloom_check</span>(<span style="font-weight: bold; text-decoration: underline;">BLOOM</span> *<span style="font-weight: bold; font-style: italic;">bloom</span>, <span style="font-weight: bold;">const</span> <span style="font-weight: bold; text-decoration: underline;">char</span> *<span style="font-weight: bold; font-style: italic;">s</span>)
+{
+    <span style="font-weight: bold; text-decoration: underline;">size_t</span> <span style="font-weight: bold; font-style: italic;">n</span>;
+
+    <span style="font-weight: bold;">for</span>(n=0; n&lt;bloom-&gt;nfuncs; ++n) {
+        <span style="font-weight: bold;">if</span>(!(GETBIT(bloom-&gt;a, bloom-&gt;funcs[n](s)%bloom-&gt;asize))) <span style="font-weight: bold;">return</span> 0;
+    }
+
+    <span style="font-weight: bold;">return</span> 1;
+}
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org06f9760" class="outline-4">
+<h4 id="org06f9760">test.c</h4>
+<div class="outline-text-4" id="text-org06f9760">
+<div class="org-src-container">
+<pre class="src src-c"><span style="font-weight: bold;">#include</span><span style="font-style: italic;">&lt;stdio.h&gt;</span>
+<span style="font-weight: bold;">#include</span><span style="font-style: italic;">&lt;string.h&gt;</span>
+
+<span style="font-weight: bold;">#include</span><span style="font-style: italic;">"bloom.h"</span>
+
+<span style="font-weight: bold; text-decoration: underline;">unsigned</span> <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold;">sax_hash</span>(<span style="font-weight: bold;">const</span> <span style="font-weight: bold; text-decoration: underline;">char</span> *<span style="font-weight: bold; font-style: italic;">key</span>)
+{
+    <span style="font-weight: bold; text-decoration: underline;">unsigned</span> <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">h</span>=0;
+
+    <span style="font-weight: bold;">while</span>(*key) h^=(h&lt;&lt;5)+(h&gt;&gt;2)+(<span style="font-weight: bold; text-decoration: underline;">unsigned</span> <span style="font-weight: bold; text-decoration: underline;">char</span>)*key++;
+
+    <span style="font-weight: bold;">return</span> h;
+}
+
+<span style="font-weight: bold; text-decoration: underline;">unsigned</span> <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold;">sdbm_hash</span>(<span style="font-weight: bold;">const</span> <span style="font-weight: bold; text-decoration: underline;">char</span> *<span style="font-weight: bold; font-style: italic;">key</span>)
+{
+    <span style="font-weight: bold; text-decoration: underline;">unsigned</span> <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">h</span>=0;
+    <span style="font-weight: bold;">while</span>(*key) h=(<span style="font-weight: bold; text-decoration: underline;">unsigned</span> <span style="font-weight: bold; text-decoration: underline;">char</span>)*key++ + (h&lt;&lt;6) + (h&lt;&lt;16) - h;
+    <span style="font-weight: bold;">return</span> h;
+}
+
+<span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold;">main</span>(<span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">argc</span>, <span style="font-weight: bold; text-decoration: underline;">char</span> *<span style="font-weight: bold; font-style: italic;">argv</span>[])
+{
+    <span style="font-weight: bold; text-decoration: underline;">FILE</span> *<span style="font-weight: bold; font-style: italic;">fp</span>;
+    <span style="font-weight: bold; text-decoration: underline;">char</span> <span style="font-weight: bold; font-style: italic;">line</span>[1024];
+    <span style="font-weight: bold; text-decoration: underline;">char</span> *<span style="font-weight: bold; font-style: italic;">p</span>;
+    <span style="font-weight: bold; text-decoration: underline;">BLOOM</span> *<span style="font-weight: bold; font-style: italic;">bloom</span>;
+
+    <span style="font-weight: bold;">if</span>(argc&lt;2) {
+        fprintf(stderr, <span style="font-style: italic;">"ERROR: No word file specified\n"</span>);
+        <span style="font-weight: bold;">return</span> EXIT_FAILURE;
+    }
+
+    <span style="font-weight: bold;">if</span>(!(bloom=bloom_create(2500000, 2, sax_hash, sdbm_hash))) {
+        fprintf(stderr, <span style="font-style: italic;">"ERROR: Could not create bloom filter\n"</span>);
+        <span style="font-weight: bold;">return</span> EXIT_FAILURE;
+    }
+
+    <span style="font-weight: bold;">if</span>(!(fp=fopen(argv[1], <span style="font-style: italic;">"r"</span>))) {
+        fprintf(stderr, <span style="font-style: italic;">"ERROR: Could not open file&#160;%s\n"</span>, argv[1]);
+        <span style="font-weight: bold;">return</span> EXIT_FAILURE;
+    }
+
+    <span style="font-weight: bold;">while</span>(fgets(line, 1024, fp)) {
+        <span style="font-weight: bold;">if</span>((p=strchr(line, <span style="font-style: italic;">'\r'</span>))) *p=<span style="font-style: italic;">'\0'</span>;
+        <span style="font-weight: bold;">if</span>((p=strchr(line, <span style="font-style: italic;">'\n'</span>))) *p=<span style="font-style: italic;">'\0'</span>;
+
+        bloom_add(bloom, line);
+    }
+
+    fclose(fp);
+
+    <span style="font-weight: bold;">while</span>(fgets(line, 1024, stdin)) {
+        <span style="font-weight: bold;">if</span>((p=strchr(line, <span style="font-style: italic;">'\r'</span>))) *p=<span style="font-style: italic;">'\0'</span>;
+        <span style="font-weight: bold;">if</span>((p=strchr(line, <span style="font-style: italic;">'\n'</span>))) *p=<span style="font-style: italic;">'\0'</span>;
+
+        p=strtok(line, <span style="font-style: italic;">" \t,.;:\r\n?!-/()"</span>);
+        <span style="font-weight: bold;">while</span>(p) {
+            <span style="font-weight: bold;">if</span>(!bloom_check(bloom, p)) {
+                printf(<span style="font-style: italic;">"No match for ford \"%s\"\n"</span>, p);
+            }
+            p=strtok(<span style="font-weight: bold; text-decoration: underline;">NULL</span>, <span style="font-style: italic;">" \t,.;:\r\n?!-/()"</span>);
+        }
+    }
+
+    bloom_destroy(bloom);
+
+    <span style="font-weight: bold;">return</span> EXIT_SUCCESS;
+}
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgf82512a" class="outline-4">
+<h4 id="orgf82512a">Makefile</h4>
+<div class="outline-text-4" id="text-orgf82512a">
+<div class="org-src-container">
+<pre class="src src-makefile"><span style="font-weight: bold;">all</span>: bloom
+
+<span style="font-weight: bold;">bloom</span>: bloom.o test.o
+    cc -o bloom -Wall -pedantic bloom.o test.o
+
+<span style="font-weight: bold;">bloom.o</span>: bloom.c bloom.h
+    cc -o bloom.o -Wall -pedantic -ansi -c bloom.c
+
+<span style="font-weight: bold;">test.o</span>: test.c bloom.h
+    cc -o test.o -Wall -pedantic -ansi -c test.c
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
+<div id="outline-container-org6d83932" class="outline-2">
+<h2 id="org6d83932">Bloom Filter Java 语言实现</h2>
+<div class="outline-text-2" id="text-org6d83932">
+<div class="org-src-container">
+<pre class="src src-java"><span style="font-weight: bold;">package</span> com.<span style="font-weight: bold; text-decoration: underline;">flyoung</span>;
+
+<span style="font-weight: bold;">import</span> <span style="font-weight: bold; text-decoration: underline;">java</span>.<span style="font-weight: bold; text-decoration: underline;">util</span>.<span style="font-weight: bold; text-decoration: underline;">BitSet</span>;
+<span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#20256;&#32479;&#30340;Bloom filter &#19981;&#25903;&#25345;&#20174;&#38598;&#21512;&#20013;&#21024;&#38500;&#25104;&#21592;&#12290;</span>
+<span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">Counting Bloom filter&#30001;&#20110;&#37319;&#29992;&#20102;&#35745;&#25968;&#65292;&#22240;&#27492;&#25903;&#25345;remove&#25805;&#20316;&#12290;</span>
+<span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#22522;&#20110;BitSet&#26469;&#23454;&#29616;&#65292;&#24615;&#33021;&#19978;&#21487;&#33021;&#23384;&#22312;&#38382;&#39064;</span>
+<span style="font-weight: bold;">public</span> <span style="font-weight: bold;">class</span> <span style="font-weight: bold; text-decoration: underline;">SimpleBloomFilter</span> {
+    <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">DEFAULT_SIZE&#20026;2&#30340;25&#27425;&#26041;</span>
+    <span style="font-weight: bold;">private</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold;">final</span> <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">DEFAULT_SIZE</span> = 2 &lt;&lt; 24;
+    <span style="font-weight: bold; font-style: italic;">/* </span><span style="font-weight: bold; font-style: italic;">&#19981;&#21516;&#21704;&#24076;&#20989;&#25968;&#30340;&#31181;&#23376;&#65292;&#19968;&#33324;&#24212;&#21462;&#36136;&#25968;,seeds&#25968;&#25454;&#20849;&#26377;7&#20010;&#20540;&#65292;&#21017;&#20195;&#34920;&#37319;&#29992;7&#31181;&#19981;&#21516;&#30340;HASH&#31639;&#27861; */</span>
+    <span style="font-weight: bold;">private</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold;">final</span> <span style="font-weight: bold; text-decoration: underline;">int</span>[] <span style="font-weight: bold; font-style: italic;">seeds</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">int</span>[] { 5, 7, 11, 13, 31, 37, 61 };
+    <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">BitSet&#23454;&#38469;&#26159;&#30001;&#8220;&#20108;&#36827;&#21046;&#20301;&#8221;&#26500;&#25104;&#30340;&#19968;&#20010;Vector&#12290;&#20551;&#22914;&#24076;&#26395;&#39640;&#25928;&#29575;&#22320;&#20445;&#23384;&#22823;&#37327;&#8220;&#24320;&#65293;&#20851;&#8221;&#20449;&#24687;&#65292;&#23601;&#24212;&#20351;&#29992;BitSet.</span>
+    <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">BitSet&#30340;&#26368;&#23567;&#38271;&#24230;&#26159;&#19968;&#20010;&#38271;&#25972;&#25968;&#65288;Long&#65289;&#30340;&#38271;&#24230;&#65306;64&#20301;</span>
+    <span style="font-weight: bold;">private</span> <span style="font-weight: bold; text-decoration: underline;">BitSet</span> <span style="font-weight: bold; font-style: italic;">bits</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">BitSet</span>(DEFAULT_SIZE);
+    <span style="font-weight: bold; font-style: italic;">/* </span><span style="font-weight: bold; font-style: italic;">&#21704;&#24076;&#20989;&#25968;&#23545;&#35937; */</span>
+    <span style="font-weight: bold;">private</span> <span style="font-weight: bold; text-decoration: underline;">SimpleHash</span>[] <span style="font-weight: bold; font-style: italic;">func</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">SimpleHash</span>[seeds.length];
+
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">main</span>(<span style="font-weight: bold; text-decoration: underline;">String</span>[] <span style="font-weight: bold; font-style: italic;">args</span>) {
+        <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">value</span> = <span style="font-style: italic;">"flyoung2008@gmail.com"</span>;
+        <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#23450;&#20041;&#19968;&#20010;filter&#65292;&#23450;&#20041;&#30340;&#26102;&#20505;&#20250;&#35843;&#29992;&#26500;&#36896;&#20989;&#25968;&#65292;&#21363;&#21021;&#22987;&#21270;&#19971;&#20010;hash&#20989;&#25968;&#23545;&#35937;&#25152;&#38656;&#35201;&#30340;&#20449;&#24687;&#12290;</span>
+        <span style="font-weight: bold; text-decoration: underline;">SimpleBloomFilter</span> <span style="font-weight: bold; font-style: italic;">filter</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">SimpleBloomFilter</span>();
+        <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#21028;&#26029;&#26159;&#21542;&#21253;&#21547;&#22312;&#37324;&#38754;&#12290;&#22240;&#20026;&#27809;&#26377;&#35843;&#29992;add&#26041;&#27861;&#65292;&#25152;&#20197;&#32943;&#23450;&#26159;&#36820;&#22238;false</span>
+        System.out.println(filter.contains(value));
+        filter.add(value);
+        System.out.println(filter.contains(value));
+    }
+    <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#26500;&#36896;&#20989;&#25968;</span>
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">SimpleBloomFilter</span>() {
+        <span style="font-weight: bold;">for</span> (<span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">i</span> = 0; i &lt; seeds.<span style="font-weight: bold; text-decoration: underline;">length</span>; i++) {
+            <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#32473;&#20986;&#25152;&#26377;&#30340;hash&#20540;&#65292;&#20849;&#35745;seeds.length&#20010;hash&#20540;&#12290;&#20849;7&#20301;&#12290;</span>
+            <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#36890;&#36807;&#35843;&#29992;SimpleHash.hash(),&#21487;&#20197;&#24471;&#21040;&#26681;&#25454;7&#31181;hash&#20989;&#25968;&#35745;&#31639;&#24471;&#20986;&#30340;hash&#20540;&#12290;</span>
+            <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#20256;&#20837;DEFAULT_SIZE(&#26368;&#32456;&#23383;&#31526;&#20018;&#30340;&#38271;&#24230;&#65289;&#65292;seeds[i](&#19968;&#20010;&#25351;&#23450;&#30340;&#36136;&#25968;)&#21363;&#21487;&#24471;&#21040;&#38656;&#35201;&#30340;&#37027;&#20010;hash&#20540;&#30340;&#20301;&#32622;&#12290;</span>
+            func[i] = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">SimpleHash</span>(DEFAULT_SIZE, seeds[i]);
+        }
+    }
+
+    <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#23558;&#23383;&#31526;&#20018;&#26631;&#35760;&#21040;bits&#20013;&#65292;&#21363;&#35774;&#32622;&#23383;&#31526;&#20018;&#30340;7&#20010;hash&#20540;&#20989;&#25968;&#20026;1</span>
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">add</span>(<span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">value</span>) {
+        <span style="font-weight: bold;">for</span> (<span style="font-weight: bold; text-decoration: underline;">SimpleHash</span> <span style="font-weight: bold; font-style: italic;">f</span> : func) {
+            bits.set(f.hash(value), <span style="font-weight: bold; text-decoration: underline;">true</span>);
+        }
+    }
+
+    <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#21028;&#26029;&#23383;&#31526;&#20018;&#26159;&#21542;&#24050;&#32463;&#34987;bits&#26631;&#35760;</span>
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">boolean</span> <span style="font-weight: bold;">contains</span>(<span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">value</span>) {
+        <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#30830;&#20445;&#20256;&#20837;&#30340;&#19981;&#26159;&#31354;&#20540;</span>
+        <span style="font-weight: bold;">if</span> (value == <span style="font-weight: bold; text-decoration: underline;">null</span>) {
+            <span style="font-weight: bold;">return</span> <span style="font-weight: bold; text-decoration: underline;">false</span>;
+        }
+        <span style="font-weight: bold; text-decoration: underline;">boolean</span> <span style="font-weight: bold; font-style: italic;">ret</span> = <span style="font-weight: bold; text-decoration: underline;">true</span>;
+        <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#35745;&#31639;7&#31181;hash&#31639;&#27861;&#19979;&#21508;&#33258;&#23545;&#24212;&#30340;hash&#20540;&#65292;&#24182;&#21028;&#26029;</span>
+        <span style="font-weight: bold;">for</span> (<span style="font-weight: bold; text-decoration: underline;">SimpleHash</span> <span style="font-weight: bold; font-style: italic;">f</span> : func) {
+            <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&amp;&amp;&#26159;boolen&#36816;&#31639;&#31526;&#65292;&#21482;&#35201;&#26377;&#19968;&#20010;&#20026;0&#65292;&#21017;&#20026;0&#12290;&#21363;&#38656;&#35201;&#25152;&#26377;&#30340;&#20301;&#37117;&#20026;1&#65292;&#25165;&#20195;&#34920;&#21253;&#21547;&#22312;&#37324;&#38754;&#12290;</span>
+            <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">f.hash(value)&#36820;&#22238;hash&#23545;&#24212;&#30340;&#20301;&#25968;&#20540;</span>
+            <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">bits.get&#20989;&#25968;&#36820;&#22238;bitset&#20013;&#23545;&#24212;position&#30340;&#20540;&#12290;&#21363;&#36820;&#22238;hash&#20540;&#26159;&#21542;&#20026;0&#25110;1&#12290;</span>
+            ret = ret &amp;&amp; bits.get(f.hash(value));
+        }
+        <span style="font-weight: bold;">return</span> ret;
+    }
+    <span style="font-weight: bold; font-style: italic;">/* </span><span style="font-weight: bold; font-style: italic;">&#21704;&#24076;&#20989;&#25968;&#31867; */</span>
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold;">class</span> <span style="font-weight: bold; text-decoration: underline;">SimpleHash</span> {
+        <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">cap&#20026;DEFAULT_SIZE&#30340;&#20540;&#65292;&#21363;&#29992;&#20110;&#32467;&#26524;&#30340;&#26368;&#22823;&#30340;&#23383;&#31526;&#20018;&#38271;&#24230;&#12290;</span>
+        <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">seed&#20026;&#35745;&#31639;hash&#20540;&#30340;&#19968;&#20010;&#32473;&#23450;key&#65292;&#20855;&#20307;&#23545;&#24212;&#19978;&#38754;&#23450;&#20041;&#30340;seeds&#25968;&#32452;</span>
+        <span style="font-weight: bold;">private</span> <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">cap</span>;
+        <span style="font-weight: bold;">private</span> <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">seed</span>;
+
+        <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">SimpleHash</span>(<span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">cap</span>, <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">seed</span>) {
+            <span style="font-weight: bold;">this</span>.cap = cap;
+            <span style="font-weight: bold;">this</span>.seed = seed;
+        }
+
+        <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#35745;&#31639;hash&#20540;&#30340;&#20855;&#20307;&#31639;&#27861;,hash&#20989;&#25968;&#65292;&#37319;&#29992;&#31616;&#21333;&#30340;&#21152;&#26435;&#21644;hash</span>
+        <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold;">hash</span>(<span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">value</span>) {
+            <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">int&#30340;&#33539;&#22260;&#26368;&#22823;&#26159;2&#30340;31&#27425;&#26041;&#20943;1&#65292;&#25110;&#36229;&#36807;&#20540;&#21017;&#29992;&#36127;&#25968;&#26469;&#34920;&#31034;</span>
+            <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">result</span> = 0;
+            <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">len</span> = value.length();
+            <span style="font-weight: bold;">for</span> (<span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">i</span> = 0; i &lt; <span style="font-weight: bold; text-decoration: underline;">len</span>; i++) {
+                <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#25968;&#23383;&#21644;&#23383;&#31526;&#20018;&#30456;&#21152;&#65292;&#23383;&#31526;&#20018;&#36716;&#25442;&#25104;&#20026;ASCII&#30721;</span>
+                result = seed * result + value.charAt(i);
+                <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">System.out.println(result+"--"+seed+"*"+result+"+"+value.charAt(i));</span>
+            }
+            <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">sSystem.out.println("result="+result+";"+((cap - 1) &amp; result));</span>
+            <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">System.out.println(414356308*61+'h');  //&#25191;&#34892;&#27492;&#36816;&#31639;&#32467;&#26524;&#20026;&#36127;&#25968;&#65292;&#20026;&#20160;&#20040;&#65311;</span>
+            <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&amp;&#26159;java&#20013;&#30340;&#20301;&#36923;&#36753;&#36816;&#31639;&#65292;&#29992;&#20110;&#36807;&#28388;&#36127;&#25968;&#65288;&#36127;&#25968;&#19982;&#36827;&#31639;&#36716;&#25442;&#25104;&#21453;&#30721;&#36827;&#34892;&#65289;&#12290;</span>
+            <span style="font-weight: bold;">return</span> (cap - 1) &amp; result;
+        }
+    }
+}
+
+
+</pre>
+</div>
+</div>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

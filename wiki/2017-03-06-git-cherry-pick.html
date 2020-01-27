@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>Git cherry-pick</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">Git cherry-pick</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#git"><div class="category">git</div></a> </div>
+<div class="char-counter">2017-03-06</div>
+        <div id="content">
+<nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#orge62563f">如果顺利，就会正常提交。结果：</a></li>
+<li><a href="#orgb95370f">如果在cherry-pick 的过程中出现了冲突</a>
+<ul>
+<li><a href="#org024daa8">2.1 $ git status # 看哪些文件出现冲突</a></li>
+<li><a href="#orgd6b78c0">2.2 $ vim app/models/MainActivity.java # 手动解决它。</a></li>
+<li><a href="#org9a84d65">2.3 $ git add app/models/MainActivity.java</a></li>
+<li><a href="#orgf525c88">2.4 git commit -c &lt;新的commit号码&gt;</a></li>
+<li><a href="#orge7838dc">2.5 再次 `cherry-pick` 剩余 commit</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</nav>
+<p>
+<code>git cherry-pick</code> 可以选择某一个分支中的一个或几个commit(s)来进行操作。例如，假设
+我们有个稳定版本的分支，叫 <i>v1.0</i> ，另外还有个开发版本的分支 <i>v2.0</i> ，我们不能直接把
+两个分支合并，这样会导致稳定版本混乱，但是又想增加一个 <i>v2.0</i> 中的功能到 <i>v1.0</i> 中，
+这里就可以使用 <code>cherry-pick</code> 了。
+</p>
+
+<p>
+简单用法：
+</p>
+<pre class="example">
+git cherry-pick &lt;commit id&gt;
+
+</pre>
+<p>
+注意：当执行完 `cherry-pick` 以后，将会生成一个新的提交；这个新的提交的哈希值和
+原来的不同，但标识名一样；
+</p>
+
+<p>
+例如：
+</p>
+<pre class="example">
+$ git checkout v1.0分支
+$ git cherry-pick 1234435 # 这个 1234435 号码，位于v2.0分支中：
+
+</pre>
+
+<div id="outline-container-orge62563f" class="outline-2">
+<h2 id="orge62563f">如果顺利，就会正常提交。结果：</h2>
+<div class="outline-text-2" id="text-orge62563f">
+<p class="verse">
+Finished one cherry-pick.<br>
+On branch v1.0分支<br>
+Your branch is ahead of 'origin/old' by 2 commits.<br>
+<br>
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgb95370f" class="outline-2">
+<h2 id="orgb95370f">如果在cherry-pick 的过程中出现了冲突</h2>
+<div class="outline-text-2" id="text-orgb95370f">
+<p class="verse">
+Automatic cherry-pick failed.<br>
+After resolving the conflicts,mark the corrected paths with 'git add &lt;paths&gt;' or 'git rm &lt;paths&gt;'and commit the result with:<br>
+git commit -c 8253414249218927947543957398674345<br>
+或者:<br>
+error: could not apply 145345656... dev<br>
+hint: after resolving the conflicts, mark the corrected paths<br>
+hint: with 'git add &lt;paths&gt;' or 'git rm &lt;paths&gt;'<br>
+hint: and commit the result with 'git commit'<br>
+</p>
+
+<p>
+就跟普通的冲突一样，手工解决：
+</p>
+</div>
+<div id="outline-container-org024daa8" class="outline-3">
+<h3 id="org024daa8">2.1 $ git status # 看哪些文件出现冲突</h3>
+<div class="outline-text-3" id="text-org024daa8">
+<p>
+both modified: app/models/MainActivity.java
+</p>
+</div>
+</div>
+<div id="outline-container-orgd6b78c0" class="outline-3">
+<h3 id="orgd6b78c0">2.2 $ vim app/models/MainActivity.java # 手动解决它。</h3>
+</div>
+<div id="outline-container-org9a84d65" class="outline-3">
+<h3 id="org9a84d65">2.3 $ git add app/models/MainActivity.java</h3>
+</div>
+<div id="outline-container-orgf525c88" class="outline-3">
+<h3 id="orgf525c88">2.4 git commit -c &lt;新的commit号码&gt;</h3>
+</div>
+<div id="outline-container-orge7838dc" class="outline-3">
+<h3 id="orge7838dc">2.5 再次 `cherry-pick` 剩余 commit</h3>
+<div class="outline-text-3" id="text-orge7838dc">
+<p>
+若提示:
+</p>
+<p class="verse">
+error: a cherry-pick or revert is already in progress<br>
+hint: try "git cherry-pick (--continue | --quit | --abort)"<br>
+fatal: cherry-pick failed<br>
+<br>
+</p>
+
+<p>
+则执行对应操作:
+</p>
+<div class="org-src-container">
+<pre class="src src-sh">git cherry-pick --continue
+git cherry-pick --quit
+git cherry-pick --abort
+</pre>
+</div>
+
+<p>
+命令集合:
+</p>
+<pre class="example">
+git cherry-pick &lt;commit id&gt;`: 单独合并一个提交
+git cherry-pick -x &lt;commit id&gt;`：同上，不同点：保留原提交者信息。
+
+</pre>
+
+<p>
+Git 从 1.7.2 版本开始支持批量 cherry-pick，就是一次可以 cherry-pick 一个区间的 commit。
+</p>
+<pre class="example">
+git cherry-pick &lt;start-commit-id&gt;..&lt;end-commit-id&gt;
+git cherry-pick &lt;start-commit-id&gt;^..&lt;end-commit-id&gt;
+
+</pre>
+
+<p>
+前者表示把 <code>&lt;start-commit-id&gt;</code> 到 <code>&lt;end-commit-id&gt;</code> 之间(左开右闭，不包含
+<code>start-commit-id</code>) 的提交 <code>cherry-pick</code> 到当前分支；后者有 "^" 标志的表示把
+<code>&lt;start-commit-id&gt;</code> 到 <code>&lt;end-commit-id&gt;</code> 之间(闭区间，包含 <code>start-commit-id</code>)的提交
+<code>cherry-pick</code> 到当前分支。其中， <code>&lt;start-commit-id&gt;</code> 到 <code>&lt;end-commit-id&gt;</code> 只需要
+<code>commit-id</code> 的前6位即可，并且 <code>&lt;start-commit-id&gt;</code> 在时间上必须早于 =&lt;end-commit-id&gt;
+=
+注：以上合并，需要手动push代码。
+</p>
+</div>
+</div>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

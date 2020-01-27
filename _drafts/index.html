@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <script src="https://cdn1.lncld.net/static/js/av-min-1.5.0.js"></script>
+    <title>Free World</title>
+
+    <link rel="stylesheet" href="./styles/font.css">
+    <link rel="stylesheet" media="screen and (min-width: 600px)" href="./styles/home.css">
+    <link rel="stylesheet" media="screen and (max-width: 600px)" href="./styles/home_mobile.css">
+</head>
+
+<body>
+    <img class="cover" src="./images/sixshot2.jpg" />
+    <div class="content">
+        <div class="topbar">
+            <div class="topbar-mine">Free World</div>
+            <div class="topbar-button">
+                <a href="./index.html">Home</a>
+            </div>
+            <div class="topbar-button">
+                <a href="./tags.html">Tags</a>
+            </div>
+            <div class="topbar-button">
+                <a href="./about.html">About</a>
+            </div>
+        </div>
+
+        <div class="slogan">
+            「生活可以更简单, 欢迎来到我的开源世界」
+        </div>
+
+        <div id="list-content">这里放列表</div>
+        <div class="motto">
+            Smells Like Teen Spirit
+        </div>
+    </div>
+    <!-- IE support
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/es5-shim/4.5.7/es5-shim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/es5-shim/4.5.7/es5-sham.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/json3/3.3.2/json3.min.js"></script>
+     -->
+    <script src="./js/es5-shim.min.js"></script>
+    <script src="./js/es5-sham.min.js"></script>
+    <script src="./js/json3.min.js"></script>
+    <script src="./js/template-web.js"></script>
+    <script id="tpl-list" type="text/html">
+        <ul>
+            <div class="char-total-counter">
+                {{ posts.length }}篇文章
+
+                {{ count }}字
+            </div>
+
+            {{each posts post $index}}
+
+            <li class="post-line">
+                <a class="post-title" href="{{ post.url }}">
+                    {{ post.title }}
+                </a>
+
+                <div class="post-summary">
+                    {{ post.summary }}
+                </div>
+                <div class="post-info">
+                    <div class="category-area">
+                        {{each post.categories category $key}}
+                        <a href="./tags.html#{{ category }}">
+                            <div class="category">
+                                {{ category }}
+                            </div>
+                        </a>
+                        {{/each}}
+                    </div>
+                    <div class="right-info-area">
+                        <div class="char-counter">
+                            字数 {{ post.count}}
+                        </div>
+                        <div class="post-date">
+                            {{ post.date }}
+                        </div>
+                    </div>
+                </div>
+            </li>
+            {{/each}}
+        </ul>
+    </script>
+    <script lang="javascript" type="text/javascript" src="./js/utils.js"></script>
+    <script lang="javascript">
+        function render(site) {
+            site.posts.sort(function (a, b) {
+                var d1 = a['date'];
+                var d2 = b['date'];
+                if (d2 === undefined) {
+                    return -1;
+                } else if (d1 == undefined) {
+                    return 1;
+                } else {
+                    return new Date(d2) - new Date(d1);
+                }
+            });
+            var html = template("tpl-list", site);
+            var el = Query.getElementById("list-content");
+            var elem = Element.parse(html);
+            Element.replace(el, elem);
+        }
+
+        function callback(res) {
+            if (!res.ok) {
+                return;
+            }
+            res.json().then(render);
+        }
+
+        Events.ready(function () {
+            Ajax.load("/post-meta.json", callback);
+        });
+
+    </script>
+</body>
+</html>

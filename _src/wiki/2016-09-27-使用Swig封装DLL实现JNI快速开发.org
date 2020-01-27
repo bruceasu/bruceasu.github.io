@@ -1,0 +1,225 @@
+#+title: 使用Swig封装DLL实现JNI快速开发
+#+date: <2016-09-27 20:48>
+#+filetags: java swig jni
+
+                         使用Swig封装DLL实现JNI快速开发
+
+* 说在前面
+JNI这个话题原来比较老旧，是10年左右的事情，这次翻出来整理是因为又碰到了需求。现
+在网上介绍Swig的已经比较多了，有实际例子的比较少，
+
+这里梳理的同时，做一个实际的例子。
+
+JNI技术是在Java最初版本进行开发时就有了，主要实现Java语言与其他语言如
+C/C++/Delphi等的交互。
+
+最初用到它是开发物联网的项目，产品需要与各种物联网终端进行适配对接，物联网终端的
+各个生产厂家提供的接口五花八门，C，C++，Delphi的，接口封装的形式也是各不相同，为
+每一种设备做适配封装成为一个巨大的挑战。
+
+在使用JNI封装了一个设备之后，脑力消耗巨大，因为用JNI封装一个简单的函数和封装几十
+上百个函数不是同一个等级的。为了快速解决问题，只能在网上一遍遍搜索，最后发现了
+Swig
+
+* Swig简介
+Swig的目标是为C/C++开发的程序与其他语言开发的程序之间建立连接。Swig支持的语言包
+括：Javascript, Perl, PHP, Python, Tcl and Ruby，C#, Common Lisp (CLISP, Allegro
+CL, CFFI, UFFI), D, Go language, Java including Android, Lua, Modula-3, OCAML,
+Octave, Scilab and R。可以看出，几乎涵盖了大多数常用语言。
+
+Swig的实现机制是通过定义中间接口描述文件，根据接口描述文件自动生成DLL的封装代码，
+包括C/C++封装代码和目标语言的封装代码。当前，
+
+Swig支持C++的如下特性：
+- 类
+- 类的构造和析构
+- 虚函数
+- 公共继承（包括多重继承）
+- 静态函数
+- 函数和方法重载
+- 大多数标准运算符的重载
+- 引用
+- 模板
+- 函数指针
+- 名字空间
+
+* Swig的安装
+Swig支持Windows，Linux和Mac。在Windows平台下，下载SwigWin-[VERSION]安装包即可；
+在Linux平台可以从仓库直接安装，如果想使用最新版本，
+
+可以下载代码编译：
+#+BEGIN_EXAMPLE
+./configure
+make
+make install
+
+#+END_EXAMPLE
+最后的make install需要 root 权限。
+
+* Swig在JNI中的应用
+下面以一个实际的JNI封装案例简要介绍Swig的使用。
+
+** 待封装的DLL及头文件
+
+通常拿到的SDK开发接口包括：DLL，.h头文件，.lib文件。下面的示例SDK接口包含：
+- RR3036.dll
+- RR3036.h
+- RR3036.lib
+其中，头文件 RR3036.h 的部分内容摘录（仅占三分之一）如下：
+#+BEGIN_SRC C
+#ifdef RR3036_EXPORTS
+#define RR3036_API __declspec(dllexport)
+#else
+#define RR3036_API __declspec(dllimport)
+#endif
+// 此类是从 RR3036.dll 导出的
+class RR3036_API CRR3036 {
+public:
+ CRR3036(void);
+};
+extern RR3036_API int nRR3036;
+RR3036_API int fnRR3036(void);
+#ifdef __cplusplus
+extern "C" {
+#endif
+RR3036_API int CloseSpecComPort(int FrmHandle);
+RR3036_API int CloseComPort();
+RR3036_API int GetReaderInformation(unsigned char* ComAdr,	//读写器地址
+         unsigned char* VersionInfo,	//软件版本
+         unsigned char* ReaderType,	//读写器型号
+         unsigned char* TrType,	//支持的协议
+         unsigned char* ScanTime,
+         int frmComPortindex);
+RR3036_API int OpenComPort(int port,unsigned char *ComAdr,int* frmcomportindex);
+RR3036_API int AutoOpenComPort(int *port,unsigned char *ComAdr,int *frmcomportindex);
+RR3036_API int Inventory(unsigned char *ComAdr,
+       unsigned char *state,	//询查模式
+       unsigned char *AFI,
+       unsigned char *pOUcharUIDList,	//标签DSFID + UID
+       unsigned char *pOUcharTagNum,
+       int frmcomportindex);
+RR3036_API int WriteInventoryScanTime(unsigned char *ComAdr,
+           unsigned char *ScanTime,
+           int frmComPortindex);
+RR3036_API int StayQuiet(unsigned char *ComAdr,
+       unsigned char *UID,//要静默标签的UID
+       unsigned char *ErrorCode,
+       int frmcomportindex);
+RR3036_API int Select(unsigned char *ComAdr,
+       unsigned char *UID,
+       unsigned char *ErrorCode,
+       int frmcomportindex);
+RR3036_API int ResetToReady(unsigned char *ComAdr,
+       unsigned char *state,
+       unsigned char *UID,
+       unsigned char *ErrorCode,
+       int frmcomportindex);
+RR3036_API int ReadSingleBlock(unsigned char *ComAdr,
+          unsigned char *state,	//读模式选择
+          unsigned char *UID,
+          unsigned char blockNumber,	//块号
+          unsigned char *BlockSecStatus,	//安全状态字
+          unsigned char *Data,	//块数据
+          unsigned char *ErrorCode,
+          int frmcomportindex);
+RR3036_API int WriteSingleBlock(unsigned char *ComAdr,
+        unsigned char *state,	//读模式选择
+        unsigned char *UID,
+        unsigned char blockNumber,	//块号
+        unsigned char *Data,	//要写入的数据
+        unsigned char *ErrorCode,
+        int frmcomportindex);
+RR3036_API int ReadMultipleBlock(unsigned char *ComAdr,
+         unsigned char *state,	//读模式选择
+         unsigned char *UID,
+         unsigned char BlockNum,	//起始块号
+         unsigned char BlockCount,	//块数量
+         unsigned char *BlockSecStatus,//安全状态字
+         unsigned char *Data,	//块数据
+         unsigned char *ErrorCode,
+         int frmcomportindex);
+......
+#+END_SRC
+
+** 接口描述文件
+我们需要告诉Swig，我们的接口定义头文件是什么，要封装的主类（以Java为例）是什么，
+接口头文件是否还依赖其他头文件，需要在交互过程中对哪些类型做什么样的映射封装，根
+据上述信息生成 RR3036.i 的接口描述文件，具体如下：
+#+BEGIN_SRC swig
+%module RR3036
+%{
+%include <windows.i>
+%include "RR3036.h"
+%}
+%include <windows.i>
+%include "RR3036.h"
+%include cpointer.i
+%pointer_functions(int, intp);
+%pointer_functions(unsigned char, shortp);
+%include "carrays.i"
+%array_functions(unsigned char, shortArray);
+
+#+END_SRC
+
+如上所示，我们要封装成的Java代码主类为 RR3036（通过%module描述）。定义int型/短整
+型指针的类型映射封装。
+
+由上面可以看出，这个过程我们几乎不需要考虑接口头文件中的具体接口方法定义。关于接
+口描述文件定义及类型封装请参考Swig帮助文档。
+
+** 编译生成代码
+接口描述文件RR3036.i准备好之后就可以调用Swig命令生成封装代码，具体命令如下：
+: swig -c++ -java -package rr3036.api -outdir src/java/rr3036/api RR3036.i
+生成的代码文件（本例）主要包括：
+
+两个C++封装文件：
+- JNI_RR3036API.cpp
+- RR3036_wrap.cxx
+
+注意，此文件中的 =%include <windows.i>=  =%include "RR3036.i"= 需要调整才能编译
+多个Java封装文件：
+
+- CRR3036.java
+- RR3036.java # 要调用的主类
+- RR3036JNI.java
+- SWIGTYPE_p_int.java
+- SWIGTYPE_p_unsigned_char.java
+
+对上述代码分别进行编译。
+
+备注：
+#+BEGIN_QUOTE
+生成的C++封装代码在Linux下的编译，在Swig中有单独说明，可参考。
+#+END_QUOTE
+
+详细编译参数，请参考Swig帮助文档。
+
+** 调用代码
+将生成的 =JNI_RR3036API.dll= 与 接口 =RR3036.DLL= 通过 =System.load= 等方法加载后调用
+即可。本例代码可从swig-jni-rr3036下载。
+
+* 附录
+[Android] Jni中C++和Java的数据类型的对应关系
+
+| Java类型  | 本地类型      | 描述                                     |
+|-----------+---------------+------------------------------------------|
+| boolean   | jboolean      | C/C++8位整型                             |
+| byte      | jbyte         | C/C++带符号的8位整型                     |
+| char      | jchar         | C/C++无符号的16位整型                    |
+| short     | jshort        | C/C++带符号的16位整型                    |
+| int       | jint          | C/C++带符号的32位整型                    |
+| long      | jlong         | C/C++带符号的64位整型e                   |
+| float     | jfloat        | C/C++32位浮点型                          |
+| double    | jdouble       | C/C++64位浮点型                          |
+| Object    | jobject       | 任何Java对象，或者没有对应java类型的对象 |
+| Class     | jclass        | Class对象                                |
+| String    | jstring       | 字符串对象                               |
+| Object[]  | jobjectArray  | 任何对象的数组                           |
+| boolean[] | jbooleanArray | 布尔型数组                               |
+| byte[]    | jbyteArray    | 比特型数组                               |
+| char[]    | jcharArray    | 字符型数组                               |
+| short[]   | jshortArray   | 短整型数组                               |
+| int[]     | jintArray     | 整型数组                                 |
+| long[]    | jlongArray    | 长整型数组                               |
+| float[]   | jfloatArray   | 浮点型数组                               |
+| double[]  | jdoubleArray  | 双浮点型数组                             |

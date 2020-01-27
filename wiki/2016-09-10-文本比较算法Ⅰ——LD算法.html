@@ -1,0 +1,1526 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>文本比较算法Ⅰ——LD算法</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">文本比较算法Ⅰ——LD算法</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#reprint"><div class="category">reprint</div></a> </div>
+<div class="char-counter">2016-09-10</div>
+        <div id="content">
+<p>
+在日常应用中，文本比较是一个比较常见的问题。文本比较算法也是一个老生常谈的话题。
+</p>
+
+<p>
+文本比较的核心就是比较两个给定的文本（可以是字节流等）之间的差异。目前，主流的比
+较文本之间的差异主要有两大类。一类是基于编辑距离 （Edit Distance）的，例如LD算法。
+一类是基于最长公共子串的（Longest Common Subsequence），例如Needleman/Wunsch算法
+等。
+</p>
+
+<p>
+LD算法（Levenshtein Distance）又成为编辑距离算法（Edit Distance）。他是以字符串A
+通过插入字符、删除字符、替换字符变成另一个字符串B，那么操作的过程的次数表示两个
+字符串的差异。
+</p>
+
+<p>
+例如：
+</p>
+<p class="verse">
+字符串A：kitten<br>
+如何变成字符串<br>
+B：sitting<br>
+<br>
+</p>
+
+
+<ul class="org-ul">
+<li>第一步：kitten——》sitten。k替换成s</li>
+<li>第二步：sitten——》sittin。e替换成i</li>
+<li>第三步：sittin——》sitting。在末尾插入g</li>
+</ul>
+
+<p>
+故kitten和sitting的编辑距离为3
+</p>
+
+<p>
+定义说明：
+</p>
+<p class="verse">
+　　LD(A,B)表示字符串A和字符串B的编辑距离。很显然，若LD(A,B)=0表示字符串A和字符串B完全相同<br>
+　　Rev(A)表示反转字符串A<br>
+　　Len(A)表示字符串A的长度<br>
+　　A+B表示连接字符串A和字符串B<br>
+　　<br>
+　　有下面几个性质：<br>
+　　LD(A,A)=0<br>
+　　LD(A,"")=Len(A)<br>
+　　LD(A,B)=LD(B,A)<br>
+　　0≤LD(A,B)≤Max(Len(A),Len(B))<br>
+　　LD(A,B)=LD(Rev(A),Rev(B))<br>
+　　LD(A+C,B+C)=LD(A,B)<br>
+　　LD(A+B,A+C)=LD(B,C)<br>
+　　LD(A,B)≤LD(A,C)+LD(B,C)（注：像不像“三角形，两边之和大于第三边”）<br>
+　　LD(A+C,B)≤LD(A,B)+LD(B,C)<br>
+<br>
+　　为了讲解计算LD(A,B)，特给予以下几个定义<br>
+　　A=a1a2……aN，表示A是由a1a2……aN这N个字符组成，Len(A)=N<br>
+　　B=b1b2……bM，表示B是由b1b2……bM这M个字符组成，Len(B)=M<br>
+　　定义LD(i,j)=LD(a1a2……ai,b1b2……bj)，其中0≤i≤N，0≤j≤M<br>
+　　故：　　LD(N,M)=LD(A,B)<br>
+　　　　　　LD(0,0)=0<br>
+　　　　　　LD(0,j)=j<br>
+　　　　　　LD(i,0)=i<br>
+<br>
+　　对于1≤i≤N，1≤j≤M，有公式一<br>
+　　若ai=bj，则LD(i,j)=LD(i-1,j-1)<br>
+　　若ai≠bj，则LD(i,j)=Min(LD(i-1,j-1),LD(i-1,j),LD(i,j-1))+1<br>
+<br>
+</p>
+
+<p>
+举例说明：
+</p>
+<pre class="example">
+A=GGATCGA，
+B=GAATTCAGTTA，
+计算LD(A,B)
+
+</pre>
+
+<ul class="org-ul">
+<li><p>
+第一步：初始化LD矩阵
+</p>
+<table>
+
+
+<colgroup>
+<col  class="org-left">
+
+<col  class="org-right">
+
+<col  class="org-left">
+
+<col  class="org-left">
+
+<col  class="org-left">
+
+<col  class="org-left">
+
+<col  class="org-left">
+
+<col  class="org-left">
+
+<col  class="org-left">
+
+<col  class="org-left">
+
+<col  class="org-left">
+
+<col  class="org-left">
+
+<col  class="org-left">
+</colgroup>
+<tbody>
+<tr>
+<td class="org-left"> </td>
+<td class="org-right"> </td>
+<td class="org-left">G</td>
+<td class="org-left">A</td>
+<td class="org-left">A</td>
+<td class="org-left">T</td>
+<td class="org-left">T</td>
+<td class="org-left">C</td>
+<td class="org-left">A</td>
+<td class="org-left">G</td>
+<td class="org-left">T</td>
+<td class="org-left">T</td>
+<td class="org-left">A</td>
+</tr>
+
+<tr>
+<td class="org-left"> </td>
+<td class="org-right">0</td>
+<td class="org-left">1</td>
+<td class="org-left">2</td>
+<td class="org-left">3</td>
+<td class="org-left">4</td>
+<td class="org-left">5</td>
+<td class="org-left">6</td>
+<td class="org-left">7</td>
+<td class="org-left">8</td>
+<td class="org-left">9</td>
+<td class="org-left">10</td>
+<td class="org-left">11</td>
+</tr>
+
+<tr>
+<td class="org-left">G</td>
+<td class="org-right">1</td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+</tr>
+
+<tr>
+<td class="org-left">G</td>
+<td class="org-right">2</td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+</tr>
+
+<tr>
+<td class="org-left">A</td>
+<td class="org-right">3</td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+</tr>
+
+<tr>
+<td class="org-left">T</td>
+<td class="org-right">4</td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+</tr>
+
+<tr>
+<td class="org-left">C</td>
+<td class="org-right">5</td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+</tr>
+
+<tr>
+<td class="org-left">G</td>
+<td class="org-right">6</td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+</tr>
+
+<tr>
+<td class="org-left">A</td>
+<td class="org-right">7</td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+</tr>
+</tbody>
+</table></li>
+</ul>
+
+
+<ul class="org-ul">
+<li><p>
+第二步：利用上述的公式一，计算第一行
+</p>
+<table>
+
+
+<colgroup>
+<col  class="org-left">
+
+<col  class="org-right">
+
+<col  class="org-left">
+
+<col  class="org-left">
+
+<col  class="org-left">
+
+<col  class="org-left">
+
+<col  class="org-left">
+
+<col  class="org-left">
+
+<col  class="org-left">
+
+<col  class="org-left">
+
+<col  class="org-left">
+
+<col  class="org-left">
+
+<col  class="org-left">
+</colgroup>
+<tbody>
+<tr>
+<td class="org-left"> </td>
+<td class="org-right"> </td>
+<td class="org-left">G</td>
+<td class="org-left">A</td>
+<td class="org-left">A</td>
+<td class="org-left">T</td>
+<td class="org-left">T</td>
+<td class="org-left">C</td>
+<td class="org-left">A</td>
+<td class="org-left">G</td>
+<td class="org-left">T</td>
+<td class="org-left">T</td>
+<td class="org-left">A</td>
+</tr>
+
+<tr>
+<td class="org-left"> </td>
+<td class="org-right">0</td>
+<td class="org-left">1</td>
+<td class="org-left">2</td>
+<td class="org-left">3</td>
+<td class="org-left">4</td>
+<td class="org-left">5</td>
+<td class="org-left">6</td>
+<td class="org-left">7</td>
+<td class="org-left">8</td>
+<td class="org-left">9</td>
+<td class="org-left">10</td>
+<td class="org-left">11</td>
+</tr>
+
+<tr>
+<td class="org-left">G</td>
+<td class="org-right">1</td>
+<td class="org-left">0</td>
+<td class="org-left">1</td>
+<td class="org-left">2</td>
+<td class="org-left">3</td>
+<td class="org-left">4</td>
+<td class="org-left">5</td>
+<td class="org-left">6</td>
+<td class="org-left">7</td>
+<td class="org-left">8</td>
+<td class="org-left">9</td>
+<td class="org-left">10</td>
+</tr>
+
+<tr>
+<td class="org-left">G</td>
+<td class="org-right">2</td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+</tr>
+
+<tr>
+<td class="org-left">A</td>
+<td class="org-right">3</td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+</tr>
+
+<tr>
+<td class="org-left">T</td>
+<td class="org-right">4</td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+</tr>
+
+<tr>
+<td class="org-left">C</td>
+<td class="org-right">5</td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+</tr>
+
+<tr>
+<td class="org-left">G</td>
+<td class="org-right">6</td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+</tr>
+
+<tr>
+<td class="org-left">A</td>
+<td class="org-right">7</td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+<td class="org-left"> </td>
+</tr>
+</tbody>
+</table></li>
+
+<li><p>
+第三步，利用上述的公示一，计算其余各行
+</p>
+<table>
+
+
+<colgroup>
+<col  class="org-left">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+</colgroup>
+<tbody>
+<tr>
+<td class="org-left"> </td>
+<td class="org-right"> </td>
+<td class="org-right">G</td>
+<td class="org-right">A</td>
+<td class="org-right">A</td>
+<td class="org-right">T</td>
+<td class="org-right">T</td>
+<td class="org-right">C</td>
+<td class="org-right">A</td>
+<td class="org-right">G</td>
+<td class="org-right">T</td>
+<td class="org-right">T</td>
+<td class="org-right">A</td>
+</tr>
+
+<tr>
+<td class="org-left"> </td>
+<td class="org-right">0</td>
+<td class="org-right">1</td>
+<td class="org-right">2</td>
+<td class="org-right">3</td>
+<td class="org-right">4</td>
+<td class="org-right">5</td>
+<td class="org-right">6</td>
+<td class="org-right">7</td>
+<td class="org-right">8</td>
+<td class="org-right">9</td>
+<td class="org-right">10</td>
+<td class="org-right">11</td>
+</tr>
+
+<tr>
+<td class="org-left">G</td>
+<td class="org-right">1</td>
+<td class="org-right">0</td>
+<td class="org-right">1</td>
+<td class="org-right">2</td>
+<td class="org-right">3</td>
+<td class="org-right">4</td>
+<td class="org-right">5</td>
+<td class="org-right">6</td>
+<td class="org-right">7</td>
+<td class="org-right">8</td>
+<td class="org-right">9</td>
+<td class="org-right">10</td>
+</tr>
+
+<tr>
+<td class="org-left">G</td>
+<td class="org-right">2</td>
+<td class="org-right">1</td>
+<td class="org-right">1</td>
+<td class="org-right">2</td>
+<td class="org-right">3</td>
+<td class="org-right">4</td>
+<td class="org-right">5</td>
+<td class="org-right">6</td>
+<td class="org-right">6</td>
+<td class="org-right">7</td>
+<td class="org-right">8</td>
+<td class="org-right">9</td>
+</tr>
+
+<tr>
+<td class="org-left">A</td>
+<td class="org-right">3</td>
+<td class="org-right">2</td>
+<td class="org-right">1</td>
+<td class="org-right">1</td>
+<td class="org-right">2</td>
+<td class="org-right">3</td>
+<td class="org-right">4</td>
+<td class="org-right">5</td>
+<td class="org-right">6</td>
+<td class="org-right">7</td>
+<td class="org-right">8</td>
+<td class="org-right">8</td>
+</tr>
+
+<tr>
+<td class="org-left">T</td>
+<td class="org-right">4</td>
+<td class="org-right">3</td>
+<td class="org-right">2</td>
+<td class="org-right">2</td>
+<td class="org-right">1</td>
+<td class="org-right">2</td>
+<td class="org-right">3</td>
+<td class="org-right">4</td>
+<td class="org-right">5</td>
+<td class="org-right">6</td>
+<td class="org-right">7</td>
+<td class="org-right">8</td>
+</tr>
+
+<tr>
+<td class="org-left">C</td>
+<td class="org-right">5</td>
+<td class="org-right">4</td>
+<td class="org-right">3</td>
+<td class="org-right">3</td>
+<td class="org-right">2</td>
+<td class="org-right">2</td>
+<td class="org-right">2</td>
+<td class="org-right">3</td>
+<td class="org-right">4</td>
+<td class="org-right">5</td>
+<td class="org-right">6</td>
+<td class="org-right">7</td>
+</tr>
+
+<tr>
+<td class="org-left">G</td>
+<td class="org-right">6</td>
+<td class="org-right">5</td>
+<td class="org-right">4</td>
+<td class="org-right">4</td>
+<td class="org-right">3</td>
+<td class="org-right">3</td>
+<td class="org-right">3</td>
+<td class="org-right">3</td>
+<td class="org-right">3</td>
+<td class="org-right">4</td>
+<td class="org-right">5</td>
+<td class="org-right">6</td>
+</tr>
+
+<tr>
+<td class="org-left">A</td>
+<td class="org-right">7</td>
+<td class="org-right">6</td>
+<td class="org-right">5</td>
+<td class="org-right">4</td>
+<td class="org-right">4</td>
+<td class="org-right">4</td>
+<td class="org-right">4</td>
+<td class="org-right">3</td>
+<td class="org-right">4</td>
+<td class="org-right">4</td>
+<td class="org-right">5</td>
+<td class="org-right">5</td>
+</tr>
+</tbody>
+</table>
+
+<p>
+则LD(A,B)=LD(7,11)=5
+</p></li>
+</ul>
+
+<p>
+下面是LD算法的代码，用的是VB2005。代码格式修正于2012年1月6日。
+</p>
+<div class="org-src-container">
+<pre class="src src-VB">Public Class clsLD
+　　Private Shared mA() As Char
+　　Private Shared mB() As Char
+
+　　Public Shared Function LD(ByVal A As String, ByVal B As String) As Integer
+
+　　　　mA = A.ToCharArray
+　　　　mB = B.ToCharArray
+
+　　　　Dim L(A.Length, B.Length) As Integer
+　　　　Dim i As Integer, j As Integer
+
+　　　　For i = 1 To A.Length
+　　　　　　L(i, 0) = i
+　　　　Next
+　　　　For j = 1 To B.Length
+　　　　　　L(0, j) = j
+　　　　Next
+
+　　　　For i = 1 To A.Length
+　　　　　　For j = 1 To B.Length
+　　　　　　　　If mA(i - 1) = mB(j - 1) Then
+　　　　　　　　　　L(i, j) = L(i - 1, j - 1)
+　　　　　　　　Else
+　　　　　　　　　　L(i, j) = Min(L(i - 1, j - 1), L(i - 1, j), L(i, j - 1)) + 1
+　　　　　　　　End If
+　　　　　　Next
+　　　　Next
+
+　　　　Return L(A.Length, B.Length)
+　　End Function
+
+　　Public Shared Function Min(ByVal A As Integer, ByVal B As Integer, ByVal C As Integer) As Integer
+　　　　Dim I As Integer = A
+　　　　If I &gt; B Then I = B
+　　　　If I &gt; C Then I = C
+　　　　Return I
+　　End Function
+End Class
+
+</pre>
+</div>
+
+
+<p>
+这个LD算法时间复杂度为O(MN)，空间复杂度为O(MN)，如果进行优化的话，空间复杂度可以
+为O(M)，优化的代码这里不再详述了。参看“计算字符串的相似度（VB2005）”
+</p>
+
+<p>
+我们往往不仅仅是计算出字符串A和字符串B的编辑距离，还要能得出他们的匹配结果。
+</p>
+
+<p>
+以上面为例A=GGATCGA，B=GAATTCAGTTA，LD(A,B)=5
+</p>
+
+<p>
+他们的匹配为：
+</p>
+<p class="verse">
+A：GGA<sub>TC</sub><sub>G</sub>_<sub>A</sub><br>
+B：GAATTCAGTTA<br>
+<br>
+</p>
+
+<p>
+如上面所示，蓝色表示完全匹配，黑色表示编辑操作，<sub>表示插入字符或者是删除字符操作</sub>。
+</p>
+
+<p>
+如上面所示，黑色字符有5个，表示编辑距离为5。
+</p>
+
+<p>
+利用上面的LD矩阵，通过回溯，能找到匹配字串
+</p>
+
+<ul class="org-ul">
+<li><p>
+第一步：定位在矩阵的右下角　　
+</p>
+<table>
+
+
+<colgroup>
+<col  class="org-left">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+</colgroup>
+<tbody>
+<tr>
+<td class="org-left"> </td>
+<td class="org-right"> </td>
+<td class="org-right">G</td>
+<td class="org-right">A</td>
+<td class="org-right">A</td>
+<td class="org-right">T</td>
+<td class="org-right">T</td>
+<td class="org-right">C</td>
+<td class="org-right">A</td>
+<td class="org-right">G</td>
+<td class="org-right">T</td>
+<td class="org-right">T</td>
+<td class="org-right">A</td>
+</tr>
+
+<tr>
+<td class="org-left"> </td>
+<td class="org-right">0</td>
+<td class="org-right">1</td>
+<td class="org-right">2</td>
+<td class="org-right">3</td>
+<td class="org-right">4</td>
+<td class="org-right">5</td>
+<td class="org-right">6</td>
+<td class="org-right">7</td>
+<td class="org-right">8</td>
+<td class="org-right">9</td>
+<td class="org-right">10</td>
+<td class="org-right">11</td>
+</tr>
+
+<tr>
+<td class="org-left">G</td>
+<td class="org-right">1</td>
+<td class="org-right">0</td>
+<td class="org-right">1</td>
+<td class="org-right">2</td>
+<td class="org-right">3</td>
+<td class="org-right">4</td>
+<td class="org-right">5</td>
+<td class="org-right">6</td>
+<td class="org-right">7</td>
+<td class="org-right">8</td>
+<td class="org-right">9</td>
+<td class="org-right">10</td>
+</tr>
+
+<tr>
+<td class="org-left">G</td>
+<td class="org-right">2</td>
+<td class="org-right">1</td>
+<td class="org-right">1</td>
+<td class="org-right">2</td>
+<td class="org-right">3</td>
+<td class="org-right">4</td>
+<td class="org-right">5</td>
+<td class="org-right">6</td>
+<td class="org-right">6</td>
+<td class="org-right">7</td>
+<td class="org-right">8</td>
+<td class="org-right">9</td>
+</tr>
+
+<tr>
+<td class="org-left">A</td>
+<td class="org-right">3</td>
+<td class="org-right">2</td>
+<td class="org-right">1</td>
+<td class="org-right">1</td>
+<td class="org-right">2</td>
+<td class="org-right">3</td>
+<td class="org-right">4</td>
+<td class="org-right">5</td>
+<td class="org-right">6</td>
+<td class="org-right">7</td>
+<td class="org-right">8</td>
+<td class="org-right">8</td>
+</tr>
+
+<tr>
+<td class="org-left">T</td>
+<td class="org-right">4</td>
+<td class="org-right">3</td>
+<td class="org-right">2</td>
+<td class="org-right">2</td>
+<td class="org-right">1</td>
+<td class="org-right">2</td>
+<td class="org-right">3</td>
+<td class="org-right">4</td>
+<td class="org-right">5</td>
+<td class="org-right">6</td>
+<td class="org-right">7</td>
+<td class="org-right">8</td>
+</tr>
+
+<tr>
+<td class="org-left">C</td>
+<td class="org-right">5</td>
+<td class="org-right">4</td>
+<td class="org-right">3</td>
+<td class="org-right">3</td>
+<td class="org-right">2</td>
+<td class="org-right">2</td>
+<td class="org-right">2</td>
+<td class="org-right">3</td>
+<td class="org-right">4</td>
+<td class="org-right">5</td>
+<td class="org-right">6</td>
+<td class="org-right">7</td>
+</tr>
+
+<tr>
+<td class="org-left">G</td>
+<td class="org-right">6</td>
+<td class="org-right">5</td>
+<td class="org-right">4</td>
+<td class="org-right">4</td>
+<td class="org-right">3</td>
+<td class="org-right">3</td>
+<td class="org-right">3</td>
+<td class="org-right">3</td>
+<td class="org-right">3</td>
+<td class="org-right">4</td>
+<td class="org-right">5</td>
+<td class="org-right">6</td>
+</tr>
+
+<tr>
+<td class="org-left">A</td>
+<td class="org-right">7</td>
+<td class="org-right">6</td>
+<td class="org-right">5</td>
+<td class="org-right">4</td>
+<td class="org-right">4</td>
+<td class="org-right">4</td>
+<td class="org-right">4</td>
+<td class="org-right">3</td>
+<td class="org-right">4</td>
+<td class="org-right">4</td>
+<td class="org-right">5</td>
+<td class="org-right">5</td>
+</tr>
+</tbody>
+</table></li>
+</ul>
+
+
+<ul class="org-ul">
+<li>第二步：回溯单元格，至矩阵的左上角</li>
+</ul>
+<p>
+　若ai=bj，则回溯到左上角单元格
+</p>
+<table>
+
+
+<colgroup>
+<col  class="org-left">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+</colgroup>
+<tbody>
+<tr>
+<td class="org-left"> </td>
+<td class="org-right"> </td>
+<td class="org-right">G</td>
+<td class="org-right">A</td>
+<td class="org-right">A</td>
+<td class="org-right">T</td>
+<td class="org-right">T</td>
+<td class="org-right">C</td>
+<td class="org-right">A</td>
+<td class="org-right">G</td>
+<td class="org-right">T</td>
+<td class="org-right">T</td>
+<td class="org-right">A</td>
+</tr>
+
+<tr>
+<td class="org-left"> </td>
+<td class="org-right">0</td>
+<td class="org-right">1</td>
+<td class="org-right">2</td>
+<td class="org-right">3</td>
+<td class="org-right">4</td>
+<td class="org-right">5</td>
+<td class="org-right">6</td>
+<td class="org-right">7</td>
+<td class="org-right">8</td>
+<td class="org-right">9</td>
+<td class="org-right">10</td>
+<td class="org-right">11</td>
+</tr>
+
+<tr>
+<td class="org-left">G</td>
+<td class="org-right">1</td>
+<td class="org-right">0</td>
+<td class="org-right">1</td>
+<td class="org-right">2</td>
+<td class="org-right">3</td>
+<td class="org-right">4</td>
+<td class="org-right">5</td>
+<td class="org-right">6</td>
+<td class="org-right">7</td>
+<td class="org-right">8</td>
+<td class="org-right">9</td>
+<td class="org-right">10</td>
+</tr>
+
+<tr>
+<td class="org-left">G</td>
+<td class="org-right">2</td>
+<td class="org-right">1</td>
+<td class="org-right">1</td>
+<td class="org-right">2</td>
+<td class="org-right">3</td>
+<td class="org-right">4</td>
+<td class="org-right">5</td>
+<td class="org-right">6</td>
+<td class="org-right">6</td>
+<td class="org-right">7</td>
+<td class="org-right">8</td>
+<td class="org-right">9</td>
+</tr>
+
+<tr>
+<td class="org-left">A</td>
+<td class="org-right">3</td>
+<td class="org-right">2</td>
+<td class="org-right">1</td>
+<td class="org-right">1</td>
+<td class="org-right">2</td>
+<td class="org-right">3</td>
+<td class="org-right">4</td>
+<td class="org-right">5</td>
+<td class="org-right">6</td>
+<td class="org-right">7</td>
+<td class="org-right">8</td>
+<td class="org-right">8</td>
+</tr>
+
+<tr>
+<td class="org-left">T</td>
+<td class="org-right">4</td>
+<td class="org-right">3</td>
+<td class="org-right">2</td>
+<td class="org-right">2</td>
+<td class="org-right">1</td>
+<td class="org-right">2</td>
+<td class="org-right">3</td>
+<td class="org-right">4</td>
+<td class="org-right">5</td>
+<td class="org-right">6</td>
+<td class="org-right">7</td>
+<td class="org-right">8</td>
+</tr>
+
+<tr>
+<td class="org-left">C</td>
+<td class="org-right">5</td>
+<td class="org-right">4</td>
+<td class="org-right">3</td>
+<td class="org-right">3</td>
+<td class="org-right">2</td>
+<td class="org-right">2</td>
+<td class="org-right">2</td>
+<td class="org-right">3</td>
+<td class="org-right">4</td>
+<td class="org-right">5</td>
+<td class="org-right">6</td>
+<td class="org-right">7</td>
+</tr>
+
+<tr>
+<td class="org-left">G</td>
+<td class="org-right">6</td>
+<td class="org-right">5</td>
+<td class="org-right">4</td>
+<td class="org-right">4</td>
+<td class="org-right">3</td>
+<td class="org-right">3</td>
+<td class="org-right">3</td>
+<td class="org-right">3</td>
+<td class="org-right">3</td>
+<td class="org-right">4</td>
+<td class="org-right">5</td>
+<td class="org-right">6</td>
+</tr>
+
+<tr>
+<td class="org-left">A</td>
+<td class="org-right">7</td>
+<td class="org-right">6</td>
+<td class="org-right">5</td>
+<td class="org-right">4</td>
+<td class="org-right">4</td>
+<td class="org-right">4</td>
+<td class="org-right">4</td>
+<td class="org-right">3</td>
+<td class="org-right">4</td>
+<td class="org-right">4</td>
+<td class="org-right">5</td>
+<td class="org-right">5</td>
+</tr>
+</tbody>
+</table>
+
+<p>
+　若ai≠bj，回溯到左上角、上边、左边中值最小的单元格，若有相同最小值的单元格，优
+先级按照左上角、上边、左边的顺序
+</p>
+<table>
+
+
+<colgroup>
+<col  class="org-left">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+</colgroup>
+<tbody>
+<tr>
+<td class="org-left"> </td>
+<td class="org-right"> </td>
+<td class="org-right">G</td>
+<td class="org-right">A</td>
+<td class="org-right">A</td>
+<td class="org-right">T</td>
+<td class="org-right">T</td>
+<td class="org-right">C</td>
+<td class="org-right">A</td>
+<td class="org-right">G</td>
+<td class="org-right">T</td>
+<td class="org-right">T</td>
+<td class="org-right">A</td>
+</tr>
+
+<tr>
+<td class="org-left"> </td>
+<td class="org-right">0</td>
+<td class="org-right">1</td>
+<td class="org-right">2</td>
+<td class="org-right">3</td>
+<td class="org-right">4</td>
+<td class="org-right">5</td>
+<td class="org-right">6</td>
+<td class="org-right">7</td>
+<td class="org-right">8</td>
+<td class="org-right">9</td>
+<td class="org-right">10</td>
+<td class="org-right">11</td>
+</tr>
+
+<tr>
+<td class="org-left">G</td>
+<td class="org-right">1</td>
+<td class="org-right">0</td>
+<td class="org-right">1</td>
+<td class="org-right">2</td>
+<td class="org-right">3</td>
+<td class="org-right">4</td>
+<td class="org-right">5</td>
+<td class="org-right">6</td>
+<td class="org-right">7</td>
+<td class="org-right">8</td>
+<td class="org-right">9</td>
+<td class="org-right">10</td>
+</tr>
+
+<tr>
+<td class="org-left">G</td>
+<td class="org-right">2</td>
+<td class="org-right">1</td>
+<td class="org-right">1</td>
+<td class="org-right">2</td>
+<td class="org-right">3</td>
+<td class="org-right">4</td>
+<td class="org-right">5</td>
+<td class="org-right">6</td>
+<td class="org-right">6</td>
+<td class="org-right">7</td>
+<td class="org-right">8</td>
+<td class="org-right">9</td>
+</tr>
+
+<tr>
+<td class="org-left">A</td>
+<td class="org-right">3</td>
+<td class="org-right">2</td>
+<td class="org-right">1</td>
+<td class="org-right">1</td>
+<td class="org-right">2</td>
+<td class="org-right">3</td>
+<td class="org-right">4</td>
+<td class="org-right">5</td>
+<td class="org-right">6</td>
+<td class="org-right">7</td>
+<td class="org-right">8</td>
+<td class="org-right">8</td>
+</tr>
+
+<tr>
+<td class="org-left">T</td>
+<td class="org-right">4</td>
+<td class="org-right">3</td>
+<td class="org-right">2</td>
+<td class="org-right">2</td>
+<td class="org-right">1</td>
+<td class="org-right">2</td>
+<td class="org-right">3</td>
+<td class="org-right">4</td>
+<td class="org-right">5</td>
+<td class="org-right">6</td>
+<td class="org-right">7</td>
+<td class="org-right">8</td>
+</tr>
+
+<tr>
+<td class="org-left">C</td>
+<td class="org-right">5</td>
+<td class="org-right">4</td>
+<td class="org-right">3</td>
+<td class="org-right">3</td>
+<td class="org-right">2</td>
+<td class="org-right">2</td>
+<td class="org-right">2</td>
+<td class="org-right">3</td>
+<td class="org-right">4</td>
+<td class="org-right">5</td>
+<td class="org-right">6</td>
+<td class="org-right">7</td>
+</tr>
+
+<tr>
+<td class="org-left">G</td>
+<td class="org-right">6</td>
+<td class="org-right">5</td>
+<td class="org-right">4</td>
+<td class="org-right">4</td>
+<td class="org-right">3</td>
+<td class="org-right">3</td>
+<td class="org-right">3</td>
+<td class="org-right">3</td>
+<td class="org-right">3</td>
+<td class="org-right">4</td>
+<td class="org-right">5</td>
+<td class="org-right">6</td>
+</tr>
+
+<tr>
+<td class="org-left">A</td>
+<td class="org-right">7</td>
+<td class="org-right">6</td>
+<td class="org-right">5</td>
+<td class="org-right">4</td>
+<td class="org-right">4</td>
+<td class="org-right">4</td>
+<td class="org-right">4</td>
+<td class="org-right">3</td>
+<td class="org-right">4</td>
+<td class="org-right">4</td>
+<td class="org-right">5</td>
+<td class="org-right">5</td>
+</tr>
+</tbody>
+</table>
+
+<p>
+若当前单元格是在矩阵的第一行，则回溯至左边的单元格
+若当前单元格是在矩阵的第一列，则回溯至上边的单元格
+</p>
+<table>
+
+
+<colgroup>
+<col  class="org-left">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+</colgroup>
+<tbody>
+<tr>
+<td class="org-left"> </td>
+<td class="org-right"> </td>
+<td class="org-right">G</td>
+<td class="org-right">A</td>
+<td class="org-right">A</td>
+<td class="org-right">T</td>
+<td class="org-right">T</td>
+<td class="org-right">C</td>
+<td class="org-right">A</td>
+<td class="org-right">G</td>
+<td class="org-right">T</td>
+<td class="org-right">T</td>
+<td class="org-right">A</td>
+</tr>
+
+<tr>
+<td class="org-left"> </td>
+<td class="org-right">0</td>
+<td class="org-right">1</td>
+<td class="org-right">2</td>
+<td class="org-right">3</td>
+<td class="org-right">4</td>
+<td class="org-right">5</td>
+<td class="org-right">6</td>
+<td class="org-right">7</td>
+<td class="org-right">8</td>
+<td class="org-right">9</td>
+<td class="org-right">10</td>
+<td class="org-right">11</td>
+</tr>
+
+<tr>
+<td class="org-left">G</td>
+<td class="org-right">1</td>
+<td class="org-right">0</td>
+<td class="org-right">1</td>
+<td class="org-right">2</td>
+<td class="org-right">3</td>
+<td class="org-right">4</td>
+<td class="org-right">5</td>
+<td class="org-right">6</td>
+<td class="org-right">7</td>
+<td class="org-right">8</td>
+<td class="org-right">9</td>
+<td class="org-right">10</td>
+</tr>
+
+<tr>
+<td class="org-left">G</td>
+<td class="org-right">2</td>
+<td class="org-right">1</td>
+<td class="org-right">1</td>
+<td class="org-right">2</td>
+<td class="org-right">3</td>
+<td class="org-right">4</td>
+<td class="org-right">5</td>
+<td class="org-right">6</td>
+<td class="org-right">6</td>
+<td class="org-right">7</td>
+<td class="org-right">8</td>
+<td class="org-right">9</td>
+</tr>
+
+<tr>
+<td class="org-left">A</td>
+<td class="org-right">3</td>
+<td class="org-right">2</td>
+<td class="org-right">1</td>
+<td class="org-right">1</td>
+<td class="org-right">2</td>
+<td class="org-right">3</td>
+<td class="org-right">4</td>
+<td class="org-right">5</td>
+<td class="org-right">6</td>
+<td class="org-right">7</td>
+<td class="org-right">8</td>
+<td class="org-right">8</td>
+</tr>
+
+<tr>
+<td class="org-left">T</td>
+<td class="org-right">4</td>
+<td class="org-right">3</td>
+<td class="org-right">2</td>
+<td class="org-right">2</td>
+<td class="org-right">1</td>
+<td class="org-right">2</td>
+<td class="org-right">3</td>
+<td class="org-right">4</td>
+<td class="org-right">5</td>
+<td class="org-right">6</td>
+<td class="org-right">7</td>
+<td class="org-right">8</td>
+</tr>
+
+<tr>
+<td class="org-left">C</td>
+<td class="org-right">5</td>
+<td class="org-right">4</td>
+<td class="org-right">3</td>
+<td class="org-right">3</td>
+<td class="org-right">2</td>
+<td class="org-right">2</td>
+<td class="org-right">2</td>
+<td class="org-right">3</td>
+<td class="org-right">4</td>
+<td class="org-right">5</td>
+<td class="org-right">6</td>
+<td class="org-right">7</td>
+</tr>
+
+<tr>
+<td class="org-left">G</td>
+<td class="org-right">6</td>
+<td class="org-right">5</td>
+<td class="org-right">4</td>
+<td class="org-right">4</td>
+<td class="org-right">3</td>
+<td class="org-right">3</td>
+<td class="org-right">3</td>
+<td class="org-right">3</td>
+<td class="org-right">3</td>
+<td class="org-right">4</td>
+<td class="org-right">5</td>
+<td class="org-right">6</td>
+</tr>
+
+<tr>
+<td class="org-left">A</td>
+<td class="org-right">7</td>
+<td class="org-right">6</td>
+<td class="org-right">5</td>
+<td class="org-right">4</td>
+<td class="org-right">4</td>
+<td class="org-right">4</td>
+<td class="org-right">4</td>
+<td class="org-right">3</td>
+<td class="org-right">4</td>
+<td class="org-right">4</td>
+<td class="org-right">5</td>
+<td class="org-right">5</td>
+</tr>
+</tbody>
+</table>
+
+<p>
+  依照上面的回溯法则，回溯到矩阵的左上角
+　
+</p>
+<ul class="org-ul">
+<li><p>
+第三步：根据回溯路径，写出匹配字串
+</p>
+<p class="verse">
+&#xa0;&#xa0;若回溯到左上角单元格，将ai添加到匹配字串A，将bj添加到匹配字串B<br>
+　若回溯到上边单元格，将ai添加到匹配字串A，将<sub>添加到匹配字串B</sub><br>
+　若回溯到左边单元格，将<sub>添加到匹配字串A</sub>，将bj添加到匹配字串B<br>
+　搜索晚整个匹配路径，匹配字串也就完成了<br>
+</p></li>
+</ul>
+
+
+<p>
+从上面可以看出，LD算法在不需要计算出匹配字串的话，时间复杂度为O(MN)，空间复杂度
+经优化后为O(M)
+</p>
+
+<p>
+不过，如果要计算匹配字符串的话，时间复杂度为O(MN)，空间复杂度由于需要利用LD矩阵
+计算匹配路径，故空间复杂度仍然为O(MN)。这个 在两个字符串都比较短小的情况下，能获
+得不错的性能。不过，如果字符串比较长的情况下，就需要极大的空间存放矩阵。例如：两
+个字符串都是20000字符， 则LD矩阵的大小为20000*20000*2=800000000Byte=800MB。呵呵，
+这是什么概念？故，在比较长字符串的时候，还有其他性能 更好的算法。留待后文详述。
+</p>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>tmux</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">tmux</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#linux"><div class="category">linux</div></a> </div>
+<div class="char-counter">2016-05-17</div>
+        <div id="content">
+
+<div id="outline-container-org5a7382d" class="outline-2">
+<h2 id="org5a7382d">基本概念</h2>
+<div class="outline-text-2" id="text-org5a7382d">
+<table>
+
+
+<colgroup>
+<col  class="org-left">
+
+<col  class="org-left">
+</colgroup>
+<tbody>
+<tr>
+<td class="org-left">server</td>
+<td class="org-left">服务器。输入tmux命令时就开启了一个服务器。</td>
+</tr>
+
+<tr>
+<td class="org-left">session</td>
+<td class="org-left">会话。一个服务器可以包含多个会话。</td>
+</tr>
+
+<tr>
+<td class="org-left">window</td>
+<td class="org-left">窗口。一个会话可以包含多个窗口。</td>
+</tr>
+
+<tr>
+<td class="org-left">pane</td>
+<td class="org-left">面板。一个窗口可以包含多个面板。</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+
+<div id="outline-container-org15d9e39" class="outline-2">
+<h2 id="org15d9e39">操作</h2>
+<div class="outline-text-2" id="text-org15d9e39">
+</div>
+<div id="outline-container-org1501080" class="outline-3">
+<h3 id="org1501080">类似各种平铺式窗口管理器，tmux使用键盘操作，常用快捷键包括：</h3>
+<div class="outline-text-3" id="text-org1501080">
+<table>
+
+
+<colgroup>
+<col  class="org-left">
+
+<col  class="org-left">
+
+<col  class="org-left">
+</colgroup>
+<tbody>
+<tr>
+<td class="org-left">Ctrl+b</td>
+<td class="org-left">激活控制台；此时以下按键生效</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-left">系统操作</td>
+<td class="org-left">?</td>
+<td class="org-left">列出所有快捷键；按q返回</td>
+</tr>
+
+<tr>
+<td class="org-left">d</td>
+<td class="org-left">脱离当前会话；这样可以暂时返回Shell界面，输入tmux attach能够重新进入之前的会话</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-left">D</td>
+<td class="org-left">选择要脱离的会话；在同时开启了多个会话时使用</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-left">Ctrl+z</td>
+<td class="org-left">挂起当前会话</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-left">r</td>
+<td class="org-left">强制重绘未脱离的会话</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-left">s</td>
+<td class="org-left">选择并切换会话；在同时开启了多个会话时使用</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-left">:</td>
+<td class="org-left">进入命令行模式；此时可以输入支持的命令，例如kill-server可以关闭服务器</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-left">[</td>
+<td class="org-left">进入复制模式；此时的操作与vi/emacs相同，按q/Esc退出</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-left">~</td>
+<td class="org-left">列出提示信息缓存；其中包含了之前tmux返回的各种提示信息</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+
+<div id="outline-container-orga3e8171" class="outline-3">
+<h3 id="orga3e8171">窗口操作 | c | 创建新窗口 |</h3>
+<div class="outline-text-3" id="text-orga3e8171">
+<table>
+
+
+<colgroup>
+<col  class="org-left">
+
+<col  class="org-left">
+</colgroup>
+<tbody>
+<tr>
+<td class="org-left">&amp;</td>
+<td class="org-left">关闭当前窗口</td>
+</tr>
+
+<tr>
+<td class="org-left">数字键</td>
+<td class="org-left">切换至指定窗口</td>
+</tr>
+
+<tr>
+<td class="org-left">p</td>
+<td class="org-left">切换至上一窗口</td>
+</tr>
+
+<tr>
+<td class="org-left">n</td>
+<td class="org-left">切换至下一窗口</td>
+</tr>
+
+<tr>
+<td class="org-left">l</td>
+<td class="org-left">在前后两个窗口间互相切换</td>
+</tr>
+
+<tr>
+<td class="org-left">w</td>
+<td class="org-left">通过窗口列表切换窗口</td>
+</tr>
+
+<tr>
+<td class="org-left">,</td>
+<td class="org-left">重命名当前窗口；这样便于识别</td>
+</tr>
+
+<tr>
+<td class="org-left">.</td>
+<td class="org-left">修改当前窗口编号；相当于窗口重新排序</td>
+</tr>
+
+<tr>
+<td class="org-left">f</td>
+<td class="org-left">在所有窗口中查找指定文本</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+
+<div id="outline-container-org13f1133" class="outline-3">
+<h3 id="org13f1133">面板操作 | ” | 将当前面板平分为上下两块 |</h3>
+<div class="outline-text-3" id="text-org13f1133">
+<table>
+
+
+<colgroup>
+<col  class="org-left">
+
+<col  class="org-left">
+</colgroup>
+<tbody>
+<tr>
+<td class="org-left">%</td>
+<td class="org-left">将当前面板平分为左右两块</td>
+</tr>
+
+<tr>
+<td class="org-left">x</td>
+<td class="org-left">关闭当前面板</td>
+</tr>
+
+<tr>
+<td class="org-left">!</td>
+<td class="org-left">将当前面板置于新窗口；即新建一个窗口，其中仅包含当前面板</td>
+</tr>
+
+<tr>
+<td class="org-left">Ctrl+方向键</td>
+<td class="org-left">以1个单元格为单位移动边缘以调整当前面板大小</td>
+</tr>
+
+<tr>
+<td class="org-left">Alt+方向键</td>
+<td class="org-left">以5个单元格为单位移动边缘以调整当前面板大小</td>
+</tr>
+
+<tr>
+<td class="org-left">Space</td>
+<td class="org-left">在预置的面板布局中循环切换；依次包括even-horizontal、even-vertical、main-horizontal、main-vertical、tiled</td>
+</tr>
+
+<tr>
+<td class="org-left">q</td>
+<td class="org-left">显示面板编号</td>
+</tr>
+
+<tr>
+<td class="org-left">o</td>
+<td class="org-left">在当前窗口中选择下一面板</td>
+</tr>
+
+<tr>
+<td class="org-left">方向键</td>
+<td class="org-left">移动光标以选择面板</td>
+</tr>
+
+<tr>
+<td class="org-left">{</td>
+<td class="org-left">向前置换当前面板</td>
+</tr>
+
+<tr>
+<td class="org-left">}</td>
+<td class="org-left">向后置换当前面板</td>
+</tr>
+
+<tr>
+<td class="org-left">Alt+o</td>
+<td class="org-left">逆时针旋转当前窗口的面板</td>
+</tr>
+
+<tr>
+<td class="org-left">Ctrl+o</td>
+<td class="org-left">顺时针旋转当前窗口的面板</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div id="outline-container-org5f0697b" class="outline-2">
+<h2 id="org5f0697b">配置</h2>
+<div class="outline-text-2" id="text-org5f0697b">
+<p>
+tmux的系统级配置文件为/etc/tmux.conf，用户级配置文件为~/.tmux.conf。配置文件实际
+上就是tmux的命令集合，也就是说每行配置均可在进入命令行模式后输入生效。
+</p>
+
+<p>
+下面是一个~/.tmux.conf的示例，其中包括了一些常用的配置：
+</p>
+<pre class="example">
+#此类配置可以在命令行模式中输入show-options -g查询
+#窗口的初始序号；默认为0，这里设置为1
+set-option -g base-index 1
+#提示信息的持续时间；设置足够的时间以避免看不清提示，单位为毫秒
+set-option -g display-time 5000
+#控制台激活后的持续时间；设置合适的时间以避免每次操作都要先激活控制台，单位为毫秒
+set-option -g repeat-time 1000
+#操作状态栏时的默认键盘布局；可以设置为vi或emacs
+set-option -g status-keys vi
+#状态栏右方的内容；这里的设置将得到类似23:59的显示
+set-option -g status-right "#(date +%H:%M' ')"
+#状态栏右方的内容长度；建议把更多的空间留给状态栏左方（用于列出当前窗口）
+set-option -g status-right-length 10
+#开启状态栏的UTF-8支持
+set-option -g status-utf8 on
+
+#此类设置可以在命令行模式中输入show-window-options -g查询
+#复制模式中的默认键盘布局；可以设置为vi或emacs
+set-window-option -g mode-keys vi
+#开启窗口的UTF-8支持
+set-window-option -g utf8 on
+#将激活控制台的快捷键由Ctrl+b修改为Ctrl+a
+set-option -g prefix C-a
+unbind-key C-b
+bind-key C-a send-prefix
+
+#添加自定义快捷键
+#按z结束当前会话；相当于进入命令行模式后输入kill-session
+bind-key z kill-session
+#按h将当前面板布局切换为even-horizontal；相当于进入命令行模式后输入select-layout even-horizontal
+bind-key h select-layout even-horizontal
+#按v将当前面板布局切换为even-vertical；相当于进入命令行模式后输入select-layout even-vertical
+bind-key v select-layout even-vertical
+</pre>
+</div>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

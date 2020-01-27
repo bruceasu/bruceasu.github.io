@@ -1,0 +1,27 @@
+# -*- coding: utf-8-unix; -*-
+#+TITLE:       插入MySQL时重复数据的处理
+#+AUTHOR:      Bruce Asu
+#+EMAIL:       bruceasu@163.com
+#+DATE:        <2016-07-20 20:48>
+#+filetags:    mysql
+#+LANGUAGE:    en
+#+OPTIONS:     H:7 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:nil
+
+
+程序运行了一段时间后，发现有很多用户的数据是重复的，因此需要在插入重复用户数据的
+时候做处理。处理方案如下：
+
+1. 插入数据库之前检查数据是否已经存在数据库；
+2. 添加唯一索引，插入时使用 INSERT INTO &#x2026; ON DUPLICATE KEY UPDATE&#x2026;
+3. 添加唯一索引，插入时使用 INSERT INGNORE INTO&#x2026;
+4. 添加唯一索引，插入时使用 REPLACE INTO&#x2026;
+
+第一种方案是最简单但也是效率最差的方案，因此不采取。
+
+二和四方案的执行结果是一样的，不同的是，在遇到相同的数据时，INSERT INTO … ON
+DUPLICATE KEY UPDATE 是直接更新的，而 REPLACE INTO 是先删除旧的数据然后插入新的，
+在这个过程中，还需要重新维护索引，所以速度慢。所以在二和四两者间选择了第二种方案。
+
+而第三种方案， INSERT INGNORE 会忽略执行INSERT语句出现的错误，不会忽略语法问题，
+但是忽略主键存在的情况。这样一来，使用 INSERT INGNORE 就更好了。最终，考虑到要在
+数据库中记录重复数据的条数，因此在程序中采用了第二种方案。

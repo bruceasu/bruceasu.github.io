@@ -1,0 +1,79 @@
+# -*- coding: utf-8-unix; -*-
+#+TITLE:       Git Flow代码示例
+#+AUTHOR:      Bruce Asu
+#+EMAIL:       bruceasu@163.com
+#+DATE:        <2017-03-29 20:48>
+#+filetags:    git
+#+LANGUAGE:    en
+#+OPTIONS:     H:7 num:nil toc:t \n:nil ::t |:t ^:nil -:nil f:t *:t <:nil
+
+* 创建develop分支
+#+BEGIN_VERSE
+   git branch develop
+   git push -u origin develop
+
+#+END_VERSE
+
+* 开始新Feature开发
+#+BEGIN_VERSE
+   git checkout -b some-feature develop
+   # Optionally, push branch to origin:
+   git push -u origin some-feature
+   # 做一些改动
+   git status
+   git add some-file
+   git commit
+#+END_VERSE
+
+* 完成Feature
+#+BEGIN_VERSE
+   git pull origin develop
+   git checkout develop
+   git merge --no-ff some-feature
+   git push origin develop
+   git branch -d some-feature
+   # If you pushed branch to origin:
+   git push origin --delete some-feature
+
+#+END_VERSE
+
+* 开始Relase
+#+BEGIN_VERSE
+   git checkout -b release-0.1.0 develop
+   # Optional: Bump version number, commit
+   # Prepare release, commit
+
+#+END_VERSE
+
+* 完成Release
+#+BEGIN_VERSE
+   git checkout master
+   git merge --no-ff release-0.1.0
+   git push
+   git checkout develop
+   git merge --no-ff release-0.1.0
+   git push
+   git branch -d release-0.1.0
+   # If you pushed branch to origin:
+   git push origin --delete release-0.1.0
+   git tag -a v0.1.0 master
+   git push --tags
+
+#+END_VERSE
+
+* 开始Hotfix
+: git checkout -b hotfix-0.1.1 master
+
+* 完成Hotfix
+#+BEGIN_VERSE
+   git checkout master
+   git merge --no-ff hotfix-0.1.1
+   git push
+   git checkout develop
+   git merge --no-ff hotfix-0.1.1
+   git push
+   git branch -d hotfix-0.1.1
+   git tag -a v0.1.1 master
+   git push --tags
+
+#+END_VERSE

@@ -1,0 +1,100 @@
+#+title: HOW TO CREATE A DISK BASED LIST IN JAVA
+#+date: <2016-09-15 20:48>
+#+filetags: java
+
+* HOW TO CREATE A DISK BASED LIST IN JAVA
+
+
+Occasionally when programming in Java you will need a List too large to hold in
+memory. MapDB is an open source Java library that allows you to create a disk
+based List (and other Java Collections) very easily.
+
+MapDB is a hybrid of an embedded database engine and the Java Collections
+framework. It provides Maps, Sets, Lists, Queues, etc. that can be stored in
+off-heap memory or on disk. MapDB is available via Maven central so it can be
+easily included in your project. Visit the MapDB home page for more information.
+
+** Creating a Disk Based List in Java
+
+Below is an example of creating a disk based ArrayList (IndexTreeList is an
+ArrayList type object backed by a tree). You can see in the example that DB and
+DBMaker objects are used to create the List. Each instance of DBrepresents a
+single transaction session, so commit() is needed to actually save the data to
+disk. Note that multiple Lists, Sets, etc. can be written to the same file.
+#+BEGIN_SRC java
+import org.mapdb.DB;
+import org.mapdb.DBMaker;
+import org.mapdb.Serializer;
+import java.util.Map;
+
+public class MapDbTest {
+
+    public static void writeListToDisk() {
+        //use DBMaker to create a DB object stored on disk
+        //provide output location of list
+        DB db = DBMaker.fileDB("/tmp/testMapDB.db").make();
+
+        //use the DB object to create the "myList" ArrayList
+        //set the specific serializer for better performance
+        List<String> list = db.indexTreeList("myList", Serializer.STRING).createOrOpen();
+
+        //populate list
+        for (int i = 0; i < 1000; i++) {
+            list.add("item" + i);
+        }
+
+        //persist changes on disk
+        db.commit();
+
+        //close to protect from data corruption
+        db.close();
+    }
+
+}
+
+#+END_SRC
+
+** Reading a Disk Based List in Java
+
+Reading a List that has been previously serialized to disk is very similar to
+creating a List for writes. We simply have to specify file containing the List,
+as well as the name of the List to deserialize. Also, there is no need to
+commit() since we are just reading the data.
+#+BEGIN_SRC java
+import org.mapdb.DB;
+import org.mapdb.DBMaker;
+import org.mapdb.Serializer;
+import java.util.Map;
+
+public class MapDbTest {
+
+    public static void readListFromDisk() {
+        //use DBMaker to create a DB object of List stored on disk
+        //provide location
+        DB db = DBMaker.fileDB("/tmp/testMapDB.db").make();
+
+        //use the DB object to open the "myList" ArrayList
+        List<String> list = db.indexTreeList("myList", Serializer.STRING).createOrOpen();
+
+        //read from list
+        for (int i = 0; i < 1000; i++) {
+            System.out.println(list.get(i));
+        }
+
+        //close to protect from data corruption
+        db.close();
+    }
+
+}
+
+#+END_SRC
+
+** MapDB Maven Dependency
+Sample MapDB Maven dependency in pom.xml:
+#+BEGIN_SRC xml
+<dependency>
+  <groupId>org.mapdb</groupId>
+  <artifactId>mapdb</artifactId>
+  <version>3.0.5</version>
+</dependency>
+#+END_SRC

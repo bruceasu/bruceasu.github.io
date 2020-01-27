@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>如何设置让org-mode在默认情况下，不转义_字符呢</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">如何设置让org-mode在默认情况下，不转义_字符呢</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#emacs"><div class="category">emacs</div></a> <a href="https://bruceasu.github.io/tags.html#org-mode"><div class="category">org-mode</div></a> </div>
+<div class="char-counter">2016-05-23</div>
+        <div id="content">
+<p>
+何设置让 Org Mode 在默认情况下，不转义 &ensp;字符呢？
+</p>
+
+<p>
+单个 org 文件的解决办法
+你可以在一个 org 文件的开头，用下面的设置来关闭这个功能。
+</p>
+<pre class="example">
+#+OPTIONS: ^:nil
+
+</pre>
+
+<p>
+如果你需要更方便的设置，可以把上面这个改为
+</p>
+<pre class="example">
+#+OPTIONS: ^:{}
+
+</pre>
+
+<p>
+这样，当你写
+</p>
+a<sub>b </sub>
+
+<p>
+时，&ensp;后被 {} 括起来的内容就会被转义，而写 a\_b 时，就按普通的方式来显示。
+</p>
+
+<p>
+org sites 的解决办法如果你是用 org sites 来写笔记，想让某个 site 的所有 org 文件
+不转义 &ensp;字符，则也可以直接在 org sites 配置文件里，配置下面这么一句，一了百了：
+</p>
+<pre class="example">
+(setq org-export-with-sub-superscripts nil)
+
+</pre>
+
+<p>
+也可以在 org sites 里设置这个属性，只作用于某一个 site：
+</p>
+<pre class="example">
+:sub-superscript nil
+
+</pre>
+
+<p>
+如果需要像上面一样，采用相对智能的 {} 方式，可以设置成
+</p>
+<pre class="example">
+:sub-superscript {}
+
+</pre>
+
+<p>
+或是直接用 elisp 来设置全局的属性：
+</p>
+<pre class="example">
+(setq org-export-with-sub-superscripts '{})
+
+</pre>
+
+<p>
+这样就会用 {} 来转义了。
+</p>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

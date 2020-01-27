@@ -1,0 +1,5358 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>一个jQuery热键插件:js-hotkeys</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">一个jQuery热键插件:js-hotkeys</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#jquery"><div class="category">jquery</div></a> <a href="https://bruceasu.github.io/tags.html#javascript"><div class="category">javascript</div></a> </div>
+<div class="char-counter">2016-05-31</div>
+        <div id="content">
+<p>
+一个jQuery热键插件:js-hotkeys
+</p>
+
+<div class="HTML">
+<p>
+&lt;table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides"&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;colgroup&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;col  class="org-left" /&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;col  class="org-left" /&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;col  class="org-left" /&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;col  class="org-left" /&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;col  class="org-left" /&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;col  class="org-left" /&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;col  class="org-left" /&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;col  class="org-left" /&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;/colgroup&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;thead&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;tr&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;th scope="col" class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+SK
+</p>
+
+<div class="HTML">
+<p>
+&lt;/th&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;th scope="col" class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+L
+</p>
+
+<div class="HTML">
+<p>
+&lt;/th&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;th scope="col" class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+SMC
+</p>
+
+<div class="HTML">
+<p>
+&lt;/th&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;th scope="col" class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+SMS
+</p>
+
+<div class="HTML">
+<p>
+&lt;/th&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;th scope="col" class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+SMA
+</p>
+
+<div class="HTML">
+<p>
+&lt;/th&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;th scope="col" class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+SMCSK
+</p>
+
+<div class="HTML">
+<p>
+&lt;/th&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;th scope="col" class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+SMSSK
+</p>
+
+<div class="HTML">
+<p>
+&lt;/th&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;th scope="col" class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+SMASK
+</p>
+
+<div class="HTML">
+<p>
+&lt;/th&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;/tr&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;tr&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;th scope="col" class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Special Keys
+</p>
+
+<div class="HTML">
+<p>
+&lt;/th&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;th scope="col" class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+A-Z Letters
+</p>
+
+<div class="HTML">
+<p>
+&lt;/th&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;th scope="col" class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Special Modifiers Ctrl
+</p>
+
+<div class="HTML">
+<p>
+&lt;/th&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;th scope="col" class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Special Modifiers Shift
+</p>
+
+<div class="HTML">
+<p>
+&lt;/th&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;th scope="col" class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Special Modifiers Alt
+</p>
+
+<div class="HTML">
+<p>
+&lt;/th&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;th scope="col" class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Special Modifiers + Special Keys Ctrl
+</p>
+
+<div class="HTML">
+<p>
+&lt;/th&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;th scope="col" class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Special Modifiers + Special Keys Shift
+</p>
+
+<div class="HTML">
+<p>
+&lt;/th&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;th scope="col" class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Special Modifiers + Special Keys Alt
+</p>
+
+<div class="HTML">
+<p>
+&lt;/th&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;/tr&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;/thead&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;tbody&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;tr&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+esc
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+a
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Ctrl+a
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Shift+a
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Alt+a
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Ctrl+esc
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Shift+esc
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Alt+esc
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;/tr&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;tr&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+tab
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+b
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Ctrl+b
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Shift+b
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Alt+b
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Ctrl+tab
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Shift+tab
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Alt+tab
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;/tr&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;tr&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+space
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+c
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Ctrl+c
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Shift+c
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Alt+c
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Ctrl+space
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Shift+space
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Alt+space
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;/tr&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;tr&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+return
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+d
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Ctrl+d
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Shift+d
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Alt+d
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Ctrl+return
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Shift+return
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Alt+return
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;/tr&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;tr&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+backspace
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+e
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Ctrl+e
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Shift+e
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Alt+e
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Ctrl+backspace
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Shift+backspace
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Alt+backspace
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;/tr&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;tr&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+scroll
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+f
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Ctrl+f
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Shift+f
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Alt+f
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Ctrl+scroll
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Shift+scroll
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Alt+scroll
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;/tr&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;tr&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+capslock
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+g
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Ctrl+g
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Shift+g
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Alt+g
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Ctrl+capslock
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Shift+capslock
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Alt+capslock
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;/tr&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;tr&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+numlock
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+h
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Ctrl+h
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Shift+h
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Alt+h
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Ctrl+numlock
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Shift+numlock
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Alt+numlock
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;/tr&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;tr&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+pause
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+i
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Ctrl+i
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Shift+i
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Alt+i
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Ctrl+pause
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Shift+pause
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Alt+pause
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;/tr&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;tr&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+insert
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+j
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Ctrl+j
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Shift+j
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Alt+j
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Ctrl+insert
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Shift+insert
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Alt+insert
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;/tr&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;tr&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+home
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+k
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Ctrl+k
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Shift+k
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Alt+k
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Ctrl+home
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Shift+home
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Alt+home
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;/tr&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;tr&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+del
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+l
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Ctrl+l
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Shift+l
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Alt+l
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Ctrl+del
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Shift+del
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Alt+del
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;/tr&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;tr&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+end
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+m
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Ctrl+m
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Shift+m
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Alt+m
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Ctrl+end
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Shift+end
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Alt+end
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;/tr&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;tr&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+pageup
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+n
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Ctrl+n
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Shift+n
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Alt+n
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Ctrl+pageup
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Shift+pageup
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Alt+pageup
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;/tr&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;tr&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+pagedown
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+o
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Ctrl+o
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Shift+o
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Alt+o
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Ctrl+pagedown
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Shift+pagedown
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Alt+ pagedown
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;/tr&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;tr&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+left
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+p
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Ctrl+p
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Shift+p
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Alt+p
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Ctrl+left
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Shift+left
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Alt+left
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;/tr&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;tr&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+up
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+q
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Ctrl+q
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Shift+q
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Alt+q
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Ctrl+up
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Shift+up
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Alt+up
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;/tr&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;tr&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+right
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+r
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Ctrl+r
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Shift+r
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Alt+r
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Ctrl+right
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Shift+right
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Alt+right
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;/tr&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;tr&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+down
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+s
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Ctrl+s
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Shift+s
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Alt+s
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Ctrl+down
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Shift+down
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Alt+ down
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;/tr&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;tr&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+f1
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+t
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Ctrl+t
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Shift+t
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Alt+t
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Ctrl+f1
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Shift+f1
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Alt+f1
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;/tr&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;tr&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+f2
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+u
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Ctrl+u
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Shift+u
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Alt+u
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Ctrl+f2
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Shift+f2
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Alt+f2
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;/tr&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;tr&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+f3
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+v
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Ctrl+v
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Shift+v
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Alt+v
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Ctrl+f3
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Shift+f3
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Alt+f3
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;/tr&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;tr&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+f4
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+w
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Ctrl+w
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Shift+w
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Alt+w
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Ctrl+f4
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Shift+f4
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Alt+f4
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;/tr&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;tr&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+f5
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+x
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Ctrl+x
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Shift+x
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Alt+x
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Ctrl+f5
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Shift+f5
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Alt+f5
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;/tr&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;tr&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+f6
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+y
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Ctrl+y
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Shift+y
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Alt+y
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Ctrl+f6
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Shift+f6
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Alt+f6
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;/tr&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;tr&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+f7
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+z
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Ctrl+z
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Shift+z
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Alt+z
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Ctrl+f7
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Shift+f7
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Alt+f7
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;/tr&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;tr&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+f8
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Ctrl+f8
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Shift+f8
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Alt+f8
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;/tr&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;tr&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+f9
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Ctrl+f9
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Shift+f9
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Alt+f9
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;/tr&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;tr&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+f10
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Ctrl+f10
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Shift+f10
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Alt+f10
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;/tr&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;tr&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+f11
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Ctrl+f11
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Shift+f11
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Alt+f11
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;/tr&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;tr&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+f12
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Ctrl+f12
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Shift+f12
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;td class="org-left"&gt;
+</p>
+
+</div>
+
+<p>
+Alt+f12
+</p>
+
+<div class="HTML">
+<p>
+&lt;/td&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;/tr&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;/tbody&gt;
+</p>
+
+</div>
+
+<div class="HTML">
+<p>
+&lt;/table&gt;
+</p>
+
+</div>
+
+<pre class="example">
+$(expression).bind(&lt;types&gt;,&lt;options&gt;, &lt;handler&gt;);
+$(expression).unbind(&lt;types&gt;,&lt;options&gt;, &lt;handler&gt;);
+
+$(document).bind('keydown', 'Ctrl+a', fn);
+
+// e.g. replace '$' sign with '€'
+$('input.foo').bind('keyup', '$', function(){
+    this.value = this.value.replace('$', '€');
+});
+
+$('div.foo').unbind('keydown', 'Ctrl+a', fn);
+</pre>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

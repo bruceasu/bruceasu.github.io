@@ -1,0 +1,101 @@
+# -*- coding: utf-8-unix; -*-
+#+TITLE:       java native2ascii
+#+AUTHOR:      Bruce Asu
+#+EMAIL:       bruceasu@163.com
+#+DATE:        <2016-07-30 20:48>
+#+filetags:    java
+
+#+LANGUAGE:    en
+#+OPTIONS:     H:7 num:nil toc:t \n:nil ::t |:t ^:nil -:nil f:t *:t <:nil
+
+
+
+在做Java开发的时候，常常会出现一些乱码，或者无法正确识别或读取的文件，比如常见的
+validator验证用的消息资源（properties）文件就需要进行Unicode重新编码。原因是java
+默认的编码方式为Unicode，而我们的计算机系统编码常常是GBK等编码。需要将系统的编码
+转换为java正确识别的编码问题就解决了。
+
+* 1、native2ascii简介：
+native2ascii 是 sun java sdk 提供的一个工具。用来将别的文本类文件（比如
+*.txt,*.ini,*.properties,*.java等等）编码转为Unicode编码。为什么要进行转码，原因在
+于程序的国际化。Unicode编码的定义：Unicode（统一码、万国码、单一码）是一种在计算
+机上使用的字符编码。它为每种语言中的每个字符设定了统一并且唯一的二进制编码，以满
+足跨语言、跨平台进行文本转换、处理的要求。1990年开始研发，1994年正式公布。随着计
+算机工作能力的增强，Unicode也在面世以来的十多年里得到普及。
+
+* 2、获取native2ascii：
+安装了 jdk 后，假如你是在 windows 上安装，那么在 jdk 的安装目录下，会有一个bin目录，其
+中 native2ascii.exe 正是。
+
+* 3、native2ascii的命令行的命名格式：
+#+BEGIN_VERSE
+native2ascii -[options] [inputfile [outputfile]]
+  说明：
+  -[options]：表示命令开关，有两个选项可供选择
+  -reverse：将Unicode编码转为本地或者指定编码，不指定编码情况下，将转为本地编码。
+  -encoding encoding_name：转换为指定编码，encoding_name为编码名称。
+
+ [inputfile [outputfile]]
+ inputfile：表示输入文件全名。
+ outputfile：输出文件名。如果缺少此参数，将输出到控制台。
+
+#+END_VERSE
+
+
+* 4、最佳实践：
+首先将 JDK 的 bin 目录加入系统变量 path。在盘下建立一个 test 目录，在 test 目录
+里建立一个 zh.txt 文件，文件内容为：“熔岩”，打开 “命令行提示符”，并进入 C:\test
+目录下。下面就可以按照说明一步一步来操作，注意观察其中编码的变化。
+#+BEGIN_VERSE
+  A：将zh.txt转换为Unicode编码，输出文件到u.txt
+    native2ascii zh.txt u.txt
+    打开u.txt，内容为“\u7194\u5ca9”。
+
+    B：将zh.txt转换为Unicode编码，输出到控制台
+    C:\test>native2ascii zh.txt
+    \u7194\u5ca9
+    可以看到，控制台输出了“\u7194\u5ca9”。
+
+    C：将zh.txt转换为ISO8859-1编码，输出文件到i.txt
+    native2ascii -encoding ISO8859-1 zh.txt i.txt
+    打开i.txt文件，内容为“\u00c8\u00db\u00d1\u00d2”。
+
+    D：将u.txt转换为本地编码，输出到文件u_nv.txt
+    native2ascii -reverse u.txt u_nv.txt
+    打开u_nv.txt文件，内容为“熔岩”。
+
+    E：将u.txt转换为本地编码，输出到控制台
+    C:\test>native2ascii -reverse u.txt
+    熔岩
+    可以看到，控制台输出了“熔岩”。
+
+    F：将i.txt转换为本地编码，输出到i_nv.txt
+    native2ascii -reverse i.txt i_nv.txt
+    打开i_nv.txt文件，内容为“\u00c8\u00db\u00d1\u00d2”。发现转码前后完全一样的。也就是说，等于没有转，或者说思想糊涂，对命名没有理解。
+
+    G：将i.txt转换为GBK编码，输出到i_gbk.txt
+    native2ascii -reverse -encoding GBK i.txt i_gbk.txt
+    打开i_gbk.txt文件，内容为“\u00c8\u00db\u00d1\u00d2”。发现转码前后完全一样的。也就是说，等于没有转，或者说思想糊涂，对命名没有理解。
+
+    H：将u_nv.txt转码到本地编码GBK，输出到控制台
+    C:\test>native2ascii -reverse -encoding ISO8859-1 i.txt
+    熔岩
+    从这个结果看，目标达到到了，编码i.txt为ISO8859-1，转为本地编码后内容为“熔岩”。从这里应该意识到，native2ascii -reverse命令中-encoding指定的编码为源文件的编码格式。而在native2ascii 命令中-encoding指定的编码为（生成的）目标文件的编码格式。这一点非常的重要！切记！！
+
+    继续探索，新建文件12a.txt，内容“12axyz”。看看纯字母数字的编码又如何。
+
+    I：将纯字母数字的文本文件12a.txt转换为Unicode编码
+    native2ascii 12a.txt 12a_nv.txt
+    打开12a_nv.txt文件，内容为“12axyz”。
+    继续测试，转为ISO8859-1编码看看
+    C:\test>native2ascii -encoding ISO8859-1 12a.txt
+    12axyz
+    结果还是没有转码。
+
+    从结果可以得出结论：对于纯数字和字母的文本类型文件（只有ASCII码），转码前后的内容是一样的。
+#+END_VERSE
+
+* 5、总结：
+native2ascii 是一个非常的好转码工具，并且转码是可逆的！而其真正的含义并非本地编
+码——>转码为 ASCII 码，而是一个通用的文本文件编码转换工具。在做编码转换的时候有两
+类指定编码的情形，分别指输出文件编码和输入文件编码，具体可以看看最佳实践部分。

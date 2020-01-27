@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>用K-均值聚类给女明星们的身材分分类</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">用K-均值聚类给女明星们的身材分分类</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#reprint"><div class="category">reprint</div></a> </div>
+<div class="char-counter">2016-08-25</div>
+        <div id="content">
+<nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#orgf033fcc">选题简介：</a>
+<ul>
+<li><a href="#org711256a">数据存储格式：</a></li>
+<li><a href="#orge8b18df">开发工具介绍：</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</nav>
+
+<div id="outline-container-orgf033fcc" class="outline-2">
+<h2 id="orgf033fcc">选题简介：</h2>
+<div class="outline-text-2" id="text-orgf033fcc">
+<p>
+做这个题目颇有哗众取宠之嫌，本来是想能否用数据挖掘来分析星座之间的关系的，但是找
+了一些数据，发现关于星座的内容都是文字描述型的，实在不知道该怎么用定量方法来分析。
+然后想着想着，发现女明星的身材，比如体重，身高，三围，这些都是可以量化的数据，然
+后就决定了这个选题了。而关于挖掘方法的选取上，由于选题的原因，肯定是要使用聚类方
+法，之所以选择k-均值聚类方法，主要是由于它简单一些，编程好实现（真正写代码的时候，
+我才发现这是个坑，整整写了两天才写完了）。    数据来源：        主要是通过搜索引
+擎找到的，有两个帖子，里面提供了几十个女明星的三围以及身高体重数据。再通过百度百
+科，基本上就找到了我要的数据了。全部总共找到了67个女明星的身材数据，中外都有。但
+是感觉可靠性很值得怀疑（毕竟国内的女明星很少会公布三围，即使公布了，也有造假之
+嫌）。由于只是实验性质的，因此数据的可信度并不需要考虑。
+</p>
+</div>
+
+
+<div id="outline-container-org711256a" class="outline-3">
+<h3 id="org711256a">数据存储格式：</h3>
+<div class="outline-text-3" id="text-org711256a">
+<p>
+由于数据量较少，就简单的使用了文本文件的形式存储，大致格式如下，身高的单位是CM，
+体重的单位是磅，三围的单位是英寸。
+</p>
+
+<table>
+
+
+<colgroup>
+<col  class="org-left">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">姓名</th>
+<th scope="col" class="org-right">身高</th>
+<th scope="col" class="org-right">体重</th>
+<th scope="col" class="org-right">胸围</th>
+<th scope="col" class="org-right">腰围</th>
+<th scope="col" class="org-right">臀围</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">金巧巧</td>
+<td class="org-right">164</td>
+<td class="org-right">112.5</td>
+<td class="org-right">34</td>
+<td class="org-right">25</td>
+<td class="org-right">34</td>
+</tr>
+
+<tr>
+<td class="org-left">杨幂</td>
+<td class="org-right">168</td>
+<td class="org-right">99</td>
+<td class="org-right">32</td>
+<td class="org-right">24</td>
+<td class="org-right">32</td>
+</tr>
+
+<tr>
+<td class="org-left">钟丽缇</td>
+<td class="org-right">168</td>
+<td class="org-right">108</td>
+<td class="org-right">36</td>
+<td class="org-right">24</td>
+<td class="org-right">35</td>
+</tr>
+
+<tr>
+<td class="org-left">朱茵</td>
+<td class="org-right">160</td>
+<td class="org-right">95</td>
+<td class="org-right">33</td>
+<td class="org-right">22</td>
+<td class="org-right">33</td>
+</tr>
+
+<tr>
+<td class="org-left">赵薇</td>
+<td class="org-right">166</td>
+<td class="org-right">105</td>
+<td class="org-right">33</td>
+<td class="org-right">23</td>
+<td class="org-right">33</td>
+</tr>
+
+<tr>
+<td class="org-left">李珊珊</td>
+<td class="org-right">175</td>
+<td class="org-right">115</td>
+<td class="org-right">36</td>
+<td class="org-right">24</td>
+<td class="org-right">36</td>
+</tr>
+
+<tr>
+<td class="org-left">佘诗曼</td>
+<td class="org-right">164</td>
+<td class="org-right">96</td>
+<td class="org-right">33</td>
+<td class="org-right">22</td>
+<td class="org-right">34</td>
+</tr>
+
+<tr>
+<td class="org-left">郭羡妮</td>
+<td class="org-right">166</td>
+<td class="org-right">103</td>
+<td class="org-right">33</td>
+<td class="org-right">23</td>
+<td class="org-right">34</td>
+</tr>
+
+<tr>
+<td class="org-left">郑秀文</td>
+<td class="org-right">165</td>
+<td class="org-right">100</td>
+<td class="org-right">31</td>
+<td class="org-right">22</td>
+<td class="org-right">32</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+
+<div id="outline-container-orge8b18df" class="outline-3">
+<h3 id="orge8b18df">开发工具介绍：</h3>
+<div class="outline-text-3" id="text-orge8b18df">
+<p>
+算法实现语言：python 2.7,
+用到的外部类库 为NumPy，Matplotlib，Pandas。
+IDE:IPython Notebook,
+</p>
+
+<p>
+其为一个在浏览器端运行的开发工具，非常好用，另外，本篇文章亦是直接使用IPython Notebook写作完成的。
+</p>
+
+<p>
+操作
+平台：Ubuntu 12.04
+算法实现简介：
+</p>
+
+<p>
+    实际上并没有用到很复杂的算法，只是我技艺不
+精，代码写得很乱。整体的过程是按照PPT里面对k-均值算法的描述那个例子进行操作的，
+如首先将数据以向量表示（实际代码实现中，数据以字典形式存储，key为人名，value为身
+材数据组成的列表）。然后随意选出k个样本作为质心，将其他非质心样本和质心一一计算
+距离，得出非质心样本所属的类。第一次聚类完成，重新计算各个类的质心，将所有样本与
+这些个新质心进行距离计算，得出新的分类。然后判断新分类与旧分类直接是否有不同，如
+若不同，计算重复上述聚类过程，若同，则聚类完成。代码过程与介绍：下面这段代码用于
+计算两个列表之间的距离，也就是计算两个样本向量的距离
+</p>
+
+<div class="org-src-container">
+<pre class="src src-python"><span style="font-weight: bold;">import</span> numpy <span style="font-weight: bold;">as</span> np
+<span style="font-weight: bold;">def</span> <span style="font-weight: bold;">listOperation</span>(lista,listb):
+
+    <span style="font-weight: bold; font-style: italic;">temp</span> = (np.array(lista)-np.array(listb))**2
+    <span style="font-weight: bold;">return</span> np.sqrt(np.<span style="font-weight: bold;">sum</span>(temp))
+
+
+</pre>
+</div>
+
+
+<p>
+下面这段代码用于计算新的分类，所用参数：第一个为已经聚好的类的结果，结果依然以字
+典存储，value则是由人名组成的列表。第二个为元素数据， 从第一个参数获取到人名，然
+后利用人名，从datadict这个原始数据中获取该人的身材数据。返回值是一个新的分类结果，
+依然是一个字典嵌套列表的形式
+</p>
+
+<div class="org-src-container">
+<pre class="src src-python"><span style="font-weight: bold;">import</span> pandas <span style="font-weight: bold;">as</span> pd
+<span style="font-weight: bold;">def</span> <span style="font-weight: bold;">cluster</span>(clustdict,datadict):
+    <span style="font-weight: bold; font-style: italic;">dic</span>={}
+    <span style="font-weight: bold; font-style: italic;">newcenter</span>=[]
+    <span style="font-weight: bold; font-style: italic;">clustname</span>=clustdict.keys()<span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">&#36825;&#20010;&#23384;&#20648;&#30340;&#24212;&#35813;&#26159;&#32858;&#31867;&#30340;&#21517;&#23383;</span>
+    <span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">print len(clustname)</span>
+    <span style="font-weight: bold;">for</span> key <span style="font-weight: bold;">in</span> clustdict.keys():
+        <span style="font-weight: bold; font-style: italic;">templist</span> = clustdict.get(key)<span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">&#33719;&#21462;&#20102;&#19968;&#20010;&#20998;&#31867;&#37324;&#25152;&#26377;&#30340;&#20154;&#21517;</span>
+        <span style="font-weight: bold; font-style: italic;">t</span> = [ datadict.get(i) <span style="font-weight: bold;">for</span> i <span style="font-weight: bold;">in</span> templist]<span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">&#23558;&#27599;&#20010;&#20154;&#30340;&#25968;&#25454;&#33719;&#21462;&#36807;&#26469;&#65292;&#23884;&#20837;&#21040;&#19968;&#20010;&#21015;&#34920;&#20013;&#65292;&#21363;&#23884;&#22871;&#21015;&#34920;</span>
+        <span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">print t,'n'</span>
+        <span style="font-weight: bold; font-style: italic;">dt</span> = pd.DataFrame(t)<span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">&#23558;&#25968;&#25454;&#32452;&#32455;&#25104;&#31867;&#20284;&#19982;&#25968;&#25454;&#24211;&#20013;&#30340;&#34920;&#30340;&#25968;&#25454;&#26694;</span>
+        <span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">print dt,'dt',key</span>
+
+
+        <span style="font-weight: bold; font-style: italic;">new</span> = []<span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">new&#26159;&#26032;&#30340;&#19968;&#20010;&#36136;&#24515;</span>
+        <span style="font-weight: bold;">for</span> j <span style="font-weight: bold;">in</span> <span style="font-weight: bold;">range</span>(<span style="font-weight: bold;">len</span>(t[0])):
+            new.append(np.<span style="font-weight: bold;">sum</span>(dt[j])/<span style="font-weight: bold;">len</span>(t))
+        <span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">print new,'new'</span>
+        newcenter.append(new)
+        <span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">print dt</span>
+    <span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">i = 0</span>
+
+
+    <span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">distance = 1000000000</span>
+    <span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">print len(newcenter)</span>
+    <span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">temp = 0</span>
+    <span style="font-weight: bold;">for</span> name <span style="font-weight: bold;">in</span> datadict.keys():
+        <span style="font-weight: bold; font-style: italic;">temp</span> = [ listOperation(datadict.get(name),new) <span style="font-weight: bold;">for</span> new <span style="font-weight: bold;">in</span> newcenter]
+        <span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">print len(temp),'temp'</span>
+
+        <span style="font-weight: bold; font-style: italic;">a</span>  = temp.index(np.<span style="font-weight: bold;">min</span>(temp))
+        <span style="font-weight: bold;">if</span> dic.get(a)==<span style="font-weight: bold; text-decoration: underline;">None</span>:
+            <span style="font-weight: bold; font-style: italic;">dic</span>[a] = [name]
+        <span style="font-weight: bold;">else</span> :
+            dic[a].append(name)
+    <span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">print temp</span>
+    <span style="font-weight: bold;">return</span> dic
+
+</pre>
+</div>
+
+
+<p>
+下面这段代码用于判断新的聚类结果与旧聚类结果之间是否有不同。有三个参数，第一个为
+新的聚类结果，第二个为旧的聚类结果，第三个则是原始数据。 判断方法：首先，取得各
+个分类的人名，然后计算该分类人名的hash值之和，然后将所有分类的hash值，放入到一个
+集合中去，比较两个聚类结果的集合是否相同， 就可以判断两次聚类结果是否有变化了。
+返回值是一个布尔值。
+</p>
+
+<div class="org-src-container">
+<pre class="src src-python"><span style="font-weight: bold;">def</span> <span style="font-weight: bold;">comparedict</span>(dic,clustdict):
+
+    <span style="font-weight: bold; font-style: italic;">diclist</span> = dic.values()
+    <span style="font-weight: bold; font-style: italic;">clustdictlist</span> = clustdict.values()
+    <span style="font-weight: bold; font-style: italic;">d</span> = <span style="font-weight: bold;">set</span>()
+    <span style="font-weight: bold; font-style: italic;">c</span> = <span style="font-weight: bold;">set</span>()
+    <span style="font-weight: bold;">for</span> i <span style="font-weight: bold;">in</span> <span style="font-weight: bold;">range</span>(<span style="font-weight: bold;">len</span>(diclist)):
+        <span style="font-weight: bold; font-style: italic;">temp</span> = 0
+        <span style="font-weight: bold;">for</span> j <span style="font-weight: bold;">in</span> <span style="font-weight: bold;">range</span>(<span style="font-weight: bold;">len</span>(diclist[i])):
+            <span style="font-weight: bold; font-style: italic;">temp</span> = temp + <span style="font-weight: bold;">hash</span>(diclist[i][j])
+        d.add(temp)
+    <span style="font-weight: bold;">for</span> i <span style="font-weight: bold;">in</span> <span style="font-weight: bold;">range</span>(<span style="font-weight: bold;">len</span>(clustdictlist)):
+        <span style="font-weight: bold; font-style: italic;">temp</span> = 0
+        <span style="font-weight: bold;">for</span> j <span style="font-weight: bold;">in</span> <span style="font-weight: bold;">range</span>(<span style="font-weight: bold;">len</span>(clustdictlist[i])):
+            <span style="font-weight: bold; font-style: italic;">temp</span> = temp+<span style="font-weight: bold;">hash</span>(clustdictlist[i][j])
+        c.add(temp)
+
+    <span style="font-weight: bold;">return</span> d==c
+
+
+</pre>
+</div>
+
+
+<p>
+下面这段代码的主体部分是处理第一次聚类过程的。由于第一次聚类过程其后面的过程不一
+样，第一次聚类的质心就是样本，而后面的聚类过程，则所有的样本数据都是非质心。总体
+感觉，这部分代码也是最麻烦的。完成了第一次聚类之后，使用cluster方法进行第二次聚
+类，取得新的聚类结果，然后进行两个聚类结果的判断，如此循环，直至聚类结果不再发生
+变化。此时返回已经完成的聚类结果。
+</p>
+
+<div class="org-src-container">
+<pre class="src src-python"><span style="font-weight: bold;">def</span> <span style="font-weight: bold;">kmean</span>(datadict,k):
+    <span style="font-weight: bold;">if</span> <span style="font-weight: bold;">len</span>(datadict)&amp;lt;3:
+        <span style="font-weight: bold;">print</span> (<span style="font-style: italic;">"&#25968;&#25454;&#23569;&#20110;&#19977;&#20010;&#65292;&#19981;&#31526;&#21512;&#35201;&#27714;"</span>)
+        <span style="font-weight: bold;">return</span>;
+    <span style="font-weight: bold;">elif</span> k&amp;gt;=<span style="font-weight: bold;">len</span>(datadict):
+        <span style="font-weight: bold;">print</span> (<span style="font-style: italic;">"&#20998;&#31867;&#25968;&#30446;&#22826;&#22810;&#20102;"</span>)
+        <span style="font-weight: bold;">return</span>;
+    <span style="font-weight: bold;">else</span>:
+
+        <span style="font-weight: bold; font-style: italic;">names</span> = []<span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">&#20445;&#23384;&#25152;&#26377;&#20154;&#21517;</span>
+                <span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">print datadict.has_key('&#25289;&#25289;&amp;middot;&#26031;&#36890;'),'&#25289;&#25289;'</span>
+        <span style="font-weight: bold;">for</span> i <span style="font-weight: bold;">in</span> datadict.keys():
+                    names.append(i)
+                <span style="font-weight: bold; font-style: italic;">center</span> = names[:k]<span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">&#36136;&#24515;</span>
+
+                <span style="font-weight: bold; font-style: italic;">noncenter</span> = names[k:]<span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">&#38750;&#36136;&#24515;</span>
+
+                <span style="font-weight: bold; font-style: italic;">distancelist</span> = [ listOperation(datadict.get(i),datadict.get(j)) <span style="font-weight: bold;">for</span> i <span style="font-weight: bold;">in</span> noncenter
+                                <span style="font-weight: bold;">for</span> j <span style="font-weight: bold;">in</span> center]
+                <span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">print len(distancelist)</span>
+                <span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">print len(noncenter),k</span>
+                <span style="font-weight: bold; font-style: italic;">distancearray</span> = np.array(distancelist).reshape(<span style="font-weight: bold;">len</span>(noncenter),k)
+                <span style="font-weight: bold; font-style: italic;">distancelist</span> = distancearray.tolist()<span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">&#27492;&#26102;&#65292;distancelist&#37324;&#38754;&#30340;&#31532;i&#39033;&#37117;&#26159;&#31532;i&#20010;&#38750;&#36136;&#24515;</span>
+                <span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">&#19982;&#25152;&#26377;&#20043;&#38388;&#36317;&#31163;&#32452;&#25104;&#30340;&#21015;&#34920;&#65292;&#19981;&#36807;&#36825;&#37324;&#27809;&#26377;&#32771;&#34385;&#19968;&#20010;&#38750;&#36136;&#24515;&#19982;&#22810;&#20010;&#36136;&#24515;&#36317;&#31163;&#37117;&#30456;&#31561;&#30340;&#24773;&#20917;</span>
+                <span style="font-weight: bold; font-style: italic;">sortlist</span> = [ i.index(np.<span style="font-weight: bold;">min</span>(i)) <span style="font-weight: bold;">for</span> i <span style="font-weight: bold;">in</span> distancelist]<span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">&#33719;&#24471;&#20102;&#19982;&#31532;i&#20010;&#38750;&#36136;&#24515;&#30340;&#36317;&#31163;&#26368;&#36817;&#30340;&#36136;&#24515;&#30340;&#24207;&#21495;</span>
+                <span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">sortlist&#24635;&#20849;&#26377;len(noncenter)&#39033;</span>
+                <span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">print len(sortlist),'sortlist'</span>
+                <span style="font-weight: bold; font-style: italic;">clustdict</span> = {}
+                [clustdict.update({i:[i]}) <span style="font-weight: bold;">for</span> i <span style="font-weight: bold;">in</span> center]<span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">&#36825;&#20010;&#26159;&#24517;&#39035;&#30340;&#65292;&#22240;&#20026;&#26377;&#20123;&#36136;&#24515;&#21487;&#33021;&#27809;&#26377;&#20154;&#21644;&#23427;&#36317;&#31163;&#26368;&#36817;&#65292;&#22914;&#26524;&#19981;&#21152;&#36825;&#20010;&#65292;</span>
+                <span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">&#20182;&#20204;&#23601;&#19981;&#20250;&#20986;&#29616;&#22312;&#21518;&#38754;&#30340;&#22788;&#29702;&#20013;&#20102;</span>
+
+                <span style="font-weight: bold;">for</span> i <span style="font-weight: bold;">in</span> <span style="font-weight: bold;">range</span>(<span style="font-weight: bold;">len</span>(noncenter)):
+                    <span style="font-weight: bold;">if</span> clustdict.get(center[sortlist[i]])==<span style="font-weight: bold; text-decoration: underline;">None</span>:
+                        clustdict[center[sortlist[i]]]=[center[sortlist[i]],noncenter[i]]<span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">&#22914;&#26524;&#23383;&#20856;&#20013;&#19981;&#23384;&#22312;&#35813;&#36136;&#24515;&#65292;</span>
+                        <span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">&#21017;&#20197;&#36136;&#24515;&#20026;key&#65292;&#38750;&#36136;&#24515;&#20197;&#21015;&#34920;&#20026;value</span>
+                    <span style="font-weight: bold;">else</span>:
+                        clustdict[center[sortlist[i]]].append(noncenter[i])<span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">&#23383;&#20856;&#23384;&#22312;&#35813;&#36136;&#24515;&#65292;&#23558;&#35813;&#38750;&#36136;&#24515;&#21152;&#20837;&#21040;</span>
+                        <span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">value&#21015;&#34920;&#37324;&#38754;</span>
+
+                <span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">&#27492;&#26102;&#65292;clustdict&#23601;&#20197;&#36136;&#24515;&#20026;key,&#36136;&#24515;&#21644;&#38750;&#36136;&#24515;&#32452;&#25104;&#30340;&#21015;&#34920;&#20026;value&#65292;&#24418;&#25104;&#31532;&#19968;&#27425;&#32858;&#31867;&#12290;</span>
+                <span style="font-weight: bold; font-style: italic;">dic</span> = cluster(clustdict,datadict)
+
+                <span style="font-weight: bold;">while</span> comparedict(dic,clustdict)==<span style="font-weight: bold; text-decoration: underline;">False</span>:
+                    <span style="font-weight: bold; font-style: italic;">clustdict</span> = dic
+                    <span style="font-weight: bold; font-style: italic;">dic</span> = cluster(clustdict,datadict)
+                <span style="font-weight: bold;">return</span> dic
+
+</pre>
+</div>
+
+<p>
+下面这段数据用于读取数据，进行聚类分析，取得聚类结果，输出结果，输出的结果较为简
+单。分类个数设为12,经过多次的测试，发现12左右的时候，结果是比较符合预期的。
+</p>
+<div class="org-src-container">
+<pre class="src src-python">
+<span style="font-weight: bold;">import</span> codecs
+
+<span style="font-weight: bold; font-style: italic;">f</span>  = codecs.<span style="font-weight: bold;">open</span>(<span style="font-style: italic;">"/home/rickey/Desktop/&#25968;&#25454;&#25366;&#25496;&#20316;&#19994;/data"</span>,<span style="font-style: italic;">'r'</span>,<span style="font-style: italic;">'utf8'</span>)
+<span style="font-weight: bold; font-style: italic;">datadict</span> = {}
+<span style="font-weight: bold;">for</span> line <span style="font-weight: bold;">in</span> f.readlines():
+    <span style="font-weight: bold; font-style: italic;">line</span> = line.encode(<span style="font-style: italic;">'utf8'</span>)
+    <span style="font-weight: bold; font-style: italic;">temp</span>= line.split(<span style="font-style: italic;">'t'</span>)
+    datadict[temp[0]] = [<span style="font-weight: bold;">float</span>(i) <span style="font-weight: bold;">for</span> i <span style="font-weight: bold;">in</span> temp[1:]]
+<span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">print datadict.get('&#25289;&#25289;&amp;middot;&#26031;&#36890;')</span>
+<span style="font-weight: bold;">dict</span> = kmean(datadict,12)
+
+<span style="font-weight: bold;">for</span> i <span style="font-weight: bold;">in</span> <span style="font-weight: bold;">dict</span>.keys():
+    <span style="font-weight: bold; font-style: italic;">temp</span> = <span style="font-weight: bold;">dict</span>.get(i)
+    <span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">print temp</span>
+    <span style="font-weight: bold;">for</span> j <span style="font-weight: bold;">in</span> temp:
+        <span style="font-weight: bold;">print</span> j,
+    <span style="font-weight: bold;">print</span> <span style="font-style: italic;">'n'</span>
+
+</pre>
+</div>
+
+<p>
+下面是结果：
+</p>
+<p class="verse">
+<br>
+金巧巧 徐若瑄<br>
+<br>
+舒淇 玛丽莲 阿朵 关之琳 廖碧儿 张曼玉<br>
+<br>
+林嘉欣 安雅 李玟 温碧霞 章子怡<br>
+<br>
+凯蒂·派瑞 彭丹 洪欣 碧姬·芭铎 碧昂斯 巩俐 安吉利娜-朱丽 衫本彩 霍莉·威洛比 王祖贤<br>
+<br>
+宋慧乔 陈怡蓉 饭岛爱 杨丞琳 阿娇 苍井空 何洁 姚乐怡 佘诗曼<br>
+<br>
+林志玲 李珊珊<br>
+<br>
+萧蔷 蕾哈娜 黛塔·范·提思 钟丽缇 高圆圆 范冰冰 Maggie 韩君婷<br>
+<br>
+郭羡妮 巩新亮 杨幂 韩艺瑟 阿Sa 张柏芝 赵薇 桂纶镁 郑秀文 林心如 奥黛丽赫本<br>
+<br>
+林嘉绮 金·卡戴珊 孟广美 张梓林<br>
+<br>
+拉拉·斯通 应采儿 白歆惠<br>
+<br>
+蔡依林 李慧珍 幸田来未 张韶涵 陈乔恩 朱茵<br>
+<br>
+斯嘉丽·约翰逊<br>
+<br>
+</p>
+
+
+<p>
+  上面输出的就是聚类结果,但是这些明星我们只是在电视上看到过，只是通过上面的聚类
+结果，大概只能确定某几个是对的。下面的代码则是输出更详细的结果，如下：
+</p>
+<div class="org-src-container">
+<pre class="src src-python"><span style="font-weight: bold;">import</span> codecs
+<span style="font-weight: bold;">import</span> pandas <span style="font-weight: bold;">as</span> pd
+<span style="font-weight: bold; font-style: italic;">f</span>  = codecs.<span style="font-weight: bold;">open</span>(<span style="font-style: italic;">"/home/rickey/Desktop/&#25968;&#25454;&#25366;&#25496;&#20316;&#19994;/data"</span>,<span style="font-style: italic;">'r'</span>,<span style="font-style: italic;">'utf8'</span>)
+<span style="font-weight: bold; font-style: italic;">datadict</span> = {}
+<span style="font-weight: bold;">for</span> line <span style="font-weight: bold;">in</span> f.readlines():
+    <span style="font-weight: bold; font-style: italic;">line</span> = line.encode(<span style="font-style: italic;">'utf8'</span>)
+    <span style="font-weight: bold; font-style: italic;">temp</span>= line.split(<span style="font-style: italic;">'t'</span>)
+    datadict[temp[0]] = [<span style="font-weight: bold;">float</span>(i) <span style="font-weight: bold;">for</span> i <span style="font-weight: bold;">in</span> temp[1:]]
+<span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">print datadict.get('&#25289;&#25289;&amp;middot;&#26031;&#36890;')</span>
+<span style="font-weight: bold;">dict</span> = kmean(datadict,12)
+
+<span style="font-weight: bold;">for</span> i <span style="font-weight: bold;">in</span> <span style="font-weight: bold;">dict</span>.keys():
+    <span style="font-weight: bold; font-style: italic;">temp</span> = <span style="font-weight: bold;">dict</span>.get(i)
+    <span style="font-weight: bold; font-style: italic;">lenght</span>=0
+    <span style="font-weight: bold;">for</span> j <span style="font-weight: bold;">in</span> temp:
+        <span style="font-weight: bold;">print</span> j.ljust(10-<span style="font-weight: bold;">len</span>(j)),
+        <span style="font-weight: bold;">if</span> <span style="font-weight: bold;">len</span>(j)&amp;gt;9:
+            <span style="font-weight: bold;">print</span> <span style="font-style: italic;">'t%+*s'</span>%(52,datadict.get(j))
+        <span style="font-weight: bold;">else</span>:
+            <span style="font-weight: bold;">print</span> <span style="font-style: italic;">'t%+*s'</span>%(60,datadict.get(j))
+    <span style="font-weight: bold; font-style: italic;">data</span> = [ datadict.get(n) <span style="font-weight: bold;">for</span> n <span style="font-weight: bold;">in</span> temp]
+    <span style="font-weight: bold; font-style: italic;">dataframe</span> = pd.DataFrame(data)
+    <span style="font-weight: bold; font-style: italic;">t</span> = dataframe.<span style="font-weight: bold;">sum</span>()/<span style="font-weight: bold;">len</span>(data)
+    <span style="font-weight: bold; font-style: italic;">tlist1</span> = t.tolist()
+    <span style="font-weight: bold; font-style: italic;">tlist2</span> = [<span style="font-weight: bold;">float</span>(<span style="font-style: italic;">'%.1f'</span>%i) <span style="font-weight: bold;">for</span> i <span style="font-weight: bold;">in</span> tlist1]
+    <span style="font-weight: bold;">print</span> <span style="font-style: italic;">'&#24179;&#22343;&#27700;&#24179;:'</span>,<span style="font-style: italic;">'t%+*s'</span>%(52,tlist2)
+    <span style="font-weight: bold;">print</span> <span style="font-style: italic;">'n'</span>
+
+</pre>
+</div>
+
+
+<p>
+结果如下：
+</p>
+<p class="verse">
+金巧巧                              [164.0, 112.5, 34.0, 25.0, 34.0]<br>
+徐若瑄                              [161.0, 114.0, 33.0, 25.0, 33.0]<br>
+平均水平:                           [162.5, 113.2, 33.5, 25.0, 33.5]<br>
+<br>
+<br>
+舒淇                                [168.0, 115.0, 34.0, 24.0, 35.0]<br>
+玛丽莲                              [166.0, 120.4, 35.0, 22.0, 35.0]<br>
+阿朵                                [166.0, 115.0, 38.0, 30.0, 38.0]<br>
+关之琳                              [170.0, 117.0, 35.0, 24.0, 35.0]<br>
+廖碧儿                              [171.0, 117.0, 35.0, 24.0, 34.0]<br>
+张曼玉                              [168.0, 115.0, 32.4, 23.0, 34.0]<br>
+平均水平:                           [168.2, 116.6, 34.9, 24.5, 35.2]<br>
+<br>
+<br>
+林嘉欣                              [163.0, 108.0, 33.0, 24.0, 34.0]<br>
+安雅                                [163.0, 104.0, 34.5, 24.0, 35.0]<br>
+李玟                                [162.0, 105.0, 35.0, 22.5, 35.0]<br>
+温碧霞                              [164.0, 106.0, 33.0, 23.0, 33.0]<br>
+章子怡                              [164.0, 108.0, 32.0, 24.0, 34.0]<br>
+平均水平:                           [163.2, 106.2, 33.5, 23.5, 34.2]<br>
+<br>
+<br>
+凯蒂&amp;middot;派瑞                    [173.0, 130.0, 34.0, 27.0, 33.0]<br>
+彭丹                                [169.0, 125.0, 36.0, 24.0, 36.0]<br>
+洪欣                                [167.0, 124.0, 33.0, 25.0, 35.0]<br>
+碧姬&amp;middot;芭铎                    [170.0, 128.0, 35.0, 23.0, 35.0]<br>
+碧昂斯                              [170.0, 126.0, 35.2, 23.8, 34.4]<br>
+巩俐                                [168.0, 126.0, 38.0, 30.0, 36.0]<br>
+安吉利娜-朱丽                       [173.0, 130.0, 36.0, 27.0, 36.0]<br>
+衫本彩                              [168.0, 124.0, 33.9, 22.6, 33.6]<br>
+霍莉&amp;middot;威洛比                  [170.0, 123.8, 29.3, 23.4, 30.1]<br>
+王祖贤                              [172.0, 128.0, 33.0, 25.0, 33.0]<br>
+平均水平:                           [170.0, 126.5, 34.3, 25.1, 34.2]<br>
+<br>
+<br>
+宋慧乔                              [161.0, 101.0, 33.0, 24.0, 32.0]<br>
+陈怡蓉                              [160.0, 101.0, 32.0, 25.0, 34.0]<br>
+饭岛爱                              [161.0, 100.0, 33.5, 22.0, 33.5]<br>
+杨丞琳                              [161.0, 99.0, 32.0, 23.0, 33.0]<br>
+阿娇                                [160.0, 101.0, 32.0, 24.0, 33.0]<br>
+苍井空                              [155.0, 101.0, 35.0, 22.4, 32.7]<br>
+何洁                                [157.0, 104.0, 32.0, 20.0, 35.0]<br>
+姚乐怡                              [163.0, 101.0, 34.0, 24.0, 34.0]<br>
+佘诗曼                              [164.0, 96.0, 33.0, 22.0, 34.0]<br>
+平均水平:                           [160.2, 100.4, 32.9, 22.9, 33.5]<br>
+<br>
+<br>
+林志玲                              [174.0, 117.0, 34.0, 24.0, 36.0]<br>
+李珊珊                              [175.0, 115.0, 36.0, 24.0, 36.0]<br>
+平均水平:                           [174.5, 116.0, 35.0, 24.0, 36.0]<br>
+<br>
+<br>
+萧蔷                                [170.0, 108.0, 34.0, 23.0, 35.0]<br>
+蕾哈娜                              [173.0, 108.0, 30.0, 24.0, 32.0]<br>
+黛塔&amp;middot;范&amp;middot;提思          [168.0, 107.0, 34.0, 22.0, 34.0]<br>
+钟丽缇                              [168.0, 108.0, 36.0, 24.0, 35.0]<br>
+高圆圆                              [167.0, 108.0, 33.0, 24.0, 34.0]<br>
+范冰冰                              [168.0, 112.0, 33.0, 22.0, 32.0]<br>
+Maggie                              [170.0, 106.0, 34.0, 24.0, 34.0]<br>
+韩君婷                              [168.0, 108.0, 34.0, 24.0, 35.0]<br>
+平均水平:                           [169.0, 108.1, 33.5, 23.4, 33.9]<br>
+<br>
+<br>
+郭羡妮                              [166.0, 103.0, 33.0, 23.0, 34.0]<br>
+巩新亮                              [168.0, 101.0, 34.0, 22.0, 33.0]<br>
+杨幂                                [168.0, 99.0, 32.0, 24.0, 32.0]<br>
+韩艺瑟                              [166.0, 101.0, 33.0, 24.0, 33.0]<br>
+阿Sa                                [165.0, 100.0, 32.0, 23.0, 33.5]<br>
+张柏芝                              [165.0, 101.0, 33.0, 25.0, 34.0]<br>
+赵薇                                [166.0, 105.0, 33.0, 23.0, 33.0]<br>
+桂纶镁                              [164.0, 103.5, 32.0, 23.0, 34.5]<br>
+郑秀文                              [165.0, 100.0, 31.0, 22.0, 32.0]<br>
+林心如                              [167.0, 103.5, 33.0, 22.0, 34.0]<br>
+奥黛丽赫本                          [170.0, 103.5, 32.0, 20.0, 35.0]<br>
+平均水平:                           [166.4, 101.9, 32.5, 22.8, 33.5]<br>
+<br>
+<br>
+林嘉绮                              [180.0, 126.0, 34.0, 25.0, 35.0]<br>
+金&amp;middot;卡戴珊                    [175.0, 128.0, 35.5, 25.0, 36.0]<br>
+孟广美                              [178.0, 129.0, 34.0, 26.0, 36.0]<br>
+张梓林                              [182.0, 128.0, 34.7, 25.0, 34.8]<br>
+平均水平:                           [178.8, 127.8, 34.5, 25.2, 35.5]<br>
+<br>
+<br>
+拉拉&amp;middot;斯通                    [173.0, 112.5, 34.0, 24.0, 35.0]<br>
+应采儿                              [175.0, 112.5, 33.0, 24.5, 34.0]<br>
+白歆惠                              [175.0, 112.0, 33.0, 23.0, 35.0]<br>
+平均水平:                           [174.3, 112.3, 33.3, 23.8, 34.7]<br>
+<br>
+<br>
+蔡依林                              [158.0, 92.0, 32.0, 24.0, 32.0]<br>
+李慧珍                              [160.0, 92.0, 33.0, 24.0, 32.0]<br>
+幸田来未                            [156.0, 92.0, 33.0, 22.0, 33.0]<br>
+张韶涵                              [158.0, 90.0, 32.0, 23.5, 32.0]<br>
+陈乔恩                              [165.0, 90.0, 33.0, 22.0, 33.3]<br>
+朱茵                                [160.0, 95.0, 33.0, 22.0, 33.0]<br>
+平均水平:                           [159.5, 91.8, 32.7, 22.9, 32.6]<br>
+<br>
+<br>
+斯嘉丽&amp;middot;约翰逊                [160.0, 108.0, 35.5, 24.6, 35.5]<br>
+平均水平:                           [160.0, 108.0, 35.5, 24.6, 35.5]<br>
+<br>
+</p>
+
+<p>
+从各个类的平均水平来看，分类结果还是比较好的，不过由于三围数据差别不大（估计很多
+明星的三围数据有假），发挥主要作用的还是身高和体重。下面这段代码主要是用来观察分
+类结果中，身高，体重按照分类结果进行绘制，看看我们的分类是否比较正确
+</p>
+<div class="org-src-container">
+<pre class="src src-python"><span style="font-weight: bold;">import</span> codecs
+<span style="font-weight: bold;">import</span> matplotlib.pyplot <span style="font-weight: bold;">as</span> plt
+<span style="font-weight: bold; font-style: italic;">f</span>  = codecs.<span style="font-weight: bold;">open</span>(<span style="font-style: italic;">"/home/rickey/Desktop/&#25968;&#25454;&#25366;&#25496;&#20316;&#19994;/data"</span>,<span style="font-style: italic;">'r'</span>,<span style="font-style: italic;">'utf8'</span>)
+<span style="font-weight: bold; font-style: italic;">datadict</span> = {}
+<span style="font-weight: bold;">for</span> line <span style="font-weight: bold;">in</span> f.readlines():
+    <span style="font-weight: bold; font-style: italic;">line</span> = line.encode(<span style="font-style: italic;">'utf8'</span>)
+    <span style="font-weight: bold; font-style: italic;">temp</span>= line.split(<span style="font-style: italic;">'t'</span>)
+    datadict[temp[0]] = [<span style="font-weight: bold;">float</span>(i) <span style="font-weight: bold;">for</span> i <span style="font-weight: bold;">in</span> temp[1:]]
+<span style="font-weight: bold;">for</span> i <span style="font-weight: bold;">in</span> <span style="font-weight: bold;">range</span>(12,13):<span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">&#26412;&#26469;&#24819;&#36830;&#32493;&#22810;&#27425;&#32472;&#22270;&#30340;&#65292;&#20294;&#26159;&#21457;&#29616;&#32472;&#22270;&#30340;&#20195;&#30721;&#33258;&#24049;&#25484;&#25569;&#24471;&#19981;&#22909;&#65292;&#24456;&#22810;&#19981;&#20250;&#65292;&#22240;&#27492;&#65292;&#36825;&#37324;&#31561;&#20110;&#26159;&#27809;&#29992;&#20102;</span>
+    <span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">img =plt.figure()</span>
+
+    <span style="font-weight: bold;">dict</span> = kmean(datadict,12)
+    <span style="font-weight: bold; font-style: italic;">names</span> = <span style="font-weight: bold;">dict</span>.values()
+    <span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">data = []</span>
+    <span style="font-weight: bold; font-style: italic;">colors</span> = [<span style="font-style: italic;">'b'</span>,<span style="font-style: italic;">'g'</span>,<span style="font-style: italic;">'r'</span>,<span style="font-style: italic;">'c'</span>,<span style="font-style: italic;">'m'</span>,<span style="font-style: italic;">'y'</span>,<span style="font-style: italic;">'k'</span>,<span style="font-style: italic;">'orange'</span>,<span style="font-style: italic;">'pink'</span>,<span style="font-style: italic;">'purple'</span>,[(0.0,  0.4, 0.9),
+                                                                    (0.5,  0.7, 1.0),(0.4,  0.5, 1.0)],<span style="font-style: italic;">'grey'</span>]
+    <span style="font-weight: bold; font-style: italic;">i</span>=0
+    <span style="font-weight: bold;">for</span> classitem <span style="font-weight: bold;">in</span> names:
+        <span style="font-weight: bold; font-style: italic;">classdata</span>=[]
+        <span style="font-weight: bold;">for</span> person <span style="font-weight: bold;">in</span> classitem:
+            <span style="font-weight: bold; font-style: italic;">figures</span> = datadict.get(person)<span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">&#33719;&#21462;&#20102;&#19968;&#20010;&#20154;&#30340;&#36523;&#26448;&#25968;&#25454;</span>
+
+            classdata.append((figures[0],figures[1]))
+            <span style="font-weight: bold; font-style: italic;">ax1</span> = plt.subplot(111)
+            ax1.scatter(figures[0],figures[1],c=colors[i],s = i*40)
+        <span style="font-weight: bold; font-style: italic;">i</span>= i+1
+
+</pre>
+</div>
+
+
+
+<p>
+绘制的图像如下：
+</p>
+
+
+<p>
+可以看到，整体上身高和体重这两个指标形成的散点图，展示出来的聚类形式，和我们的分
+类有较大相似。但是下面的用 胸围/腰围  臀围/腰围绘制的图，就与作出的分类极大不同
+了。主要是因为找到的数据基本上很接近，难以区分。
+</p>
+
+<div class="org-src-container">
+<pre class="src src-python"><span style="font-weight: bold;">import</span> codecs
+<span style="font-weight: bold;">import</span> matplotlib.pyplot <span style="font-weight: bold;">as</span> plt
+<span style="font-weight: bold; font-style: italic;">f</span>  = codecs.<span style="font-weight: bold;">open</span>(<span style="font-style: italic;">"/home/rickey/Desktop/&#25968;&#25454;&#25366;&#25496;&#20316;&#19994;/data"</span>,<span style="font-style: italic;">'r'</span>,<span style="font-style: italic;">'utf8'</span>)
+<span style="font-weight: bold; font-style: italic;">datadict</span> = {}
+<span style="font-weight: bold;">for</span> line <span style="font-weight: bold;">in</span> f.readlines():
+    <span style="font-weight: bold; font-style: italic;">line</span> = line.encode(<span style="font-style: italic;">'utf8'</span>)
+    <span style="font-weight: bold; font-style: italic;">temp</span>= line.split(<span style="font-style: italic;">'t'</span>)
+    datadict[temp[0]] = [<span style="font-weight: bold;">float</span>(i) <span style="font-weight: bold;">for</span> i <span style="font-weight: bold;">in</span> temp[1:]]
+<span style="font-weight: bold;">for</span> i <span style="font-weight: bold;">in</span> <span style="font-weight: bold;">range</span>(12,13):
+    <span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">img =plt.figure()</span>
+
+    <span style="font-weight: bold;">dict</span> = kmean(datadict,12)
+    <span style="font-weight: bold; font-style: italic;">names</span> = <span style="font-weight: bold;">dict</span>.values()
+    <span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">data = []</span>
+    <span style="font-weight: bold; font-style: italic;">colors</span> = [<span style="font-style: italic;">'b'</span>,<span style="font-style: italic;">'g'</span>,<span style="font-style: italic;">'r'</span>,<span style="font-style: italic;">'c'</span>,<span style="font-style: italic;">'m'</span>,<span style="font-style: italic;">'y'</span>,<span style="font-style: italic;">'k'</span>,<span style="font-style: italic;">'orange'</span>,<span style="font-style: italic;">'pink'</span>,<span style="font-style: italic;">'purple'</span>,[(0.0,  0.4, 0.9),
+                                                                    (0.5,  0.7, 1.0),(0.4,  0.5, 1.0)],<span style="font-style: italic;">'grey'</span>]
+    <span style="font-weight: bold; font-style: italic;">i</span>=0
+    <span style="font-weight: bold;">for</span> classitem <span style="font-weight: bold;">in</span> names:
+        <span style="font-weight: bold; font-style: italic;">classdata</span>=[]
+        <span style="font-weight: bold;">for</span> person <span style="font-weight: bold;">in</span> classitem:
+            <span style="font-weight: bold; font-style: italic;">figures</span> = datadict.get(person)<span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">&#33719;&#21462;&#20102;&#19968;&#20010;&#20154;&#30340;&#36523;&#26448;&#25968;&#25454;</span>
+
+
+            <span style="font-weight: bold; font-style: italic;">ax1</span> = plt.subplot(111)
+            ax1.scatter(figures[2]/figures[3],figures[4]/figures[3],c=colors[i],s = i*40)
+        <span style="font-weight: bold; font-style: italic;">i</span>= i+1
+
+
+
+</pre>
+</div>
+
+<p>
+绘制的图像如下：
+</p>
+
+
+<p>
+总结：感觉代码中还是有错误，但是我还没有发现出来，可能分类的结果还不够准确。比较
+不满意的是绘图部分，还是没有很好掌握matplotlib的使用。以后继续努力。
+</p>
+</div>
+</div>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

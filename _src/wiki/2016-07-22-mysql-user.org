@@ -1,0 +1,257 @@
+# -*- coding: utf-8-unix; -*-
+#+TITLE:       MySQL user
+#+AUTHOR:      Bruce Asu
+#+EMAIL:       bruceasu@163.com
+#+DATE:        <2016-07-22 20:48>
+#+filetags:    mysql
+
+#+LANGUAGE:    en
+#+OPTIONS:     H:7 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:nil
+
+* MySQL的用户管理
+MySQL的用户信息都保存在数据库mysql的user表中，因此MySQL的用户操作实际上就是对
+ mysql.user表的增删查改的操作,下图中展示了mysql.user的表结构：
+
+从图中可以看到，在该表中可以设置用户的所有信息，包括用户名，密码，权限等等。
+Notice:password字段是通过PASSWORD('')函数生成的。除了修改user表的方式来操作MySQL
+用户外，MySQL有一些额外的命令用于创建或删除MySQL用户。
+
+* 创建用户
+** CREATE USER创建无权限用户
+#+BEGIN_VERSE
+语法：
+
+    CREATE USER user [IDENTIFIED BY [PASSWORD] 'password'][, user [IDENTIFIED BY [PASSWORD] 'password']] ...
+
+示例：
+
+    create user test@localhost identified by 'test';//创建一个用户名为test,密码为test的用户，该用户没有任何权限
+
+
+#+END_VERSE
+
+** GRANT方式创建带权限用户
+#+BEGIN_VERSE
+语法：
+
+    GRANT [ALL | [SELECT,DELETE...]] PRIVILEGES ON {databasename|*}.{tablename|*}... TO username IDENTIFIED BY password;
+
+示例：
+
+    GRANT ALL PRIVILEGES ON *.* TO test@% IDENTIFIED BY 'test';
+
+#+END_VERSE
+** 删除用户
+#+BEGIN_VERSE
+语法：
+
+    DROP USER username;//username指的是带host的username，即test@localhost，如果不指定host，host就为%.
+
+示例：
+
+    DROP USER test@localhost;
+
+#+END_VERSE
+* MySQL权限说明
+** 查看某个用户的权限
+: mysql> show grants for root@localhost;
+** 各权限解释
+#+BEGIN_EXPORT html
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+  <colgroup>
+    <col  class="org-left" />
+    <col  class="org-left" />
+    <col  class="org-left" />
+  </colgroup>
+  <thead>
+    <tr>
+      <th scope="col" class="org-left">权限</th>
+      <th scope="col" class="org-left">列</th>
+      <th scope="col" class="org-left">说明</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td class="org-left">CREATE</td>
+      <td class="org-left">`Create_priv`</td>
+      <td class="org-left">创建数据库和表</td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">DROP</td>
+      <td class="org-left">`Drop_priv`</td>
+      <td class="org-left">抛弃(删除)数据库和表</td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">GRANT OPTION</td>
+      <td class="org-left">`Grant_priv`</td>
+      <td class="org-left">数据库、表或保存的程序</td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">REFERENCES</td>
+      <td class="org-left">`References_priv`</td>
+      <td class="org-left">未使用</td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">ALTER</td>
+      <td class="org-left">`Alter_priv`</td>
+      <td class="org-left">修改表和索引</td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">DELETE</td>
+      <td class="org-left">`Delete_priv`</td>
+      <td class="org-left">表</td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">INDEX</td>
+      <td class="org-left">`Index_priv`</td>
+      <td class="org-left">创建或抛弃索引</td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">INSERT</td>
+      <td class="org-left">`Insert_priv`</td>
+      <td class="org-left">向表中插入新行</td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">SELECT</td>
+      <td class="org-left">`Select_priv`</td>
+      <td class="org-left">检索表中的记录</td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">UPDATE</td>
+      <td class="org-left">`Update_priv`</td>
+      <td class="org-left">修改现存表记录</td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">CREATE VIEW</td>
+      <td class="org-left">`Create_view_priv`</td>
+      <td class="org-left">视图</td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">SHOW VIEW</td>
+      <td class="org-left">`Show_view_priv`</td>
+      <td class="org-left">视图</td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">ALTER ROUTINE</td>
+      <td class="org-left">`Alter_routine_priv`</td>
+      <td class="org-left">保存的程序</td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">CREATE ROUTINE</td>
+      <td class="org-left">`Create_routine_priv`</td>
+      <td class="org-left">保存的程序</td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">EXECUTE</td>
+      <td class="org-left">`Execute_priv`</td>
+      <td class="org-left">保存的程序</td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">FILE</td>
+      <td class="org-left">`File_priv`</td>
+      <td class="org-left">读或写服务器上的文件</td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">CREATE TEMPORARY TABLES</td>
+      <td class="org-left">`Create_tmp_table_priv`</td>
+      <td class="org-left">服务器管理</td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">LOCK TABLES</td>
+      <td class="org-left">`Lock_tables_priv`</td>
+      <td class="org-left">服务器管理</td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">CREATE USER</td>
+      <td class="org-left">`Create_user_priv`</td>
+      <td class="org-left">服务器管理</td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">PROCESS</td>
+      <td class="org-left">`Process_priv`</td>
+      <td class="org-left">查看服务器中执行的线程信息或杀死线程</td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">RELOAD</td>
+      <td class="org-left">`Reload_priv`</td>
+      <td class="org-left">重载授权表或清空日志、主机缓存或表缓存</td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">REPLICATION CLIENT</td>
+      <td class="org-left">`Repl_client_priv`</td>
+      <td class="org-left">服务器管理</td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">REPLICATION SLAVE</td>
+      <td class="org-left">`Repl_slave_priv`</td>
+      <td class="org-left">服务器管理</td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">SHOW DATABASES</td>
+      <td class="org-left">`Show_db_priv`</td>
+      <td class="org-left">服务器管理</td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">SHUTDOWN</td>
+      <td class="org-left">`Shutdown_priv`</td>
+      <td class="org-left">关闭服务器</td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">SUPER</td>
+      <td class="org-left">`Super_priv`</td>
+      <td class="org-left">服务器管理</td>
+    </tr>
+  </tbody>
+</table>
+#+END_EXPORT

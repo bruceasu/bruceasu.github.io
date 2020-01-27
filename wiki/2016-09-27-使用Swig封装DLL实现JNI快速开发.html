@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>使用Swig封装DLL实现JNI快速开发</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">使用Swig封装DLL实现JNI快速开发</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#java"><div class="category">java</div></a> <a href="https://bruceasu.github.io/tags.html#swig"><div class="category">swig</div></a> <a href="https://bruceasu.github.io/tags.html#jni"><div class="category">jni</div></a> </div>
+<div class="char-counter">2016-09-27</div>
+        <div id="content">
+<nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#org74908ee">说在前面</a></li>
+<li><a href="#org24e081d">Swig简介</a></li>
+<li><a href="#org27821fa">Swig的安装</a></li>
+<li><a href="#org4bebddd">Swig在JNI中的应用</a>
+<ul>
+<li><a href="#orged4b148">待封装的DLL及头文件</a></li>
+<li><a href="#orgfd6220f">接口描述文件</a></li>
+<li><a href="#org9c2ce9b">编译生成代码</a></li>
+<li><a href="#org5b83943">调用代码</a></li>
+</ul>
+</li>
+<li><a href="#org1e867a9">附录</a></li>
+</ul>
+</div>
+</nav>
+<p>
+使用Swig封装DLL实现JNI快速开发
+</p>
+
+<div id="outline-container-org74908ee" class="outline-2">
+<h2 id="org74908ee">说在前面</h2>
+<div class="outline-text-2" id="text-org74908ee">
+<p>
+JNI这个话题原来比较老旧，是10年左右的事情，这次翻出来整理是因为又碰到了需求。现
+在网上介绍Swig的已经比较多了，有实际例子的比较少，
+</p>
+
+<p>
+这里梳理的同时，做一个实际的例子。
+</p>
+
+<p>
+JNI技术是在Java最初版本进行开发时就有了，主要实现Java语言与其他语言如
+C/C++/Delphi等的交互。
+</p>
+
+<p>
+最初用到它是开发物联网的项目，产品需要与各种物联网终端进行适配对接，物联网终端的
+各个生产厂家提供的接口五花八门，C，C++，Delphi的，接口封装的形式也是各不相同，为
+每一种设备做适配封装成为一个巨大的挑战。
+</p>
+
+<p>
+在使用JNI封装了一个设备之后，脑力消耗巨大，因为用JNI封装一个简单的函数和封装几十
+上百个函数不是同一个等级的。为了快速解决问题，只能在网上一遍遍搜索，最后发现了
+Swig
+</p>
+</div>
+</div>
+
+<div id="outline-container-org24e081d" class="outline-2">
+<h2 id="org24e081d">Swig简介</h2>
+<div class="outline-text-2" id="text-org24e081d">
+<p>
+Swig的目标是为C/C++开发的程序与其他语言开发的程序之间建立连接。Swig支持的语言包
+括：Javascript, Perl, PHP, Python, Tcl and Ruby，C#, Common Lisp (CLISP, Allegro
+CL, CFFI, UFFI), D, Go language, Java including Android, Lua, Modula-3, OCAML,
+Octave, Scilab and R。可以看出，几乎涵盖了大多数常用语言。
+</p>
+
+<p>
+Swig的实现机制是通过定义中间接口描述文件，根据接口描述文件自动生成DLL的封装代码，
+包括C/C++封装代码和目标语言的封装代码。当前，
+</p>
+
+<p>
+Swig支持C++的如下特性：
+</p>
+<ul class="org-ul">
+<li>类</li>
+<li>类的构造和析构</li>
+<li>虚函数</li>
+<li>公共继承（包括多重继承）</li>
+<li>静态函数</li>
+<li>函数和方法重载</li>
+<li>大多数标准运算符的重载</li>
+<li>引用</li>
+<li>模板</li>
+<li>函数指针</li>
+<li>名字空间</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-org27821fa" class="outline-2">
+<h2 id="org27821fa">Swig的安装</h2>
+<div class="outline-text-2" id="text-org27821fa">
+<p>
+Swig支持Windows，Linux和Mac。在Windows平台下，下载SwigWin-[VERSION]安装包即可；
+在Linux平台可以从仓库直接安装，如果想使用最新版本，
+</p>
+
+<p>
+可以下载代码编译：
+</p>
+<pre class="example">
+./configure
+make
+make install
+
+</pre>
+<p>
+最后的make install需要 root 权限。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org4bebddd" class="outline-2">
+<h2 id="org4bebddd">Swig在JNI中的应用</h2>
+<div class="outline-text-2" id="text-org4bebddd">
+<p>
+下面以一个实际的JNI封装案例简要介绍Swig的使用。
+</p>
+</div>
+
+<div id="outline-container-orged4b148" class="outline-3">
+<h3 id="orged4b148">待封装的DLL及头文件</h3>
+<div class="outline-text-3" id="text-orged4b148">
+<p>
+通常拿到的SDK开发接口包括：DLL，.h头文件，.lib文件。下面的示例SDK接口包含：
+</p>
+<ul class="org-ul">
+<li>RR3036.dll</li>
+<li>RR3036.h</li>
+<li>RR3036.lib</li>
+</ul>
+<p>
+其中，头文件 RR3036.h 的部分内容摘录（仅占三分之一）如下：
+</p>
+<div class="org-src-container">
+<pre class="src src-C"><span style="font-weight: bold;">#ifdef</span> RR3036_EXPORTS
+<span style="font-weight: bold;">#define</span> <span style="font-weight: bold; font-style: italic;">RR3036_API</span> <span style="font-weight: bold;">__declspec</span>(dllexport)
+<span style="font-weight: bold;">#else</span>
+<span style="font-weight: bold;">#define</span> <span style="font-weight: bold; font-style: italic;">RR3036_API</span> <span style="font-weight: bold;">__declspec</span>(dllimport)
+<span style="font-weight: bold;">#endif</span>
+<span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#27492;&#31867;&#26159;&#20174; RR3036.dll &#23548;&#20986;&#30340;</span>
+class <span style="font-weight: bold; text-decoration: underline;">RR3036_API</span> <span style="font-weight: bold; font-style: italic;">CRR3036</span> {
+<span style="font-weight: bold; text-decoration: underline;">public</span>:
+ CRR3036(<span style="font-weight: bold; text-decoration: underline;">void</span>);
+};
+<span style="font-weight: bold;">extern</span> <span style="font-weight: bold; text-decoration: underline;">RR3036_API</span> <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">nRR3036</span>;
+<span style="font-weight: bold; text-decoration: underline;">RR3036_API</span> <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold;">fnRR3036</span>(<span style="font-weight: bold; text-decoration: underline;">void</span>);
+<span style="font-weight: bold;">#ifdef</span> __cplusplus
+<span style="font-weight: bold;">extern</span> <span style="font-style: italic;">"C"</span> {
+<span style="font-weight: bold;">#endif</span>
+<span style="font-weight: bold; text-decoration: underline;">RR3036_API</span> <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold;">CloseSpecComPort</span>(<span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">FrmHandle</span>);
+<span style="font-weight: bold; text-decoration: underline;">RR3036_API</span> <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold;">CloseComPort</span>();
+<span style="font-weight: bold; text-decoration: underline;">RR3036_API</span> <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold;">GetReaderInformation</span>(<span style="font-weight: bold; text-decoration: underline;">unsigned</span> <span style="font-weight: bold; text-decoration: underline;">char</span>* <span style="font-weight: bold; font-style: italic;">ComAdr</span>,      <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#35835;&#20889;&#22120;&#22320;&#22336;</span>
+         <span style="font-weight: bold; text-decoration: underline;">unsigned</span> <span style="font-weight: bold; text-decoration: underline;">char</span>* <span style="font-weight: bold; font-style: italic;">VersionInfo</span>,    <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#36719;&#20214;&#29256;&#26412;</span>
+         <span style="font-weight: bold; text-decoration: underline;">unsigned</span> <span style="font-weight: bold; text-decoration: underline;">char</span>* <span style="font-weight: bold; font-style: italic;">ReaderType</span>,     <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#35835;&#20889;&#22120;&#22411;&#21495;</span>
+         <span style="font-weight: bold; text-decoration: underline;">unsigned</span> <span style="font-weight: bold; text-decoration: underline;">char</span>* <span style="font-weight: bold; font-style: italic;">TrType</span>, <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#25903;&#25345;&#30340;&#21327;&#35758;</span>
+         <span style="font-weight: bold; text-decoration: underline;">unsigned</span> <span style="font-weight: bold; text-decoration: underline;">char</span>* <span style="font-weight: bold; font-style: italic;">ScanTime</span>,
+         <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">frmComPortindex</span>);
+<span style="font-weight: bold; text-decoration: underline;">RR3036_API</span> <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold;">OpenComPort</span>(<span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">port</span>,<span style="font-weight: bold; text-decoration: underline;">unsigned</span> <span style="font-weight: bold; text-decoration: underline;">char</span> *<span style="font-weight: bold; font-style: italic;">ComAdr</span>,<span style="font-weight: bold; text-decoration: underline;">int</span>* <span style="font-weight: bold; font-style: italic;">frmcomportindex</span>);
+<span style="font-weight: bold; text-decoration: underline;">RR3036_API</span> <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold;">AutoOpenComPort</span>(<span style="font-weight: bold; text-decoration: underline;">int</span> *<span style="font-weight: bold; font-style: italic;">port</span>,<span style="font-weight: bold; text-decoration: underline;">unsigned</span> <span style="font-weight: bold; text-decoration: underline;">char</span> *<span style="font-weight: bold; font-style: italic;">ComAdr</span>,<span style="font-weight: bold; text-decoration: underline;">int</span> *<span style="font-weight: bold; font-style: italic;">frmcomportindex</span>);
+<span style="font-weight: bold; text-decoration: underline;">RR3036_API</span> <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold;">Inventory</span>(<span style="font-weight: bold; text-decoration: underline;">unsigned</span> <span style="font-weight: bold; text-decoration: underline;">char</span> *<span style="font-weight: bold; font-style: italic;">ComAdr</span>,
+       <span style="font-weight: bold; text-decoration: underline;">unsigned</span> <span style="font-weight: bold; text-decoration: underline;">char</span> *<span style="font-weight: bold; font-style: italic;">state</span>,    <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#35810;&#26597;&#27169;&#24335;</span>
+       <span style="font-weight: bold; text-decoration: underline;">unsigned</span> <span style="font-weight: bold; text-decoration: underline;">char</span> *<span style="font-weight: bold; font-style: italic;">AFI</span>,
+       <span style="font-weight: bold; text-decoration: underline;">unsigned</span> <span style="font-weight: bold; text-decoration: underline;">char</span> *<span style="font-weight: bold; font-style: italic;">pOUcharUIDList</span>,   <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#26631;&#31614;DSFID + UID</span>
+       <span style="font-weight: bold; text-decoration: underline;">unsigned</span> <span style="font-weight: bold; text-decoration: underline;">char</span> *<span style="font-weight: bold; font-style: italic;">pOUcharTagNum</span>,
+       <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">frmcomportindex</span>);
+<span style="font-weight: bold; text-decoration: underline;">RR3036_API</span> <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold;">WriteInventoryScanTime</span>(<span style="font-weight: bold; text-decoration: underline;">unsigned</span> <span style="font-weight: bold; text-decoration: underline;">char</span> *<span style="font-weight: bold; font-style: italic;">ComAdr</span>,
+           <span style="font-weight: bold; text-decoration: underline;">unsigned</span> <span style="font-weight: bold; text-decoration: underline;">char</span> *<span style="font-weight: bold; font-style: italic;">ScanTime</span>,
+           <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">frmComPortindex</span>);
+<span style="font-weight: bold; text-decoration: underline;">RR3036_API</span> <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold;">StayQuiet</span>(<span style="font-weight: bold; text-decoration: underline;">unsigned</span> <span style="font-weight: bold; text-decoration: underline;">char</span> *<span style="font-weight: bold; font-style: italic;">ComAdr</span>,
+       <span style="font-weight: bold; text-decoration: underline;">unsigned</span> <span style="font-weight: bold; text-decoration: underline;">char</span> *<span style="font-weight: bold; font-style: italic;">UID</span>,<span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#35201;&#38745;&#40664;&#26631;&#31614;&#30340;UID</span>
+       <span style="font-weight: bold; text-decoration: underline;">unsigned</span> <span style="font-weight: bold; text-decoration: underline;">char</span> *<span style="font-weight: bold; font-style: italic;">ErrorCode</span>,
+       <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">frmcomportindex</span>);
+<span style="font-weight: bold; text-decoration: underline;">RR3036_API</span> <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold;">Select</span>(<span style="font-weight: bold; text-decoration: underline;">unsigned</span> <span style="font-weight: bold; text-decoration: underline;">char</span> *<span style="font-weight: bold; font-style: italic;">ComAdr</span>,
+       <span style="font-weight: bold; text-decoration: underline;">unsigned</span> <span style="font-weight: bold; text-decoration: underline;">char</span> *<span style="font-weight: bold; font-style: italic;">UID</span>,
+       <span style="font-weight: bold; text-decoration: underline;">unsigned</span> <span style="font-weight: bold; text-decoration: underline;">char</span> *<span style="font-weight: bold; font-style: italic;">ErrorCode</span>,
+       <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">frmcomportindex</span>);
+<span style="font-weight: bold; text-decoration: underline;">RR3036_API</span> <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold;">ResetToReady</span>(<span style="font-weight: bold; text-decoration: underline;">unsigned</span> <span style="font-weight: bold; text-decoration: underline;">char</span> *<span style="font-weight: bold; font-style: italic;">ComAdr</span>,
+       <span style="font-weight: bold; text-decoration: underline;">unsigned</span> <span style="font-weight: bold; text-decoration: underline;">char</span> *<span style="font-weight: bold; font-style: italic;">state</span>,
+       <span style="font-weight: bold; text-decoration: underline;">unsigned</span> <span style="font-weight: bold; text-decoration: underline;">char</span> *<span style="font-weight: bold; font-style: italic;">UID</span>,
+       <span style="font-weight: bold; text-decoration: underline;">unsigned</span> <span style="font-weight: bold; text-decoration: underline;">char</span> *<span style="font-weight: bold; font-style: italic;">ErrorCode</span>,
+       <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">frmcomportindex</span>);
+<span style="font-weight: bold; text-decoration: underline;">RR3036_API</span> <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold;">ReadSingleBlock</span>(<span style="font-weight: bold; text-decoration: underline;">unsigned</span> <span style="font-weight: bold; text-decoration: underline;">char</span> *<span style="font-weight: bold; font-style: italic;">ComAdr</span>,
+          <span style="font-weight: bold; text-decoration: underline;">unsigned</span> <span style="font-weight: bold; text-decoration: underline;">char</span> *<span style="font-weight: bold; font-style: italic;">state</span>, <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#35835;&#27169;&#24335;&#36873;&#25321;</span>
+          <span style="font-weight: bold; text-decoration: underline;">unsigned</span> <span style="font-weight: bold; text-decoration: underline;">char</span> *<span style="font-weight: bold; font-style: italic;">UID</span>,
+          <span style="font-weight: bold; text-decoration: underline;">unsigned</span> <span style="font-weight: bold; text-decoration: underline;">char</span> <span style="font-weight: bold; font-style: italic;">blockNumber</span>,    <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#22359;&#21495;</span>
+          <span style="font-weight: bold; text-decoration: underline;">unsigned</span> <span style="font-weight: bold; text-decoration: underline;">char</span> *<span style="font-weight: bold; font-style: italic;">BlockSecStatus</span>,        <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#23433;&#20840;&#29366;&#24577;&#23383;</span>
+          <span style="font-weight: bold; text-decoration: underline;">unsigned</span> <span style="font-weight: bold; text-decoration: underline;">char</span> *<span style="font-weight: bold; font-style: italic;">Data</span>,  <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#22359;&#25968;&#25454;</span>
+          <span style="font-weight: bold; text-decoration: underline;">unsigned</span> <span style="font-weight: bold; text-decoration: underline;">char</span> *<span style="font-weight: bold; font-style: italic;">ErrorCode</span>,
+          <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">frmcomportindex</span>);
+<span style="font-weight: bold; text-decoration: underline;">RR3036_API</span> <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold;">WriteSingleBlock</span>(<span style="font-weight: bold; text-decoration: underline;">unsigned</span> <span style="font-weight: bold; text-decoration: underline;">char</span> *<span style="font-weight: bold; font-style: italic;">ComAdr</span>,
+        <span style="font-weight: bold; text-decoration: underline;">unsigned</span> <span style="font-weight: bold; text-decoration: underline;">char</span> *<span style="font-weight: bold; font-style: italic;">state</span>,   <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#35835;&#27169;&#24335;&#36873;&#25321;</span>
+        <span style="font-weight: bold; text-decoration: underline;">unsigned</span> <span style="font-weight: bold; text-decoration: underline;">char</span> *<span style="font-weight: bold; font-style: italic;">UID</span>,
+        <span style="font-weight: bold; text-decoration: underline;">unsigned</span> <span style="font-weight: bold; text-decoration: underline;">char</span> <span style="font-weight: bold; font-style: italic;">blockNumber</span>,      <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#22359;&#21495;</span>
+        <span style="font-weight: bold; text-decoration: underline;">unsigned</span> <span style="font-weight: bold; text-decoration: underline;">char</span> *<span style="font-weight: bold; font-style: italic;">Data</span>,    <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#35201;&#20889;&#20837;&#30340;&#25968;&#25454;</span>
+        <span style="font-weight: bold; text-decoration: underline;">unsigned</span> <span style="font-weight: bold; text-decoration: underline;">char</span> *<span style="font-weight: bold; font-style: italic;">ErrorCode</span>,
+        <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">frmcomportindex</span>);
+<span style="font-weight: bold; text-decoration: underline;">RR3036_API</span> <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold;">ReadMultipleBlock</span>(<span style="font-weight: bold; text-decoration: underline;">unsigned</span> <span style="font-weight: bold; text-decoration: underline;">char</span> *<span style="font-weight: bold; font-style: italic;">ComAdr</span>,
+         <span style="font-weight: bold; text-decoration: underline;">unsigned</span> <span style="font-weight: bold; text-decoration: underline;">char</span> *<span style="font-weight: bold; font-style: italic;">state</span>,  <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#35835;&#27169;&#24335;&#36873;&#25321;</span>
+         <span style="font-weight: bold; text-decoration: underline;">unsigned</span> <span style="font-weight: bold; text-decoration: underline;">char</span> *<span style="font-weight: bold; font-style: italic;">UID</span>,
+         <span style="font-weight: bold; text-decoration: underline;">unsigned</span> <span style="font-weight: bold; text-decoration: underline;">char</span> <span style="font-weight: bold; font-style: italic;">BlockNum</span>,        <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#36215;&#22987;&#22359;&#21495;</span>
+         <span style="font-weight: bold; text-decoration: underline;">unsigned</span> <span style="font-weight: bold; text-decoration: underline;">char</span> <span style="font-weight: bold; font-style: italic;">BlockCount</span>,      <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#22359;&#25968;&#37327;</span>
+         <span style="font-weight: bold; text-decoration: underline;">unsigned</span> <span style="font-weight: bold; text-decoration: underline;">char</span> *<span style="font-weight: bold; font-style: italic;">BlockSecStatus</span>,<span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#23433;&#20840;&#29366;&#24577;&#23383;</span>
+         <span style="font-weight: bold; text-decoration: underline;">unsigned</span> <span style="font-weight: bold; text-decoration: underline;">char</span> *<span style="font-weight: bold; font-style: italic;">Data</span>,   <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#22359;&#25968;&#25454;</span>
+         <span style="font-weight: bold; text-decoration: underline;">unsigned</span> <span style="font-weight: bold; text-decoration: underline;">char</span> *<span style="font-weight: bold; font-style: italic;">ErrorCode</span>,
+         <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">frmcomportindex</span>);
+......
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgfd6220f" class="outline-3">
+<h3 id="orgfd6220f">接口描述文件</h3>
+<div class="outline-text-3" id="text-orgfd6220f">
+<p>
+我们需要告诉Swig，我们的接口定义头文件是什么，要封装的主类（以Java为例）是什么，
+接口头文件是否还依赖其他头文件，需要在交互过程中对哪些类型做什么样的映射封装，根
+据上述信息生成 RR3036.i 的接口描述文件，具体如下：
+</p>
+<div class="org-src-container">
+<pre class="src src-swig">%module RR3036
+%{
+%include &lt;windows.i&gt;
+%include "RR3036.h"
+%}
+%include &lt;windows.i&gt;
+%include "RR3036.h"
+%include cpointer.i
+%pointer_functions(int, intp);
+%pointer_functions(unsigned char, shortp);
+%include "carrays.i"
+%array_functions(unsigned char, shortArray);
+
+</pre>
+</div>
+
+<p>
+如上所示，我们要封装成的Java代码主类为 RR3036（通过%module描述）。定义int型/短整
+型指针的类型映射封装。
+</p>
+
+<p>
+由上面可以看出，这个过程我们几乎不需要考虑接口头文件中的具体接口方法定义。关于接
+口描述文件定义及类型封装请参考Swig帮助文档。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org9c2ce9b" class="outline-3">
+<h3 id="org9c2ce9b">编译生成代码</h3>
+<div class="outline-text-3" id="text-org9c2ce9b">
+<p>
+接口描述文件RR3036.i准备好之后就可以调用Swig命令生成封装代码，具体命令如下：
+</p>
+<pre class="example">
+swig -c++ -java -package rr3036.api -outdir src/java/rr3036/api RR3036.i
+
+</pre>
+<p>
+生成的代码文件（本例）主要包括：
+</p>
+
+<p>
+两个C++封装文件：
+</p>
+<ul class="org-ul">
+<li>JNI<sub>RR3036API.cpp</sub></li>
+<li>RR3036<sub>wrap.cxx</sub></li>
+</ul>
+
+<p>
+注意，此文件中的 <code>%include &lt;windows.i&gt;</code>  <code>%include "RR3036.i"</code> 需要调整才能编译
+多个Java封装文件：
+</p>
+
+<ul class="org-ul">
+<li>CRR3036.java</li>
+<li>RR3036.java # 要调用的主类</li>
+<li>RR3036JNI.java</li>
+<li>SWIGTYPE<sub>p</sub><sub>int.java</sub></li>
+<li>SWIGTYPE<sub>p</sub><sub>unsigned</sub><sub>char.java</sub></li>
+</ul>
+
+<p>
+对上述代码分别进行编译。
+</p>
+
+<p>
+备注：
+</p>
+<blockquote>
+<p>
+生成的C++封装代码在Linux下的编译，在Swig中有单独说明，可参考。
+</p>
+</blockquote>
+
+<p>
+详细编译参数，请参考Swig帮助文档。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org5b83943" class="outline-3">
+<h3 id="org5b83943">调用代码</h3>
+<div class="outline-text-3" id="text-org5b83943">
+<p>
+将生成的 <code>JNI_RR3036API.dll</code> 与 接口 <code>RR3036.DLL</code> 通过 <code>System.load</code> 等方法加载后调用
+即可。本例代码可从swig-jni-rr3036下载。
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org1e867a9" class="outline-2">
+<h2 id="org1e867a9">附录</h2>
+<div class="outline-text-2" id="text-org1e867a9">
+<p>
+[Android] Jni中C++和Java的数据类型的对应关系
+</p>
+
+<table>
+
+
+<colgroup>
+<col  class="org-left">
+
+<col  class="org-left">
+
+<col  class="org-left">
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">Java类型</th>
+<th scope="col" class="org-left">本地类型</th>
+<th scope="col" class="org-left">描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">boolean</td>
+<td class="org-left">jboolean</td>
+<td class="org-left">C/C++8位整型</td>
+</tr>
+
+<tr>
+<td class="org-left">byte</td>
+<td class="org-left">jbyte</td>
+<td class="org-left">C/C++带符号的8位整型</td>
+</tr>
+
+<tr>
+<td class="org-left">char</td>
+<td class="org-left">jchar</td>
+<td class="org-left">C/C++无符号的16位整型</td>
+</tr>
+
+<tr>
+<td class="org-left">short</td>
+<td class="org-left">jshort</td>
+<td class="org-left">C/C++带符号的16位整型</td>
+</tr>
+
+<tr>
+<td class="org-left">int</td>
+<td class="org-left">jint</td>
+<td class="org-left">C/C++带符号的32位整型</td>
+</tr>
+
+<tr>
+<td class="org-left">long</td>
+<td class="org-left">jlong</td>
+<td class="org-left">C/C++带符号的64位整型e</td>
+</tr>
+
+<tr>
+<td class="org-left">float</td>
+<td class="org-left">jfloat</td>
+<td class="org-left">C/C++32位浮点型</td>
+</tr>
+
+<tr>
+<td class="org-left">double</td>
+<td class="org-left">jdouble</td>
+<td class="org-left">C/C++64位浮点型</td>
+</tr>
+
+<tr>
+<td class="org-left">Object</td>
+<td class="org-left">jobject</td>
+<td class="org-left">任何Java对象，或者没有对应java类型的对象</td>
+</tr>
+
+<tr>
+<td class="org-left">Class</td>
+<td class="org-left">jclass</td>
+<td class="org-left">Class对象</td>
+</tr>
+
+<tr>
+<td class="org-left">String</td>
+<td class="org-left">jstring</td>
+<td class="org-left">字符串对象</td>
+</tr>
+
+<tr>
+<td class="org-left">Object[]</td>
+<td class="org-left">jobjectArray</td>
+<td class="org-left">任何对象的数组</td>
+</tr>
+
+<tr>
+<td class="org-left">boolean[]</td>
+<td class="org-left">jbooleanArray</td>
+<td class="org-left">布尔型数组</td>
+</tr>
+
+<tr>
+<td class="org-left">byte[]</td>
+<td class="org-left">jbyteArray</td>
+<td class="org-left">比特型数组</td>
+</tr>
+
+<tr>
+<td class="org-left">char[]</td>
+<td class="org-left">jcharArray</td>
+<td class="org-left">字符型数组</td>
+</tr>
+
+<tr>
+<td class="org-left">short[]</td>
+<td class="org-left">jshortArray</td>
+<td class="org-left">短整型数组</td>
+</tr>
+
+<tr>
+<td class="org-left">int[]</td>
+<td class="org-left">jintArray</td>
+<td class="org-left">整型数组</td>
+</tr>
+
+<tr>
+<td class="org-left">long[]</td>
+<td class="org-left">jlongArray</td>
+<td class="org-left">长整型数组</td>
+</tr>
+
+<tr>
+<td class="org-left">float[]</td>
+<td class="org-left">jfloatArray</td>
+<td class="org-left">浮点型数组</td>
+</tr>
+
+<tr>
+<td class="org-left">double[]</td>
+<td class="org-left">jdoubleArray</td>
+<td class="org-left">双浮点型数组</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

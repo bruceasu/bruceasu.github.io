@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>tomcat日志catalina.out按日期分割</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">tomcat日志catalina.out按日期分割</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#tomcat"><div class="category">tomcat</div></a> </div>
+<div class="char-counter">2017-04-04</div>
+        <div id="content">
+<nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#org73fa4ae">Linux下cronolog安装配置</a></li>
+<li><a href="#org22b39b3">修改 ${tomcat_home}/bin目录下的 catalina.sh 文件中的</a></li>
+</ul>
+</div>
+</nav>
+
+<div id="outline-container-org73fa4ae" class="outline-2">
+<h2 id="org73fa4ae">Linux下cronolog安装配置</h2>
+<div class="outline-text-2" id="text-org73fa4ae">
+<p>
+Linux下运行的Web服务器Apache，默认日志文件是不分割的，一个整文件既不易于管理，也
+不易于分析统计。安装cronolog后，可以将日志文件按时间分割，易于管理和分析。
+</p>
+
+
+<p>
+cronolog安装配置非常简单，下载后只需要输入几个命令即可完成。
+</p>
+
+<ol class="org-ol">
+<li>下载（最新版本）</li>
+</ol>
+
+
+<ol class="org-ol">
+<li>解压缩</li>
+</ol>
+<pre class="example">
+tar zxvf cronolog-1.6.2.tar.gz
+
+</pre>
+
+<ol class="org-ol">
+<li>进入cronolog安装文件所在目录</li>
+</ol>
+<pre class="example">
+cd cronolog-1.6.2
+
+</pre>
+
+<ol class="org-ol">
+<li>运行安装</li>
+</ol>
+<pre class="example">
+./configure
+make &amp;&amp; make install
+
+</pre>
+
+<ol class="org-ol">
+<li>查看cronolog安装后所在目录（验证安装是否成功）</li>
+</ol>
+<pre class="example">
+which cronolog
+
+</pre>
+
+<p>
+一般情况下显示为：/usr/local/sbin/cronolog
+</p>
+
+<ol class="org-ol">
+<li>要想分割tomcat的catalina.out，需作如下工作：</li>
+</ol>
+<pre class="example">
+vim /usr/local/apache-tomcat-8.0.39/bin/catalina.sh
+
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org22b39b3" class="outline-2">
+<h2 id="org22b39b3">修改 ${tomcat_home}/bin目录下的 catalina.sh 文件中的</h2>
+<div class="outline-text-2" id="text-org22b39b3">
+<p>
+替换下面的行
+</p>
+<pre class="example">
+org.apache.catalina.startup.Bootstrap "$@" start "$CATALINA_OUT" 2&gt;&amp;1 "&amp;"
+
+</pre>
+
+<p>
+换成
+</p>
+<pre class="example">
+org.apache.catalina.startup.Bootstrap "$@" start 2&gt;&amp;1 | /usr/local/sbin/cronolog ${CATALINA_BASE}/logs/catalina.%Y-%m-%d.out &gt;&gt; /dev/null &amp;
+
+</pre>
+</div>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

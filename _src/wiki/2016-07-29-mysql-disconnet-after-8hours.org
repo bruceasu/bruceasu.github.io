@@ -1,0 +1,98 @@
+# -*- coding: utf-8-unix; -*-
+#+TITLE:       mysql disconnet after 8 hours
+#+AUTHOR:      Bruce Asu
+#+EMAIL:       bruceasu@163.com
+#+DATE:        <2016-07-29 20:48>
+#+filetags:    mysql
+#+DESCRIPTION: MySQL 的默认设置下，当一个连接的空闲时间超过8小时后，MySQL 就会断开该连接，而 c3p0 连接池则以为该被断开的连接依然有效
+
+#+LANGUAGE:    en
+#+OPTIONS:     H:7 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:nil
+
+* 前言
+MySQL 的默认设置下，当一个连接的空闲时间超过8小时后，MySQL 就会断开该连接，而
+c3p0 连接池则以为该被断开的连接依然有效。在这种情况下，如果客户端代码向 c3p0 连
+接池请求连接的话，连接池就会把已经失效的连接返回给客户端，客户端在使用该失效连接
+的时候即抛出异常。
+
+* 解决这个问题的办法有三种：
+
+** 1. 增加 MySQL 的 wait_timeout 属性的值。
+修改 /etc/mysql/my.cnf 文件，在 [mysqld] 节中设置：
+: # Set a connection to wait 8 hours in idle status.
+: wait_timeout = 86400
+
+
+相关参数，红色部分
+#+BEGIN_VERSE
+mysql> show variables like '%timeout%';
++--------------------------+-------+
+| Variable_name            | Value |
++--------------------------+-------+
+| connect_timeout          | 5     |
+| delayed_insert_timeout   | 300   |
+| innodb_lock_wait_timeout | 50    |
+| interactive_timeout      | 28800 |
+| net_read_timeout         | 30    |
+| net_write_timeout        | 60    |
+| slave_net_timeout        | 3600 |
+| wait_timeout             | 28800 |
++--------------------------+-------+
+#+END_VERSE
+
+同一时间，这两个参数只有一个起作用。到底是哪个参数起作用，和用户连接时指定的连接
+参数相关，缺省情况下是使用wait_timeout。我建议是将这两个参数都修改，以免引起不必
+要的麻烦。
+
+这两个参数的默认值是8小时(60*60*8=28800)。我测试过将这两个参数改为0，结果出人意
+料，系统自动将这个值设置为。换句话说，不能将该值设置为永久。将这2个参数设置为24
+小时(60*60*24=604800)即可。
+: set interactive_timeout=604800;
+: set wait_timeout=604800;
+
+** 2. 减少连接池内连接的生存周期，使之小于上一项中所设置的 wait_timeout 的值。
+修改 c3p0 的配置文件，设置：
+#+BEGIN_EXAMPLE
+# How long to keep unused connections around(in seconds)
+# Note: MySQL times out idle connections after 8 hours(28,800 seconds)
+# so ensure this value is below MySQL idle timeout
+cpool.maxIdleTime=25200
+
+#+END_EXAMPLE
+
+
+在 Spring 的配置文件中：
+#+BEGIN_SRC xml
+<bean id="dataSource"
+     class="com.mchange.v2.c3p0.ComboPooledDataSource">
+    <property name="maxIdleTime" value="${cpool.maxIdleTime}" />
+    <!-- other properties -->
+</bean>
+
+#+END_SRC
+
+
+** 3. 定期使用连接池内的连接，使得它们不会因为闲置超时而被 MySQL 断开。
+修改 c3p0 的配置文件，设置：
+#+BEGIN_EXAMPLE
+# Prevent MySQL raise exception after a long idle time
+cpool.preferredTestQuery='SELECT 1'
+cpool.idleConnectionTestPeriod=18000
+cpool.testConnectionOnCheckout=true
+
+#+END_EXAMPLE
+
+修改 Spring 的配置文件：
+#+BEGIN_SRC xml
+<bean id="dataSource"
+      class="com.mchange.v2.c3p0.ComboPooledDataSource">
+    <property name="preferredTestQuery"
+          value="${cpool.preferredTestQuery}" />
+    <property name="idleConnectionTestPeriod"
+          value="${cpool.idleConnectionTestPeriod}" />
+    <property name="testConnectionOnCheckout"
+          value="${cpool.testConnectionOnCheckout}" />
+    <!-- other properties -->
+</bean>
+
+#+END_SRC

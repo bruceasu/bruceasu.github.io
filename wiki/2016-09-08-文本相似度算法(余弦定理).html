@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>文本相似度算法(余弦定理)</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">文本相似度算法(余弦定理)</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#reprint"><div class="category">reprint</div></a> </div>
+<div class="char-counter">2016-09-08</div>
+        <div id="content">
+<p>
+文本相似度算法(余弦定理)
+</p>
+
+<p>
+最近由于工作项目，需要判断两个txt文本是否相似，于是开始在网上找资料研究，因为在
+程序中会把文本转换成String再做比较，所以最开始找到了这篇关于 距离编辑算法 Blog写
+的非常好，受益匪浅。
+</p>
+
+<p>
+于是我决定把它用到项目中，来判断两个文本的相似度。但后来实际操作发现有一些问题：
+直接说就是查询一本书中的相似章节花了我7、8分钟；这是我不能接受……
+</p>
+
+<p>
+是停下来仔细分析发现，这种算法在此项目中不是特别适用，由于要判断一本书中是否有相
+同章节，所以每两个章节之间都要比较，若一本书书有x章的话，这 里需对比x(x-1)/2次；
+而此算法采用矩阵的方式，计算两个字符串之间的变化步骤，会遍历两个文本中的每一个字
+符两两比较，可以推断出时间复杂度至少 为document1.length × document2.length，我所
+比较的章节字数平均在几千～一万字；这样计算实在要了老命。
+</p>
+
+<p>
+想到Lucene中的评分机制，也是算一个相似度的问题，不过它采用的是计算向量间的夹角
+（余弦公式），在google黑板报中的：数学之美（余弦定理和新闻分类） 也有说明，可以
+通过余弦定理来判断相似度；于是决定自己动手试试。
+</p>
+
+<p>
+首先选择向量的模型：在以字为向量还是以词为向量的问题上，纠结了一会；后来还是觉得
+用字，虽然词更为准确，但分词却需要增加额外的复杂度，并且此项目要求速度，准确率可
+以放低，于是还是选择字为向量。
+</p>
+
+<p>
+然后每个字在章节中出现的次数，便是以此字向量的值。现在我们假设：
+</p>
+<blockquote>
+<p>
+章节1中出现的字为：Z1c1,Z1c2,Z1c3,Z1c4……Z1cn；它们在章节中的个数为：Z1n1,Z1n2,Z1n3……Z1nm；
+</p>
+</blockquote>
+
+<blockquote>
+<p>
+章节2中出现的字为：Z2c1,Z2c2,Z2c3,Z2c4……Z2cn；它们在章节中的个数为：Z2n1,Z2n2,Z2n3……Z2nm；
+</p>
+</blockquote>
+
+<p>
+其中，Z1c1和Z2c1表示两个文本中同一个字，Z1n1和Z2n1是它们分别对应的个数，
+</p>
+
+<p>
+最后我们的相似度可以这么计算：
+</p>
+
+<p>
+程序实现如下：（若有可优化或更好的实现请不吝赐教）
+</p>
+<div class="org-src-container">
+<pre class="src src-java"><span style="font-weight: bold;">public</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold; text-decoration: underline;">double</span> <span style="font-weight: bold;">getSimilarity</span>(<span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">doc1</span>, <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">doc2</span>)
+{
+    <span style="font-weight: bold;">if</span> (doc1 != <span style="font-weight: bold; text-decoration: underline;">null</span> &amp;&amp; <span style="font-weight: bold; text-decoration: underline;">doc1</span>.Trim().Length &gt; 0 &amp;&amp; doc2 != <span style="font-weight: bold; text-decoration: underline;">null</span>
+        &amp;&amp; <span style="font-weight: bold; text-decoration: underline;">doc2</span>.Trim().Length &gt; 0)
+    {
+        <span style="font-weight: bold; text-decoration: underline;">Dictionary</span>&lt;<span style="font-weight: bold; text-decoration: underline;">int</span>, <span style="font-weight: bold; text-decoration: underline;">int</span>[]&gt; <span style="font-weight: bold; font-style: italic;">AlgorithmMap</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">Dictionary</span>&lt;<span style="font-weight: bold; text-decoration: underline;">int</span>, <span style="font-weight: bold; text-decoration: underline;">int</span>[]&gt;();
+        <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#23558;&#20004;&#20010;&#23383;&#31526;&#20018;&#20013;&#30340;&#20013;&#25991;&#23383;&#31526;&#20197;&#21450;&#20986;&#29616;&#30340;&#24635;&#25968;&#23553;&#35013;&#21040;&#65292;AlgorithmMap&#20013;</span>
+        <span style="font-weight: bold;">for</span> (<span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">i</span> = 0; i &lt; <span style="font-weight: bold; text-decoration: underline;">doc1</span>.<span style="font-weight: bold; text-decoration: underline;">Length</span>; i++)
+        {
+            <span style="font-weight: bold; text-decoration: underline;">char</span> <span style="font-weight: bold; font-style: italic;">d1</span> = <span style="font-weight: bold; text-decoration: underline;">doc1</span>.ToCharArray()[i];
+            <span style="font-weight: bold;">if</span> (isHanZi(d1))
+            {
+                <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">charIndex</span> = getGB2312Id(d1);
+                <span style="font-weight: bold;">if</span> (charIndex != -1)
+                {
+                    <span style="font-weight: bold; text-decoration: underline;">int</span>[] <span style="font-weight: bold; font-style: italic;">fq</span>=<span style="font-weight: bold; text-decoration: underline;">null</span>;
+                    <span style="font-weight: bold;">try</span>
+                    {
+                        fq= AlgorithmMap[charIndex];
+                    }
+                    <span style="font-weight: bold;">catch</span> (Exception)
+                    {
+                    }
+                    <span style="font-weight: bold;">finally</span> {
+                        <span style="font-weight: bold;">if</span> (fq != <span style="font-weight: bold; text-decoration: underline;">null</span> &amp;&amp; <span style="font-weight: bold; text-decoration: underline;">fq</span>.Length == 2)
+                        {
+                            fq[0]++;
+                        }
+                        <span style="font-weight: bold;">else</span>
+                        {
+                            fq = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">int</span>[2];
+                            fq[0] = 1;
+                            fq[1] = 0;
+                            <span style="font-weight: bold; text-decoration: underline;">AlgorithmMap</span>.Add(charIndex, fq);
+                        }
+                    }
+                }
+            }
+        }
+
+        <span style="font-weight: bold;">for</span> (<span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">i</span> = 0; i &lt; <span style="font-weight: bold; text-decoration: underline;">doc2</span>.<span style="font-weight: bold; text-decoration: underline;">Length</span>; i++)
+        {
+            <span style="font-weight: bold; text-decoration: underline;">char</span> <span style="font-weight: bold; font-style: italic;">d2</span> = <span style="font-weight: bold; text-decoration: underline;">doc2</span>.ToCharArray()[i];
+            <span style="font-weight: bold;">if</span> (isHanZi(d2))
+            {
+                <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">charIndex</span> = getGB2312Id(d2);
+                <span style="font-weight: bold;">if</span> (charIndex != -1)
+                {
+                    <span style="font-weight: bold; text-decoration: underline;">int</span>[] <span style="font-weight: bold; font-style: italic;">fq</span>=<span style="font-weight: bold; text-decoration: underline;">null</span>;
+                    <span style="font-weight: bold;">try</span>
+                    {
+                        fq = AlgorithmMap[charIndex];
+                    }
+                    <span style="font-weight: bold;">catch</span> (Exception)
+                    {
+                    }
+                    <span style="font-weight: bold;">finally</span> {
+                        <span style="font-weight: bold;">if</span> (fq != <span style="font-weight: bold; text-decoration: underline;">null</span> &amp;&amp; <span style="font-weight: bold; text-decoration: underline;">fq</span>.Length == 2)
+                        {
+                            fq[1]++;
+                        }
+                        <span style="font-weight: bold;">else</span>
+                        {
+                            fq = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">int</span>[2];
+                            fq[0] = 0;
+                            fq[1] = 1;
+                            <span style="font-weight: bold; text-decoration: underline;">AlgorithmMap</span>.Add(charIndex, fq);
+                        }
+                    }
+                }
+            }
+        }
+
+        <span style="font-weight: bold; text-decoration: underline;">double</span> <span style="font-weight: bold; font-style: italic;">sqdoc1</span> = 0;
+        <span style="font-weight: bold; text-decoration: underline;">double</span> <span style="font-weight: bold; font-style: italic;">sqdoc2</span> = 0;
+        <span style="font-weight: bold; text-decoration: underline;">double</span> <span style="font-weight: bold; font-style: italic;">denominator</span> = 0;
+        foreach (KeyValuePair&lt;<span style="font-weight: bold; text-decoration: underline;">int</span>, <span style="font-weight: bold; text-decoration: underline;">int</span>[]&gt; par in AlgorithmMap)
+        {
+            <span style="font-weight: bold; text-decoration: underline;">int</span>[] <span style="font-weight: bold; font-style: italic;">c</span> = <span style="font-weight: bold; text-decoration: underline;">par</span>.Value;
+            denominator += c[0] * c[1];
+            sqdoc1 += c[0] * c[0];
+            sqdoc2 += c[1] * c[1];
+        }
+        <span style="font-weight: bold;">return</span> denominator / <span style="font-weight: bold; text-decoration: underline;">Math</span>.Sqrt(sqdoc1 * sqdoc2);
+    }
+    <span style="font-weight: bold;">else</span>
+    {
+        <span style="font-weight: bold;">throw</span> <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">Exception</span>();
+    }
+}
+
+<span style="font-weight: bold;">public</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold; text-decoration: underline;">bool</span> <span style="font-weight: bold;">isHanZi</span>(<span style="font-weight: bold; text-decoration: underline;">char</span> <span style="font-weight: bold; font-style: italic;">ch</span>)
+{
+    <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#21028;&#26029;&#26159;&#21542;&#27721;&#23383;</span>
+    <span style="font-weight: bold;">return</span> (ch &gt;= 0x4E00 &amp;&amp; ch &lt;= 0x9FA5);
+}
+
+<span style="font-style: italic;">/**</span>
+<span style="font-style: italic;"> * &#26681;&#25454;&#36755;&#20837;&#30340;Unicode&#23383;&#31526;&#65292;&#33719;&#21462;&#23427;&#30340;GB2312&#32534;&#30721;&#25110;&#32773;ascii&#32534;&#30721;&#65292;</span>
+<span style="font-style: italic;"> *</span>
+<span style="font-style: italic;"> * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@param</span><span style="font-style: italic;"> ch</span>
+<span style="font-style: italic;"> *            &#36755;&#20837;&#30340;GB2312&#20013;&#25991;&#23383;&#31526;&#25110;&#32773;ASCII&#23383;&#31526;(128&#20010;)</span>
+<span style="font-style: italic;"> * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@return</span><span style="font-style: italic;"> ch&#22312;GB2312&#20013;&#30340;&#20301;&#32622;&#65292;-1&#34920;&#31034;&#35813;&#23383;&#31526;&#19981;&#35748;&#35782;</span>
+<span style="font-style: italic;"> */</span>
+<span style="font-weight: bold;">public</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold; text-decoration: underline;">short</span> <span style="font-weight: bold;">getGB2312Id</span>(<span style="font-weight: bold; text-decoration: underline;">char</span> <span style="font-weight: bold; font-style: italic;">ch</span>)
+{
+    <span style="font-weight: bold;">try</span>
+    {
+        <span style="font-weight: bold; text-decoration: underline;">byte</span>[] <span style="font-weight: bold; font-style: italic;">buffer</span> = <span style="font-weight: bold; text-decoration: underline;">System</span>.<span style="font-weight: bold; text-decoration: underline;">Text</span>.<span style="font-weight: bold; text-decoration: underline;">Encoding</span>.GetEncoding(<span style="font-style: italic;">"gb2312"</span>).GetBytes(<span style="font-weight: bold; text-decoration: underline;">ch</span>.ToString());
+        <span style="font-weight: bold;">if</span> (<span style="font-weight: bold; text-decoration: underline;">buffer</span>.Length != 2)
+        {
+            <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#27491;&#24120;&#24773;&#20917;&#19979;buffer&#24212;&#35813;&#26159;&#20004;&#20010;&#23383;&#33410;&#65292;&#21542;&#21017;&#35828;&#26126;ch&#19981;&#23646;&#20110;GB2312&#32534;&#30721;&#65292;&#25925;&#36820;&#22238;'?'&#65292;&#27492;&#26102;&#35828;&#26126;&#19981;&#35748;&#35782;&#35813;&#23383;&#31526;</span>
+            <span style="font-weight: bold;">return</span> -1;
+        }
+        <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">b0</span> = (<span style="font-weight: bold; text-decoration: underline;">int</span>)(buffer[0] &amp; 0x0FF) - 161; <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#32534;&#30721;&#20174;A1&#24320;&#22987;&#65292;&#22240;&#27492;&#20943;&#21435;0xA1=161</span>
+        <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">b1</span> = (<span style="font-weight: bold; text-decoration: underline;">int</span>)(buffer[1] &amp; 0x0FF) - 161; <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#31532;&#19968;&#20010;&#23383;&#31526;&#21644;&#26368;&#21518;&#19968;&#20010;&#23383;&#31526;&#27809;&#26377;&#27721;&#23383;&#65292;&#22240;&#27492;&#27599;&#20010;&#21306;&#21482;&#25910;16*6-2=94&#20010;&#27721;&#23383;</span>
+        <span style="font-weight: bold;">return</span> (<span style="font-weight: bold; text-decoration: underline;">short</span>)(b0 * 94 + b1);
+    }
+    <span style="font-weight: bold;">catch</span> (<span style="font-weight: bold; text-decoration: underline;">Exception</span> <span style="font-weight: bold; font-style: italic;">e</span>)
+    {
+        <span style="font-weight: bold; text-decoration: underline;">Console</span>.WriteLine(<span style="font-weight: bold; text-decoration: underline;">e</span>.Message);
+    }
+    <span style="font-weight: bold;">return</span> -1;
+}
+
+</pre>
+</div>
+
+<p>
+程序中做了两小的改进，以加快效率：
+</p>
+<ol class="org-ol">
+<li>只将汉字作为向量，其他的如标点，数字等符号不处理；</li>
+<li>在HashMap中存放汉字和其在文本中对于的个数时，先将单个汉字通过GB2312编码转换成数字，再存放。</li>
+</ol>
+
+<p>
+最后写了个测试，根据两种不同的算法对比下时间，下面是测试结果：
+</p>
+<p class="verse">
+余弦定理算法：doc1 与 doc2 相似度为：0.9954971, 耗时：22mm<br>
+距离编辑算法：doc1 与 doc2 相似度为：0.99425095, 耗时：322mm<br>
+见效率有明显提高，算法复杂度大致为：document1.length + document2.length。<br>
+</p>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

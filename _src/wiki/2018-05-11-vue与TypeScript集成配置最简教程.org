@@ -1,0 +1,215 @@
+#+title: vue 与 TypeScript 集成配置最简教程
+#+date: <2018-05-11 20:00>
+#+filetags: vue typescript
+
+* 前言
+
+Vue的官方文档没有给出与TypeScript集成的具体步骤，网上其他的教程不是存在问题就是与vue-cli建立的项目存在差异，让人无从下手。
+
+下面我就给出vue-cli建立的项目与TypeScript集成的最简配置。
+
+* 初始化项目
+
+首先用vue-cli建立webpack项目。这里为了演示方便，没有打开router和eslint等，可以根据自身情况打开。
+
+#+BEGIN_EXAMPLE
+    # vue init webpack vue-typescript
+
+    ? Project name vue-typescript
+    ? Project description A Vue.js project
+    ? Author
+    ? Vue build standalone
+    ? Install vue-router? No
+    ? Use ESLint to lint your code? No
+    ? Setup unit tests with Karma + Mocha? No
+    ? Setup e2e tests with Nightwatch? No
+#+END_EXAMPLE
+
+安装TypeScript相关依赖和项目其余依赖，用npm或cnpm
+
+#+BEGIN_EXAMPLE
+    # cd /vue-typescript
+
+    # npm install typescript ts-loader --save-dev
+
+    # npm install
+#+END_EXAMPLE
+
+配置
+修改目录下bulid/webpack.base.conf.js文件，在文件内module>rules添加以下规则
+
+#+BEGIN_EXAMPLE
+    {
+      test: /\.tsx?$/,
+      loader: 'ts-loader',
+      exclude: /node_modules/,
+      options: {
+        appendTsSuffixTo: [/\.vue$/],
+      }
+    },
+#+END_EXAMPLE
+
+在src目录下新建一个文件vue-shims.d.ts，用于识别单文件vue内的ts代码
+
+#+BEGIN_EXAMPLE
+    declare module "*.vue" {
+      import Vue from "vue";
+      export default Vue;
+    }
+#+END_EXAMPLE
+
+在项目根目录下建立TypeScript配置文件tsconfig.json
+
+#+BEGIN_EXAMPLE
+    {
+      "compilerOptions": {
+        "strict": true,
+        "module": "es2015",
+        "moduleResolution": "node",
+        "target": "es5",
+        "allowSyntheticDefaultImports": true,
+        "lib": [
+          "es2017",
+          "dom"
+        ]
+      }
+    }
+#+END_EXAMPLE
+
+另一个参考：
+
+#+BEGIN_EXAMPLE
+    {
+      "include": [
+        "src/**/*"
+      ],
+      "exclude": [
+        "node_modules"
+      ],
+      // 编译选项
+      "compilerOptions": {
+        // 允许从没有设置默认导出的模块中默认导入
+        "allowSyntheticDefaultImports": true,
+        // 启用装饰器
+        "experimentalDecorators": true,
+        // 允许编译javascript文件
+        "allowJs": true,
+        // 采用的模块系统
+        "module": "esnext",
+        // 编译输出目标 ES 版本
+        "target": "es5",
+        // 如何处理模块
+        "moduleResolution": "node",
+        // 将每个文件作为单独的模块
+        "isolatedModules": true,
+        // 编译过程中需要引入的库文件的列表
+        "lib": [
+          "dom",
+          "es5",
+          "es2015.promise"
+        ],
+        "sourceMap": true,
+        "pretty": true
+      }
+    }
+#+END_EXAMPLE
+
+重命名src下的main.js为main.ts
+
+修改webpack.base.conf.js下的entry>app为'./src/main.ts'
+
+修改src下的App.vue文件，在
+
+#+BEGIN_EXAMPLE
+    <script lang="ts">
+    import { Vue, Component, Provide } from "vue-property-decorator";
+    import util from '@/util';
+
+    @Component({
+      name: "App"
+    })
+    export default class App extends Vue {
+        /**
+       * 初始加载
+       */
+      mounted() {
+        // vue对象用于提示信息
+        util.vue = this;
+      }
+    }
+    </script>
+#+END_EXAMPLE
+
+测试 下面可以测试是否集成成功，编辑src/components/Hello.vue文件，修改
+
+#+BEGIN_EXAMPLE
+      import Vue, {ComponentOptions} from 'vue'
+      export default {
+        name: 'hello',
+        data() {
+          return {
+            msg: 'this is a typescript project now'
+          }
+        }
+      } as ComponentOptions
+#+END_EXAMPLE
+
+运行项目
+
+=# npm run dev=
+
+测试成功，现在是一个TypeScipt项目了
+
+* 进阶
+
+配置官方推荐的vue-class-component，https://cn.vuejs.org/v2/guide/typescript.html
+
+安装开发依赖
+
+=# npm install --save-dev vue-class-component=
+
+修改ts配置文件，增加以下两项配置
+
+#+BEGIN_EXAMPLE
+    "allowSyntheticDefaultImports": true,
+    "experimentalDecorators": true,
+#+END_EXAMPLE
+
+改写我们的Hello组件
+
+#+BEGIN_EXAMPLE
+    <script lang="ts">
+      import Vue from 'vue'
+      import Component from 'vue-class-component'
+      @Component
+      export default class Hello extends Vue {
+        msg: string = 'this is a typescript project now'
+      }
+    </script>
+#+END_EXAMPLE
+
+使用vue-class-component后，初始数据可以直接声明为实例的属性，而不需放入data()
+{return{}}中，组件方法也可以直接声明为实例的方法，如官方实例，更多使用方法可以参考其官方文档
+
+https://github.com/vuejs/vue-class-component#vue-class-component
+
+#+BEGIN_EXAMPLE
+    import Vue from 'vue'
+    import Component from 'vue-class-component'
+    // @Component 修饰符注明了此类为一个 Vue 组件
+    @Component({
+      // 所有的组件选项都可以放在这里
+      template: '<button @click="onClick">Click!</button>'
+    })
+    export default class MyComponent extends Vue {
+      // 初始数据可以直接声明为实例的属性
+      message: string = 'Hello!'
+      // 组件方法也可以直接声明为实例的方法
+      onClick (): void {
+        window.alert(this.message)
+      }
+    }
+#+END_EXAMPLE
+
+vue-property-decorator 提供更多的支持
+=import {Component, Prop, Provide, Vue, Watch} from "vue-property-decorator";=

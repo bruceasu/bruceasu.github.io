@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>A TUTORIAL ON CLUSTERING ALGORITHMS</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">A TUTORIAL ON CLUSTERING ALGORITHMS</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#reprint"><div class="category">reprint</div></a> </div>
+<div class="char-counter">2016-08-13</div>
+        <div id="content">
+<nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#org5463a84">A Tutorial on Clustering Algorithms</a></li>
+<li><a href="#org6521a2a">Hierarchical    Clustering: Algorithms</a>
+<ul>
+<li><a href="#orgb29eb0d">How They Work</a></li>
+</ul>
+</li>
+<li><a href="#orgcb6cbe9">Single-Linkage    Clustering: The Algorithm</a></li>
+<li><a href="#orgb4a50f3">An Example</a></li>
+</ul>
+</div>
+</nav>
+
+<div id="outline-container-org5463a84" class="outline-2">
+<h2 id="org5463a84">A Tutorial on Clustering Algorithms</h2>
+<div class="outline-text-2" id="text-org5463a84">
+<p>
+Introduction    | K-means | Fuzzy C-means    | Hierarchical | Mixture of Gaussians | Links
+</p>
+</div>
+</div>
+
+<div id="outline-container-org6521a2a" class="outline-2">
+<h2 id="org6521a2a">Hierarchical    Clustering: Algorithms</h2>
+<div class="outline-text-2" id="text-org6521a2a">
+</div>
+<div id="outline-container-orgb29eb0d" class="outline-3">
+<h3 id="orgb29eb0d">How They Work</h3>
+<div class="outline-text-3" id="text-orgb29eb0d">
+<p>
+Given a set of N items to be clustered, and an N*N distance (or similarity)
+matrix, the basic process of hierarchical clustering (defined by S.C. Johnson
+in 1967) is this:
+</p>
+
+<ol class="org-ol">
+<li>Start by assigning each item to a cluster, so that if you have N
+items, you now have N clusters, each containing just one item. Let
+the distances (similarities) between the clusters the same as the
+distances (similarities) between the items they contain.</li>
+<li>Find the closest (most similar) pair of clusters and merge them
+into a single cluster, so that now you have one cluster less.</li>
+<li>Compute distances (similarities) between the new cluster and each
+of the old clusters.</li>
+<li>Repeat steps 2 and 3 until all items are clustered into a single
+cluster of size N. (*)</li>
+</ol>
+
+<p>
+Step 3 can be done in different ways, which is what distinguishes
+single-linkage from complete-linkage and average-linkage clustering.
+</p>
+
+<p>
+In single-linkage clustering (also called the connectedness or minimum
+method), we consider the distance between one cluster and another
+cluster to be equal to the shortest distance from any member of one
+cluster to any member of the other cluster. If the data consist of
+similarities, we consider the similarity between one cluster and
+another cluster to be equal to the greatest similarity from any member
+of one cluster to any member of the other cluster.
+</p>
+
+<p>
+In complete-linkage clustering (also called the diameter or maximum
+method), we consider the distance between one cluster and another
+cluster to be equal to the greatest distance from any member of one
+cluster to any member of the other cluster.
+</p>
+
+<p>
+In average-linkage clustering, we consider the distance between one
+cluster and another cluster to be equal to the average distance from
+any member of one cluster to any member of the other cluster.
+</p>
+
+<p>
+A variation on average-link clustering is the UCLUS method of R.
+D'Andrade (1978) which uses the median distance, which is much more
+outlier-proof than the average distance. This kind of hierarchical
+clustering is called agglomerative because it merges clusters
+iteratively. There is also a divisive hierarchical clustering which
+does the reverse by starting with all objects in one cluster and
+subdividing them into smaller pieces. Divisive methods are not
+generally available, and rarely have been applied. (*) Of course there
+is no point in having all the N items grouped in a single cluster but,
+once you have got the complete hierarchical tree, if you want k
+clusters you just have to cut the k-1 longest links.
+</p>
+</div>
+</div>
+</div>
+
+
+<div id="outline-container-orgcb6cbe9" class="outline-2">
+<h2 id="orgcb6cbe9">Single-Linkage    Clustering: The Algorithm</h2>
+<div class="outline-text-2" id="text-orgcb6cbe9">
+<p>
+Let’s now take a deeper look at how Johnson’s algorithm works in the
+case of single-linkage clustering.
+</p>
+
+<p>
+The algorithm is an agglomerative scheme that erases rows and columns
+in the proximity matrix as old clusters are merged into new ones.
+</p>
+
+<p>
+The N*N proximity matrix is D = [d(i,j)]. The clusterings are assigned
+sequence numbers 0,1,&#x2026;&#x2026;, (n-1) and L(k) is the level of the kth
+clustering. A cluster with sequence number m is denoted (m) and the
+proximity between clusters (r) and (s) is denoted d [(r),(s)].
+</p>
+
+<p>
+The algorithm is composed of the following steps:
+</p>
+
+<ol class="org-ol">
+<li>Begin with the disjoint clustering having level L(0) = 0 and
+sequence number m = 0.</li>
+<li>Find the least dissimilar pair of clusters in the current
+clustering, say pair (r), (s), according to d[(r),(s)] = min
+d[(i),(j)] where the minimum is over all pairs of clusters in the
+current clustering.</li>
+<li>Increment the sequence number : m = m +1. Merge clusters (r) and
+(s) into a single cluster to form the next clustering m. Set the
+level of this clustering to L(m) = d[(r),(s)]</li>
+<li>Update the proximity matrix, D, by deleting the rows and columns
+corresponding to clusters (r) and (s) and adding a row and column
+corresponding to the newly formed cluster. The proximity between
+the new cluster, denoted (r,s) and old cluster (k) is defined in
+this way: d[(k), (r,s)] = min d[(k),(r)], d[(k),(s)]</li>
+<li>If all objects are in one cluster, stop. Else, go to step 2.</li>
+</ol>
+</div>
+</div>
+
+
+<div id="outline-container-orgb4a50f3" class="outline-2">
+<h2 id="orgb4a50f3">An Example</h2>
+<div class="outline-text-2" id="text-orgb4a50f3">
+<p>
+Let’s now see a simple example: a hierarchical clustering of distances
+in kilometers between some Italian cities. The method used is
+single-linkage.
+</p>
+
+<p>
+Input distance matrix (L = 0 for all the clusters):
+</p>
+
+<table>
+
+
+<colgroup>
+<col  class="org-left">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+</colgroup>
+<tbody>
+<tr>
+<td class="org-left"> </td>
+<td class="org-right">BA</td>
+<td class="org-right">FI</td>
+<td class="org-right">MI</td>
+<td class="org-right">NA</td>
+<td class="org-right">RM</td>
+<td class="org-right">TO</td>
+</tr>
+
+<tr>
+<td class="org-left">BA</td>
+<td class="org-right">0</td>
+<td class="org-right">662</td>
+<td class="org-right">877</td>
+<td class="org-right">255</td>
+<td class="org-right">412</td>
+<td class="org-right">996</td>
+</tr>
+
+<tr>
+<td class="org-left">FI</td>
+<td class="org-right">662</td>
+<td class="org-right">0</td>
+<td class="org-right">295</td>
+<td class="org-right">468</td>
+<td class="org-right">268</td>
+<td class="org-right">400</td>
+</tr>
+
+<tr>
+<td class="org-left">MI</td>
+<td class="org-right">877</td>
+<td class="org-right">295</td>
+<td class="org-right">0</td>
+<td class="org-right">754</td>
+<td class="org-right">564</td>
+<td class="org-right">138</td>
+</tr>
+
+<tr>
+<td class="org-left">NA</td>
+<td class="org-right">255</td>
+<td class="org-right">468</td>
+<td class="org-right">754</td>
+<td class="org-right">0</td>
+<td class="org-right">219</td>
+<td class="org-right">869</td>
+</tr>
+
+<tr>
+<td class="org-left">RM</td>
+<td class="org-right">412</td>
+<td class="org-right">268</td>
+<td class="org-right">564</td>
+<td class="org-right">219</td>
+<td class="org-right">0</td>
+<td class="org-right">669</td>
+</tr>
+
+<tr>
+<td class="org-left">TO</td>
+<td class="org-right">996</td>
+<td class="org-right">400</td>
+<td class="org-right">138</td>
+<td class="org-right">869</td>
+<td class="org-right">669</td>
+<td class="org-right">0</td>
+</tr>
+</tbody>
+</table>
+
+
+<p>
+The nearest pair of cities is MI and TO, at distance 138. These are
+merged into a single cluster called "MI/TO". The level of the new
+cluster is L(MI/TO) = 138 and the new sequence number is m = 1. Then
+we compute the distance from this new compound object to all other
+objects. In single link clustering the rule is that the distance from
+the compound object to another object is equal to the shortest
+distance from any member of the cluster to the outside object. So the
+distance from "MI/TO" to RM is chosen to be 564, which is the distance
+from MI to RM, and so on. After merging MI with TO we obtain the
+following matrix:
+</p>
+
+<table>
+
+
+<colgroup>
+<col  class="org-left">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+</colgroup>
+<tbody>
+<tr>
+<td class="org-left"> </td>
+<td class="org-right">BA</td>
+<td class="org-right">FI</td>
+<td class="org-right">MI/TO</td>
+<td class="org-right">NA</td>
+<td class="org-right">RM</td>
+</tr>
+
+<tr>
+<td class="org-left">BA</td>
+<td class="org-right">0</td>
+<td class="org-right">662</td>
+<td class="org-right">877</td>
+<td class="org-right">255</td>
+<td class="org-right">412</td>
+</tr>
+
+<tr>
+<td class="org-left">FI</td>
+<td class="org-right">662</td>
+<td class="org-right">0</td>
+<td class="org-right">295</td>
+<td class="org-right">468</td>
+<td class="org-right">268</td>
+</tr>
+
+<tr>
+<td class="org-left">MI/TO</td>
+<td class="org-right">877</td>
+<td class="org-right">295</td>
+<td class="org-right">0</td>
+<td class="org-right">754</td>
+<td class="org-right">564</td>
+</tr>
+
+<tr>
+<td class="org-left">NA</td>
+<td class="org-right">255</td>
+<td class="org-right">468</td>
+<td class="org-right">754</td>
+<td class="org-right">0</td>
+<td class="org-right">219</td>
+</tr>
+
+<tr>
+<td class="org-left">RM</td>
+<td class="org-right">412</td>
+<td class="org-right">268</td>
+<td class="org-right">564</td>
+<td class="org-right">219</td>
+<td class="org-right">0</td>
+</tr>
+</tbody>
+</table>
+
+<p class="verse">
+min d(i,j) = d(NA,RM)    = 219 =&gt; merge NA and RM into a new cluster called NA/RM<br>
+&#xa0;&#xa0;&#xa0;L(NA/RM) = 219<br>
+&#xa0;&#xa0;&#xa0;m = 2<br>
+</p>
+
+
+<table>
+
+
+<colgroup>
+<col  class="org-left">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+</colgroup>
+<tbody>
+<tr>
+<td class="org-left"> </td>
+<td class="org-right">BA</td>
+<td class="org-right">FI</td>
+<td class="org-right">MI/TO</td>
+<td class="org-right">NA/RM</td>
+</tr>
+
+<tr>
+<td class="org-left">BA</td>
+<td class="org-right">0</td>
+<td class="org-right">662</td>
+<td class="org-right">877</td>
+<td class="org-right">255</td>
+</tr>
+
+<tr>
+<td class="org-left">FI</td>
+<td class="org-right">662</td>
+<td class="org-right">0</td>
+<td class="org-right">295</td>
+<td class="org-right">268</td>
+</tr>
+
+<tr>
+<td class="org-left">MI/TO</td>
+<td class="org-right">877</td>
+<td class="org-right">295</td>
+<td class="org-right">0</td>
+<td class="org-right">564</td>
+</tr>
+
+<tr>
+<td class="org-left">NA/RM</td>
+<td class="org-right">255</td>
+<td class="org-right">268</td>
+<td class="org-right">564</td>
+<td class="org-right">0</td>
+</tr>
+</tbody>
+</table>
+
+<p class="verse">
+min d(i,j) = d(BA,NA/RM) = 255 =&gt;    merge BA and NA/RM into a new cluster called BA/NA/RM<br>
+&#xa0;&#xa0;&#xa0;L(BA/NA/RM) = 255<br>
+&#xa0;&#xa0;&#xa0;m = 3<br>
+<br>
+</p>
+
+<table>
+
+
+<colgroup>
+<col  class="org-left">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+</colgroup>
+<tbody>
+<tr>
+<td class="org-left"> </td>
+<td class="org-right">BA/NA/RM</td>
+<td class="org-right">FI</td>
+<td class="org-right">MI/TO</td>
+</tr>
+
+<tr>
+<td class="org-left">BA/NA/RM</td>
+<td class="org-right">0</td>
+<td class="org-right">268</td>
+<td class="org-right">564</td>
+</tr>
+
+<tr>
+<td class="org-left">FI</td>
+<td class="org-right">268</td>
+<td class="org-right">0</td>
+<td class="org-right">295</td>
+</tr>
+
+<tr>
+<td class="org-left">MI/TO</td>
+<td class="org-right">564</td>
+<td class="org-right">295</td>
+<td class="org-right">0</td>
+</tr>
+</tbody>
+</table>
+
+<p class="verse">
+min d(i,j) = d(BA/NA/RM,FI) = 268    =&gt; merge BA/NA/RM and FI into a new cluster called BA/FI/NA/RM<br>
+&#xa0;&#xa0;&#xa0;L(BA/FI/NA/RM) = 268<br>
+&#xa0;&#xa0;&#xa0;m = 4<br>
+<br>
+</p>
+
+<table>
+
+
+<colgroup>
+<col  class="org-left">
+
+<col  class="org-right">
+
+<col  class="org-right">
+</colgroup>
+<tbody>
+<tr>
+<td class="org-left"> </td>
+<td class="org-right">BA/FI/NA/RM</td>
+<td class="org-right">MI/TO</td>
+</tr>
+
+<tr>
+<td class="org-left">BA/FI/NA/RM</td>
+<td class="org-right">0</td>
+<td class="org-right">295</td>
+</tr>
+
+<tr>
+<td class="org-left">MI/TO</td>
+<td class="org-right">295</td>
+<td class="org-right">0</td>
+</tr>
+</tbody>
+</table>
+
+<p>
+Finally, we merge the last two clusters at level 295. The process is
+summarized by the following hierarchical tree:
+</p>
+
+<p>
+Problems
+The main weaknesses of agglomerative clustering methods are:
+</p>
+<ul class="org-ul">
+<li>they do not scale well: time complexity of at least O(n2), where n
+is the number of total objects;</li>
+<li>they can never undo what was done previously.</li>
+</ul>
+
+<p>
+Bibliography
+</p>
+<ul class="org-ul">
+<li>S. C. Johnson (1967): "Hierarchical Clustering Schemes"
+Psychometrika, 2:241-254</li>
+<li>R. D'andrade (1978): "U-Statistic Hierarchical Clustering"
+Psychometrika, 4:58-67</li>
+<li>Andrew Moore: “K-means and Hierarchical Clustering - Tutorial
+Slides” <a href="http://www-2.cs.cmu.edu/~awm/tutorials/kmeans.html">http://www-2.cs.cmu.edu/~awm/tutorials/kmeans.html</a></li>
+<li>Osmar R. Zaïane: “Principles of Knowledge Discovery in Databases -
+Chapter 8: Data Clustering”
+<a href="http://www.cs.ualberta.ca/~zaiane/courses/cmput690/slides/Chapter8/index.html">http://www.cs.ualberta.ca/~zaiane/courses/cmput690/slides/Chapter8/index.html</a></li>
+<li>Stephen P. Borgatti: “How to explain hierarchical clustering”
+<a href="http://www.analytictech.com/networks/hiclus.htm">http://www.analytictech.com/networks/hiclus.htm</a></li>
+<li>Maria Irene Miranda: “Clustering methods and algorithms”
+<a href="http://www.cse.iitb.ac.in/dbms/Data/Courses/CS632/1999/clustering/dbms.htm">http://www.cse.iitb.ac.in/dbms/Data/Courses/CS632/1999/clustering/dbms.htm</a></li>
+</ul>
+</div>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

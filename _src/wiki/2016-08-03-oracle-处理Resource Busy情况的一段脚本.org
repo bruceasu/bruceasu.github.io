@@ -1,0 +1,39 @@
+# -*- coding: utf-8-unix; -*-
+#+TITLE:       处理Resource Busy情况的一段脚本(转)
+#+AUTHOR:      Bruce Asu
+#+EMAIL:       bruceasu@163.com
+#+DATE:        <2016-08-03 20:00>
+#+filetags:    oracle reprint
+#+LANGUAGE:    en
+#+OPTIONS:     H:7 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:nil
+
+
+
+对于一些建在更新比较频繁的列上的索引, 或者是有大量记录被删除表上的索引, 需要定期
+进行Rebuild, 对于比较大表上的索引一般会考虑用一定的并行度去建, 以让索引在更短的
+时间内建好. 但不要忘了将索引的并行度重新设置为1(禁用并行), 否则很容易让所有的SQL
+都用并行方式来执行, 从而引起主机崩溃. 在很忙的OLTP系统中, 可能常会遇到Resource
+Busy的错误, 如何确保修改能最后成功呢? 就需要一段脚本来处理一下这个错误, 下面是我
+常用的一段脚本:
+#+BEGIN_SRC sql
+   alter index …… rebuild … parallel … ONLINE;
+
+    declare
+      resource_busy exception;
+      pragma exception_init (resource_busy,-54);
+    begin
+    loop
+       begin
+         execute immediate ‘alter index …… noparallel’;
+         exit;
+       exception
+        when resource_busy then
+         dbms_lock.sleep(1);
+       end;
+    end loop;
+    end;
+    /
+#+END_SRC
+
+这个脚本也可以用在其他的地方, 或者改一下错误号(-54)来处理其他的错误, 怎么用就看
+你的了!

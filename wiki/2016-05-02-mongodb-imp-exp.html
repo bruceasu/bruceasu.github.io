@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>MongoDB导入导出以及数据库备份</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">MongoDB导入导出以及数据库备份</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#mongodb"><div class="category">mongodb</div></a> </div>
+<div class="char-counter">2016-05-02</div>
+        <div id="content">
+<nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#orgdd7ae7b">MongoDB数据导入与导出</a>
+<ul>
+<li><a href="#org28a2de6">1、导出工具：mongoexport</a>
+<ul>
+<li><a href="#orgbb358ad">1、概念：</a></li>
+<li><a href="#org3897593">2、语法：</a></li>
+<li><a href="#org28961ad">3、示例：</a></li>
+</ul>
+</li>
+<li><a href="#orga7038f8">2、数据导入：mongoimport</a>
+<ul>
+<li><a href="#orgee658f3">1、语法：</a></li>
+<li><a href="#org09e7761">2、示例：</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#org22a3243">MongoDB备份与恢复</a>
+<ul>
+<li><a href="#orgd43cd6d">1、MongoDB数据库备份</a>
+<ul>
+<li><a href="#org8c0a81c">1、语法：</a></li>
+<li><a href="#org7d9af9c">2、实例：</a></li>
+</ul>
+</li>
+<li><a href="#org149a94b">2、MongoDB数据库恢复</a>
+<ul>
+<li><a href="#orga541733">1、语法：</a></li>
+<li><a href="#org7692e6e">2、实例：</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</nav>
+
+
+<div id="outline-container-orgdd7ae7b" class="outline-2">
+<h2 id="orgdd7ae7b">MongoDB数据导入与导出</h2>
+<div class="outline-text-2" id="text-orgdd7ae7b">
+</div>
+<div id="outline-container-org28a2de6" class="outline-3">
+<h3 id="org28a2de6">1、导出工具：mongoexport</h3>
+<div class="outline-text-3" id="text-org28a2de6">
+</div>
+<div id="outline-container-orgbb358ad" class="outline-4">
+<h4 id="orgbb358ad">1、概念：</h4>
+<div class="outline-text-4" id="text-orgbb358ad">
+<p>
+mongoDB中的mongoexport工具可以把一个collection导出成JSON格式或CSV格式的文件。
+可以通过参数指定导出的数据项，也可以根据指定的条件导出数据。
+</p>
+</div>
+</div>
+<div id="outline-container-org3897593" class="outline-4">
+<h4 id="org3897593">2、语法：</h4>
+<div class="outline-text-4" id="text-org3897593">
+<pre class="example">
+mongoexport -d dbname -c collectionname -o file --type json/csv -f field
+参数说明：
+    -d ：数据库名
+    -c ：collection名
+    -o ：输出的文件名
+    --type ： 输出的格式，默认为json
+    -f ：输出的字段，如果-type为csv，则需要加上-f "字段名"
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org28961ad" class="outline-4">
+<h4 id="org28961ad">3、示例：</h4>
+<div class="outline-text-4" id="text-org28961ad">
+<pre class="example">
+sudo mongoexport -d mongotest -c users -o /home/python/Desktop/mongoDB/users.json --type json -f  "_id,user_id,user_name,age,status"
+
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orga7038f8" class="outline-3">
+<h3 id="orga7038f8">2、数据导入：mongoimport</h3>
+<div class="outline-text-3" id="text-orga7038f8">
+</div>
+<div id="outline-container-orgee658f3" class="outline-4">
+<h4 id="orgee658f3">1、语法：</h4>
+<div class="outline-text-4" id="text-orgee658f3">
+<pre class="example">
+mongoimport -d dbname -c collectionname --file filename --headerline --type json/csv -f field
+参数说明：
+    -d ：数据库名
+    -c ：collection名
+    --type ：导入的格式默认json
+    -f ：导入的字段名
+    --headerline ：如果导入的格式是csv，则可以使用第一行的标题作为导入的字段
+    --file ：要导入的文件
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org09e7761" class="outline-4">
+<h4 id="org09e7761">2、示例：</h4>
+<div class="outline-text-4" id="text-org09e7761">
+<pre class="example">
+sudo mongoimport -d mongotest -c users --file /home/mongodump/articles.json --type json
+
+</pre>
+</div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org22a3243" class="outline-2">
+<h2 id="org22a3243">MongoDB备份与恢复</h2>
+<div class="outline-text-2" id="text-org22a3243">
+</div>
+<div id="outline-container-orgd43cd6d" class="outline-3">
+<h3 id="orgd43cd6d">1、MongoDB数据库备份</h3>
+<div class="outline-text-3" id="text-orgd43cd6d">
+</div>
+<div id="outline-container-org8c0a81c" class="outline-4">
+<h4 id="org8c0a81c">1、语法：</h4>
+<div class="outline-text-4" id="text-org8c0a81c">
+<pre class="example">
+mongodump -h dbhost -d dbname -o dbdirectory
+参数说明：
+    -h： MongDB所在服务器地址，例如：127.0.0.1，当然也可以指定端口号：127.0.0.1:27017
+    -d： 需要备份的数据库实例，例如：test
+    -o： 备份的数据存放位置，例如：/home/mongodump/，当然该目录需要提前建立，这
+    个目录里面存放该数据库实例的备份数据。
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org7d9af9c" class="outline-4">
+<h4 id="org7d9af9c">2、实例：</h4>
+<div class="outline-text-4" id="text-org7d9af9c">
+<pre class="example">
+sudo rm -rf /home/momgodump/
+sudo mkdir -p /home/momgodump
+sudo mongodump -h 192.168.17.129:27017 -d itcast -o /home/mongodump/
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org149a94b" class="outline-3">
+<h3 id="org149a94b">2、MongoDB数据库恢复</h3>
+<div class="outline-text-3" id="text-org149a94b">
+</div>
+<div id="outline-container-orga541733" class="outline-4">
+<h4 id="orga541733">1、语法：</h4>
+<div class="outline-text-4" id="text-orga541733">
+<pre class="example">
+mongorestore -h dbhost -d dbname --dir dbdirectory
+
+参数或名：
+    -h： MongoDB所在服务器地址
+    -d： 需要恢复的数据库实例，例如：test，当然这个名称也可以和备份时候的不一样，比如test2
+    --dir： 备份数据所在位置，例如：/home/mongodump/itcast/
+    --drop： 恢复的时候，先删除当前数据，然后恢复备份的数据。就是说，恢复后，备份后添加修改的数据都会被删除，慎用！
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org7692e6e" class="outline-4">
+<h4 id="org7692e6e">2、实例：</h4>
+<div class="outline-text-4" id="text-org7692e6e">
+<pre class="example">
+mongorestore -h 192.168.17.129:27017 -d itcast_restore --dir /home/mongodump/itcast/
+
+</pre>
+</div>
+</div>
+</div>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

@@ -1,0 +1,65 @@
+# -*- coding: utf-8-unix; -*-
+#+TITLE:       函数可变参数定义及其参数传递方式详解
+#+AUTHOR:      Bruce Asu
+#+EMAIL:       bruceasu@163.com
+#+DATE:        <2016-06-16 20:48>
+#+filetags:    python
+
+#+LANGUAGE:    en
+#+OPTIONS:     H:7 num:nil toc:t \n:nil ::t |:t ^:nil -:nil f:t *:t <:nil
+
+
+Python函数可变参数定义及其参数传递方式详解
+
+python中 函数不定参数的定义形式如下
+
+* func(\*args)
+传入的参数为以元组形式存在args中，如：
+#+BEGIN_VERSE
+def func(*args):
+  print args
+>>> func(1,2,3)
+(1, 2, 3)
+>>> func(*[1,2,3])   #这个方式可以直接将一个列表的所有元素当作不定参数
+传入(1, 2, 3)
+
+#+END_BERSE
+
+* func( \*\*kwargs)
+传入的参数为以字典形式存在args中，如：
+#+BEGIN_VERSE
+def func(**kwargs):
+  print kwargs
+>>> func(a = 1,b = 2, c = 3)
+{'a': 1, 'c': 3, 'b': 2}
+>>> func(**{'a':1, 'b':2, 'c':3})     #这个方式可以直接将一个字典的所有键值对当作关键字参数传入
+{'a': 1, 'c': 3, 'b': 2}
+
+#+END_VERSE
+
+* 也可以两者混用 func(\*args, \*\*kwargs)
+传入的顺序必须和定义顺序相同，这里是先不定参数列表，再是关键字参数字典，如：
+#+BEGIN_VERSE
+def func(*args, **kwargs):
+  print args
+  print kwargs
+ >>> func(1,2,3)
+(1, 2, 3)
+{}
+ >>> func(*[1,2,3])
+(1, 2, 3)
+{}
+ >>> func(a = 1, b = 2, c = 3)
+()
+{'a': 1, 'c': 3, 'b': 2}
+ >>> func(**{'a':1, 'b':2, 'c':3})
+()
+{'a': 1, 'c': 3, 'b': 2}
+ >>> func(1,2,3, a = 4, b=5, c=6)
+(1, 2, 3)
+{'a': 4, 'c': 6, 'b': 5}</span>
+ #这样跳跃传递是不行的
+>>> func(1,2,3, a=4, b=5, c=6, 7)
+SyntaxError: non-keyword arg after keyword arg
+
+#+END_VERSE

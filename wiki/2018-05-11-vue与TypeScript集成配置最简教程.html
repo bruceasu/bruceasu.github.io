@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>vue 与 TypeScript 集成配置最简教程</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">vue 与 TypeScript 集成配置最简教程</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#vue"><div class="category">vue</div></a> <a href="https://bruceasu.github.io/tags.html#typescript"><div class="category">typescript</div></a> </div>
+<div class="char-counter">2018-05-11</div>
+        <div id="content">
+<nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#orgbd88723">前言</a></li>
+<li><a href="#orgdd8f3b3">初始化项目</a></li>
+<li><a href="#org4ae5ff7">进阶</a></li>
+</ul>
+</div>
+</nav>
+
+<div id="outline-container-orgbd88723" class="outline-2">
+<h2 id="orgbd88723">前言</h2>
+<div class="outline-text-2" id="text-orgbd88723">
+<p>
+Vue的官方文档没有给出与TypeScript集成的具体步骤，网上其他的教程不是存在问题就是与vue-cli建立的项目存在差异，让人无从下手。
+</p>
+
+<p>
+下面我就给出vue-cli建立的项目与TypeScript集成的最简配置。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgdd8f3b3" class="outline-2">
+<h2 id="orgdd8f3b3">初始化项目</h2>
+<div class="outline-text-2" id="text-orgdd8f3b3">
+<p>
+首先用vue-cli建立webpack项目。这里为了演示方便，没有打开router和eslint等，可以根据自身情况打开。
+</p>
+
+<pre class="example">
+# vue init webpack vue-typescript
+
+? Project name vue-typescript
+? Project description A Vue.js project
+? Author
+? Vue build standalone
+? Install vue-router? No
+? Use ESLint to lint your code? No
+? Setup unit tests with Karma + Mocha? No
+? Setup e2e tests with Nightwatch? No
+</pre>
+
+<p>
+安装TypeScript相关依赖和项目其余依赖，用npm或cnpm
+</p>
+
+<pre class="example">
+# cd /vue-typescript
+
+# npm install typescript ts-loader --save-dev
+
+# npm install
+</pre>
+
+<p>
+配置
+修改目录下bulid/webpack.base.conf.js文件，在文件内module&gt;rules添加以下规则
+</p>
+
+<pre class="example">
+{
+  test: /\.tsx?$/,
+  loader: 'ts-loader',
+  exclude: /node_modules/,
+  options: {
+    appendTsSuffixTo: [/\.vue$/],
+  }
+},
+</pre>
+
+<p>
+在src目录下新建一个文件vue-shims.d.ts，用于识别单文件vue内的ts代码
+</p>
+
+<pre class="example">
+declare module "*.vue" {
+  import Vue from "vue";
+  export default Vue;
+}
+</pre>
+
+<p>
+在项目根目录下建立TypeScript配置文件tsconfig.json
+</p>
+
+<pre class="example">
+{
+  "compilerOptions": {
+    "strict": true,
+    "module": "es2015",
+    "moduleResolution": "node",
+    "target": "es5",
+    "allowSyntheticDefaultImports": true,
+    "lib": [
+      "es2017",
+      "dom"
+    ]
+  }
+}
+</pre>
+
+<p>
+另一个参考：
+</p>
+
+<pre class="example">
+{
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules"
+  ],
+  // 编译选项
+  "compilerOptions": {
+    // 允许从没有设置默认导出的模块中默认导入
+    "allowSyntheticDefaultImports": true,
+    // 启用装饰器
+    "experimentalDecorators": true,
+    // 允许编译javascript文件
+    "allowJs": true,
+    // 采用的模块系统
+    "module": "esnext",
+    // 编译输出目标 ES 版本
+    "target": "es5",
+    // 如何处理模块
+    "moduleResolution": "node",
+    // 将每个文件作为单独的模块
+    "isolatedModules": true,
+    // 编译过程中需要引入的库文件的列表
+    "lib": [
+      "dom",
+      "es5",
+      "es2015.promise"
+    ],
+    "sourceMap": true,
+    "pretty": true
+  }
+}
+</pre>
+
+<p>
+重命名src下的main.js为main.ts
+</p>
+
+<p>
+修改webpack.base.conf.js下的entry&gt;app为'./src/main.ts'
+</p>
+
+<p>
+修改src下的App.vue文件，在
+</p>
+
+<pre class="example">
+&lt;script lang="ts"&gt;
+import { Vue, Component, Provide } from "vue-property-decorator";
+import util from '@/util';
+
+@Component({
+  name: "App"
+})
+export default class App extends Vue {
+    /**
+   * 初始加载
+   */
+  mounted() {
+    // vue对象用于提示信息
+    util.vue = this;
+  }
+}
+&lt;/script&gt;
+</pre>
+
+<p>
+测试 下面可以测试是否集成成功，编辑src/components/Hello.vue文件，修改
+</p>
+
+<pre class="example">
+import Vue, {ComponentOptions} from 'vue'
+export default {
+  name: 'hello',
+  data() {
+    return {
+      msg: 'this is a typescript project now'
+    }
+  }
+} as ComponentOptions
+</pre>
+
+<p>
+运行项目
+</p>
+
+<p>
+<code># npm run dev</code>
+</p>
+
+<p>
+测试成功，现在是一个TypeScipt项目了
+</p>
+</div>
+</div>
+
+<div id="outline-container-org4ae5ff7" class="outline-2">
+<h2 id="org4ae5ff7">进阶</h2>
+<div class="outline-text-2" id="text-org4ae5ff7">
+<p>
+配置官方推荐的vue-class-component，<a href="https://cn.vuejs.org/v2/guide/typescript.html">https://cn.vuejs.org/v2/guide/typescript.html</a>
+</p>
+
+<p>
+安装开发依赖
+</p>
+
+<p>
+<code># npm install --save-dev vue-class-component</code>
+</p>
+
+<p>
+修改ts配置文件，增加以下两项配置
+</p>
+
+<pre class="example">
+"allowSyntheticDefaultImports": true,
+"experimentalDecorators": true,
+</pre>
+
+<p>
+改写我们的Hello组件
+</p>
+
+<pre class="example">
+&lt;script lang="ts"&gt;
+  import Vue from 'vue'
+  import Component from 'vue-class-component'
+  @Component
+  export default class Hello extends Vue {
+    msg: string = 'this is a typescript project now'
+  }
+&lt;/script&gt;
+</pre>
+
+<p>
+使用vue-class-component后，初始数据可以直接声明为实例的属性，而不需放入data()
+{return{}}中，组件方法也可以直接声明为实例的方法，如官方实例，更多使用方法可以参考其官方文档
+</p>
+
+<p>
+<a href="https://github.com/vuejs/vue-class-component#vue-class-component">https://github.com/vuejs/vue-class-component#vue-class-component</a>
+</p>
+
+<pre class="example">
+import Vue from 'vue'
+import Component from 'vue-class-component'
+// @Component 修饰符注明了此类为一个 Vue 组件
+@Component({
+  // 所有的组件选项都可以放在这里
+  template: '&lt;button @click="onClick"&gt;Click!&lt;/button&gt;'
+})
+export default class MyComponent extends Vue {
+  // 初始数据可以直接声明为实例的属性
+  message: string = 'Hello!'
+  // 组件方法也可以直接声明为实例的方法
+  onClick (): void {
+    window.alert(this.message)
+  }
+}
+</pre>
+
+<p>
+vue-property-decorator 提供更多的支持
+<code>import {Component, Prop, Provide, Vue, Watch} from "vue-property-decorator";</code>
+</p>
+</div>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>mysql import and export</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">mysql import and export</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#mysql"><div class="category">mysql</div></a> </div>
+<div class="char-counter">2016-07-18</div>
+        <div id="content">
+
+
+<div id="outline-container-orga07b082" class="outline-2">
+<h2 id="orga07b082">mysql导入文件或数据或执行相关SQL</h2>
+<div class="outline-text-2" id="text-orga07b082">
+<ol class="org-ol">
+<li>mysql -h主机地址 -u用户名 -p用户密码，文件形式。(shell命令行）</li>
+</ol>
+<pre class="example">
+mysql -u root -p dbname &lt; filename.sql
+
+</pre>
+
+<ol class="org-ol">
+<li>直接放在命令行（shell命令行）执行一个sql</li>
+</ol>
+<pre class="example">
+mysql -hhostname -uusername -p dbname -e 'select * from tbname limit 1'
+
+</pre>
+
+<p>
+执行后命令行会提示输入数据库密码。
+</p>
+
+<ol class="org-ol">
+<li>把SQL作为一个输入给MYSQL（shell命令行）</li>
+</ol>
+<pre class="example">
+echo 'select id from dbname.tbname where id = 1;' | mysql -hhostname -ureadonly -preadonly dbname &gt; xxxx.sql
+
+</pre>
+
+<ol class="org-ol">
+<li>进入mysql数据库（数据库中执行SQL文件）</li>
+</ol>
+<pre class="example">
+&gt;source xxx.sql
+
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org33ad8b3" class="outline-2">
+<h2 id="org33ad8b3">导出库表（mysqldump）</h2>
+<div class="outline-text-2" id="text-org33ad8b3">
+<ol class="org-ol">
+<li>mysqldump -u用户名 -p密码 -h主机 数据库 a -w “sql条件” –lock-all-tables &gt; 路径</li>
+</ol>
+<pre class="example">
+mysqldump -hhostname -uusername -p dbname tbname&gt;xxxx.sql
+
+</pre>
+
+<ol class="org-ol">
+<li>按指定条件导出数据库表内容。(-w选项 –where）</li>
+</ol>
+<pre class="example">
+mysqldump -hhostname -uusername-p dbname tbname -w'id &gt;= 1 and id&lt;= 10000'--skip-lock-tables &gt; xxxx.sql
+
+</pre>
+
+<ol class="org-ol">
+<li>或这下一行</li>
+</ol>
+<pre class="example">
+mysqldump -hhostname -uusername -p dbname tbname --where='unit_id &gt;= 1 and unit_id &lt;= 10000'&gt; ~/xxxx.sql
+
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org92d8023" class="outline-2">
+<h2 id="org92d8023">mysqldump导出库表详细举</h2>
+<div class="outline-text-2" id="text-org92d8023">
+<ol class="org-ol">
+<li>导出整个数据库</li>
+</ol>
+<pre class="example">
+mysqldump -u 用户名 -p数据库名 &gt; 导出的文件名
+&gt;mysqldump -u breezelark-p mydb &gt; mydb.sql
+
+</pre>
+
+<ol class="org-ol">
+<li>导出一个表（包括数据结构及数据）</li>
+</ol>
+<pre class="example">
+mysqldump -u 用户名 -p数据库名 表名&gt; 导出的文件名
+mysqldump -u lingxi -p mydb mytb&gt; mytb.sql
+
+</pre>
+
+<ol class="org-ol">
+<li>导出一个数据库结构（无数据只有结构）</li>
+</ol>
+<pre class="example">
+mysqldump -u lingxi -p -d --add-drop-table mydb &gt;mydb.sql
+
+</pre>
+<p>
+-d 没有数据–add-drop-table 在每个create语句之前增加一个 drop table 当然这只是导
+入导出的其中一种方法，大家可以感觉自己的情况选择适合自己的方法。
+</p>
+</div>
+</div>
+<div id="outline-container-org4db6ba8" class="outline-2">
+<h2 id="org4db6ba8">应用举例</h2>
+<div class="outline-text-2" id="text-org4db6ba8">
+</div>
+<div id="outline-container-orgebb5b1b" class="outline-3">
+<h3 id="orgebb5b1b">导出</h3>
+<div class="outline-text-3" id="text-orgebb5b1b">
+<ol class="org-ol">
+<li>导出全库备份到本地的目录</li>
+</ol>
+<pre class="example">
+mysqldump -u$USER -p$PASSWD -h127.0.0.1 -P3306 --routines --default-character-set=utf8 --lock-all-tables --add-drop-database -A &gt; db.all.sql
+
+</pre>
+<ol class="org-ol">
+<li><p>
+导出指定库到本地的目录(例如mysql库)
+</p>
+
+<p>
+mysqldump -u$USER -p$PASSWD -h127.0.0.1 -P3306 --routines --default-character-set=utf8 --databases mysql &gt; db.sql
+</p></li>
+<li>导出某个库的表到本地的目录(例如mysql库的user表)</li>
+</ol>
+<pre class="example">
+mysqldump -u$USER -p$PASSWD -h127.0.0.1 -P3306 --routines --default-character-set=utf8 --tables mysql user&gt; db.table.sql
+
+</pre>
+<ol class="org-ol">
+<li>导出指定库的表(仅数据)到本地的目录(例如mysql库的user表,带过滤条件)</li>
+</ol>
+<pre class="example">
+mysqldump -u$USER -p$PASSWD -h127.0.0.1 -P3306 --routines --default-character-set=utf8 --no-create-db --no-create-info --tables mysql user --where="host='localhost'"&gt; db.table.sql
+
+</pre>
+<ol class="org-ol">
+<li>导出某个库的所有表结构</li>
+</ol>
+<pre class="example">
+mysqldump -u$USER -p$PASSWD -h127.0.0.1 -P3306 --routines --default-character-set=utf8 --no-data --databases mysql &gt; db.nodata.sql
+
+</pre>
+<ol class="org-ol">
+<li>导出某个查询sql的数据为txt格式文件到本地的目录(各数据值之间用"制表符"分隔)例
+如sql为'select user,host,password from mysql.user;'</li>
+</ol>
+<pre class="example">
+mysql -u$USER -p$PASSWD -h127.0.0.1 -P3306 --default-character-set=utf8 --skip-column-names -B -e 'select user,host,password from mysql.user;' &gt; mysql_user.txt
+
+</pre>
+<ol class="org-ol">
+<li>导出某个查询sql的数据为txt格式文件到MySQL服务器. 登录MySQL,将默认的制表符换成
+逗号.(适应csv格式文件). 指定的路径,mysql要有写的权限.最好用tmp目录,文件用完之
+后,再删除!</li>
+</ol>
+<pre class="example">
+SELECT user,host,password FROM mysql.user INTO OUTFILE '/tmp/mysql_user.csv' FIELDS TERMINATED BY ',';
+
+</pre>
+</div>
+</div>
+<div id="outline-container-org8d21692" class="outline-3">
+<h3 id="org8d21692">导入</h3>
+<div class="outline-text-3" id="text-org8d21692">
+<ol class="org-ol">
+<li>恢复全库数据到MySQL,因为包含mysql库的权限表,导入完成需要执行 <code>FLUSH PRIVILEGES;</code></li>
+</ol>
+<p>
+命令第一种方法:
+</p>
+<pre class="example">
+mysql -u$USER -p$PASSWD -h127.0.0.1 -P3306 --default-character-set=utf8 &lt; db.all.sql
+
+</pre>
+<p>
+第二种方法:
+登录MySQL,执行source命令,后面的文件名要用绝对路径.
+</p>
+<pre class="example">
+mysql&gt; source /tmp/db.all.sql;
+
+</pre>
+<ol class="org-ol">
+<li>恢复某个库的数据(mysql库的user表)
+第一种方法:</li>
+</ol>
+<pre class="example">
+mysql -u$USER -p$PASSWD -h127.0.0.1 -P3306 --default-character-set=utf8 mysql &lt; db.table.sql
+
+</pre>
+<p>
+第二种方法:
+登录MySQL,执行source命令,后面的文件名要用绝对路径.
+</p>
+<pre class="example">
+mysql -u$USER -p$PASSWD -h127.0.0.1 -P3306 --default-character-set=utf8
+mysql&gt; use mysql;
+mysql&gt; source /tmp/db.table.sql;
+
+</pre>
+<ol class="org-ol">
+<li>恢复MySQL服务器上面的txt格式文件(需要FILE权限,各数据值之间用"制表符"分隔)</li>
+</ol>
+<pre class="example">
+mysql -u$USER -p$PASSWD -h127.0.0.1 -P3306 --default-character-set=utf8
+mysql&gt; use mysql;
+mysql&gt; LOAD DATA INFILE '/tmp/mysql_user.txt' INTO TABLE user ;
+
+</pre>
+<ol class="org-ol">
+<li>恢复MySQL服务器上面的csv格式文件(需要FILE权限,各数据值之间用"逗号"分隔)</li>
+</ol>
+<pre class="example">
+mysql -u$USER -p$PASSWD -h127.0.0.1 -P3306 --default-character-set=utf8
+mysql&gt; use mysql;
+mysql&gt; LOAD DATA INFILE '/tmp/mysql_user.csv' INTO TABLE user FIELDS TERMINATED BY ',';
+
+</pre>
+<ol class="org-ol">
+<li>恢复本地的txt或csv文件到</li>
+</ol>
+<pre class="example">
+MySQLmysql -u$USER -p$PASSWD -h127.0.0.1 -P3306 --default-character-set=utf8
+mysql&gt; use mysql;
+# txt
+mysql&gt; LOAD DATA LOCAL INFILE '/tmp/mysql_user.csv' INTO TABLE user;
+# csv
+mysql&gt; LOAD DATA LOCAL INFILE '/tmp/mysql_user.csv' INTO TABLE user FIELDS TERMINATED BY ',';
+
+</pre>
+
+<p>
+注意事项
+</p>
+
+<ol class="org-ol">
+<li>关于MySQL连接</li>
+</ol>
+<p class="verse">
+-u$USER 用户名<br>
+-p$PASSWD 密码<br>
+-h127.0.0.1 如果连接远程服务器,请用对应的主机名或者IP地址替换<br>
+-P3306 端口<br>
+--default-character-set=utf8 指定字符集<br>
+<br>
+</p>
+
+<ol class="org-ol">
+<li>关于mysql参数</li>
+</ol>
+<p class="verse">
+--skip-column-names 不显示数据列的名字<br>
+-B 以批处理的方式运行mysql程序.查询结果将显示为制表符间隔格式.<br>
+-e 执行命令后,退出<br>
+<br>
+</p>
+<ol class="org-ol">
+<li>关于mysqldump参数</li>
+</ol>
+<p class="verse">
+-A 全库备份<br>
+--routines 备份存储过程和函数<br>
+--default-character-set=utf8 设置字符集<br>
+--lock-all-tables 全局一致性锁<br>
+--add-drop-database 在每次执行建表语句之前,先执行DROP TABLE IF EXIST语句<br>
+--no-create-db 不输出CREATE DATABASE语句<br>
+--no-create-info 不输出CREATE TABLE语句<br>
+--databases 将后面的参数都解析为库名<br>
+--tables 第一个参数为库名 后续为表名<br>
+<br>
+</p>
+<ol class="org-ol">
+<li>关于LOAD DATA语法如果LOAD DATA语句不带LOCAL关键字,就在MySQL的服务器上直接读取
+文件,且要具有FILE权限. 如果带LOCAL关键字,就在客户端本地读取数据文件,通过网络
+传到MySQL. LOAD DATA语句,同样被记录到binlog,不过是内部的机制.</li>
+</ol>
+
+<p>
+最近需要在mysql中把一个表中的某些字段下的数据导出接着再导入到另外个数据库中，常
+用的mysqldump指令无法选定某个字段导出，只能使用-w选项来进行where筛选。查了很多相
+关资料，终于解决了这个问题。下面把实现的过程总结一下。
+</p>
+
+<p>
+首先，创建数据库来做个例子：
+</p>
+<div class="org-src-container">
+<pre class="src src-sql"><span style="font-weight: bold;">create</span> <span style="font-weight: bold;">table</span> <span style="font-weight: bold;">if</span> <span style="font-weight: bold;">not</span> <span style="font-weight: bold;">exists</span> `score` (
+`id` <span style="font-weight: bold; text-decoration: underline;">int</span>(11) unsigned <span style="font-weight: bold;">not</span> <span style="font-weight: bold;">null</span> auto_increment,
+`<span style="font-weight: bold;">name</span>` <span style="font-weight: bold; text-decoration: underline;">varchar</span>(16) <span style="font-weight: bold;">not</span> <span style="font-weight: bold;">null</span>,
+`score` <span style="font-weight: bold; text-decoration: underline;">int</span>(3) <span style="font-weight: bold;">not</span> <span style="font-weight: bold;">null</span> <span style="font-weight: bold;">default</span> 0,
+<span style="font-weight: bold;">primary</span> <span style="font-weight: bold;">key</span> (`id`)
+) engine=MyISAM <span style="font-weight: bold;">default</span> charset=utf8;
+
+<span style="font-weight: bold;">insert</span> <span style="font-weight: bold;">into</span> `score` (`<span style="font-weight: bold;">name</span>`, `score`)<span style="font-weight: bold;">values</span>
+(<span style="font-style: italic;">'&#24352;&#19977;'</span>, 80),
+(<span style="font-style: italic;">'&#26446;&#22235;'</span>, 85),
+(<span style="font-style: italic;">'a'</span>, 90),
+(<span style="font-style: italic;">'b'</span>, 95),
+(<span style="font-style: italic;">'c'</span>, 100);
+
+</pre>
+</div>
+
+<p>
+导出数据：
+</p>
+<pre class="example">
+select `name`,`score` from `score` into outfile '/Users/levin/dev/sql/score.sql';
+
+</pre>
+
+<p>
+上面的语句导出的文件是不带字段名的，如果需要带上字段名，将字段名字和结果集union
+一下就好了：
+</p>
+<pre class="example">
+select 'name','score' union select `name`,`score` from `score` into outfile '/Users/levin/dev/sql/score.sql';
+
+</pre>
+
+<p>
+将此纯文本的文件导入数据库中：
+</p>
+<pre class="example">
+load data infile '/Users/levin/dev/sql/score.sql'
+into table `score`
+character set utf8
+fields terminated by '\t'
+lines terminated by '\n'
+ignore 1 lines
+(`name`, `score`);
+
+</pre>
+<p>
+如果需要into outfile能生成可以直接执行的语句在导出时就需要利用concat函数做处理，
+注意数据中的'需要处理好
+</p>
+<pre class="example">
+select concat('(\'', replace(name, '\'', '\'\''), '\',\'', score, '\'', '),')
+from `score` into outfile '/Users/levin/dev/sql/score.sql';
+
+</pre>
+<p>
+生成的文件内容像这样：
+</p>
+<p class="verse">
+('张三','80'),<br>
+('李四','85'),<br>
+('a','90'),<br>
+('b','95'),<br>
+('c','100'),<br>
+<br>
+</p>
+<p>
+这样的文件还需要手动做些处理以实现批量导入的效果，打开文本以后将最后的,换成;，再
+在最前面加上语句：
+</p>
+<pre class="example">
+insert into `score` (`name`, `score`)values
+
+</pre>
+</div>
+</div>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

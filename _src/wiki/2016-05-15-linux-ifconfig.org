@@ -1,0 +1,62 @@
+# -*- coding: utf-8-unix; -*-
+#+TITLE:       LINUX中IFCONFIG命令是否可以设置网关地址
+#+AUTHOR:      Bruce Asu
+#+EMAIL:       bruceasu@163.com
+#+DATE:        <2016-05-15 20:48>
+#+filetags:    linux
+
+#+LANGUAGE:    en
+#+OPTIONS:     H:7 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:nil
+
+* ubuntu 版本命令行设置IP
+: cat /etc/network/interfaces
+#+BEGIN_VERSE
+# This file describes the network interfaces available on your system
+# and how to activate them. For more information, see interfaces(5).
+# The loopback network interface
+auto lo
+iface lo inet loopback
+# The primary network interface
+auto eth0
+iface eth0 inet static
+address 192.168.1.104
+netmask 255.255.255.0
+network 192.168.1.0
+broadcast 192.168.1.255
+gateway 192.168.1.2
+# dns-* options are implemented by the resolvconf package, if installed
+dns-nameservers 58.22.96.66 218.104.128.106 202.101.138.8
+dns-search .COM
+#+END_VERSE
+
+重启网卡:
+: /etc/init.d/networking restatr
+* redhat linux版本命令行设置IP:
+- 即时生效:
+: ifconfig eth0 192.168.129.45 netmask 255.255.255.0 gw 192.168.129.1
+- 启动生效:
+: 修改/etc/sysconfig/network-scripts/ifcfg-eth0
+- 配置文件修改后重启等不会丢失
+: vi /etc/sysconfig/network
+: GATEWAY=192.168.129.1
+保存退出
+: service network restart
+* 修改default gateway
+- 即时生效:
+: route add default gw 192.168.0.254
+- 启动生效:
+: 修改/etc/sysconfig/network-scripts/ifcfg-eth0
+* 修改host name
+- 即时生效:
+: hostname fc2
+- 启动生效:
+  修改/etc/sysconfig/network
+  #+BEGIN_EXAMPLE
+  DEVICE=eth0
+  BOOTPROTO=static
+  IPADDR=192.168.8.85
+  NETMASK=255.255.248.0
+  GATEWAY=192.168.8.1
+  HWADDR=00:0uu3:47:2C:D5:40
+  ONBOOT=yes
+  #+END_EXAMPLE

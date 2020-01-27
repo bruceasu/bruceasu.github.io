@@ -1,0 +1,65 @@
+#+title: CANOPY聚类算法
+#+date: <2016-09-01 20:48>
+#+filetags: reprint
+#+options: ^:{}
+
+
+Canopy Clustering 这个算法是2000年提出来的，此后与Hadoop配合，已经成为一个比较流
+行的算法了。确切的说，这个算法获得的并不是最终结果，它是为其他算法服务的，比如
+k-means算法。它能有效地降低k-means算法中计算点之间距离的复杂度。Mahout中已经实现
+了这个算法，不知道其他的机器学习类库和工具中，有多少是实现了这个算法的。感觉上这
+个算法要实现不难，难在和Hadoop如何结合上。Hadoop完全不懂，这里我就不说那么多了。
+
+
+  首先，我觉得很有必要看一个图先，这个图很好得展示了Canopy聚类的过程。图来自
+http://picksesame.blogspot.com/2011/05/canopy-clustering.html 可能要翻墙。
+
+    图中有一个T1,一个T2,我们称之为距离阀值，显然T1>T2，这两个值有什么用呢？我们
+先确定了一个中心，然后计算其他点到这个中心间的距离，当距离大于T1时，小于T1大于T2
+时，小于T2时，对这个点的处理都是不一样的。
+http://micahlabrams.blogspot.com/2011/10/canopy-clustering.html 这篇文章提供了一
+个很好的伪代码，我觉得看完之后，加上我稍加的解释，就能明白canopy聚类的实现过程了：
+#+BEGIN_SRC
+while D is not empty
+      select element d from D to initialize canopy c
+      remove d from D
+      Loop through remaining elements in D
+           if distance between d_i and c < T1 : add element to the canopy c
+           if distance between d_i and c < T2 : remove element from D
+      end
+      add canopy c to the list of canopies C
+end
+#+END_SRC
+
+这里有几点要说明的：D指代一组数据，d_i表示D中的各个数据。
+
+是不是还不够明白？下面用中文进行说明：
+
+1) 给我一组存放在数组里面的数据D
+2) 给我两个距离阈值T1,T2,且T1>T2
+3) 随机取D中的一个数据d作为中心，并将d从D中移除
+4) 计算D中所有点到d的距离distance
+5) 将所有distance<T1的点都归如到d为中心的canopy1类中（注意哦，小于T2的也是小于T1
+   的，所以也是归入到canopy1中的哦）
+6) 将所有distance<T2的点，都从D中移除。（这一步很关键的，你回去看上面那个图，就
+   明白了）
+7) 重复步骤4到6，直到D为空，形成多个canopy类
+
+通过上面的描述，能理解T1和T2的作用了否？
+
+当与中心的距离大于T1时，这些点就不会被归入到中心所在的这个canopy类中。然当距离小
+于T1大于T2时，这些点会被归入到该中心所在的canopy中，但是它们并不会从D中被移除，
+也就是说，它们将会参与到下一轮的聚类过程中，成为新的canopy类的中心或者成员。亦即，
+两个Canopy类中有些成员是重叠的。
+
+这是canopy比较关键和高明的地方了，当然内在的高明之处我也讲不出来，水平不够。而当
+距离小于T2的时候，这些点就会被归入到该中心的canopy类中，而且会从D中被移除，也就
+是不会参加下一次的聚类过程了。
+
+不知道现在能明白了否？
+
+如果需要用Python利用Hadoop实现canopy的话，可以参考这篇文章
+
+http://atbrox.com/2010/02/08/parallel-machine-learning-for-hadoopmapreduce-a-python-example/
+
+暂时我是理解不了这篇文章先。如果你会，希望能教一下我。

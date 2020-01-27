@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>win8.1 cygwin compile avian</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">win8.1 cygwin compile avian</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#java"><div class="category">java</div></a> </div>
+<div class="char-counter">2016-07-15</div>
+        <div id="content">
+<nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#org1a74f69">win8.1 cygwin编译java轻量虚拟机avian</a></li>
+<li><a href="#org6a89748">背景</a></li>
+<li><a href="#org88dc38c">开始编译</a></li>
+<li><a href="#org9ea521f">打包并嵌入虚拟机</a></li>
+<li><a href="#org6463e28">swt配置</a></li>
+</ul>
+</div>
+</nav>
+
+<div id="outline-container-org1a74f69" class="outline-2">
+<h2 id="org1a74f69">win8.1 cygwin编译java轻量虚拟机avian</h2>
+</div>
+
+<div id="outline-container-org6a89748" class="outline-2">
+<h2 id="org6a89748">背景</h2>
+<div class="outline-text-2" id="text-org6a89748">
+<p>
+昨天在网上看到别人用aauto写本地小程序写的很爽，我觉得如果java的jre能小
+一点，凭借java庞大的第三方类库写小工具也还算不错的。本人就经常用
+eclipse+一些commons包写些小工具软件。不过可惜的是只能自己用，对于没装
+java环境的人来说就麻烦了。所以就去网上找到了一个轻量级java虚拟机avian。
+但是在编译和安装过程中遇到了很多困难，特此记录。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org88dc38c" class="outline-2">
+<h2 id="org88dc38c">开始编译</h2>
+<div class="outline-text-2" id="text-org88dc38c">
+<p>
+废话少说，先说重点。其实在这个软件的gihub首页以及清晰的讲述了安装教程，
+无奈这是英文的，而且主要是自己没有过编译开源程序的经验，也没有玩过什么
+msys, cygwin的linux编译环境。这次也算是当作一次练习，毕竟以前我只要遇
+到需要自己编译的开源项目就敬而远之。
+</p>
+
+<p>
+其实安装的难点有两个，第一个在这个博客中已经一语道破了。win32/64文件夹
+要和avian的解压文件夹并列。我一直以为要合并着来着，官网也没有特殊说明，
+本人也没有玩过linux命令行，所以。。不说多了说多了都是泪。
+</p>
+
+<p>
+第二个就是cygwin的安装。这个的安装注定是要折腾的，虽然网上到处都是教程，
+但是问题是这些教程有很多细节都没有明说啊，也饶了不少远路。除了一般教程
+都说的要按照的binutils、gcc、gcc-mingw、gdb之外，还要安装make,zlib(第
+一次安装我照着教程装忘记装avian需要的make了，吐血。)。这都是32位的，如
+果你要安装64位的则还有make, gcc-mingw-g++, mingw64-i686-gcc-g++,
+mingw64-x86\_64-gcc-g++， mingw64-x86\_64-zlib（这几个其实avian官网有介
+绍，但是没有介绍zlib。因为是写在中间，所以我也是后来才看到的，这排版真
+心不科学。）反正我电脑是64位的，所以我这几个都安装了，避免出现任何问题。
+</p>
+
+<p>
+环境装好了，然后需要的就是照着官网的教程敲命令了。
+</p>
+
+<p>
+这里以32位为例。因为在64位下可以编译32位的，但是编译成64位的就不能在32
+位运行了。
+</p>
+
+<pre class="example">
+# 官网是下载win64，我们全部改成win32。不过那个官网的git地址有问题，自己
+# 去github下载zip复制也行
+$ git clone https://github.com/ReadyTalk/win32.git ../win32
+$ export JAVA_HOME="/cygdrive/c/Program Files/Java/jdk1.7.0_45"
+# 这里需要注意，没有指定编译环境默认就是本机环境，如果电脑是64位的，那么
+# 之前你下载的win32头文件会冲突，所以必须指定为i386,如果你是想编译64位
+# 的，则之前的git clone就应该是64位的
+$ make platform=windows arch=i386
+# 这个测试程序运行成功就代表编译成功了。
+$ build/windows-i386/avian -cp build/windows-i386/test Hello
+</pre>
+
+<p>
+　　 然后将虚拟机嵌入打包，github上有详细的教程。等我以后再整理。。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org9ea521f" class="outline-2">
+<h2 id="org9ea521f">打包并嵌入虚拟机</h2>
+<div class="outline-text-2" id="text-org9ea521f">
+<pre class="example">
+# building
+platform=windows
+#make platform=windows arch=i386/x86_64
+arch=i386
+project=Hello #project名称
+mainClass=Hello #main函数所在类
+
+# i686-w64-mingw32- x86_64-w64-mingw32-
+# 这个是个坑爹的地方了，官网没有详细介绍。cygwin需要安装mingw-gcc...等同已系列的文件来支持32位的编译
+# 如果是32位编译，则ar,gcc,g++,dlltool,strip 要加前缀i686-w64-mingw32-
+# 如果是64位编译，则要加前缀x86_64-w64-mingw32-
+
+cd /cygdrive/d/java/avian/avian #转到avian的安装目录
+export JAVA_HOME=/cygdrive/d/Java/jdk1.7.0_17
+
+# 第一次需要通过make指令编译avian，如不指定平台，默认就是本地平台。
+# 注:在shell中\是换行的意思
+# make platform=${platform} arch=${arch}
+
+# Embedding
+# 在嵌入之前，需要通过eclipse编写一个
+mkdir ../projects/${project}
+cd ../projects/${project}
+i686-w64-mingw32-ar x ../../avian/build/${platform}-${arch}/libavian.a
+# cp ../../avian/build/${platform}-${arch}/classpath.jar boot.jar
+
+cat &gt;Hello.java &lt;&lt;EOF
+public class Hello {
+  public static void main(String[] args) {
+    System.out.println("hello, world!");
+  }
+}
+EOF
+javac -bootclasspath boot.jar Hello.java
+#jar u0f boot.jar Hello.class
+ ../../avian/build/${platform}-${arch}/binaryToObject/binaryToObject boot.jar boot-jar.o _binary_boot_jar_start _binary_boot_jar_end ${platform} ${arch}
+cat &gt;embedded-jar-main.cpp &lt;&lt;EOF
+#include "stdint.h"
+#include "jni.h"
+#include "stdlib.h"
+
+#if (defined __MINGW32__) || (defined _MSC_VER)
+#  define EXPORT __declspec(dllexport)
+#else
+#  define EXPORT __attribute__ ((visibility("default"))) \
+  __attribute__ ((used))
+#endif
+
+#if (! defined __x86_64__) &amp;&amp; ((defined __MINGW32__) || (defined _MSC_VER))
+#  define SYMBOL(x) binary_boot_jar_##x
+#else
+#  define SYMBOL(x) _binary_boot_jar_##x
+#endif
+
+extern "C" {
+
+  extern const uint8_t SYMBOL(start)[];
+  extern const uint8_t SYMBOL(end)[];
+
+  EXPORT const uint8_t*
+  bootJar(unsigned* size)
+  {
+    *size = SYMBOL(end) - SYMBOL(start);
+    return SYMBOL(start);
+  }
+
+} // extern "C"
+
+extern "C" void __cxa_pure_virtual(void) { abort(); }
+
+int
+main(int ac, const char** av)
+{
+  JavaVMInitArgs vmArgs;
+  vmArgs.version = JNI_VERSION_1_2;
+  vmArgs.nOptions = 1;
+  vmArgs.ignoreUnrecognized = JNI_TRUE;
+
+  JavaVMOption options[vmArgs.nOptions];
+  vmArgs.options = options;
+
+  options[0].optionString = const_cast&lt;char*&gt;("-Xbootclasspath:[bootJar]");
+
+  JavaVM* vm;
+  void* env;
+  JNI_CreateJavaVM(&amp;vm, &amp;env, &amp;vmArgs);
+  JNIEnv* e = static_cast&lt;JNIEnv*&gt;(env);
+
+  jclass c = e-&gt;FindClass("${mainClass}");
+  if (not e-&gt;ExceptionCheck()) {
+    jmethodID m = e-&gt;GetStaticMethodID(c, "main", "([Ljava/lang/String;)V");
+    if (not e-&gt;ExceptionCheck()) {
+      jclass stringClass = e-&gt;FindClass("java/lang/String");
+      if (not e-&gt;ExceptionCheck()) {
+        jobjectArray a = e-&gt;NewObjectArray(ac-1, stringClass, 0);
+        if (not e-&gt;ExceptionCheck()) {
+          for (int i = 1; i &lt; ac; ++i) {
+            e-&gt;SetObjectArrayElement(a, i-1, e-&gt;NewStringUTF(av[i]));
+          }
+
+          e-&gt;CallStaticVoidMethod(c, m, a);
+        }
+      }
+    }
+  }
+
+  int exitCode = 0;
+  if (e-&gt;ExceptionCheck()) {
+    exitCode = -1;
+    e-&gt;ExceptionDescribe();
+  }
+
+  vm-&gt;DestroyJavaVM();
+
+  return exitCode;
+}
+EOF
+
+i686-w64-mingw32-g++ -fno-exceptions -fno-rtti -I"$JAVA_HOME/include" -I"$JAVA_HOME/include/win32" -D_JNI_IMPLEMENTATION_ -c embedded-jar-main.cpp -o main.o
+
+i686-w64-mingw32-dlltool -z ${project}.def *.o
+i686-w64-mingw32-dlltool -d ${project}.def -e ${project}.exp
+i686-w64-mingw32-gcc ${project}.exp *.o -L../../win32/lib -lmingwthrd -lz -lws2_32 \
+    -lIphlpapi -mwindows -mconsole -o ${project}.exe
+i686-w64-mingw32-strip --strip-all ${project}.exe
+</pre>
+
+<p>
+eclipse工程需要去除jre
+，然后引入avian/build/windows-xxx/classpath.jar,导出runnable jar包.
+</p>
+
+<p>
+导出之后复制到项目目录中，更名为boot.jar.然后把命令清单复制到cygwin的
+命令行窗口执行就行了
+</p>
+</div>
+</div>
+
+<div id="outline-container-org6463e28" class="outline-2">
+<h2 id="org6463e28">swt配置</h2>
+<div class="outline-text-2" id="text-org6463e28">
+<p>
+在avian的官网有swt的zip包，网上也有介绍，不过安装时需要注意的是jar包里
+面只能有一个dll文件，多了貌似会冲突。
+</p>
+</div>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

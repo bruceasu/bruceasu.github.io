@@ -1,0 +1,47 @@
+# -*- coding: utf-8-unix; -*-
+#+TITLE:       Redis 如何清除所有的 key
+#+AUTHOR:      Bruce Asu
+#+EMAIL:       bruceasu@163.com
+#+DATE:        <2017-03-04 20:00>
+#+filetags:    redis
+
+#+LANGUAGE:    en
+#+OPTIONS:     H:7 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:nil
+
+
+redis比memcache好的地方之一，如果memcache，恐怕就得关掉重启了。
+
+1. 使用cli
+   =FLUSHDB= 清除一个数据库，
+   =FLUSHALL= 清除整个redis数据。
+
+2. 使用shell
+   #+BEGIN_SRC sh
+   redis-cli keys  "*" | while read LINE ; do
+       TTL=`redis-cli ttl $LINE`;
+       if [ $TTL -eq -1 ]; then
+           echo "Del $LINE";
+           RES=`redis-cli del $LINE`;
+       fi;
+   done;
+   # 删除 3600秒之后过期的
+   redis-cli keys  "*" | while read LINE ;
+   do TTL=`redis-cli ttl $LINE`;
+      if [ $TTL -ge  3600 ]; then
+          echo "Del $LINE";
+          RES=`redis-cli del $LINE`;
+      fi;
+   done;
+
+   # 删除某些前缀的
+   redis-cli KEYS "126.com*" | xargs redis-cli DEL
+   #+END_SRC
+
+3. 使用lua脚本
+   #+BEGIN_SRC lua
+   // 删除所有key
+   EVAL "return redis.call('del', unpack(redis.call('keys', ARGV[1])))" 0 *
+
+   // 删除某些key
+   EVAL "return redis.call('del', unpack(redis.call('keys', ARGV[1])))" 0 126.com*
+   #+END_SRC

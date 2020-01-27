@@ -1,0 +1,42 @@
+# -*- coding: utf-8-unix; -*-
+#+TITLE:       java global proxy setting
+#+AUTHOR:      Bruce Asu
+#+EMAIL:       bruceasu@163.com
+#+DATE:        <2017-03-09 20:48>
+#+filetags:    java
+#+DESCRIPTION: 根据指定的代理信息设置系统全局的网络代理
+
+#+LANGUAGE:    en
+#+OPTIONS:     H:7 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:nil
+
+
+#+BEGIN_SRC java
+/**
+ * 根据指定的代理信息设置系统全局的网络代理
+ *
+ * @param networkBean
+ */
+public static void setNetworkProxyBySystem(NetworkBean networkBean) {
+    System.out.println("System Set Proxy : " + networkBean);
+    if (isUserProxy(networkBean)) {
+        if (networkBean.getType() == Proxy.Type.SOCKS) {
+            System.getProperties().remove("http.proxyHost");
+            System.getProperties().remove("http.proxyPort");
+            System.getProperties().setProperty("socksProxyHost", networkBean.getAddress());
+            System.getProperties().setProperty("socksProxyPort", networkBean.getPort());
+        } else {
+            System.getProperties().setProperty("http.proxyHost", networkBean.getAddress());
+            System.getProperties().setProperty("http.proxyPort", networkBean.getPort());
+        }
+        Authenticator.setDefault(new BairuiAuthenticator(networkBean.getDomainAndUsername(), networkBean.getPassword()));
+    } else if (networkBean != null) {
+        System.getProperties().remove("proxySet");
+        System.getProperties().remove("socksProxySet");
+        System.getProperties().remove("http.proxyHost");
+        System.getProperties().remove("http.proxyPort");
+        System.getProperties().remove("socksProxyHost");
+        System.getProperties().remove("socksProxyPort");
+    }
+}
+
+#+END_SRC

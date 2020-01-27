@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>Java Consistent Hash</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">Java Consistent Hash</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#java"><div class="category">java</div></a> </div>
+<div class="char-counter">2016-06-25</div>
+        <div id="content">
+<nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#org0f91433">Implementation</a></li>
+<li><a href="#org099a85b">Usage</a></li>
+</ul>
+</div>
+</nav>
+
+
+<div id="outline-container-org0f91433" class="outline-2">
+<h2 id="org0f91433">Implementation</h2>
+<div class="outline-text-2" id="text-org0f91433">
+<p>
+For completeness here is a simple implementation in Java. In order for
+consistent hashing to be effective it is important to have a hash function
+that mixes well. Most implementations of Object's hashCode do not mix well - for
+example, they typically produce a restricted number of small integer values - so
+we have aHashFunction interface to allow a custom hash function to be used. MD5
+hashes are recommended here.
+</p>
+<div class="org-src-container">
+<pre class="src src-java"><span style="font-weight: bold;">import</span> <span style="font-weight: bold; text-decoration: underline;">java</span>.<span style="font-weight: bold; text-decoration: underline;">util</span>.<span style="font-weight: bold; text-decoration: underline;">Collection</span>;
+<span style="font-weight: bold;">import</span> <span style="font-weight: bold; text-decoration: underline;">java</span>.<span style="font-weight: bold; text-decoration: underline;">util</span>.<span style="font-weight: bold; text-decoration: underline;">SortedMap</span>;
+<span style="font-weight: bold;">import</span> <span style="font-weight: bold; text-decoration: underline;">java</span>.<span style="font-weight: bold; text-decoration: underline;">util</span>.<span style="font-weight: bold; text-decoration: underline;">TreeMap</span>;
+
+<span style="font-weight: bold;">public</span> <span style="font-weight: bold;">class</span> <span style="font-weight: bold; text-decoration: underline;">ConsistentHash</span>&lt;<span style="font-weight: bold; text-decoration: underline;">T</span>&gt; {
+
+    <span style="font-weight: bold;">private</span> <span style="font-weight: bold;">final</span> <span style="font-weight: bold; text-decoration: underline;">HashFunction</span> <span style="font-weight: bold; font-style: italic;">hashFunction</span>;
+    <span style="font-weight: bold;">private</span> <span style="font-weight: bold;">final</span> <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">numberOfReplicas</span>;
+    <span style="font-weight: bold;">private</span> <span style="font-weight: bold;">final</span> <span style="font-weight: bold; text-decoration: underline;">SortedMap</span>&lt;<span style="font-weight: bold; text-decoration: underline;">Integer</span>, <span style="font-weight: bold; text-decoration: underline;">T</span>&gt; <span style="font-weight: bold; font-style: italic;">circle</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">TreeMap</span>&lt;<span style="font-weight: bold; text-decoration: underline;">Integer</span>, <span style="font-weight: bold; text-decoration: underline;">T</span>&gt;();
+
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">ConsistentHash</span>(<span style="font-weight: bold; text-decoration: underline;">HashFunction</span> <span style="font-weight: bold; font-style: italic;">hashFunction</span>, <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">numberOfReplicas</span>,
+                          &#160;&#160;&#160;&#160; <span style="font-weight: bold; text-decoration: underline;">Collection</span>&lt;<span style="font-weight: bold; text-decoration: underline;">T</span>&gt; nodes) {
+        &#160;&#160; <span style="font-weight: bold;">this</span>.hashFunction = hashFunction;
+        &#160;&#160; <span style="font-weight: bold;">this</span>.numberOfReplicas = numberOfReplicas;
+
+        &#160;&#160; <span style="font-weight: bold;">for</span> (<span style="font-weight: bold; text-decoration: underline;">T</span> <span style="font-weight: bold; font-style: italic;">node</span> : nodes) {
+            &#160;&#160;&#160;&#160; add(node);
+            &#160;&#160; }
+    }
+
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">add</span>(<span style="font-weight: bold; text-decoration: underline;">T</span> <span style="font-weight: bold; font-style: italic;">node</span>) {
+        &#160;&#160; <span style="font-weight: bold;">for</span> (<span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">i</span> = 0; i &lt; <span style="font-weight: bold; text-decoration: underline;">numberOfReplicas</span>; i++) {
+            &#160;&#160;&#160;&#160; circle.put(hashFunction.hash(node.toString() + i), node);
+            &#160;&#160; }
+    }
+
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">remove</span>(<span style="font-weight: bold; text-decoration: underline;">T</span> <span style="font-weight: bold; font-style: italic;">node</span>) {
+        &#160;&#160; <span style="font-weight: bold;">for</span> (<span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">i</span> = 0; i &lt; <span style="font-weight: bold; text-decoration: underline;">numberOfReplicas</span>; i++) {
+            &#160;&#160;&#160;&#160; circle.remove(hashFunction.hash(node.toString() + i));
+            &#160;&#160; }
+    }
+
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">T</span> <span style="font-weight: bold;">get</span>(<span style="font-weight: bold; text-decoration: underline;">Object</span> <span style="font-weight: bold; font-style: italic;">key</span>) {
+        &#160;&#160; <span style="font-weight: bold;">if</span> (circle.isEmpty()) {
+            &#160;&#160;&#160;&#160; <span style="font-weight: bold;">return</span> <span style="font-weight: bold; text-decoration: underline;">null</span>;
+            &#160;&#160; }
+        &#160;&#160; <span style="font-weight: bold; text-decoration: underline;">int</span> hash = hashFunction.hash(key);
+        &#160;&#160; <span style="font-weight: bold;">if</span> (!circle.containsKey(hash)) {
+            &#160;&#160;&#160;&#160; <span style="font-weight: bold; text-decoration: underline;">SortedMap</span>&lt;<span style="font-weight: bold; text-decoration: underline;">Integer</span>, <span style="font-weight: bold; text-decoration: underline;">T</span>&gt; tailMap = circle.tailMap(hash);
+            &#160;&#160;&#160;&#160; hash = tailMap.isEmpty() ? circle.firstKey() : tailMap.firstKey();
+            &#160;&#160; }
+        &#160;&#160; <span style="font-weight: bold;">return</span> circle.get(hash);
+    }
+
+}
+
+</pre>
+</div>
+
+<p>
+The circle is represented as a sorted map of integers, which represent the hash
+values, to caches (of type T here). When a ConsistentHash object is created each
+node is added to the circle map a number of times (controlled
+by numberOfReplicas). The location of each replica is chosen by hashing the
+node's name along with a numerical suffix, and the node is stored at each of
+these points in the map. To find a node for an object (the get method), the hash
+value of the object is used to look in the map. Most of the time there will not
+be a node stored at this hash value (since the hash value space is typically
+much larger than the number of nodes, even with replicas), so the next node is
+found by looking for the first key in the tail map. If the tail map is empty
+then we wrap around the circle by getting the first key in the circle.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-org099a85b" class="outline-2">
+<h2 id="org099a85b">Usage</h2>
+<div class="outline-text-2" id="text-org099a85b">
+<p>
+So how can you use consistent hashing? You are most likely to meet it in a
+library, rather than having to code it yourself. For example, as mentioned
+above, memcached, a distributed memory object caching system, now has clients
+that support consistent hashing. Last.fm's ketama by Richard Jones was the
+first, and there is now a Java implementation by Dustin Sallings (which inspired
+my simplified demonstration implementation above). It is interesting to note
+that it is only the client that needs to implement the consistent hashing
+algorithm - the memcached server is unchanged. Other systems that employ
+consistent hashing include Chord, which is a distributed hash table
+implementation, and Amazon's Dynamo, which is a key-value store (not available
+outside Amazon).
+</p>
+</div>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

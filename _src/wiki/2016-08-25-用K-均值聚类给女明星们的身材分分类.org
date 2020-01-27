@@ -1,0 +1,472 @@
+#+title: 用K-均值聚类给女明星们的身材分分类
+#+date: <2016-08-25 20:48>
+#+filetags: reprint
+#+options: ^:{}
+
+* 选题简介：
+做这个题目颇有哗众取宠之嫌，本来是想能否用数据挖掘来分析星座之间的关系的，但是找
+了一些数据，发现关于星座的内容都是文字描述型的，实在不知道该怎么用定量方法来分析。
+然后想着想着，发现女明星的身材，比如体重，身高，三围，这些都是可以量化的数据，然
+后就决定了这个选题了。而关于挖掘方法的选取上，由于选题的原因，肯定是要使用聚类方
+法，之所以选择k-均值聚类方法，主要是由于它简单一些，编程好实现（真正写代码的时候，
+我才发现这是个坑，整整写了两天才写完了）。    数据来源：        主要是通过搜索引
+擎找到的，有两个帖子，里面提供了几十个女明星的三围以及身高体重数据。再通过百度百
+科，基本上就找到了我要的数据了。全部总共找到了67个女明星的身材数据，中外都有。但
+是感觉可靠性很值得怀疑（毕竟国内的女明星很少会公布三围，即使公布了，也有造假之
+嫌）。由于只是实验性质的，因此数据的可信度并不需要考虑。
+
+
+** 数据存储格式：
+
+由于数据量较少，就简单的使用了文本文件的形式存储，大致格式如下，身高的单位是CM，
+体重的单位是磅，三围的单位是英寸。
+
+| 姓名   | 身高 |  体重 | 胸围 | 腰围 | 臀围 |
+|--------+------+-------+------+------+------|
+| 金巧巧 |  164 | 112.5 |   34 |   25 |   34 |
+| 杨幂   |  168 |    99 |   32 |   24 |   32 |
+| 钟丽缇 |  168 |   108 |   36 |   24 |   35 |
+| 朱茵   |  160 |    95 |   33 |   22 |   33 |
+| 赵薇   |  166 |   105 |   33 |   23 |   33 |
+| 李珊珊 |  175 |   115 |   36 |   24 |   36 |
+| 佘诗曼 |  164 |    96 |   33 |   22 |   34 |
+| 郭羡妮 |  166 |   103 |   33 |   23 |   34 |
+| 郑秀文 |  165 |   100 |   31 |   22 |   32 |
+
+** 开发工具介绍：
+算法实现语言：python 2.7,
+用到的外部类库 为NumPy，Matplotlib，Pandas。
+IDE:IPython Notebook,
+
+其为一个在浏览器端运行的开发工具，非常好用，另外，本篇文章亦是直接使用IPython Notebook写作完成的。
+
+操作
+平台：Ubuntu 12.04
+算法实现简介：
+
+    实际上并没有用到很复杂的算法，只是我技艺不
+精，代码写得很乱。整体的过程是按照PPT里面对k-均值算法的描述那个例子进行操作的，
+如首先将数据以向量表示（实际代码实现中，数据以字典形式存储，key为人名，value为身
+材数据组成的列表）。然后随意选出k个样本作为质心，将其他非质心样本和质心一一计算
+距离，得出非质心样本所属的类。第一次聚类完成，重新计算各个类的质心，将所有样本与
+这些个新质心进行距离计算，得出新的分类。然后判断新分类与旧分类直接是否有不同，如
+若不同，计算重复上述聚类过程，若同，则聚类完成。代码过程与介绍：下面这段代码用于
+计算两个列表之间的距离，也就是计算两个样本向量的距离
+
+#+BEGIN_SRC python
+import numpy as np
+def listOperation(lista,listb):
+
+    temp = (np.array(lista)-np.array(listb))**2
+    return np.sqrt(np.sum(temp))
+
+
+#+END_SRC
+
+
+下面这段代码用于计算新的分类，所用参数：第一个为已经聚好的类的结果，结果依然以字
+典存储，value则是由人名组成的列表。第二个为元素数据， 从第一个参数获取到人名，然
+后利用人名，从datadict这个原始数据中获取该人的身材数据。返回值是一个新的分类结果，
+依然是一个字典嵌套列表的形式
+
+#+BEGIN_SRC python
+import pandas as pd
+def cluster(clustdict,datadict):
+    dic={}
+    newcenter=[]
+    clustname=clustdict.keys()#这个存储的应该是聚类的名字
+    #print len(clustname)
+    for key in clustdict.keys():
+        templist = clustdict.get(key)#获取了一个分类里所有的人名
+        t = [ datadict.get(i) for i in templist]#将每个人的数据获取过来，嵌入到一个列表中，即嵌套列表
+        #print t,'n'
+        dt = pd.DataFrame(t)#将数据组织成类似与数据库中的表的数据框
+        #print dt,'dt',key
+
+
+        new = []#new是新的一个质心
+        for j in range(len(t[0])):
+            new.append(np.sum(dt[j])/len(t))
+        #print new,'new'
+        newcenter.append(new)
+        #print dt
+    #i = 0
+
+
+    #distance = 1000000000
+    #print len(newcenter)
+    #temp = 0
+    for name in datadict.keys():
+        temp = [ listOperation(datadict.get(name),new) for new in newcenter]
+        #print len(temp),'temp'
+
+        a  = temp.index(np.min(temp))
+        if dic.get(a)==None:
+            dic[a] = [name]
+        else :
+            dic[a].append(name)
+    #print temp
+    return dic
+
+#+END_SRC
+
+
+下面这段代码用于判断新的聚类结果与旧聚类结果之间是否有不同。有三个参数，第一个为
+新的聚类结果，第二个为旧的聚类结果，第三个则是原始数据。 判断方法：首先，取得各
+个分类的人名，然后计算该分类人名的hash值之和，然后将所有分类的hash值，放入到一个
+集合中去，比较两个聚类结果的集合是否相同， 就可以判断两次聚类结果是否有变化了。
+返回值是一个布尔值。
+
+#+BEGIN_SRC python
+def comparedict(dic,clustdict):
+
+    diclist = dic.values()
+    clustdictlist = clustdict.values()
+    d = set()
+    c = set()
+    for i in range(len(diclist)):
+        temp = 0
+        for j in range(len(diclist[i])):
+            temp = temp + hash(diclist[i][j])
+        d.add(temp)
+    for i in range(len(clustdictlist)):
+        temp = 0
+        for j in range(len(clustdictlist[i])):
+            temp = temp+hash(clustdictlist[i][j])
+        c.add(temp)
+
+    return d==c
+
+
+#+END_SRC
+
+
+下面这段代码的主体部分是处理第一次聚类过程的。由于第一次聚类过程其后面的过程不一
+样，第一次聚类的质心就是样本，而后面的聚类过程，则所有的样本数据都是非质心。总体
+感觉，这部分代码也是最麻烦的。完成了第一次聚类之后，使用cluster方法进行第二次聚
+类，取得新的聚类结果，然后进行两个聚类结果的判断，如此循环，直至聚类结果不再发生
+变化。此时返回已经完成的聚类结果。
+
+#+BEGIN_SRC python
+def kmean(datadict,k):
+    if len(datadict)&lt;3:
+        print ("数据少于三个，不符合要求")
+        return;
+    elif k&gt;=len(datadict):
+        print ("分类数目太多了")
+        return;
+    else:
+
+        names = []#保存所有人名
+                #print datadict.has_key('拉拉&middot;斯通'),'拉拉'
+        for i in datadict.keys():
+                    names.append(i)
+                center = names[:k]#质心
+
+                noncenter = names[k:]#非质心
+
+                distancelist = [ listOperation(datadict.get(i),datadict.get(j)) for i in noncenter
+                                for j in center]
+                #print len(distancelist)
+                #print len(noncenter),k
+                distancearray = np.array(distancelist).reshape(len(noncenter),k)
+                distancelist = distancearray.tolist()#此时，distancelist里面的第i项都是第i个非质心
+                #与所有之间距离组成的列表，不过这里没有考虑一个非质心与多个质心距离都相等的情况
+                sortlist = [ i.index(np.min(i)) for i in distancelist]#获得了与第i个非质心的距离最近的质心的序号
+                #sortlist总共有len(noncenter)项
+                #print len(sortlist),'sortlist'
+                clustdict = {}
+                [clustdict.update({i:[i]}) for i in center]#这个是必须的，因为有些质心可能没有人和它距离最近，如果不加这个，
+                #他们就不会出现在后面的处理中了
+
+                for i in range(len(noncenter)):
+                    if clustdict.get(center[sortlist[i]])==None:
+                        clustdict[center[sortlist[i]]]=[center[sortlist[i]],noncenter[i]]#如果字典中不存在该质心，
+                        #则以质心为key，非质心以列表为value
+                    else:
+                        clustdict[center[sortlist[i]]].append(noncenter[i])#字典存在该质心，将该非质心加入到
+                        #value列表里面
+
+                #此时，clustdict就以质心为key,质心和非质心组成的列表为value，形成第一次聚类。
+                dic = cluster(clustdict,datadict)
+
+                while comparedict(dic,clustdict)==False:
+                    clustdict = dic
+                    dic = cluster(clustdict,datadict)
+                return dic
+
+#+END_SRC
+
+下面这段数据用于读取数据，进行聚类分析，取得聚类结果，输出结果，输出的结果较为简
+单。分类个数设为12,经过多次的测试，发现12左右的时候，结果是比较符合预期的。
+#+BEGIN_SRC python
+
+import codecs
+
+f  = codecs.open("/home/rickey/Desktop/数据挖掘作业/data",'r','utf8')
+datadict = {}
+for line in f.readlines():
+    line = line.encode('utf8')
+    temp= line.split('t')
+    datadict[temp[0]] = [float(i) for i in temp[1:]]
+#print datadict.get('拉拉&middot;斯通')
+dict = kmean(datadict,12)
+
+for i in dict.keys():
+    temp = dict.get(i)
+    #print temp
+    for j in temp:
+        print j,
+    print 'n'
+
+#+END_SRC
+
+下面是结果：
+#+BEGIN_VERSE
+
+金巧巧 徐若瑄
+
+舒淇 玛丽莲 阿朵 关之琳 廖碧儿 张曼玉
+
+林嘉欣 安雅 李玟 温碧霞 章子怡
+
+凯蒂·派瑞 彭丹 洪欣 碧姬·芭铎 碧昂斯 巩俐 安吉利娜-朱丽 衫本彩 霍莉·威洛比 王祖贤
+
+宋慧乔 陈怡蓉 饭岛爱 杨丞琳 阿娇 苍井空 何洁 姚乐怡 佘诗曼
+
+林志玲 李珊珊
+
+萧蔷 蕾哈娜 黛塔·范·提思 钟丽缇 高圆圆 范冰冰 Maggie 韩君婷
+
+郭羡妮 巩新亮 杨幂 韩艺瑟 阿Sa 张柏芝 赵薇 桂纶镁 郑秀文 林心如 奥黛丽赫本
+
+林嘉绮 金·卡戴珊 孟广美 张梓林
+
+拉拉·斯通 应采儿 白歆惠
+
+蔡依林 李慧珍 幸田来未 张韶涵 陈乔恩 朱茵
+
+斯嘉丽·约翰逊
+
+#+END_VERSE
+
+
+  上面输出的就是聚类结果,但是这些明星我们只是在电视上看到过，只是通过上面的聚类
+结果，大概只能确定某几个是对的。下面的代码则是输出更详细的结果，如下：
+#+BEGIN_SRC python
+import codecs
+import pandas as pd
+f  = codecs.open("/home/rickey/Desktop/数据挖掘作业/data",'r','utf8')
+datadict = {}
+for line in f.readlines():
+    line = line.encode('utf8')
+    temp= line.split('t')
+    datadict[temp[0]] = [float(i) for i in temp[1:]]
+#print datadict.get('拉拉&middot;斯通')
+dict = kmean(datadict,12)
+
+for i in dict.keys():
+    temp = dict.get(i)
+    lenght=0
+    for j in temp:
+        print j.ljust(10-len(j)),
+        if len(j)&gt;9:
+            print 't%+*s'%(52,datadict.get(j))
+        else:
+            print 't%+*s'%(60,datadict.get(j))
+    data = [ datadict.get(n) for n in temp]
+    dataframe = pd.DataFrame(data)
+    t = dataframe.sum()/len(data)
+    tlist1 = t.tolist()
+    tlist2 = [float('%.1f'%i) for i in tlist1]
+    print '平均水平:','t%+*s'%(52,tlist2)
+    print 'n'
+
+#+END_SRC
+
+
+结果如下：
+#+BEGIN_VERSE
+金巧巧                              [164.0, 112.5, 34.0, 25.0, 34.0]
+徐若瑄                              [161.0, 114.0, 33.0, 25.0, 33.0]
+平均水平:                           [162.5, 113.2, 33.5, 25.0, 33.5]
+
+
+舒淇                                [168.0, 115.0, 34.0, 24.0, 35.0]
+玛丽莲                              [166.0, 120.4, 35.0, 22.0, 35.0]
+阿朵                                [166.0, 115.0, 38.0, 30.0, 38.0]
+关之琳                              [170.0, 117.0, 35.0, 24.0, 35.0]
+廖碧儿                              [171.0, 117.0, 35.0, 24.0, 34.0]
+张曼玉                              [168.0, 115.0, 32.4, 23.0, 34.0]
+平均水平:                           [168.2, 116.6, 34.9, 24.5, 35.2]
+
+
+林嘉欣                              [163.0, 108.0, 33.0, 24.0, 34.0]
+安雅                                [163.0, 104.0, 34.5, 24.0, 35.0]
+李玟                                [162.0, 105.0, 35.0, 22.5, 35.0]
+温碧霞                              [164.0, 106.0, 33.0, 23.0, 33.0]
+章子怡                              [164.0, 108.0, 32.0, 24.0, 34.0]
+平均水平:                           [163.2, 106.2, 33.5, 23.5, 34.2]
+
+
+凯蒂&middot;派瑞                    [173.0, 130.0, 34.0, 27.0, 33.0]
+彭丹                                [169.0, 125.0, 36.0, 24.0, 36.0]
+洪欣                                [167.0, 124.0, 33.0, 25.0, 35.0]
+碧姬&middot;芭铎                    [170.0, 128.0, 35.0, 23.0, 35.0]
+碧昂斯                              [170.0, 126.0, 35.2, 23.8, 34.4]
+巩俐                                [168.0, 126.0, 38.0, 30.0, 36.0]
+安吉利娜-朱丽                       [173.0, 130.0, 36.0, 27.0, 36.0]
+衫本彩                              [168.0, 124.0, 33.9, 22.6, 33.6]
+霍莉&middot;威洛比                  [170.0, 123.8, 29.3, 23.4, 30.1]
+王祖贤                              [172.0, 128.0, 33.0, 25.0, 33.0]
+平均水平:                           [170.0, 126.5, 34.3, 25.1, 34.2]
+
+
+宋慧乔                              [161.0, 101.0, 33.0, 24.0, 32.0]
+陈怡蓉                              [160.0, 101.0, 32.0, 25.0, 34.0]
+饭岛爱                              [161.0, 100.0, 33.5, 22.0, 33.5]
+杨丞琳                              [161.0, 99.0, 32.0, 23.0, 33.0]
+阿娇                                [160.0, 101.0, 32.0, 24.0, 33.0]
+苍井空                              [155.0, 101.0, 35.0, 22.4, 32.7]
+何洁                                [157.0, 104.0, 32.0, 20.0, 35.0]
+姚乐怡                              [163.0, 101.0, 34.0, 24.0, 34.0]
+佘诗曼                              [164.0, 96.0, 33.0, 22.0, 34.0]
+平均水平:                           [160.2, 100.4, 32.9, 22.9, 33.5]
+
+
+林志玲                              [174.0, 117.0, 34.0, 24.0, 36.0]
+李珊珊                              [175.0, 115.0, 36.0, 24.0, 36.0]
+平均水平:                           [174.5, 116.0, 35.0, 24.0, 36.0]
+
+
+萧蔷                                [170.0, 108.0, 34.0, 23.0, 35.0]
+蕾哈娜                              [173.0, 108.0, 30.0, 24.0, 32.0]
+黛塔&middot;范&middot;提思          [168.0, 107.0, 34.0, 22.0, 34.0]
+钟丽缇                              [168.0, 108.0, 36.0, 24.0, 35.0]
+高圆圆                              [167.0, 108.0, 33.0, 24.0, 34.0]
+范冰冰                              [168.0, 112.0, 33.0, 22.0, 32.0]
+Maggie                              [170.0, 106.0, 34.0, 24.0, 34.0]
+韩君婷                              [168.0, 108.0, 34.0, 24.0, 35.0]
+平均水平:                           [169.0, 108.1, 33.5, 23.4, 33.9]
+
+
+郭羡妮                              [166.0, 103.0, 33.0, 23.0, 34.0]
+巩新亮                              [168.0, 101.0, 34.0, 22.0, 33.0]
+杨幂                                [168.0, 99.0, 32.0, 24.0, 32.0]
+韩艺瑟                              [166.0, 101.0, 33.0, 24.0, 33.0]
+阿Sa                                [165.0, 100.0, 32.0, 23.0, 33.5]
+张柏芝                              [165.0, 101.0, 33.0, 25.0, 34.0]
+赵薇                                [166.0, 105.0, 33.0, 23.0, 33.0]
+桂纶镁                              [164.0, 103.5, 32.0, 23.0, 34.5]
+郑秀文                              [165.0, 100.0, 31.0, 22.0, 32.0]
+林心如                              [167.0, 103.5, 33.0, 22.0, 34.0]
+奥黛丽赫本                          [170.0, 103.5, 32.0, 20.0, 35.0]
+平均水平:                           [166.4, 101.9, 32.5, 22.8, 33.5]
+
+
+林嘉绮                              [180.0, 126.0, 34.0, 25.0, 35.0]
+金&middot;卡戴珊                    [175.0, 128.0, 35.5, 25.0, 36.0]
+孟广美                              [178.0, 129.0, 34.0, 26.0, 36.0]
+张梓林                              [182.0, 128.0, 34.7, 25.0, 34.8]
+平均水平:                           [178.8, 127.8, 34.5, 25.2, 35.5]
+
+
+拉拉&middot;斯通                    [173.0, 112.5, 34.0, 24.0, 35.0]
+应采儿                              [175.0, 112.5, 33.0, 24.5, 34.0]
+白歆惠                              [175.0, 112.0, 33.0, 23.0, 35.0]
+平均水平:                           [174.3, 112.3, 33.3, 23.8, 34.7]
+
+
+蔡依林                              [158.0, 92.0, 32.0, 24.0, 32.0]
+李慧珍                              [160.0, 92.0, 33.0, 24.0, 32.0]
+幸田来未                            [156.0, 92.0, 33.0, 22.0, 33.0]
+张韶涵                              [158.0, 90.0, 32.0, 23.5, 32.0]
+陈乔恩                              [165.0, 90.0, 33.0, 22.0, 33.3]
+朱茵                                [160.0, 95.0, 33.0, 22.0, 33.0]
+平均水平:                           [159.5, 91.8, 32.7, 22.9, 32.6]
+
+
+斯嘉丽&middot;约翰逊                [160.0, 108.0, 35.5, 24.6, 35.5]
+平均水平:                           [160.0, 108.0, 35.5, 24.6, 35.5]
+
+#+END_VERSE
+
+从各个类的平均水平来看，分类结果还是比较好的，不过由于三围数据差别不大（估计很多
+明星的三围数据有假），发挥主要作用的还是身高和体重。下面这段代码主要是用来观察分
+类结果中，身高，体重按照分类结果进行绘制，看看我们的分类是否比较正确
+#+BEGIN_SRC python
+import codecs
+import matplotlib.pyplot as plt
+f  = codecs.open("/home/rickey/Desktop/数据挖掘作业/data",'r','utf8')
+datadict = {}
+for line in f.readlines():
+    line = line.encode('utf8')
+    temp= line.split('t')
+    datadict[temp[0]] = [float(i) for i in temp[1:]]
+for i in range(12,13):#本来想连续多次绘图的，但是发现绘图的代码自己掌握得不好，很多不会，因此，这里等于是没用了
+    #img =plt.figure()
+
+    dict = kmean(datadict,12)
+    names = dict.values()
+    #data = []
+    colors = ['b','g','r','c','m','y','k','orange','pink','purple',[(0.0,  0.4, 0.9),
+                                                                    (0.5,  0.7, 1.0),(0.4,  0.5, 1.0)],'grey']
+    i=0
+    for classitem in names:
+        classdata=[]
+        for person in classitem:
+            figures = datadict.get(person)#获取了一个人的身材数据
+
+            classdata.append((figures[0],figures[1]))
+            ax1 = plt.subplot(111)
+            ax1.scatter(figures[0],figures[1],c=colors[i],s = i*40)
+        i= i+1
+
+#+END_SRC
+
+
+
+绘制的图像如下：
+
+
+可以看到，整体上身高和体重这两个指标形成的散点图，展示出来的聚类形式，和我们的分
+类有较大相似。但是下面的用 胸围/腰围  臀围/腰围绘制的图，就与作出的分类极大不同
+了。主要是因为找到的数据基本上很接近，难以区分。
+
+#+BEGIN_SRC python
+import codecs
+import matplotlib.pyplot as plt
+f  = codecs.open("/home/rickey/Desktop/数据挖掘作业/data",'r','utf8')
+datadict = {}
+for line in f.readlines():
+    line = line.encode('utf8')
+    temp= line.split('t')
+    datadict[temp[0]] = [float(i) for i in temp[1:]]
+for i in range(12,13):
+    #img =plt.figure()
+
+    dict = kmean(datadict,12)
+    names = dict.values()
+    #data = []
+    colors = ['b','g','r','c','m','y','k','orange','pink','purple',[(0.0,  0.4, 0.9),
+                                                                    (0.5,  0.7, 1.0),(0.4,  0.5, 1.0)],'grey']
+    i=0
+    for classitem in names:
+        classdata=[]
+        for person in classitem:
+            figures = datadict.get(person)#获取了一个人的身材数据
+
+
+            ax1 = plt.subplot(111)
+            ax1.scatter(figures[2]/figures[3],figures[4]/figures[3],c=colors[i],s = i*40)
+        i= i+1
+
+
+
+#+END_SRC
+
+绘制的图像如下：
+
+
+总结：感觉代码中还是有错误，但是我还没有发现出来，可能分类的结果还不够准确。比较
+不满意的是绘图部分，还是没有很好掌握matplotlib的使用。以后继续努力。

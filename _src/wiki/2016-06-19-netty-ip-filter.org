@@ -1,0 +1,111 @@
+# -*- coding: utf-8-unix; -*-
+#+TITLE:       Netty ip filter
+#+AUTHOR:      Bruce Asu
+#+EMAIL:       bruceasu@163.com
+#+DATE:        <2016-06-19 20:00>
+#+filetags:    java netty
+#+DESCRIPTION: 在 Netty 中实现 ip 黑白名单。
+
+#+LANGUAGE:    en
+#+OPTIONS:     H:7 num:nil toc:t \n:nil ::t |:t ^:nil -:nil f:t *:t <:nil
+
+
+* 我们经常需要用到ip白名单,ip黑名单。
+netty本身就帮我实现了一套验证机制，提供了IpFilterRuleHandler类:
+#+BEGIN_EXAMPLE
+    public class IpFilterRuleHandler extends IpFilteringHandlerImpl
+
+    public abstract class IpFilteringHandlerImpl implements ChannelUpstreamHandler, IpFilteringHandler
+#+END_EXAMPLE
+
+该类和我们经常使用的解码器(decoder)以及逻辑处理handler一样都继承于
+ChannelUpstreamHandler，所以可以很方便的把它加入到我们的
+ChannelPipeline中。例如:
+#+BEGIN_EXAMPLE
+    ChannelPipeline p = Channels.pipeline();
+    //ip过滤
+    IpFilterRuleHandler ipFilterRuleHandler = new IpFilterRuleHandler();
+    ipFilterRuleHandler.addAll(new IpFilterRuleList("+i:192.168.*"+ ", -i:*"));
+    p.addLast("ipFilter", ipFilterRuleHandler);
+
+#+END_EXAMPLE
+
+netty的ip过滤一共提供3中过滤:[i,n,c]
+- i 对应的是ip地址，相应的 +i 表示allow(允许),-i 表示deny(否认)
+- n 对应的是地址名称，相应的 +n 表示allow(允许),-n 表示deny(否认)
+- c 对应的是CIDR (Classless Inter-Domain Routing)无分类域间路由选择，相
+    应的 +c 表示allow(允许),-c表示deny(否认)
+
+* 官方中实例:
+#+BEGIN_SRC java
+package org.jboss.netty.handler.ipfilter;
+
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+
+public class IpFilterRuleTest {
+    public static boolean accept(IpFilterRuleHandler h, InetSocketAddress addr)
+            throws Exception {
+        return h.accept(null, null, addr);
+    }
+
+    public static void main(String[] args) throws Exception {
+        IpFilterRuleHandler h = new IpFilterRuleHandler();
+        h.addAll(new IpFilterRuleList("+n:localhost, -n:*"));
+        InetSocketAddress addr = new InetSocketAddress(
+                InetAddress.getLocalHost(), 8080);
+        System.out.println(accept(h, addr));
+        addr = new InetSocketAddress(InetAddress.getByName("127.0.0.2"), 8080);
+        System.out.println(accept(h, addr));
+        addr = new InetSocketAddress(InetAddress.getByName(InetAddress
+                .getLocalHost().getHostName()), 8080);
+        System.out.println(accept(h, addr));
+
+        h.clear();
+        h.addAll(new IpFilterRuleList("+n:*"
+                + InetAddress.getLocalHost().getHostName().substring(1)
+                + ", -n:*"));
+        addr = new InetSocketAddress(InetAddress.getLocalHost(), 8080);
+        System.out.println(accept(h, addr));
+        addr = new InetSocketAddress(InetAddress.getByName("127.0.0.2"), 8080);
+        System.out.println(accept(h, addr));
+        addr = new InetSocketAddress(InetAddress.getByName(InetAddress
+                .getLocalHost().getHostName()), 8080);
+        System.out.println(accept(h, addr));
+
+        h.clear();
+        h.addAll(new IpFilterRuleList("+c:"
+                + InetAddress.getLocalHost().getHostAddress() + "/32, -n:*"));
+        addr = new InetSocketAddress(InetAddress.getLocalHost(), 8080);
+        System.out.println(accept(h, addr));
+        addr = new InetSocketAddress(InetAddress.getByName("127.0.0.2"), 8080);
+        System.out.println(accept(h, addr));
+        addr = new InetSocketAddress(InetAddress.getByName(InetAddress
+                .getLocalHost().getHostName()), 8080);
+        System.out.println(accept(h, addr));
+
+        h.clear();
+        h.addAll(new IpFilterRuleList(""));
+        addr = new InetSocketAddress(InetAddress.getLocalHost(), 8080);
+        System.out.println(accept(h, addr));
+        addr = new InetSocketAddress(InetAddress.getByName("127.0.0.2"), 8080);
+        System.out.println(accept(h, addr));
+        addr = new InetSocketAddress(InetAddress.getByName(InetAddress
+                .getLocalHost().getHostName()), 8080);
+        System.out.println(accept(h, addr));
+
+        h.clear();
+        addr = new InetSocketAddress(InetAddress.getLocalHost(), 8080);
+        System.out.println(accept(h, addr));
+        addr = new InetSocketAddress(InetAddress.getByName("127.0.0.2"), 8080);
+        System.out.println(accept(h, addr));
+        addr = new InetSocketAddress(InetAddress.getByName(InetAddress
+                .getLocalHost().getHostName()), 8080);
+        System.out.println(accept(h, addr));
+    }
+}
+
+#+END_SRC
+
+* CIDR参考:
+[[http://blog.csdn.net/yaoyao4959/article/details/10084973]]

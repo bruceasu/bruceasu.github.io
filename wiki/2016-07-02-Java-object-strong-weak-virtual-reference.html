@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>Java object references</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">Java object references</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#java"><div class="category">java</div></a> </div>
+<div class="char-counter">2016-07-02</div>
+        <div id="content">
+<nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#org0acbcea">对象的强、软、弱和虚引用</a></li>
+<li><a href="#org40b8ab1">对象可及性的判断</a></li>
+<li><a href="#orgede1fbf">使用软引用构建敏感数据的缓存</a>
+<ul>
+<li><a href="#org434b010">为什么需要使用软引用</a></li>
+<li><a href="#org7944b77">如果使用软引用</a></li>
+<li><a href="#org40b71b7">使用ReferenceQueue</a></li>
+<li><a href="#org6b721c4">通过软可及对象重获方法实现Java对象的高速缓存</a></li>
+</ul>
+</li>
+<li><a href="#orgf56c99f">使用弱引用构建非敏感数据的缓存</a>
+<ul>
+<li><a href="#org85f834a">内存泄漏</a></li>
+<li><a href="#org61f62a6">如何使用WeakHashMap</a></li>
+<li><a href="#orgcd40783">配合使用引用队列WeakHashMap</a></li>
+</ul>
+</li>
+<li><a href="#orgaeb0f10">UML</a></li>
+<li><a href="#org810667d">参考资料</a></li>
+</ul>
+</div>
+</nav>
+
+<div id="outline-container-org0acbcea" class="outline-2">
+<h2 id="org0acbcea">对象的强、软、弱和虚引用</h2>
+<div class="outline-text-2" id="text-org0acbcea">
+<p>
+在JDK 1.2以前的版本中，若一个对象不被任何变量引用，那么程序就无法再使
+用这个对象。也就是说，只有对象处于可触及（reachable）状态，程序才能使
+用它。从JDK 1.2版本开始，把对象的引用分为4种级别，从而使程序能更加灵
+活地控制对象的生命周期。这4种级别由高到低依次为：强引用、软引用、弱引
+用和虚引用。 图1为对象应用类层次。图1
+</p>
+
+<ul class="org-ul">
+<li>⑴强引用（StrongReference）强引用是使用最普遍的引用。如果一个对象具有
+强引用，那垃圾回收器绝不会回收它。当内存空间不足，Java虚拟机宁愿抛出
+OutOfMemoryError错误，使程序异常终止，也不会靠随意回收具有强引用的对
+象来解决内存不足的问题。</li>
+
+<li>⑵软引用（SoftReference）如果一个对象只具有软引用，则内存空间足够，垃
+圾回收器就不会回收它；如果内存空间不足了，就会回收这些对象的内存。只
+要垃圾回收器没有回收它，该对象就可以被程序使用。软引用可用来实现内存
+敏感的高速缓存（下文给出示例）。软引用可以和一个引用队列
+（ReferenceQueue）联合使用，如果软引用所引用的对象被垃圾回收器回收，
+Java虚拟机就会把这个软引用加入到与之关联的引用队列中</li>
+
+<li>⑶弱引用（WeakReference）弱 引用与软引用的区别在于：只具有弱引用的对
+象拥有更短暂的生命周期。在垃圾回收器线程扫描它所管辖的内存区域的过程
+中，一旦发现了只具有弱引用的对象，不 管当前内存空间足够与否，都会回
+收它的内存。不过，由于垃圾回收器是一个优先级很低的线程，因此不一定会
+很快发现那些只具有弱引用的对象。弱引用可以和一个引用队列
+（ReferenceQueue）联合使用，如果弱引用所引用的对象被垃圾回收，Java虚
+拟机就会把这个弱引用加入到与之关联的引用队列中。</li>
+
+<li><p>
+⑷虚引用（PhantomReference）“虚引用”顾名思义，就是形同虚设，与其他几
+种引用都不同，虚引用并不会决定对象的生命周期。如果一个对象仅持有虚引
+用，那么它就和没有任何引用一样，在任何时候都可能被垃圾回收器回收。虚
+引用主要用来跟踪对象被垃圾回收器回收的活动。虚引用与软引用和弱引用的
+一个区别在于：虚引用必须和引用队列 （ReferenceQueue）联合使用。当垃
+圾回收器准备回收一个对象时，如果发现它还有虚引用，就会在回收对象的内
+存之前，把这个虚引用加入到与之 关联的引用队列中。
+</p>
+
+<pre class="example">
+ReferenceQueue queue = new ReferenceQueue ();
+PhantomReference pr = new PhantomReference (object, queue);
+</pre>
+
+<p>
+程序可以通过判断引用队列中是否已经加入了虚引用，来了解被引用的对象是
+否将要被垃圾回收。如果程序发现某个虚引用已经被加入到引用队列，那么就
+可以在所引用的对象的内存被回收之前采取必要的行动。
+</p></li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-org40b8ab1" class="outline-2">
+<h2 id="org40b8ab1">对象可及性的判断</h2>
+<div class="outline-text-2" id="text-org40b8ab1">
+<p>
+在很多时候，一个对象并不是从根集直接引用的，而是一个对象被其他对象引
+用，甚至同时被几个对象所引用，从而构成一个以根集为顶的树形结构。如图2
+所示在这个树形的引用链中，箭头的方向代表了引用的方向，所指向的对象是
+被引用对象。由图可以看出，从根集到一个对象可以由很多条路径。比如到达
+对象5的路径就有①-⑤，③-⑦两条路径。由此带来了一个问题，那就是某个对象的
+可及性如何判断:◆单条引用路径可及性判断:在这条路径中，最弱的一个引用决
+定对象的可及性。◆多条引用路径可及性判断:几条路径中，最强的一条的引用
+决定对象的可及性。    比如，我们假设图2中引用①和③为强引用，⑤为软引用，
+⑦为弱引用，对于对象5按照这两个判断原则，路径①-⑤取最弱的引用⑤，因此该
+路径对对象5的引用为软引用。同样，③-⑦为弱引用。在这两条路径之间取最强
+的引用，于是对象5是一个软可及对象。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgede1fbf" class="outline-2">
+<h2 id="orgede1fbf">使用软引用构建敏感数据的缓存</h2>
+<div class="outline-text-2" id="text-orgede1fbf">
+</div>
+<div id="outline-container-org434b010" class="outline-3">
+<h3 id="org434b010">为什么需要使用软引用</h3>
+<div class="outline-text-3" id="text-org434b010">
+<p>
+首先，我们看一个雇员信息查询系统的实例。我们将使用一个Java语言实现的
+雇员信息查询系统查询存储在磁盘文件或者数据库中的雇员人事档案信息。作
+为一个用户，我们完全有可能需要回头去查看几分钟甚至几秒钟前查看过的雇
+员档案信息(同样，我们在浏览WEB页面的时候也经常会使用“后退”按钮)。这时
+我们通常会有两种程序实现方式:一种是把过去查看过的雇员信息保存在内存中，
+每一个存储了雇员档案信息的Java对象的生命周期贯穿整个应用程序始终;另一
+种是当用户开始查看其他雇员的档案信息的时候，把存储了当前所查看的雇员
+档案信息的Java对 象结束引用，使得垃圾收集线程可以回收其所占用的内存空
+间，当用户再次需要浏览该雇员的档案信息的时候，重新构建该雇员的信息。
+很显然，第一种实现方法将 造成大量的内存浪费，而第二种实现的缺陷在于即
+使垃圾收集线程还没有进行垃圾收集，包含雇员档案信息的对象仍然完好地保
+存在内存中，应用程序也要重新构建 一个对象。我们知道，访问磁盘文件、访
+问网络资源、查询数据库等操作都是影响应用程序执行性能的重要因素，如果
+能重新获取那些尚未被回收的Java对象的引用，必将减少不必要的访问，大大
+提高程序的运行速度。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org7944b77" class="outline-3">
+<h3 id="org7944b77">如果使用软引用</h3>
+<div class="outline-text-3" id="text-org7944b77">
+<p>
+SoftReference的特点是它的一个实例保存对一个Java对象的软
+引用，该软引用的存在不妨碍垃圾收集线程对该Java对象的回收。也就是说，一
+旦SoftReference保存了对一个Java对象的软引用后，在垃圾线程对这个Java对
+象回收前，SoftReference类所提供的get()方法返回Java对象的强引用。另外，
+一旦垃圾线程回收该Java对象之后，get()方法将返回null。看下面代码:
+</p>
+
+<pre class="example">
+MyObject aRef = new  MyObject();
+SoftReference aSoftRef=new SoftReference(aRef);
+</pre>
+
+<p>
+此时，对于这个MyObject对象，有两个引用路径，一个是来自SoftReference对
+象的软引用，一个来自变量aReference的强引用，所以这个MyObject对象是强可
+及对象。随即，我们可以结束aReference对这个MyObject实例的强引用:
+</p>
+
+<pre class="example">
+aRef = null;
+</pre>
+
+<p>
+此后，这个MyObject对象成为了软可及对象。如果垃圾收集线程进行内存垃圾收
+集，并不会因为有一个SoftReference对该对象的引用而始终保留该对象。Java
+虚拟机的垃圾收集线程对软可及对象和其他一般Java对象进行了区别对待:软可
+及对象的清理是由垃圾收集线程根据其特定算法按照内存需求决定的。也就是说，
+垃圾收集线程会在虚拟机抛出OutOfMemoryError之前回收软可及对象，而且虚拟
+机会尽可能优先回收长时间闲置不用的软可及对象，对那些刚刚构建的或刚刚使
+用过的“新”软可反对象会被虚拟机尽可能保留。在回收这些对象之前，我们可以
+通过:
+</p>
+
+<pre class="example">
+MyObject anotherRef=(MyObject)aSoftRef.get();
+</pre>
+
+<p>
+重新获得对该实例的强引用。而回收之后，调用get()方法就只能得到null了。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org40b71b7" class="outline-3">
+<h3 id="org40b71b7">使用ReferenceQueue</h3>
+<div class="outline-text-3" id="text-org40b71b7">
+<p>
+使用ReferenceQueue清除失去了软引用对象的SoftReference作为一个Java对象，
+SoftReference对象除了具有保存软引用的特殊性之外，也具有Java对象的一般
+性。所以，当软可及对象被回收之后，虽然这个SoftReference对象的get()方
+法返回null,但这个SoftReference对象已经不再具有存在的价值，需要一个适
+当的清除机制，避免大量SoftReference对象带来的内存泄漏。在
+java.lang.ref包里还提供了ReferenceQueue。如果在创建SoftReference对象
+的时候，使用了一个ReferenceQueue对象作为参数提供给SoftReference的构造
+方法，如:
+</p>
+
+<pre class="example">
+ReferenceQueue queue = new  ReferenceQueue();
+SoftReference  ref=new  SoftReference(aMyObject, queue);
+</pre>
+
+<p>
+那么当这个SoftReference所软引用的aMyOhject被垃圾收集器回收的同时，ref
+所强引用的SoftReference对象被列入ReferenceQueue。也就是说，
+ReferenceQueue中保存的对象是Reference对象，而且是已经失去了它所软引用
+的对象的Reference对象。另外从ReferenceQueue这个名字也可以看出，它是一
+个队列，当我们调用它的poll()方法的时候，如果这个队列中不是空队列，那么
+将返回队列前面的那个Reference对象。在任何时候，我们都可以调用
+ReferenceQueue的poll()方法来检查是否有它所关心的非强可及对象被回收。如
+果队列为空，将返回一个null,否则该方法返回队列中前面的一个Reference对象。
+利用这个方法，我们可以检查哪个SoftReference所软引用的对象已经被回收。
+于是我们可以把这些失去所软引用的对象的SoftReference对象清除掉。常用的
+方式为:
+</p>
+
+<pre class="example">
+SoftReference ref = null;
+while ((ref = (EmployeeRef) q.poll()) != null) {
+    // 清除ref
+}
+</pre>
+
+<p>
+理解了ReferenceQueue的工作机制之后，我们就可以开始构造一个Java对象的高
+速缓存器了。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org6b721c4" class="outline-3">
+<h3 id="org6b721c4">通过软可及对象重获方法实现Java对象的高速缓存</h3>
+<div class="outline-text-3" id="text-org6b721c4">
+<p>
+利用Java2平台垃圾收集机制的特性以及前述的垃圾对象重获方法，我们通过一
+个雇员信息查询系统的小例子来说明如何构建一种高速缓存器来避免重复构建同
+一个对象带来的性能损失。我们将一个雇员的档案信息定义为一个Employee类:
+</p>
+
+<pre class="example">
+public class Employee {
+    private String id;// 雇员的标识号码
+    private String name;// 雇员姓名
+    private String department;// 该雇员所在部门
+    private String Phone;// 该雇员联系电话
+    private int salary;// 该雇员薪资
+    private String origin;// 该雇员信息的来源
+
+    // 构造方法
+    public Employee(String id) {
+        this.id = id;
+        getDataFromlnfoCenter();
+    }
+
+    // 到数据库中取得雇员信息
+    private void getDataFromlnfoCenter() {
+        // 和数据库建立连接井查询该雇员的信息，将查询结果赋值
+        // 给name，department，plone，salary等变量
+        // 同时将origin赋值为"From DataBase"
+    }
+……
+</pre>
+
+<p>
+这个Employee类的构造方法中我们可以预见，如果每次需要查询一个雇员的信息。
+哪怕是几秒中之前刚刚查询过的，都要重新构建一个实例，这是需要消耗很多时
+间的。下面是一个对Employee对象进行缓存的缓存器的定义:
+</p>
+
+<pre class="example">
+import java.lang.ref.ReferenceQueue;
+import java.lang.ref.SoftReference;
+import java.util.Hashtable;
+public class EmployeeCache {
+    static private EmployeeCache cache;// 一个Cache实例
+    private Hashtable&lt;String,EmployeeRef&gt; employeeRefs;// 用于Chche内容的存储
+    private ReferenceQueue&lt;Employee&gt; q;// 垃圾Reference的队列
+
+    // 继承SoftReference，使得每一个实例都具有可识别的标识。
+    // 并且该标识与其在HashMap内的key相同。
+    private class EmployeeRef extends SoftReference&lt;Employee&gt; {
+        private String _key = "";
+
+        public EmployeeRef(Employee em, ReferenceQueue&lt;Employee&gt; q) {
+            super(em, q);
+            _key = em.getID();
+        }
+    }
+
+    // 构建一个缓存器实例
+    private EmployeeCache() {
+        employeeRefs = new Hashtable&lt;String,EmployeeRef&gt;();
+        q = new ReferenceQueue&lt;Employee&gt;();
+    }
+
+    // 取得缓存器实例
+    public static EmployeeCache getInstance() {
+        if (cache == null) {
+            cache = new EmployeeCache();
+        }
+        return cache;
+    }
+
+    // 以软引用的方式对一个Employee对象的实例进行引用并保存该引用
+    private void cacheEmployee(Employee em) {
+        cleanCache();// 清除垃圾引用
+        EmployeeRef ref = new EmployeeRef(em, q);
+        employeeRefs.put(em.getID(), ref);
+    }
+
+    // 依据所指定的ID号，重新获取相应Employee对象的实例
+    public Employee getEmployee(String ID) {
+        Employee em = null;
+        // 缓存中是否有该Employee实例的软引用，如果有，从软引用中取得。
+        if (employeeRefs.containsKey(ID)) {
+            EmployeeRef ref = (EmployeeRef) employeeRefs.get(ID);
+            em = (Employee) ref.get();
+        }
+        // 如果没有软引用，或者从软引用中得到的实例是null，重新构建一个实例，
+        // 并保存对这个新建实例的软引用
+        if (em == null) {
+            em = new Employee(ID);
+            System.out.println("Retrieve From EmployeeInfoCenter. ID=" + ID);
+            this.cacheEmployee(em);
+        }
+        return em;
+    }
+
+    // 清除那些所软引用的Employee对象已经被回收的EmployeeRef对象
+    private void cleanCache() {
+        EmployeeRef ref = null;
+        while ((ref = (EmployeeRef) q.poll()) != null) {
+            employeeRefs.remove(ref._key);
+        }
+    }
+
+    // 清除Cache内的全部内容
+    public void clearCache() {
+        cleanCache();
+        employeeRefs.clear();
+        System.gc();
+        System.runFinalization();
+    }
+}
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgf56c99f" class="outline-2">
+<h2 id="orgf56c99f">使用弱引用构建非敏感数据的缓存</h2>
+<div class="outline-text-2" id="text-orgf56c99f">
+</div>
+<div id="outline-container-org85f834a" class="outline-3">
+<h3 id="org85f834a">内存泄漏</h3>
+<div class="outline-text-3" id="text-org85f834a">
+<p>
+全局 Map 造成的内存泄漏无意识对象保留最常见的原因是使用Map将元数据与临
+时对象（transient object）相关联。假定一个对象具有中等生命周期，比分配
+它的那个方法调用的生命周期长，但是比应用程序的生命周期短，如客户机的套
+接字连接。需要将一些元数据与这个套接字关联，如生成连接的用户的标识。在
+创建Socket时是不知道这些信息的，并且不能将数据添加到Socket对象上，因为
+不能控制 Socket 类或者它的子类。这时，典型的方法就是在一个全局 Map 中
+存储这些信息，如下面的 SocketManager 类所示：使用一个全局 Map 将元数据
+关联到一个对象。
+</p>
+
+<pre class="example">
+public class SocketManager {
+    private Map&lt;Socket, User&gt; m = new HashMap&lt;Socket, User&gt;();
+
+    public void setUser(Socket s, User u) {
+        m.put(s, u);
+    }
+
+    public User getUser(Socket s) {
+        return m.get(s);
+    }
+
+    public void removeUser(Socket s) {
+        m.remove(s);
+    }
+}
+</pre>
+
+<p>
+这种方法的问题是元数据的生命周期需要与套接字的生命周期挂钩，但是除非准
+确地知道什么时候程序不再需要这个套接字，并记住从 Map 中删除相应的映射，
+否则，Socket 和 User 对象将会永远留在 Map 中，远远超过响应了请求和关闭
+套接字的时间。这会阻止 Socket 和 User 对象被垃圾收集，即使应用程序不会
+再使用它们。这些对象留下来不受控制，很容易造成程序在长时间运行后内存爆
+满。除了最简单的情况，在几乎所有情况下找出什么时候 Socket 不再被程序使
+用是一件很烦人和容易出错的任务，需要人工对内存进行管理。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org61f62a6" class="outline-3">
+<h3 id="org61f62a6">如何使用WeakHashMap</h3>
+<div class="outline-text-3" id="text-org61f62a6">
+<p>
+在Java集合中有一种特殊的Map类型&#x2014;WeakHashMap，在这种Map中存放了键对象的
+弱引用，当一个键对象被垃圾回收器回收时，那么相应的值对象的引用会从Map
+中删除。WeakHashMap能够节约存储空间，可用来缓存那些非必须存在的数据。
+关于Map接口的一般用法。下面示例中MapCache类的main()方法创建了一个
+WeakHashMap对象，它存放了一组Key对象的弱引用，此外main()方法还创建了一
+个数组对象，它存放了部分Key对象的强引用。
+</p>
+
+<pre class="example">
+import java.util.WeakHashMap;
+
+class Element {
+    private String ident;
+
+    public Element(String id) {
+        ident = id;
+    }
+
+    public String toString() {
+        return ident;
+    }
+
+    public int hashCode() {
+        return ident.hashCode();
+    }
+
+    public boolean equals(Object obj) {
+        return obj instanceof Element &amp;&amp; ident.equals(((Element) obj).ident);
+    }
+
+    protected void finalize(){
+        System.out.println("Finalizing "+getClass().getSimpleName()+" "+ident);
+    }
+}
+
+class Key extends Element{
+    public Key(String id){
+        super(id);
+    }
+}
+
+class Value extends Element{
+    public Value (String id){
+        super(id);
+    }
+}
+
+
+public class CanonicalMapping {
+    public static void main(String[] args){
+        int size=1000;
+        Key[] keys=new Key[size];
+        WeakHashMap&lt;Key,Value&gt; map=new WeakHashMap&lt;Key,Value&gt;();
+        for(int i=0;i&lt;size;i++){
+            Key k=new Key(Integer.toString(i));
+            Value v=new Value(Integer.toString(i));
+            if(i%3==0)
+              keys[i]=k;
+            map.put(k, v);
+        }
+        System.gc();
+    }
+}
+</pre>
+
+<p>
+从打印结果可以看出，当执行System.gc()方法后，垃圾回收器只会回收那些仅
+仅持有弱引用的Key对象。id可以被3整除的Key对象持有强引用，因此不会被回
+收。 4.3用 WeakHashMap 堵住泄漏在 SocketManager 中防止泄漏很容易，只要
+用 WeakHashMap 代替 HashMap 就行了。（这里假定SocketManager不需要线程
+安全）。当映射的生命周期必须与键的生命周期联系在一起时，可以使用这种方
+法。用WeakHashMap修复 SocketManager。
+</p>
+
+<pre class="example">
+public class SocketManager {
+    private Map&lt;Socket,User&gt; m = new WeakHashMap&lt;Socket,User&gt;();
+
+    public void setUser(Socket s, User u) {
+        m.put(s, u);
+    }
+    public User getUser(Socket s) {
+        return m.get(s);
+    }
+}
+</pre>
+</div>
+</div>
+
+<div id="outline-container-orgcd40783" class="outline-3">
+<h3 id="orgcd40783">配合使用引用队列WeakHashMap</h3>
+<div class="outline-text-3" id="text-orgcd40783">
+<p>
+用弱引用承载映射键，这使得应用程序不再使用键对象时它们可以被垃圾收集，
+get() 实现可以根据 WeakReference.get() 是否返回 null 来区分死的映射和
+活的映射。但是这只是防止 Map 的内存消耗在应用程序的生命周期中不断增加
+所需要做的工作的一半，还需要做一些工作以便在键对象被收集后从 Map 中删
+除死项。否则，Map 会充满对应于死键的项。虽然这对于应用程序是不可见的，
+但是它仍然会造成应用程序耗尽内存。 引用队列是垃圾收集器向应用程序返回
+关于对象生命周期的信息的主要方法。弱引用有个构造函数取引用队列作为参数。
+如果用关联的引用队列创建弱引用，在弱引用对象成为 GC 候选对象时，这个引
+用对象就在引用清除后加入到引用队列中（具体参考上文软引用示例）。
+WeakHashMap 有一个名为 expungeStaleEntries() 的私有方法，大多数 Map 操
+作中会调用它，它去掉引用队列中所有失效的引用，并删除关联的映射。
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgaeb0f10" class="outline-2">
+<h2 id="orgaeb0f10">UML</h2>
+<div class="outline-text-2" id="text-orgaeb0f10">
+<p>
+使用关联类指明特定形式的引用关联类能够用来指明特定形式的引用，如弱
+（weak）、软（soft）或虚 （phantom）引用。也可以如下的构造型方式。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org810667d" class="outline-2">
+<h2 id="org810667d">参考资料</h2>
+<div class="outline-text-2" id="text-org810667d">
+<ol class="org-ol">
+<li>Thinking in Java4th</li>
+<li>孙卫琴，Java面向对象编程，电子工业出版社，2006</li>
+<li>Robert Martin,UML for java programmers,2004</li>
+<li>通过Java软可及对象的重获提高程序性能，张立明，陈朔鹰，程序员，2003，08</li>
+<li>Monica Pawlan，Reference Objects and Garbage
+Collection,[url]<a href="http://java.sun.com/developer/technicalArticles/ALT/RefObj/">http://java.sun.com/developer/technicalArticles/ALT/RefObj/</a>[/url]</li>
+<li>Brian Goetz,Java 理论与实践: 用弱引用堵住内存泄漏,
+[url]<a href="http://www-128.ibm.com/developerworks/cn/java/j-jtp11225/">http://www-128.ibm.com/developerworks/cn/java/j-jtp11225/</a>[/url]</li>
+</ol>
+</div>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

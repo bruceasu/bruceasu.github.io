@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>javascript arguments, callee, caller, apply(转)</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">javascript arguments, callee, caller, apply(转)</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#javascript"><div class="category">javascript</div></a> <a href="https://bruceasu.github.io/tags.html#reprint"><div class="category">reprint</div></a> </div>
+<div class="char-counter">2016-07-28</div>
+        <div id="content">
+<p>
+看了网上的一篇文章<a id="orgeeecf1e"></a>,记下代码,备用
+</p>
+<div class="org-src-container">
+<pre class="src src-javascript"><span style="font-weight: bold; font-style: italic;">/*</span>
+<span style="font-weight: bold; font-style: italic;"> * &#28436;&#31034;arguments&#30340;&#29992;&#27861;,&#22914;&#20309;&#33719;&#21462;&#23454;&#21442;&#25968;&#21644;&#24418;&#25968;&#25968;</span>
+<span style="font-weight: bold; font-style: italic;"> */</span>
+<span style="font-weight: bold;">function</span> <span style="font-weight: bold;">argTest</span>(<span style="font-weight: bold; font-style: italic;">a</span>,<span style="font-weight: bold; font-style: italic;">b</span>,<span style="font-weight: bold; font-style: italic;">c</span>,<span style="font-weight: bold; font-style: italic;">d</span>){
+    <span style="font-weight: bold;">var</span> <span style="font-weight: bold; font-style: italic;">numargs</span> = <span style="font-weight: bold; text-decoration: underline;">arguments</span>.length;     <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#33719;&#21462;&#34987;&#20256;&#36882;&#21442;&#25968;&#30340;&#25968;&#20540;&#12290;</span>
+    <span style="font-weight: bold;">var</span> <span style="font-weight: bold; font-style: italic;">expargs</span> = argTest.length;       <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#33719;&#21462;&#26399;&#26395;&#21442;&#25968;&#30340;&#25968;&#20540;&#12290;</span>
+    alert(<span style="font-style: italic;">"&#23454;&#21442;&#25968;&#30446;&#20026;:"</span>+numargs)
+    alert(<span style="font-style: italic;">"&#24418;&#25968;&#25968;&#30446;&#20026;:"</span>+expargs)
+
+    alert(<span style="font-weight: bold; text-decoration: underline;">arguments</span>[0])
+    alert(argTest[0])          <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">undefined &#27809;&#26377;&#36825;&#31181;&#29992;&#27861;</span>
+}
+<span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">argTest(1,2)</span>
+<span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">argTest(1,2,3,4,5)</span>
+
+<span style="font-weight: bold; font-style: italic;">/*</span>
+<span style="font-weight: bold; font-style: italic;"> *  arguments&#19981;&#26159;&#25968;&#32452;(Array&#31867;)</span>
+<span style="font-weight: bold; font-style: italic;"> */</span>
+
+Array.<span style="font-weight: bold; text-decoration: underline;">prototype</span>.selfvalue = 1;
+<span style="font-weight: bold;">function</span> <span style="font-weight: bold;">testAguments</span>(){
+    alert(<span style="font-style: italic;">"arguments.selfvalue="</span>+<span style="font-weight: bold; text-decoration: underline;">arguments</span>.selfvalue);
+}
+<span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">alert("Array.sefvalue="+new Array().selfvalue);</span>
+<span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">testAguments();</span>
+
+
+
+
+
+<span style="font-weight: bold; font-style: italic;">/*</span>
+<span style="font-weight: bold; font-style: italic;"> * &#28436;&#31034;&#20989;&#25968;&#30340;caller&#23646;&#24615;.</span>
+<span style="font-weight: bold; font-style: italic;"> * &#35828;&#26126;:(&#24403;&#21069;&#20989;&#25968;).caller:&#36820;&#22238;&#19968;&#20010;&#23545;&#20989;&#25968;&#30340;&#24341;&#29992;&#65292;&#35813;&#20989;&#25968;&#35843;&#29992;&#20102;&#24403;&#21069;&#20989;&#25968;</span>
+<span style="font-weight: bold; font-style: italic;"> */</span>
+
+<span style="font-weight: bold;">function</span> <span style="font-weight: bold;">callerDemo</span>() {
+    <span style="font-weight: bold;">if</span> (callerDemo.caller) {
+        <span style="font-weight: bold;">var</span> <span style="font-weight: bold; font-style: italic;">a</span>= callerDemo.caller.<span style="font-weight: bold; text-decoration: underline;">arguments</span>[0];
+        alert(a);
+    } <span style="font-weight: bold;">else</span> {
+        alert(<span style="font-style: italic;">"this is a top function"</span>);
+    }
+}
+<span style="font-weight: bold;">function</span> <span style="font-weight: bold;">handleCaller</span>() {
+    callerDemo();
+}
+
+<span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">callerDemo();</span>
+<span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">handleCaller("&#21442;&#25968;1","&#21442;&#25968;2");</span>
+
+
+<span style="font-weight: bold; font-style: italic;">/*</span>
+<span style="font-weight: bold; font-style: italic;"> * &#28436;&#31034;&#20989;&#25968;&#30340;callee&#23646;&#24615;.</span>
+<span style="font-weight: bold; font-style: italic;"> * &#35828;&#26126;:arguments.callee:&#21021;&#22987;&#20540;&#23601;&#26159;&#27491;&#34987;&#25191;&#34892;&#30340; Function &#23545;&#35937;,&#29992;&#20110;&#21311;&#21517;&#20989;&#25968;</span>
+<span style="font-weight: bold; font-style: italic;"> */</span>
+<span style="font-weight: bold;">function</span> <span style="font-weight: bold;">calleeDemo</span>() {
+    alert(<span style="font-weight: bold; text-decoration: underline;">arguments</span>.callee);
+}
+<span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">calleeDemo();</span>
+<span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">(function(arg0,arg1){alert("&#24418;&#25968;&#25968;&#30446;&#20026;:"+arguments.callee.length)})();</span>
+
+
+<span style="font-weight: bold; font-style: italic;">/*</span>
+<span style="font-weight: bold; font-style: italic;"> * &#28436;&#31034;apply,call&#20989;&#25968;&#30340;&#29992;&#27861;</span>
+<span style="font-weight: bold; font-style: italic;"> * &#35828;&#26126;:&#20316;&#29992;&#37117;&#26159;&#23558;&#20989;&#25968;&#32465;&#23450;&#21040;&#21478;&#22806;&#19968;&#20010;&#23545;&#35937;&#19978;&#21435;&#36816;&#34892;&#65292;&#20004;&#32773;&#20165;&#22312;&#23450;&#20041;&#21442;&#25968;&#26041;&#24335;&#26377;&#25152;&#21306;&#21035;&#65306;</span>
+<span style="font-weight: bold; font-style: italic;"> *       apply(thisArg,argArray);</span>
+<span style="font-weight: bold; font-style: italic;"> *     call(thisArg[,arg1,arg2&#8230;] ]);</span>
+<span style="font-weight: bold; font-style: italic;"> *     &#21363;&#25152;&#26377;&#20989;&#25968;&#20869;&#37096;&#30340;this&#25351;&#38024;&#37117;&#20250;&#34987;&#36171;&#20540;&#20026;thisArg</span>
+<span style="font-weight: bold; font-style: italic;"> */</span>
+
+ <span style="font-weight: bold;">function</span> <span style="font-weight: bold;">ObjectA</span>(){
+    alert(<span style="font-style: italic;">"&#25191;&#34892;ObjectA()"</span>);
+    alert(<span style="font-weight: bold; text-decoration: underline;">arguments</span>[0]);
+    <span style="font-weight: bold; text-decoration: underline;">this</span>.hit=<span style="font-weight: bold;">function</span>(<span style="font-weight: bold; font-style: italic;">msg</span>){alert(msg)}
+    <span style="font-weight: bold; text-decoration: underline;">this</span>.info=<span style="font-style: italic;">"&#25105;&#26469;&#33258;ObjectA"</span>
+ }
+
+ <span style="font-weight: bold;">function</span> <span style="font-weight: bold;">ObjectB</span>(){
+    alert(<span style="font-style: italic;">"&#25191;&#34892;ObjectB()"</span>);
+    <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#35843;&#29992;ObjectA()&#26041;&#27861;,&#21516;&#26102;ObjectA&#26500;&#36896;&#20989;&#25968;&#20013;&#30340;&#25152;&#26377;this&#23601;&#20250;&#34987;ObjectB&#20013;&#30340;this&#26367;&#20195;</span>
+    ObjectA.apply(<span style="font-weight: bold; text-decoration: underline;">this</span>,<span style="font-weight: bold; text-decoration: underline;">arguments</span>);<span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">ObjectA.call(this);</span>
+    alert(<span style="font-weight: bold; text-decoration: underline;">this</span>.info);
+ }
+ <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">ObjectB('&#21442;&#25968;0');</span>
+
+
+ <span style="font-weight: bold;">var</span> <span style="font-weight: bold; font-style: italic;">value</span>=<span style="font-style: italic;">"global &#21464;&#37327;"</span>;
+ <span style="font-weight: bold;">function</span> <span style="font-weight: bold;">Obj</span>(){
+    <span style="font-weight: bold; text-decoration: underline;">this</span>.value=<span style="font-style: italic;">"&#23545;&#35937;&#65281;"</span>;
+ }
+ <span style="font-weight: bold;">function</span> <span style="font-weight: bold;">Fun1</span>(){
+    alert(<span style="font-weight: bold; text-decoration: underline;">this</span>.value);
+ }
+ <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">Fun1();</span>
+ <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">Fun1.apply(window);</span>
+ <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">Fun1.apply(new Obj());</span>
+
+</pre>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

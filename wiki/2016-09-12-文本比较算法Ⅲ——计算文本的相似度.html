@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>文本比较算法Ⅲ——计算文本的相似度</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">文本比较算法Ⅲ——计算文本的相似度</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#reprint"><div class="category">reprint</div></a> </div>
+<div class="char-counter">2016-09-12</div>
+        <div id="content">
+<p>
+在“文本比较算法Ⅰ——LD算法”中，介绍了编辑距离的计算。
+</p>
+
+<p>
+在“文本比较算法Ⅱ——Needleman/Wunsch算法”中，介绍了最长公共子串的计算。
+</p>
+
+<p>
+在给定的字符串A和字符串B，LD(A,B)表示编辑距离，LCS(A,B)表示最长公共子串的长度。
+</p>
+
+<p>
+如何来度量它们之间的相似度呢？
+</p>
+
+<p>
+不妨设S(A,B)来表示字符串A和字符串B的相似度。那么，比较合理的相似度应该满足下列性质。
+</p>
+
+<ul class="org-ul">
+<li>性质一：0≤S(A,B)≤100%，0表示完全不相似，100%表示完全相等</li>
+<li>性质二：S(A,B)=S(B,A)</li>
+</ul>
+
+<p>
+目前，网上介绍的各种相似度的计算，都有各自的不尽合理的地方。
+</p>
+
+<ul class="org-ul">
+<li><p>
+计算公式一：
+</p>
+<pre class="example">
+S(A,B)=1/(LD(A,B)+1)
+
+</pre></li>
+</ul>
+<p>
+　能完美的满足性质二。
+　
+　当LD(A,B)=0时，S(A,B)=100%，不过无论LD(A,B)取任何值，S(A,B)＞0，不能满足性质一。
+</p>
+
+<ul class="org-ul">
+<li><p>
+计算公式二：
+</p>
+<pre class="example">
+S(A,B)=1－LD(A,B)/Len(A)
+
+</pre></li>
+</ul>
+<p>
+　当Len(B)＞Len(A)时，S(A,B)＜0。不满足性质一。
+　
+  有人会说，当S(A,B)&lt;0时，强制指定S(A,B)=0就解决问题了。
+　
+  问题是，S(A,B)=1－LD(A,B)/Len(A)，而S(B,A)=1－LD(B,A)/Len(B)。当Len(A)≠Len(B)时，S(A,B)≠S(B,A)。不满足性质二
+</p>
+
+<p>
+还有一个例子可以说明问题
+</p>
+<pre class="example">
+A="BC"，B="CD"，C="EF"
+S(A,B)=1－LD(A,B)/Len(A)=1－2/2=0
+S(A,C)=1－LD(A,C)/Len(A)=1－2/2=0
+</pre>
+
+<p>
+A和B的相似度与A和C的相似度是一样的。不过很明显的是B比C更接近A
+</p>
+
+<ul class="org-ul">
+<li>计算公式三：S(A,B)=LCS(A,B)/Len(A)</li>
+</ul>
+<p>
+　这个公式能完美的满足的性质一
+　
+  不过当Len(A)≠Len(B)时，S(A,B)≠S(B,A)。不满足性质二
+　
+  用一个例子说明问题
+</p>
+<pre class="example">
+A="BC"，B="BCD"，C="BCEF"
+S(A,B)=LCS(A,B)/Len(A)=2/2=100%
+S(A,C)=LCS(A,C)/Len(A)=2/2=100%
+</pre>
+
+<p>
+A和B的相似度与A和C的相似度是一样的。不过很明显的是B比C更接近A
+</p>
+
+<p>
+上面是网上能找到的三个计算公式，从上面的分析来看都有各自的局限性。
+</p>
+
+<p>
+我们看一个例子：
+</p>
+<pre class="example">
+A=GGATCGA，B=GAATTCAGTTA，LD(A,B)=5，LCS(A,B)=6
+</pre>
+<p>
+他们的匹配为：
+</p>
+<p class="verse">
+A：GGA<sub>TC</sub><sub>G</sub>_<sub>A</sub><br>
+B：GAATTCAGTTA<br>
+</p>
+<p>
+　
+可以看出上面蓝色的部分表示的是LCS部分，黑色表示的是LD部分。
+</p>
+
+<p>
+因此，给出一个新的公式
+</p>
+<pre class="example">
+S(A,B)=LCS(A,B)/(LD(A,B)+LCS(A,B))
+
+</pre>
+<p>
+这个公式能解决上述三个公式的种种不足。
+</p>
+
+<p>
+而LD(A,B)+LCS(A,B)表示两个字符串A、B的最佳匹配字串的长度。这个是唯一的。
+</p>
+
+<p>
+还有注意的是LD(A,B)+LCS(A,B)和Max(Len(A),Len(B))这两个并不完全相等。
+</p>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

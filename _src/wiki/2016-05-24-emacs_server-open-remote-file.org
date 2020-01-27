@@ -1,0 +1,85 @@
+# -*- coding: utf-8-unix; -*-
+#+TITLE:       使用本地 emacs_server 模式打开远程文件(转)
+#+AUTHOR:      Bruce Asu
+#+EMAIL:       bruceasu@163.com
+#+DATE:        <2016-05-24 20:00>
+#+filetags:    emacs reprint
+#+LANGUAGE:    en
+#+OPTIONS:     H:7 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:nil
+
+
+使用emacs的用户都知道，一般要打开远程机器上的文件要使用TrampMode模式，调用方式如
+下:
+: C-x C-f /remotehost:filename  RET (or /method:user@remotehost:filename)
+
+但,这样打开有点麻烦,你必要输入用户名和机器ip等。emacs提供了一种client/server的模
+式,当我们在本地打开一个emacs,可以将它作为server运行。然后,在本地机器的其他都方要
+用emacs的时候,如在terminal中要调用emacs,只需要使用emacsclient就可以了。
+
+我希望的情形是这样的:
+
+1. 把本地机器的emacs当成一个server
+2. 用ssh登录一台远程机器
+3. 在远程机器上使用emacsclient 调用本地的emacs server
+4. 然后,我们就可以在本地机器上编辑远程机器上的文件了
+
+在网上找了一个人给出的解决方法,链接 (墙外),现把步骤整理如下:注:这里我远程机器
+HOST名为:yoks 登录的用户名为:lisp
+
+1. 设置Port Forwarding(或者称为SSH Tunneling),编辑本都机器的 ~/.ssh/config 加入
+   以下内容
+   #+BEGIN_EXAMPLE
+   Host yoks
+   User lisp
+   ControlMaster auto
+   ControlPath ~/.ssh/yoks.sock
+   RemoteForward 9999 localhost:9999
+
+   #+END_EXAMPLE
+
+   这里将本地的9999端口与远程的9999端口进行影射(map)
+
+2. 配制本地机器的emacs,将以下代码加入到你的emacs配制文件(.emacs 或 init.el)中
+   #+BEGIN_SRC emacs-lisp
+   (setq server-use-tcp t
+         server-port 9999)
+   (require 'server)
+   (defun server-start-and-copy ()
+        "start server and copy auth files"
+     (when (and (fboundp 'server-running-p)   ; function exists.
+                         (not (server-running-p)))
+             (server-start)                       ; emacs as server mode
+           (when (file-exists-p "/lisp@yoks:~/.emacs.d/server/server")
+                   (delete-file "/lisp@yoks:~/.emacs.d/server/server"))
+           (copy-file "~/.emacs.d/server/server" "/lisp@yoks:~/.emacs.d/server/server")
+               ))
+   (add-hook 'emacs-startup-hook 'server-start-and-copy)
+   #+END_SRC
+
+   这里一方面启动emacs server模式,将其tcp端口设置为9999. 然后将server
+   文件拷贝到远程机器(lisp@yoks)上同时在本地机器上重启emacs
+
+3. 在远程机器上编辑一个以下脚本,名字为 ec, 并加入可执行权限
+   #+BEGIN_SRC sh
+   #!/bin/bash
+   params=()
+   for p in "$@"; do
+      if [ "$p" == "-n" ]; then
+          params += ( "$p" )
+      elif [ "${p:0:1}" == "+" ]; then
+          params += ( "$p" )
+      else
+          params += ( "/ssh:yoks:"$(readlink -f $p) )
+      fi
+   done
+   emacsclient "${params[@]}"
+    #+END_SRC
+
+4. 用ssh登录远程机器,然后用ec打开一个文件,我们发现,文件内容出现在了本
+   地机器的emacs中了,如下:
+
+   可以看到它的地址为: /ssh:yoks:/home/lisp 这个地址和我们用TRAMP模式打开的一模一样.
+
+注意:我的机器环境为Linux
+
+版权声明：本文为博主原创文章，未经博主允许不得转载。

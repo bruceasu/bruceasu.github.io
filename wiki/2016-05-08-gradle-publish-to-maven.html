@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>gradle publish to maven repository</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">gradle publish to maven repository</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#gradle"><div class="category">gradle</div></a> <a href="https://bruceasu.github.io/tags.html#maven"><div class="category">maven</div></a> </div>
+<div class="char-counter">2016-05-08</div>
+        <div id="content">
+<div class="org-src-container">
+<pre class="src src-groovy">apply plugin: 'maven-publish'
+
+publishing {
+    publications {
+	maven(MavenPublication) {
+	    //指定group/artifact/version信息，可以不填。默认使用项目group/name/version作为groupId/artifactId/version
+	    groupId project.group
+	    artifactId project.name
+	    version project.version
+	    //如果是war包填写components.web，如果是jar包填写components.java
+	    from components.java
+
+	    //配置上传源码
+	    artifact sourceJar {
+		classifier "sources"
+	    }
+
+	}
+    }
+    repositories {
+	maven {
+	    //指定要上传的maven私服仓库
+	    url = "http://localhost:8080/repository/internal/"
+	    //认证用户和密码
+	    credentials {
+		username 'developer'
+		password 'password123'
+	    }
+	}
+    }
+}
+</pre>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

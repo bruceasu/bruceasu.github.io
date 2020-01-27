@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>CENTOS 6.6 永久修改DNS地址的方法</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">CENTOS 6.6 永久修改DNS地址的方法</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#linux"><div class="category">linux</div></a> </div>
+<div class="char-counter">2016-05-09</div>
+        <div id="content">
+<ol class="org-ol">
+<li><p>
+配置ip地址文件 /etc/sysconfig/network-scripts/ifcfg-eth0
+添加一行
+</p>
+<pre class="example">
+DNS1=8.8.8.8    #手动添加一个dns地址；
+DNS配置文件/etc/resolv.conf 的地址会自动匹配手动添加的地址；重启网卡后不会清除；
+
+</pre></li>
+
+<li><p>
+手动添加dns地址
+DNS配置文件 /etc/resolv.conf
+nameserver 192.168.1.17
+配置ip地址文件 /etc/sysconfig/network-scripts/ifcfg-eth0
+添加
+</p>
+<pre class="example">
+PEERDNS=no    #添加后不会去打扰 /etc/resolv.conf 文件
+
+</pre></li>
+</ol>
+
+<p>
+DHCP环境下，在/etc/resolv.conf 手动添加dns地址后，重启网卡，会自动清除；
+添加到/etc/sysconfig/network-scripts/ifcfg-eth0的dns地址不会清除；
+静态配置IP的环境下，/etc/resolv.conf 手动添加dns地址，重启后不会清除；
+</p>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

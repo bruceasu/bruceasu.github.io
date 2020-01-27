@@ -1,0 +1,148 @@
+# -*- coding: utf-8-unix; -*-
+#+TITLE:       ant
+#+AUTHOR:      Bruce Asu
+#+EMAIL:       bruceasu@163.com
+#+DATE:        <2010-11-04 20:00>
+#+filetags:    java ant
+#+DESCRIPTION: ant example.
+
+#+LANGUAGE:    en
+#+OPTIONS:     H:7 num:nil toc:t \n:nil ::t |:t ^:nil -:nil f:t *:t <:nil
+
+
+
+* 前期准备
+
+由于涉及到打包签名,所以在开始全部工作之前,我们先做好签名的准备工作。那就是建立密
+钥库（keystore）。只有建立好了密码库，才能在签名工具中顺利地实现签名。这里建立密
+钥库要用到j2SDK提供的工具keytool,我们通过命令行来运行就行了。关于这个工具的详细
+用法请见j2SDK官方文档的%JAVA_DOC%\tooldocs\windows\keytool.html目录下。
+
+:  keytool -genkey -dname "cn=Wuxing, ou=Gdyj, o=Geoway, c=CN" -alias geoway -keypass geoway -keystore d:\keystore -storepass geoway
+
+这个命令在D盘根目录下创建了一个名为keystore的密钥库文件。密码是geoway,它为“通用
+名为Wuxing,组织部门为Gdyj,组织为Geoway,国家代码为CN”实体生成了一个公有/私有的密
+钥对。它用默认的“DSA”密钥产生算法来创建密码，达1024位长。
+
+注意：为了顺利地调用上述命令，请将%JAVA_HOME%\bin目录加入你的系统环境变量path中。
+
+说明：下面的ANT配置文件build.xml中，出现中文的地方，请根据实际情况进行修改。
+
+
+* 下面正式开始我们的ANT配置。
+#+BEGIN_SRC xml
+  <!—建立工程名为Client，默认的任务是compile -->
+    <project name="Client" default="compile" basedir=".">
+      <!— 设置全局属性 -->
+      <property name="src" value="源代目录"/>
+      <property name="classes" value="类目录"/>
+      <property name="docs" value="API文档目录"/>
+      <property name="version" value="版本号"/>
+      <property name="lib" value="编译时要调用的库目录"/>
+      <property name="clientjar" value="打包目录"/>
+      <property name="profile" value="proguard配置文件路径"/>
+      <property name="proguardhome" value=" proguard3.0.7目录"/>
+      <!—
+      为了更进一步体现Ant强大的功能，我们把签名过程写在批处理文件中，供ANT调用.
+      签名代码如下:
+    jarsigner -keystore d:\keystore -storepass geoway -keypass geoway -signedjar Client.jar Client_1.jar geoway
+      注意：得先定位目录到签名包所在目录
+      -->
+      <property name="sign" value="签名批处理文件路径"/>
+      <property name="IALOC" value="InstallAnywhere安装目录"/>
+      <property name="INSTALLLOC" value="IA配置文件路径"/>
+      <!—- 任务1：清空 -->
+      <target name="clean">
+      <delete failonerror="false" includeemptydirs="true">
+        <fileset dir="${classes}"/>
+      </delete>
+      <delete failonerror="false" includeemptydirs="true">
+        <fileset dir="${clientjar}\com"/>
+       </delete>
+       <mkdir dir="${classes}" />
+      </target>
+      <!— 任务2：编译 -->
+      <target name="compile">
+        <javac srcdir="${src}" destdir="${classes}" debug="true"
+          optimize="false" deprecation="true">
+          <classpath>
+            <fileset dir="${lib}">
+              <include name="**/*.jar"/>
+            </fileset>
+          </classpath>
+        </javac>
+        <copy todir="${classes}">
+          <fileset dir="${src}">
+          <include name="**/*.properties"/>
+          <include name="**/*.xml"/>
+          <include name="**/*.gif"/>
+          <include name="**/*.png"/>
+         </fileset>
+        </copy>
+        <!—-  任务3：将文件全局复制到打包目录 -->
+        <copy todir="${clientjar}">
+          <fileset dir="${classes}">
+            <include name="**/*.*"/>
+          </fileset>
+        </copy>
+      </target>
+      <!-— 任务4： 调用签名批处理文件 -->
+      <target name="run">
+       <exec executable="${sign}">
+       </exec>
+       </target>
+       <!—- 任务5： 混淆
+       注意:要先安装Proguard,并用图形界面做好配置文件,本文附录提供了简单介绍和下载地址。
+        -->
+      <target name="obfuscate">
+        <taskdef resource="proguard/ant/task.properties"
+            classpath="${proguardhome}/lib/proguard.jar" />
+        <proguard configuration="${profile}" />
+          <!—- 混淆完成之后要进行签名 -->
+          <exec executable="${sign}"></exec>
+      </target>
+      <!-— 任务6： 用InstallAnywhere构造安装包
+      注意:要先安装InstallAnywhere,并用其做好配置文件。
+      -->
+      <target name="buildInstaller">
+        <taskdef name="buildinstaller" classname="com.zerog.ia.integration.ant.InstallAnywhereAntTask"/>
+          <buildfullinstaller
+             IAlocation="${IALOC}"
+             IAProjectFile="${INSTALLLOC}"
+             BuildWindowsWithVM="true"
+             OptimizeWebInstaller="true"
+             InstallerStdErrRedirect="C:\console.txt"/>
+      </target>
+      <!-—任务7： 利用Javadoc工具生成API文档 -->
+      <target name="docs" depends="compile">
+        <delete>
+          <fileset dir="${docs}/api" includes="**/*.*" />
+        </delete>
+        <javadoc packagenames="生成的API文档要用的源代码包名"
+            sourcepath="${src}"
+            destdir="${docs}/api"
+            author="true"
+            version="true"
+            use="true"
+            windowtitle="Geoway Client API version ${version}">
+          <doctitle>文档头内容，可用HTML代码</doctitle>
+          <bottom>文档底部内容，可用HTML代码</bottom>
+          <classpath>
+            <fileset dir="${lib}">
+              <include name="**/*.jar"/>
+            </fileset>
+            <pathelement location="${classes}"/>
+          </classpath>
+        </javadoc>
+        </target>
+    </project>
+
+
+#+END_SRC
+
+* 附录：Proguard简介绍及下载
+
+ProGuard是一个开源的混淆和优化工具,不但能在类内部的代码段内部对代码进行混淆,更能
+将类名、各种类型方法、变量进行混淆（其实如果建立的代码包不要作为库在外部调用的话，
+其实进行全混淆是一种很不错的选择）。
+下载地址为:<http://easynews.dl.sourceforge.net/sourceforge/proguard/proguard3.0.7.zip>

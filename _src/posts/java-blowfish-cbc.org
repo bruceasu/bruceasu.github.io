@@ -1,0 +1,215 @@
+# -*- coding: utf-8-unix; -*-
+#+TITLE:       用java实现blowfish-cbc编码解码算法
+#+AUTHOR:      Bruce Asu
+#+EMAIL:       bruceasu@163.com
+#+DATE:        <2016-07-05 20:00>
+#+filetags: java
+#+DESCRIPTION: 用java实现blowfish-cbc编码解码算法，以便与C,php等语言对接...
+
+#+LANGUAGE:    en
+#+OPTIONS:     H:7 num:nil toc:t \n:nil ::t |:t ^:nil -:nil f:t *:t <:nil
+
+* 前言
+
+在平时运用中，往往会遇到不同语言之间的通讯，比如php中实现一种加密传输算法，需要
+用Java进行解码，这时就要保持不同语言加密解密的一致性，才能正常通信。本文就通过
+Java实现php中mcrypt进行des加密相同的效果。其中引入了不太被人关注的“初始化向量”，
+并对主要代码进行了注释。
+
+
+* Java代码
+#+BEGIN_SRC java
+
+    /**
+     * 用java完成DES对称加密
+     * BlowFish 算法用来加密 64Bit 长度的字符串
+     * 用 BlowFish 算法加密信息,需要两个过程:
+     * 1.密钥预处理
+     * 2.信息加密
+     *
+     * by tester 2010-11-04
+     */
+    public class BlowfishTest {
+           // 密钥
+           public static final String ENCRYPT_KEY = "WkoxWT0kJik=";
+           // 初始化向量
+           public static final String INITIALIZATION_VECTOR = "cnBHdE9F";
+           // 转换模式
+           public static final String TRANSFORMATION = "Blowfish/CBC/PKCS5Padding";
+           // 密钥算法名称
+           public static final String BLOWFISH = "Blowfish";
+           /**
+            * 加密
+            *
+            * @param key
+            *            密钥
+            * @param text
+            *           加密文本
+            * @param initializationVector
+            *           初始化向量
+            */
+           public static String encrypt(String key, String text, String initializationVector)
+                throws Exception {
+                  // 根据给定的字节数组构造一个密钥  Blowfish-与给定的密钥内容相关联的密钥算法的名称
+                  SecretKeySpec sksSpec = new SecretKeySpec(key.getBytes(), BLOWFISH);
+                  // 使用 initializationVector 中的字节作为 IV 来构造一个 IvParameterSpec 对象
+                  AlgorithmParameterSpec iv = new IvParameterSpec(initializationVector.getBytes());
+                  // 返回实现指定转换的 Cipher 对象
+                  Cipher cipher = Cipher.getInstance(TRANSFORMATION);
+                  // 用密钥和随机源初始化此 Cipher
+                  cipher.init(Cipher.ENCRYPT_MODE, sksSpec, iv);
+                  // 加密文本
+                  byte[] encrypted = cipher.doFinal(text.getBytes());
+                  return new String(Hex.encodeHex(encrypted));
+           }
+           /**
+            * 解密
+            *
+            * @param key
+            *            密钥
+            * @param text
+            *           加密文本
+            * @param initializationVector
+            *           初始化向量
+            */
+           public static String decrypt(String key, String text, String initializationVector)
+                throws Exception {
+                  byte[] encrypted = null;
+                  try{
+                         encrypted = Hex.decodeHex(text.toCharArray());
+                  } catch (Exception e)
+                  {
+                         e.printStackTrace();
+                  }
+                  SecretKeySpec skeSpect = new SecretKeySpec(key.getBytes(), BLOWFISH);
+                  AlgorithmParameterSpec iv = new IvParameterSpec(initializationVector.getBytes());
+                  Cipher cipher = Cipher.getInstance(TRANSFORMATION);
+                  cipher.init(Cipher.DECRYPT_MODE, skeSpect, iv);
+                  byte[] decrypted = cipher.doFinal(encrypted);
+                  return new String(decrypted);
+           }
+           /**
+            * Base64字符解码
+            *
+            * @param base64String
+            *            -- 被解码字符
+            * @return 解码后字符
+            */
+           public static String base64Decoder(String base64String) {
+                  if(StringUtils.isEmpty(base64String))
+                  {
+                         return base64String;
+                  }
+                  else
+                  {
+                         return new String(Base64.decodeBase64(base64String));
+                  }
+           }
+           /**
+            * Base64字符编码
+            *
+            * @param sourceString
+            *            -- 字符
+            * @return 编码后字符
+            */
+           public static String base64Encoder(String sourceString) {
+                  if(StringUtils.isEmpty(sourceString))
+                  {
+                         return sourceString;
+                  }
+                  else
+                  {
+                         return Base64.encodeBase64String(sourceString.getBytes());
+                  }
+           }
+           /**
+            * @param 测试方法
+            */
+           public static void main(String[] args) {
+                  // TODO Auto-generated method stub
+                  try {
+                         String encryptStr = base64Encoder(encrypt(ENCRYPT_KEY, " tester ",INITIALIZATION_VECTOR));
+                         System.out.print("tester加密后得到：" + encryptStr +""n");
+                         String decryptStr = decrypt(ENCRYPT_KEY, base64Decoder(encryptStr), INITIALIZATION_VECTOR);
+                         System.out.print(encryptStr+"解密后得到："+decryptStr);
+                  } catch (Exception e) {
+                         // TODO Auto-generated catch block
+                         e.printStackTrace();
+                  }
+           }
+    }
+#+END_SRC
+
+
+实行结果：
+#+BEGIN_EXAMPLE
+
+    tester加密后得到：MzA2YThlZDFlNjI2MmYwYTc2Y2VlZTc5M2ZjMDQ0YjI=
+    MzA2YThlZDFlNjI2MmYwYTc2Y2VlZTc5M2ZjMDQ0YjI=解密后得到：tester
+
+
+#+END_EXAMPLE
+
+* 其他语言同类实现方法介绍
+** Php：
+: string mcrypt\_cbc ( int $cipher , string $key , string $data , int $mode [, string$iv ] )
+** C*：
+: CryptoStream cs = new CryptoStream(ms, des.CreateEncryptor(), CryptoStreamMode.Write)
+
+* DES加密算法介绍
+
+DES算法为密码体制中的对称密码体制，又被成为美国数据加密标准，是1972年美国IBM公司
+研制的对称密码体制加密算法。其密钥长度为56位，明文按64位进行分组，将分组后的明文
+组和56位的密钥按位替代或交换的方法形成密文组的加密方法。
+
+
+* 基本原理
+
+入口参数有三个:key、data、mode。 key为加密解密使用的密钥，data为加密解密的数据，
+mode为其工作模式。当模式为加密模式时，明文按照64位进行分组，形成明文组，key用于
+对数据加密，当模式为解密模式时，key用于对数据解密。实际运用中，密钥只用到了64位
+中的56位，这样才具有高的安全性。
+
+DES( Data Encryption Standard)算法，于1977年得到美国政府的正式许可，是一种用56位
+密钥来加密64位数据的方法。虽然56位密钥的DES算法已经风光不在,而且常有用Des加密的
+明文被破译的报道,但是了解一下昔日美国的标准加密算法总是有益的,而且目前DES算法得
+到了广泛的应用,在某些场合,仍然发挥着余热。
+
+
+** 常见加密模式介绍：
+
+*** ECB(Electronic Code Book:电码本)
+
+ECB是最简单的模式，同样的明文分组总是加密成相同的密文分组。这对于发送单一的块数
+据来说是非常好的，如密钥。但对执行一个加密的信息流来说不是很好，因为如果相同的明
+文多次发送以后，同样的密文也会被多次发送。
+
+ECB最大的弱点是对每一个块用相同的方式进行加密。如果我们的密钥或者数据不断发生变
+化，ECB是完全安全的。但是如果类似的块经过同样的密钥加密发出以后，攻击者可能获得
+一些我们并不想让别人知道的信息。
+
+*** CBC(Cipher Block Chaining:密码分组链接)
+
+CBC模式改变了加密方式，同样的明文分组不一定加密或解密同样的密文块，因此解决了ECB
+存在的主要问题。CBC使用前一分组的信息加密当前分组。因此和ECB模式大不相同。这个方
+法依然存在问题，那就是相同的信息仍然加密成相同的密文，因为所有的分组是同时变成密
+文分组的。为了解决这个问题，我们引入一个Initial ization Vector(初始化向量)，也就
+是前不久有人问到的IV问题。IV仅仅是一个初始化加密程序的随机数。它无需秘密保存，但
+队每一个信息来说它都是不同的，通过这个方式，即使有两条相同的信息，只要他们有不同
+的IV，那么他们加密后的密文也是不同的。从这个意义上来说，初始化向量无疑就和口令加
+密过程中使用的盐值是一样的。
+
+CBC很适合文本传输，但它每一次都需要传送一个完整的数据块，一般选8个字符。
+
+*** CFB(Cipher FeedBack:密码反馈)
+
+CFB的工作方式与CBC类似，但它可以执行更小的数据块，典型的有8位，这非常适合加密像
+聊天对话这样的信息，因为每次可以发送单一的字节数据块。和CBC一样，C FB也需要一个
+IV，且相同及钥发送的每条信息的IV都必须是唯一的。
+
+*** OFB(Output FeedBack:输出反馈)
+
+OFB除了在传输中能给数据提供更好的保护，防止数据丢失外，其他和CFB类似。密文中一位
+出错，也只造成明文中的一位出错，其他的方式会造成整个块丢失。
+
+** 本文采用的是CBC(Cipher Block Chaining:密码分组链接)的模式。

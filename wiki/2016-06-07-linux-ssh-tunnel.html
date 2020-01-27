@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>ssh tunnel</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">ssh tunnel</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#linux"><div class="category">linux</div></a> </div>
+<div class="char-counter">2016-06-07</div>
+        <div id="content">
+<nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#org7d08c3f">SSH命令参数:</a></li>
+<li><a href="#org609076f">实例详解:</a></li>
+<li><a href="#org5174476">案例</a></li>
+</ul>
+</div>
+</nav>
+
+<div id="outline-container-org7d08c3f" class="outline-2">
+<h2 id="org7d08c3f">SSH命令参数:</h2>
+<div class="outline-text-2" id="text-org7d08c3f">
+<p class="verse">
+-f 后台运行,不打开终端<br>
+-R 反向,让对方也可以连接过来<br>
+-l 登录用户名,loginname<br>
+-c 指定加密方式:blowfish|3des<br>
+-v 显示详细信息,verbose<br>
+-V 显示版本,version<br>
+-a 关闭代理认证<br>
+-A 启用代理认证<br>
+-C 启用Gzip压缩<br>
+-e 设定跳脱字节<br>
+-g 允许远程主机连接本地指派的port<br>
+-i 选择所读取的RSA 认证识别的档案<br>
+-n 重导 stdin 到 /dev/null<br>
+-N 不执行远程命令<br>
+-p 指定ssh服务端口<br>
+-q 安静模式<br>
+-L local_port:host:port 指派本地的 port 到相对远程host地址的port<br>
+-R remote_port:host:port 指派远程的 port 到相对本地host地址的port<br>
+-2 强制 ssh 去使用协议版本2<br>
+-4 强制 ssh 去使用 IPv4 地址<br>
+-6 强制 ssh 去使用 IPv6 地址<br>
+<br>
+</p>
+</div>
+</div>
+
+<div id="outline-container-org609076f" class="outline-2">
+<h2 id="org609076f">实例详解:</h2>
+<div class="outline-text-2" id="text-org609076f">
+<ol class="org-ol">
+<li>建立隧道，本地端口 7070, 将 222.111.111.10 设置动态 Socket 代理</li>
+</ol>
+<pre class="example">
+ssh -p 22 -D 7070 ping.bao@222.111.111.10
+
+</pre>
+
+<ol class="org-ol">
+<li>建立隧道，本地端口8080, 对应相对 SSH 服务器 222.111.111.10 的 192.168.6.26:22</li>
+</ol>
+<pre class="example">
+ssh -L 8080:192.168.6.26:22 ping.bao@222.111.111.10
+
+</pre>
+
+<ol class="org-ol">
+<li>建立隧道，在远程 SSH 服务器 222.111.111.10 端口 8888, 对应本地的 192.168.1.121:80</li>
+</ol>
+<pre class="example">
+ssh -R 8888:192.168.1.121:80 ping.bao@222.111.111.10
+
+</pre>
+
+<ol class="org-ol">
+<li>建立隧道,放在后台</li>
+</ol>
+<pre class="example">
+ssh -Nf -p 22 -D 7070 ping.bao@222.111.111.10
+
+</pre>
+</div>
+</div>
+<div id="outline-container-org5174476" class="outline-2">
+<h2 id="org5174476">案例</h2>
+<div class="outline-text-2" id="text-org5174476">
+<p>
+假设有这样一个需求，需要从家中访问公司内网机器，可以用ssh遂道技术来作转发，遂道
+分正向遂道和反向遂道两种，如果数据流向与ssh的顺序（从 ssh client -&gt; ssh server )
+相同即为正向遂道（用－L标识），如果数据流向与  ssh的顺序相反即为反向遂道。下面直
+接上两张图来说明：
+</p>
+
+<p>
+上面第一张图是正向遂道，数据流向与ssh的顺序（指ssh client -&gt; ssh server)相同，即
+从192.168.1.1：80处监听到请求数据之后，通过ssh遂道，最后转发给了ssh server端6300
+端口去处理。6300：192.168.1.1：80 都是前部分是ssh server, 后端分是ssh client
+</p>
+
+<p>
+上面第二张图是反向遂道，数据流向与ssh的顺序(指ssh client -&gt; ssh server)相反，即
+从ssh server端的6300端口监听到数据之后，通过ssh遂道，最后转给了192.168.1.1：8080
+</p>
+
+<p>
+仔细想想上面两张图吧，下面直接上代码，从家中访问公司内网的机器，必须在公司有一台
+可以从家中访问得到的跳转机（例IP：10.10.10.10)，要访问的内网机IP为192.168.1.1 。
+</p>
+
+<ol class="org-ol">
+<li><p>
+如果用反向遂道实现的话，
+先修改ssh server的 `/etc/ssh/sshd_config` 中的
+</p>
+<pre class="example">
+GatewayPorts  yes
+
+</pre>
+
+<p>
+重启sshd,  /etc/init.d/sshd restart
+</p>
+
+<pre class="example">
+ssh -R 8422:192.168.1.1:8422 -R 61616:192.168.1.1:61616  root@10.10.10.10 -g -N -C -o TCPKeepAlive=yes
+
+</pre></li>
+
+<li><p>
+如果用正向遂道的话，
+先修改ssh server的 `/etc/ssh/sshd_config` 中的
+</p>
+<pre class="example">
+AllowTcpForwarding true
+
+</pre>
+
+<p>
+重启sshd,  /etc/init.d/sshd restart
+</p>
+
+<p>
+接着要 ssh 登录到跳转机上执行下列命令：
+</p>
+<pre class="example">
+ssh -L 8422:localhost:8422 -L 61616:localhost:61616  root@9.125.13.30 -g -N -C -o TCPKeepAlive=yes
+
+</pre></li>
+</ol>
+
+<p>
+   如果报错“open failed: administratively prohibited: open failed”，那是因为上面
+   的localhost处应该是ssh client的IP
+</p>
+
+<p>
+example: <a href="https://9.123.100.152:8422/ibm/console/login.do?action=secure">https://9.123.100.152:8422/ibm/console/login.do?action=secure</a>
+</p>
+
+<p>
+上述的缺点就是,为每个端口都得开一个tunnel，所以可以通过
+</p>
+<pre class="example">
+ssh命令 -D 的参数( [地址:]端口 )
+
+</pre>
+
+<p>
+含义是在某个本地地址的某个端口上开SOCKS服务进行监听，把这个端口的数据通信以加密
+形式转发到ssh的另一端。例如：我们翻墙的原理，要防墙必须国外有一台ssh server
+</p>
+
+<ol class="org-ol">
+<li><p>
+首先，通过
+</p>
+<pre class="example">
+ssh -lquqissh -N -D 7070 root@yourForeignSSHhost
+
+</pre>
+<p>
+如 s20.flyssh.net
+</p></li>
+<li>在 firefox 中设置使用 socket v5 的端口代理，端口为 7070 (选项菜单里的“高级”选项卡
+的 Network 子选项卡中设置 Connection)</li>
+
+<li><p>
+如何仍然有问题，可在 firefox的地址栏输入 about:config 配置使用远程DNS：
+</p>
+<pre class="example">
+network.proxy.socks_remote_dns=true
+
+</pre></li>
+</ol>
+
+<p>
+上面的翻墙有个缺点，就是你访问国内的网站它也会用代理，这样就慢啊，所以你也可用
+autoproxy 插件选择仅在访问某些站点的使用指定代理，哪些不用代理
+</p>
+
+<p>
+原理如下：比如 firefox 现在要访问 www.163.com，firefox 先将请求数据转给 socket
+代理端口 7070, 然后通过 ssh 遂道，最后由国外的 ssh server 主机去根据远程的 DNS
+访问 www.163.com
+</p>
+
+<p>
+但上述需要应用程序支持socket代理，但有的程序不支持怎么办，可以用透明 tsocks, 它能
+让普通程序也走sock代理，在
+</p>
+<pre class="example">
+yum install tsocks
+
+</pre>
+
+<p>
+安装后，修改配置文件 /etc/tsocks.conf，可以在样本文件 tsocks.conf.sample 的基础
+上修改，通常只要配置 server = 127.0.0.1即可，其他都可以默认。例如svn服务，再用
+</p>
+<pre class="example">
+ssh -D 1080 -f -N 用户名@公司服务器的公网地址
+
+</pre>
+
+<p>
+在本机的 1080 端口开启 SOCKS 服务；然后按照你平时使用 svn 的习惯，只是在命令前加上
+tsocks，类似这样:
+</p>
+<pre class="example">
+tsocks svn up 或者 tsocks svn ci -m 'aaaa'
+
+</pre>
+<p>
+等等即可。
+</p>
+
+<p>
+如果是http代理，用squid，安装后修改配置
+</p>
+<p class="verse">
+sudo vim /etc/squid/squid.conf<br>
+http_access allow localnet<br>
+http_access allow all<br>
+<br>
+# And finally deny all other access to this proxy<br>
+#http_access deny all<br>
+<br>
+# Squid normally listens to port 3128<br>
+http_port 21<br>
+<br>
+sudo service squid start<br>
+<br>
+</p>
+
+<p>
+使用时，
+</p>
+
+<ol class="org-ol">
+<li><p>
+在shell中，导入
+</p>
+<pre class="example">
+http_proxy=http://&lt;httpproxyIP&gt;:21
+
+</pre>
+
+<p>
+环境变量，然后 wget www.g.cn
+</p></li>
+<li><p>
+yum源中使用代理，
+</p>
+<p class="verse">
+&#xa0;&#xa0;&#xa0;vim /etc/yum.conf<br>
+   proxy=<a href="http://">http://</a>&lt;httpproxyIP&gt;:21<br>
+   然后 sudo yum install git<br>
+<br>
+</p></li>
+</ol>
+
+<p>
+要实现ssh自动跳转非常简单，在  ~/.ssh/config
+</p>
+<p class="verse">
+&#xa0;&#xa0;Host server-*<br>
+  User ubuntu<br>
+  IdentityFile ~/.stack/myssh.key<br>
+  ProxyCommand ssh hua@&lt;forward-machine&gt; nc -q0 %h.stack %p<br>
+</p>
+
+<p>
+SSHebang 就是一个这样自动分发如上配置的工具
+</p>
+</div>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

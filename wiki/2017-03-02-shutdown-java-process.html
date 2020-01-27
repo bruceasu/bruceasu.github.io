@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>Shutdown java process</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">Shutdown java process</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#java"><div class="category">java</div></a> </div>
+<div class="char-counter">2017-03-02</div>
+        <div id="content">
+<nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#org80c7492">使用命令直接关闭Java进程</a>
+<ul>
+<li><a href="#org858dba5">linux环境</a>
+<ul>
+<li><a href="#orga9088d7">方法1：截取进程pid，再kill</a></li>
+<li><a href="#org51247c0">方法2：</a></li>
+</ul>
+</li>
+<li><a href="#org5a9bebb">windows环境，使用taskkill</a>
+<ul>
+<li><a href="#org289a0d4">方法1：</a></li>
+<li><a href="#orgb673e49">方法2：</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#org6598dc9">Java进程接收信号，程序进行退出相关操作</a>
+<ul>
+<li><a href="#org285394f">信号简介</a></li>
+<li><a href="#orga86652c">平台相关性</a></li>
+<li><a href="#org9d99816">信号选择</a></li>
+<li><a href="#org3d7ee03">在Java编程中使用信号的实际收益</a></li>
+</ul>
+</li>
+<li><a href="#orgd7b3ada">启动时注册一个钩子函数</a></li>
+<li><a href="#org48a7382">通过监控 shutdown file</a></li>
+<li><a href="#orgfc85570">通过JMX的mbean远程控制来实现</a></li>
+</ul>
+</div>
+</nav>
+<p>
+Java应用程序退出的触发机制有：
+</p>
+<ol class="org-ol">
+<li>自动结束：应用没有存活线程或只有后台线程时;</li>
+<li>System.exit(0);</li>
+<li>kill 或 ctrl+C;</li>
+<li>kill -9 强制退出，会导致数据丢失;</li>
+<li>通过kill -s TERM PID,传递信号给Java进程，然后程序中进行退出操作;</li>
+<li>注册一个钩子函数，使用kill时，java虚拟机会对钩子函数中资源进行回收;</li>
+<li>监控一个shutdown file是否存在，可以通过给file设定权限，只有拥有权限的人才能停止进程;</li>
+<li>另外打开一个端口，监听端口里的命令，收到命令后调用System.exit;</li>
+<li>通过JMX的mbean远程控制来实现;</li>
+</ol>
+
+<div id="outline-container-org80c7492" class="outline-2">
+<h2 id="org80c7492">使用命令直接关闭Java进程</h2>
+<div class="outline-text-2" id="text-org80c7492">
+</div>
+<div id="outline-container-org858dba5" class="outline-3">
+<h3 id="org858dba5">linux环境</h3>
+<div class="outline-text-3" id="text-org858dba5">
+<ol class="org-ol">
+<li>使用kill -9/-15 pid</li>
+<li>kill -15 pid 据说比-9更安全</li>
+</ol>
+</div>
+
+<div id="outline-container-orga9088d7" class="outline-4">
+<h4 id="orga9088d7">方法1：截取进程pid，再kill</h4>
+<div class="outline-text-4" id="text-orga9088d7">
+<pre class="example">
+ps -ef | grep root(当前登录用户) | grep test.jar | grep -v grep | cut -c10-15 | xargs kill -9
+
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org51247c0" class="outline-4">
+<h4 id="org51247c0">方法2：</h4>
+<div class="outline-text-4" id="text-org51247c0">
+<ol class="org-ol">
+<li><p>
+找到linux下的所有Java进程的pids
+</p>
+<pre class="example">
+ps -ef  | grep 当前登录用户 | grep test.jar | grep -v grep | awk '{print $2}'
+
+</pre></li>
+<li><p>
+循环得到的pids，
+</p>
+<pre class="example">
+kill -9 pid
+
+</pre></li>
+</ol>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org5a9bebb" class="outline-3">
+<h3 id="org5a9bebb">windows环境，使用taskkill</h3>
+<div class="outline-text-3" id="text-org5a9bebb">
+<p>
+kill 命令行参数中带tomcat字符串的 java.exe 进程
+</p>
+</div>
+
+<div id="outline-container-org289a0d4" class="outline-4">
+<h4 id="org289a0d4">方法1：</h4>
+<div class="outline-text-4" id="text-org289a0d4">
+<pre class="example">
+wmic process where (Name="java.exe" AND CommandLine like "%%tomcat%%") call terminate &gt;nul 2&gt;nul
+
+</pre>
+</div>
+</div>
+
+<div id="outline-container-orgb673e49" class="outline-4">
+<h4 id="orgb673e49">方法2：</h4>
+<div class="outline-text-4" id="text-orgb673e49">
+<pre class="example">
+C:\Users\Administrator&gt;wmic process where name="javaw.exe" get Processid
+ProcessId
+768
+C:\Users\Administrator&gt;taskkill /F /PID 768
+成功: 已终止 PID 为 768 的进程。
+</pre>
+</div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org6598dc9" class="outline-2">
+<h2 id="org6598dc9">Java进程接收信号，程序进行退出相关操作</h2>
+<div class="outline-text-2" id="text-org6598dc9">
+</div>
+<div id="outline-container-org285394f" class="outline-3">
+<h3 id="org285394f">信号简介</h3>
+<div class="outline-text-3" id="text-org285394f">
+<p>
+信号是在软件层次上对中断机制的一种模拟，在原理上，一个进程收到一个信号与处理器收到一个中断请求可以说是一样的。
+通俗来讲，信号就是进程间的一种异步通信机制。 典型的例子: <code>kill -s SIGKILL pid</code> (即 <code>kill -9 pid</code> ) 立即杀死指定pid的进程。
+在上面这个例子中，SIGKILL就是往pid进程发送的信号。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orga86652c" class="outline-3">
+<h3 id="orga86652c">平台相关性</h3>
+<div class="outline-text-3" id="text-orga86652c">
+<p>
+信号具有平台相关性，不同平台下能使用的信号种类是有差异的。
+在Linux下支持的信号(对比信号列表查看描述) SEGV, KILL, FPE, BUS, SYS, CPU,
+FSZ, ABRT, INT, TERM, HUP, USR1, USR2, QUIT, BREAK, TRAP, PIPE
+在Windows下支持的信号 SEGV, KILL, FPE, ABRT, INT, TERM, BREAK
+</p>
+</div>
+</div>
+
+<div id="outline-container-org9d99816" class="outline-3">
+<h3 id="org9d99816">信号选择</h3>
+<div class="outline-text-3" id="text-org9d99816">
+<p>
+为了不干扰正常信号的运作，又能模拟Java异步通知，我们需要先选定一种特殊的信号。
+通过查看信号列表上的描述，发现 SIGUSR1 和 SIGUSR2
+是允许用户自定义的信号。 那么选择它们，理论上就不会影响正常功能了。
+这里我选用了USR2作为传递信号。原因是USR1有可能已被其他APP占用。
+</p>
+
+<p>
+实例代码
+</p>
+
+<div class="org-src-container">
+<pre class="src src-java"><span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#22312;Java&#32534;&#31243;&#20013;&#20351;&#29992;&#20449;&#21495;&#30340;&#23454;&#38469;&#25910;&#30410;</span>
+<span style="font-weight: bold;">import</span> <span style="font-weight: bold; text-decoration: underline;">sun</span>.<span style="font-weight: bold; text-decoration: underline;">misc</span>.<span style="font-weight: bold; text-decoration: underline;">SignalHandler</span>;
+<span style="font-weight: bold;">import</span> <span style="font-weight: bold; text-decoration: underline;">sun</span>.<span style="font-weight: bold; text-decoration: underline;">misc</span>.<span style="font-weight: bold; text-decoration: underline;">Signal</span>;
+<span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">install signals</span>
+<span style="font-weight: bold; text-decoration: underline;">Signal</span> <span style="font-weight: bold; font-style: italic;">sig</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">Signal</span>(<span style="font-style: italic;">"USR2"</span>);
+Signal.handle(sig, <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">SignalHandler</span> (){
+        <span style="font-weight: bold; text-decoration: underline;">@Override</span>
+        <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">handle</span>(<span style="font-weight: bold; text-decoration: underline;">Signal</span> <span style="font-weight: bold; font-style: italic;">signalName</span>) {
+               System.out.println(signalName.getName() + <span style="font-style: italic;">" is recevied."</span>);
+               <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">do some things</span>
+               <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#20063;&#21487;&#20197;&#21478;&#22806;&#23450;&#20041;&#19968;&#20010;&#31867;&#23454;&#29616;SignalHandler&#25509;&#21475;</span>
+        }
+});
+<span style="font-weight: bold; text-decoration: underline;">Signal</span> <span style="font-weight: bold; font-style: italic;">sigTERM</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">Signal</span>(<span style="font-style: italic;">"TERM"</span>);<span style="font-weight: bold; font-style: italic;">/* </span><span style="font-weight: bold; font-style: italic;">&#27880;&#20876;KILL&#20449;&#21495; */</span>
+<span style="font-weight: bold; text-decoration: underline;">Signal</span> <span style="font-weight: bold; font-style: italic;">sigINT</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">Signal</span>(<span style="font-style: italic;">"INT"</span>);<span style="font-weight: bold; font-style: italic;">/* </span><span style="font-weight: bold; font-style: italic;">&#27880;&#20876;CTRL+C&#20449;&#21495; */</span>
+</pre>
+</div>
+
+<p>
+发送信号前，需要先通过 ps 或 jps 获取java的进程id，然后运行
+<code>kill -s SIGUSR2 pid</code>
+</p>
+
+<p>
+如果在java的stdout 看到 SIGUSR2 is recevied 字样，说明信号被成功送达了。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org3d7ee03" class="outline-3">
+<h3 id="org3d7ee03">在Java编程中使用信号的实际收益</h3>
+<div class="outline-text-3" id="text-org3d7ee03">
+<p>
+信号作为最原始的进程间异步通信手段，有着诸多局限性的，比如不能传递上下文，信号随
+时都可能被占用导致冲突，不具备扩展性等，所以对功能性需求来说，使用它收益甚微。
+</p>
+
+<p>
+当然，信号也不是一无是处，除了用作简单的异步通知外，还可以利用它的进程事件通知功
+能。
+</p>
+
+<p>
+在Java里有一个典型例子，就是 ShutdownHook。
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgd7b3ada" class="outline-2">
+<h2 id="orgd7b3ada">启动时注册一个钩子函数</h2>
+<div class="outline-text-2" id="text-orgd7b3ada">
+<p>
+每个java进程都可以注册钩子线程，钩子线程程在程序退出的前被执行（kill -9强制退出
+除外）java的hook，钩子函数，在虚拟机启动时注册一个钩子函数，在程序退出(如使用
+kill命令，kill -9强制退出除外)前将会执行，java虚拟机会对钩子函数中资源进行回收。
+</p>
+
+<p>
+关闭钩子
+</p>
+
+<p>
+只是一个已初始化但尚未启动的线程。虚拟机开始启用其关闭序列时，它会以某种未指定的
+顺序启动所有已注册的关闭钩子，并让它们同时运行。运行完所有的钩子后，如果已启用退
+出终结，那么虚拟机接着会运行所有未调用的终结方法。最后，虚拟机会暂停。注意，关闭
+序列期间会继续运行守护线程，如果通过调用 exit方法来发起关闭序列，那么 也会继续运
+行非守护线程。
+</p>
+
+<p>
+一旦开始了关闭序列，则只能通过调用 halt方法来停止这个序列，此方法可强行终止虚拟
+机。
+</p>
+
+<p>
+一旦开始了关闭序列，则不可能注册新的关闭钩子或取消注册先前已注册的钩子。尝试执行
+这些操作会导致抛出 IllegalStateException 。
+</p>
+
+<p>
+关闭钩子可在虚拟机生命周期中的特定时间运行，因此应保护性地对其进行编码。特别是应
+将关闭钩子编写为线程安全的，并尽可能地避免死锁。关闭钩子还应该不盲目地依靠某些服
+务，这些服务可能已注册了自己的关闭钩子，所以其本身可能正处于关闭进程中。例如，试
+图使用其他基于线程的服务（如 AWT 事件指派线程）可能导致死锁。
+</p>
+
+<p>
+关闭钩子应该快速地完成其工作。当程序调用 exit时，虚拟机应该迅速地关闭并退出。由
+于用户注销或系统关闭而终止虚拟机时，底层的操作系统可能只允许在固定的时间内关闭并
+退出。因此在关闭钩子中尝试进行任何用户交互或执行长时间的计算都是不明智的。
+</p>
+
+<p>
+与其他所有线程一样，通过调用线程 ThreadGroup 对象的 uncaughtException方法，可在
+关闭钩子中处理未捕获的异常。此方法的默认实现是将该异常的堆栈跟踪打印至System#err
+并终止线程；它不会导致虚拟机退出或暂停。仅在很少的情况下，虚拟机可能会中止，也就
+是没有完全关闭就停止运行。虚拟机被外部终止时会出现这种现象，比如在Unix 上使用
+SIGKILL 信号或者在 Microsoft Windows 上调用 TerminateProcess。如果由于内部数据结
+构损坏或试图访问不存在的内存而导致本机方法执行错误，那么可能也会中止虚拟机。如果
+虚拟机中止，则无法保证是否将运行关闭钩子。
+</p>
+
+<p>
+注册钩子线程代码如下：
+//t为线程
+ <code>Runtime.getRuntime().addShutdownHook(t);</code>
+</p>
+
+<p>
+我们可以在钩子线程里做一些善后数据清理等事情，以保证程序是平滑退出的。一般服务或
+框架运行都要考虑其生命周期：如spring容器的context.stop()方法。再如线程池
+ExecutorService的shutdown方法，它会保证不接受新任务，并把未执行完的任务做完。
+</p>
+
+<p>
+我们再设计服务的时候也要考虑到停止时的stop方法，以便于退出时由钩子线程调用。
+</p>
+
+<p>
+注册了钩子线程后，程序收到退出信号后，会保持程序运行，直到钩子线程执行完毕，才把
+程序的所有线程停止并退出，下面示例代码可以说明这一点：
+</p>
+
+<div class="org-src-container">
+<pre class="src src-java"><span style="font-weight: bold;">public</span> <span style="font-weight: bold;">class</span> <span style="font-weight: bold; text-decoration: underline;">ShutDownTest</span> {
+
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">main</span>(<span style="font-weight: bold; text-decoration: underline;">String</span>[] <span style="font-weight: bold; font-style: italic;">args</span>) {
+        <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#27880;&#20876;&#31532;&#19968;&#20010;&#38057;&#23376;</span>
+        Runtime.getRuntime().addShutdownHook(<span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">Thread</span>() {
+
+            <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">run</span>() {
+                <span style="font-weight: bold;">try</span> {
+                    Thread.currentThread().sleep(5000);
+                } <span style="font-weight: bold;">catch</span> (<span style="font-weight: bold; text-decoration: underline;">InterruptedException</span> <span style="font-weight: bold; font-style: italic;">e</span>) {
+                    e.printStackTrace();
+                }
+                System.out.println(<span style="font-style: italic;">"clean task1 completed."</span>);
+            }
+        });
+        <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#27880;&#20876;&#31532;&#20108;&#20010;&#38057;&#23376;</span>
+        Runtime.getRuntime().addShutdownHook(<span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">Thread</span>() {
+
+            <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">run</span>() {
+                <span style="font-weight: bold;">try</span> {
+                    Thread.currentThread().sleep(10000);
+                } <span style="font-weight: bold;">catch</span> (<span style="font-weight: bold; text-decoration: underline;">InterruptedException</span> <span style="font-weight: bold; font-style: italic;">e</span>) {
+                    e.printStackTrace();
+                }
+                System.out.println(<span style="font-style: italic;">"clean task2 completed"</span>);
+            }
+        });
+        <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#21551;&#21160;&#23376;&#32447;&#31243;</span>
+        <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">Thread</span>() {
+
+            <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">run</span>() {
+                <span style="font-weight: bold;">while</span> (<span style="font-weight: bold; text-decoration: underline;">true</span>) {
+                    <span style="font-weight: bold;">try</span> {
+                        Thread.currentThread().sleep(1000);
+                        System.out.println(<span style="font-style: italic;">"sub thread is running"</span>);
+                    } <span style="font-weight: bold;">catch</span> (<span style="font-weight: bold; text-decoration: underline;">InterruptedException</span> <span style="font-weight: bold; font-style: italic;">e</span>) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }.start();
+        <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#31243;&#24207;&#36864;&#20986;</span>
+        System.exit(0);
+    }
+
+}
+</pre>
+</div>
+
+<p class="verse">
+程序输出<br>
+&gt; sub thread is running &gt; sub thread is running &gt; sub thread is running<br>
+&gt; sub thread is running &gt; clean task1 completed. &gt; sub thread is running<br>
+&gt; sub thread is running &gt; sub thread is running &gt; sub thread is running<br>
+&gt; sub thread is running &gt; clean task2 completed<br>
+<br>
+</p>
+
+<p>
+注意点：
+</p>
+
+<p>
+钩子线程里只处理善后，目标是尽可能快的退出且不保证有脏数据。如果钩子线程里做过多
+事情，或者发生阻塞，那么可能出现kill失效，程序不能退出的情况，这是需要强制退出。
+如以下程序会导致kill失效，需要强制退出，因为钩子线程阻塞了：
+</p>
+
+<div class="org-src-container">
+<pre class="src src-java"><span style="font-weight: bold;">public</span> <span style="font-weight: bold;">class</span> <span style="font-weight: bold; text-decoration: underline;">ShutDownTest</span> {
+
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">main</span>(<span style="font-weight: bold; text-decoration: underline;">String</span>[] <span style="font-weight: bold; font-style: italic;">args</span>) {
+        <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#27880;&#20876;&#38057;&#23376;</span>
+        Runtime.getRuntime().addShutdownHook(<span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">Thread</span>() {
+            <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">run</span>() {
+                <span style="font-weight: bold;">synchronized</span> (ShutdownFileTest.<span style="font-weight: bold;">class</span>) {
+                    <span style="font-weight: bold;">try</span> {
+                        ShutdownFileTest.<span style="font-weight: bold;">class</span>.wait();
+                    } <span style="font-weight: bold;">catch</span> (<span style="font-weight: bold; text-decoration: underline;">InterruptedException</span> <span style="font-weight: bold; font-style: italic;">e</span>) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+        <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#21551;&#21160;&#23376;&#32447;&#31243;</span>
+        <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">Thread</span>() {
+            <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">run</span>() {
+                <span style="font-weight: bold;">while</span> (<span style="font-weight: bold; text-decoration: underline;">true</span>) {
+                    <span style="font-weight: bold;">try</span> {
+                        Thread.currentThread().sleep(1000);
+                        System.out.println(<span style="font-style: italic;">"sub thread is running"</span>);
+                    } <span style="font-weight: bold;">catch</span> (<span style="font-weight: bold; text-decoration: underline;">InterruptedException</span> <span style="font-weight: bold; font-style: italic;">e</span>) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }.start();
+       System.exit(0);
+       }
+
+}
+</pre>
+</div>
+
+<p>
+没使用线程池的多线程中，钩子函数接收到关闭命令时传递死循环标志位多线程，用线程启
+动死循环，然后钩子函数接收到关闭命令时传递死循环标志位。
+</p>
+
+<div class="org-src-container">
+<pre class="src src-java"><span style="font-weight: bold;">public</span> <span style="font-weight: bold;">class</span> <span style="font-weight: bold; text-decoration: underline;">MyRunnable</span> <span style="font-weight: bold;">implements</span> <span style="font-weight: bold; text-decoration: underline;">Runnable</span> {
+    <span style="font-weight: bold;">private</span> <span style="font-weight: bold;">volatile</span> <span style="font-weight: bold; text-decoration: underline;">boolean</span> <span style="font-weight: bold; font-style: italic;">quit</span> =<span style="font-weight: bold; text-decoration: underline;">false</span>;
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">boolean</span> <span style="font-weight: bold;">isQuit</span>() {
+        <span style="font-weight: bold;">return</span> quit;
+    }
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">setQuit</span>(<span style="font-weight: bold; text-decoration: underline;">boolean</span> <span style="font-weight: bold; font-style: italic;">quit</span>) {
+        <span style="font-weight: bold;">this</span>.quit = quit;
+    }
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">run</span>() {
+        <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">i</span> = 0;
+        <span style="font-weight: bold;">while</span> (!quit) {
+            doStuff(i++);
+        }
+    }
+    <span style="font-weight: bold;">private</span> <span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">doStuff</span>(<span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">n</span>) {
+        <span style="font-weight: bold;">try</span> {
+            Thread.sleep(1000);
+        } <span style="font-weight: bold;">catch</span> (<span style="font-weight: bold; text-decoration: underline;">InterruptedException</span> <span style="font-weight: bold; font-style: italic;">e</span>) {
+            e.printStackTrace();
+        }
+        System.out.println(<span style="font-style: italic;">"-----&gt;"</span> + n);
+    }
+}
+<span style="font-weight: bold;">import</span> <span style="font-weight: bold; text-decoration: underline;">java</span>.<span style="font-weight: bold; text-decoration: underline;">util</span>.<span style="font-weight: bold; text-decoration: underline;">concurrent</span>.<span style="font-weight: bold; text-decoration: underline;">ExecutorService</span>;
+<span style="font-weight: bold;">import</span> <span style="font-weight: bold; text-decoration: underline;">java</span>.<span style="font-weight: bold; text-decoration: underline;">util</span>.<span style="font-weight: bold; text-decoration: underline;">concurrent</span>.<span style="font-weight: bold; text-decoration: underline;">Executors</span>;
+<span style="font-weight: bold;">public</span> <span style="font-weight: bold;">class</span> <span style="font-weight: bold; text-decoration: underline;">TestThread</span> {
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">main</span>(<span style="font-weight: bold; text-decoration: underline;">String</span>[] <span style="font-weight: bold; font-style: italic;">args</span>) {
+        <span style="font-weight: bold;">final</span> <span style="font-weight: bold; text-decoration: underline;">MyRunnable</span> <span style="font-weight: bold; font-style: italic;">test</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">MyRunnable</span>();
+
+        <span style="font-weight: bold;">final</span> <span style="font-weight: bold; text-decoration: underline;">ExecutorService</span> <span style="font-weight: bold; font-style: italic;">executorService</span> = Executors.newCachedThreadPool();
+        executorService.execute(test);
+        Runtime.getRuntime().addShutdownHook(<span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">Thread</span>() {
+            <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">run</span>() {
+                test.setQuit(<span style="font-weight: bold; text-decoration: underline;">true</span>);
+                sleep(5);
+                    <span style="font-weight: bold;">while</span> (test.isQuit()&amp;&amp;!executorService.isShutdown()) {
+                        System.out.println(<span style="font-style: italic;">"thread is closed, now ,close executorService!"</span>); <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">optional</span>
+                        executorService.shutdown();
+                    }
+            }
+            <span style="font-weight: bold;">private</span> <span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">sleep</span>(<span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">n</span>) {
+                <span style="font-weight: bold;">try</span> {
+                    Thread.sleep(1000*n);
+                } <span style="font-weight: bold;">catch</span> (<span style="font-weight: bold; text-decoration: underline;">InterruptedException</span> <span style="font-weight: bold; font-style: italic;">e</span>) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+}
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org48a7382" class="outline-2">
+<h2 id="org48a7382">通过监控 shutdown file</h2>
+<div class="outline-text-2" id="text-org48a7382">
+<p>
+系统创建一个 shutdown file, 程序监控一个 shutdown file 是否存在系统创建一个
+shutdown file. 并监听 shutdown file 是否存在。如果发现 shutdown file 不存在了，
+那么调用System.exit,将程序退出。
+</p>
+
+<p>
+如果期望只有特定的人才能终止该程序，那么你可以给文件设定权限，这样就只有特定的人
+可以终止程序。
+</p>
+
+<div class="org-src-container">
+<pre class="src src-java"><span style="font-weight: bold;">import</span> <span style="font-weight: bold; text-decoration: underline;">java</span>.<span style="font-weight: bold; text-decoration: underline;">io</span>.<span style="font-weight: bold; text-decoration: underline;">File</span>;
+<span style="font-weight: bold;">import</span> <span style="font-weight: bold; text-decoration: underline;">java</span>.<span style="font-weight: bold; text-decoration: underline;">io</span>.<span style="font-weight: bold; text-decoration: underline;">IOException</span>;
+
+<span style="font-weight: bold;">public</span> <span style="font-weight: bold;">class</span> <span style="font-weight: bold; text-decoration: underline;">ShutdownFileTest</span> {
+
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">main</span>(<span style="font-weight: bold; text-decoration: underline;">String</span>[] <span style="font-weight: bold; font-style: italic;">args</span>) {
+        <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#21551;&#21160;&#23376;&#32447;&#31243;</span>
+        <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">Thread</span>() {
+
+            <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">run</span>() {
+                <span style="font-weight: bold;">while</span> (<span style="font-weight: bold; text-decoration: underline;">true</span>) {
+                    <span style="font-weight: bold;">try</span> {
+                        Thread.currentThread().sleep(1000);
+                        System.out.println(<span style="font-style: italic;">"sub thread is running"</span>);
+                    } <span style="font-weight: bold;">catch</span> (<span style="font-weight: bold; text-decoration: underline;">InterruptedException</span> <span style="font-weight: bold; font-style: italic;">e</span>) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }.start();
+
+        <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#21551;&#21160;shutdownfile&#30417;&#21548;&#32447;&#31243;</span>
+        <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">Thread</span>() {
+
+            <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">run</span>() {
+                <span style="font-weight: bold; text-decoration: underline;">File</span> <span style="font-weight: bold; font-style: italic;">shutDownFile</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">File</span>(<span style="font-style: italic;">"a.shutdown"</span>);
+                <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">create shut down file</span>
+                <span style="font-weight: bold;">if</span> (!shutDownFile.exists()) {
+                    <span style="font-weight: bold;">try</span> {
+                        shutDownFile.createNewFile();
+                    } <span style="font-weight: bold;">catch</span> (<span style="font-weight: bold; text-decoration: underline;">IOException</span> <span style="font-weight: bold; font-style: italic;">e</span>) {
+                        e.printStackTrace();
+                    }
+                }
+                <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">watch for file deleted then shutdown</span>
+                <span style="font-weight: bold;">while</span> (<span style="font-weight: bold; text-decoration: underline;">true</span>) {
+                    <span style="font-weight: bold;">try</span> {
+                        <span style="font-weight: bold;">if</span> (shutDownFile.exists()) {
+                            Thread.currentThread().sleep(1000);
+                        } <span style="font-weight: bold;">else</span> {
+                            System.exit(0);
+                        }
+                    } <span style="font-weight: bold;">catch</span> (<span style="font-weight: bold; text-decoration: underline;">InterruptedException</span> <span style="font-weight: bold; font-style: italic;">e</span>) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }.start();
+    }
+
+}
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgfc85570" class="outline-2">
+<h2 id="orgfc85570">通过JMX的mbean远程控制来实现</h2>
+<div class="outline-text-2" id="text-orgfc85570">
+<pre class="example">
+Controlled application:
+run it with the folowing VM parameters:
+-Dcom.sun.management.jmxremote
+-Dcom.sun.management.jmxremote.port=9999
+-Dcom.sun.management.jmxremote.authenticate=false
+-Dcom.sun.management.jmxremote.ssl=false
+</pre>
+
+<div class="org-src-container">
+<pre class="src src-java"><span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">ThreadMonitorMBean.java</span>
+<span style="font-weight: bold;">public</span> <span style="font-weight: bold;">interface</span> <span style="font-weight: bold; text-decoration: underline;">ThreadMonitorMBean</span>
+{
+    <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold;">getName</span>();
+    <span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">start</span>();
+    <span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">stop</span>();
+    <span style="font-weight: bold; text-decoration: underline;">boolean</span> <span style="font-weight: bold;">isRunning</span>();
+}
+<span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">ThreadMonitor.java</span>
+<span style="font-weight: bold;">public</span> <span style="font-weight: bold;">class</span> <span style="font-weight: bold; text-decoration: underline;">ThreadMonitor</span> <span style="font-weight: bold;">implements</span> <span style="font-weight: bold; text-decoration: underline;">ThreadMonitorMBean</span>
+{
+    <span style="font-weight: bold;">private</span> <span style="font-weight: bold; text-decoration: underline;">Thread</span> <span style="font-weight: bold; font-style: italic;">m_thrd</span> = <span style="font-weight: bold; text-decoration: underline;">null</span>;
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">ThreadMonitor</span>(<span style="font-weight: bold; text-decoration: underline;">Thread</span> <span style="font-weight: bold; font-style: italic;">thrd</span>)
+    {
+        m_thrd = thrd;
+    }
+    <span style="font-weight: bold; text-decoration: underline;">@Override</span>
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold;">getName</span>()
+    {
+        <span style="font-weight: bold;">return</span> <span style="font-style: italic;">"JMX Controlled App"</span>;
+    }
+    <span style="font-weight: bold; text-decoration: underline;">@Override</span>
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">start</span>()
+    {
+        <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">TODO: start application here</span>
+        System.out.println(<span style="font-style: italic;">"remote start called"</span>);
+    }
+    <span style="font-weight: bold; text-decoration: underline;">@Override</span>
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">stop</span>()
+    {
+        <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">TODO: stop application here</span>
+        System.out.println(<span style="font-style: italic;">"remote stop called"</span>);
+        m_thrd.interrupt();
+    }
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">boolean</span> <span style="font-weight: bold;">isRunning</span>()
+    {
+        <span style="font-weight: bold;">return</span> Thread.currentThread().isAlive();
+    }
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">main</span>(<span style="font-weight: bold; text-decoration: underline;">String</span>[] <span style="font-weight: bold; font-style: italic;">args</span>)
+    {
+        <span style="font-weight: bold;">try</span>
+        {
+            System.out.println(<span style="font-style: italic;">"JMX started"</span>);
+            <span style="font-weight: bold; text-decoration: underline;">ThreadMonitorMBean</span> <span style="font-weight: bold; font-style: italic;">monitor</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">ThreadMonitor</span>(Thread.currentThread());
+            <span style="font-weight: bold; text-decoration: underline;">MBeanServer</span> <span style="font-weight: bold; font-style: italic;">server</span> = ManagementFactory.getPlatformMBeanServer();
+            <span style="font-weight: bold; text-decoration: underline;">ObjectName</span> <span style="font-weight: bold; font-style: italic;">name</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">ObjectName</span>(<span style="font-style: italic;">"com.example:type=ThreadMonitor"</span>);
+            server.registerMBean(monitor, name);
+            <span style="font-weight: bold;">while</span>(!Thread.interrupted())
+            {
+                <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">loop until interrupted</span>
+                System.out.println(<span style="font-style: italic;">"."</span>);
+                <span style="font-weight: bold;">try</span>
+                {
+                    Thread.sleep(1000);
+                }
+                <span style="font-weight: bold;">catch</span>(<span style="font-weight: bold; text-decoration: underline;">InterruptedException</span> <span style="font-weight: bold; font-style: italic;">ex</span>)
+                {
+                    Thread.currentThread().interrupt();
+                }
+            }
+        }
+        <span style="font-weight: bold;">catch</span>(<span style="font-weight: bold; text-decoration: underline;">Exception</span> <span style="font-weight: bold; font-style: italic;">e</span>)
+        {
+            e.printStackTrace();
+        }
+        <span style="font-weight: bold;">finally</span>
+        {
+            <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">TODO: some final clean up could be here also</span>
+            System.out.println(<span style="font-style: italic;">"JMX stopped"</span>);
+        }
+    }
+}
+</pre>
+</div>
+
+<p>
+Controlling application: run it with the stop or start as the command line
+argument
+</p>
+
+<div class="org-src-container">
+<pre class="src src-java"><span style="font-weight: bold;">public</span> <span style="font-weight: bold;">class</span> <span style="font-weight: bold; text-decoration: underline;">ThreadMonitorConsole</span>
+{
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">main</span>(<span style="font-weight: bold; text-decoration: underline;">String</span>[] <span style="font-weight: bold; font-style: italic;">args</span>)
+    {
+        <span style="font-weight: bold;">try</span>
+        {
+            <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">connecting to JMX</span>
+            System.out.println(<span style="font-style: italic;">"Connect to JMX service."</span>);
+            <span style="font-weight: bold; text-decoration: underline;">JMXServiceURL</span> <span style="font-weight: bold; font-style: italic;">url</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">JMXServiceURL</span>(<span style="font-style: italic;">"service:jmx:rmi:///jndi/rmi://:9999/jmxrmi"</span>);
+            <span style="font-weight: bold; text-decoration: underline;">JMXConnector</span> <span style="font-weight: bold; font-style: italic;">jmxc</span> = JMXConnectorFactory.connect(url, <span style="font-weight: bold; text-decoration: underline;">null</span>);
+            <span style="font-weight: bold; text-decoration: underline;">MBeanServerConnection</span> <span style="font-weight: bold; font-style: italic;">mbsc</span> = jmxc.getMBeanServerConnection();
+            <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">Construct proxy for the the MBean object</span>
+            <span style="font-weight: bold; text-decoration: underline;">ObjectName</span> <span style="font-weight: bold; font-style: italic;">mbeanName</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">ObjectName</span>(<span style="font-style: italic;">"com.example:type=ThreadMonitor"</span>);
+            <span style="font-weight: bold; text-decoration: underline;">ThreadMonitorMBean</span> <span style="font-weight: bold; font-style: italic;">mbeanProxy</span> = JMX.newMBeanProxy(mbsc, mbeanName, ThreadMonitorMBean.<span style="font-weight: bold;">class</span>, <span style="font-weight: bold; text-decoration: underline;">true</span>);
+            System.out.println(<span style="font-style: italic;">"Connected to: "</span>+mbeanProxy.getName()+<span style="font-style: italic;">", the app is "</span>+(mbeanProxy.isRunning() ? <span style="font-style: italic;">""</span> : <span style="font-style: italic;">"not "</span>)+<span style="font-style: italic;">"running"</span>);
+            <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">parse command line arguments</span>
+            <span style="font-weight: bold;">if</span>(args[0].equalsIgnoreCase(<span style="font-style: italic;">"start"</span>))
+            {
+                System.out.println(<span style="font-style: italic;">"Invoke \"start\" method"</span>);
+                mbeanProxy.start();
+            }
+            <span style="font-weight: bold;">else</span> <span style="font-weight: bold;">if</span>(args[0].equalsIgnoreCase(<span style="font-style: italic;">"stop"</span>))
+            {
+                System.out.println(<span style="font-style: italic;">"Invoke \"stop\" method"</span>);
+                mbeanProxy.stop();
+            }
+            <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">clean up and exit</span>
+            jmxc.close();
+            System.out.println(<span style="font-style: italic;">"Done."</span>);
+        }
+        <span style="font-weight: bold;">catch</span>(<span style="font-weight: bold; text-decoration: underline;">Exception</span> <span style="font-weight: bold; font-style: italic;">e</span>)
+        {
+            <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">TODO Auto-generated catch block</span>
+            e.printStackTrace();
+        }
+    }
+}
+</pre>
+</div>
+</div>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

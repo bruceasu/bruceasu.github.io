@@ -1,0 +1,27 @@
+# -*- coding: utf-8-unix; -*-
+#+TITLE:       mysql 实现 decodo
+#+AUTHOR:      Bruce Asu
+#+EMAIL:       bruceasu@163.com
+#+DATE:        <2016-07-23 20:48>
+#+filetags:    mysql
+#+LANGUAGE:    en
+#+OPTIONS:     H:7 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:nil
+
+oracle：
+
+: select decode(pay_name,'aaaa','bbb',pay_name),sum(comm_order),sum(suc_order),sum(suc_amount) From  payment.order_tab  group by decode(pay_name,'aaaaa','bbbb',pay_name)
+
+转换成mysql:实现
+
+: select case when pay_name='aaa' then 'bbb' else pay_name end ,sum(comm_order),sum(suc_order),sum(suc_amount) From  payment.order_tab  group by case when pay_name='aaa' then 'bbb' else pay_name end
+
+mysql 没有 =decode()= 函数，但是的但是，却可以用if()函数来替代，效果更好更直观:
+
+=if(p1>p2,p3,p4)=, 意思就是当 p1 大于 p2，if 函数返回 p3, 否则返回 p4
+
+变通下，开头需求可以实现:
+
+: select name from t_table group by name having sum(if(status=1),1,0)=0;
+
+结果集为:
+: aaa,ccc

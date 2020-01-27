@@ -1,0 +1,565 @@
+#+title: 创建最小Java8 Docker镜像
+#+date: <2016-09-30 20:48>
+#+filetags: java reprint
+
+* 1. 参考 http://blog.csdn.NET/hknaruto/article/details/70229896 ，
+构建一个最小 Linux Docker镜像
+考虑到需要进入docker容器查看容器内部数据、状态，因此引用一个基础的linux镜像。如果没有此类需求也可以直接FROM scratch
+
+* 2. www.Oracle.com下载jdk-8u101-linux-x64.tar.gz, 解压并得到其中的jre目录
+
+* 3. 由于Java依赖了系统库，此处选择从官方centos7 docker镜像中抽取必要的系统库文件，
+   操作过程如下
+
+** 3.1 建立镜像制作目录
+: mkdir minos-jre8
+
+** 3.2 建立系统库目录
+: mkdir usr/lib64
+
+** 3.3 从官方的centos7镜像中启动一个容器
+#+BEGIN_EXAMPLE
+[yeqiang@localhost minos-jre8]$ docker run --rm -it centos /bin/bash
+[root@6d37aa8a73c9/]#
+#+END_EXAMPLE
+
+* 3.4 打开一个新的终端，从容器中拷贝系统库到镜像制作目录下的usr/lib64内
+#+BEGIN_EXAMPLE
+docker cp 6d37aa8a73c9:/lib64/ld-linux-x86-64.so.2  usr/lib64/ld-linux-x86-64.so.2
+docker cp 6d37aa8a73c9:/lib64/libc.so.6  usr/lib64/libc.so.6
+docker cp 6d37aa8a73c9:/lib64/libdl.so.2  usr/lib64/libdl.so.2
+docker cp 6d37aa8a73c9:/lib64/libffi.so.6  usr/lib64/libffi.so.6
+docker cp 6d37aa8a73c9:/lib64/libgcc_s.so.1  usr/lib64/libgcc_s.so.1
+docker cp 6d37aa8a73c9:/lib64/libgio-2.0.so.0  usr/lib64/libgio-2.0.so.0
+docker cp 6d37aa8a73c9:/lib64/libglib-2.0.so.0  usr/lib64/libglib-2.0.so.0
+docker cp 6d37aa8a73c9:/lib64/libgmodule-2.0.so.0  usr/lib64/libgmodule-2.0.so.0
+docker cp 6d37aa8a73c9:/lib64/libgobject-2.0.so.0  usr/lib64/libgobject-2.0.so.0
+docker cp 6d37aa8a73c9:/lib64/libgthread-2.0.so.0  usr/lib64/libgthread-2.0.so.0
+docker cp 6d37aa8a73c9:/lib64/liblzma.so.5  usr/lib64/liblzma.so.5
+docker cp 6d37aa8a73c9:/lib64/libm.so.6  usr/lib64/libm.so.6
+docker cp 6d37aa8a73c9:/lib64/libnsl.so.1  usr/lib64/libnsl.so.1
+docker cp 6d37aa8a73c9:/lib64/libpcre.so.1  usr/lib64/libpcre.so.1
+docker cp 6d37aa8a73c9:/lib64/libpthread.so.0  usr/lib64/libpthread.so.0
+docker cp 6d37aa8a73c9:/lib64/libresolv.so.2  usr/lib64/libresolv.so.2
+docker cp 6d37aa8a73c9:/lib64/librt.so.1  usr/lib64/librt.so.1
+docker cp 6d37aa8a73c9:/lib64/libselinux.so.1  usr/lib64/libselinux.so.1
+docker cp 6d37aa8a73c9:/lib64/libstdc++.so.6  usr/lib64/libstdc++.so.6
+docker cp 6d37aa8a73c9:/lib64/libthread_db.so.1  usr/lib64/libthread_db.so.1
+docker cp 6d37aa8a73c9:/lib64/libxml2.so.2  usr/lib64/libxml2.so.2
+docker cp 6d37aa8a73c9:/lib64/libz.so.1  usr/lib64/libz.so.1
+
+
+docker cp 6d37aa8a73c9:/lib64/ld-2.17.so usr/lib64/ld-2.17.so
+docker cp 6d37aa8a73c9:/lib64/libc-2.17.so usr/lib64/libc-2.17.so
+docker cp 6d37aa8a73c9:/lib64/libdl-2.17.so usr/lib64/libdl-2.17.so
+docker cp 6d37aa8a73c9:/lib64/libffi.so.6.0.1 usr/lib64/libffi.so.6.0.1
+docker cp 6d37aa8a73c9:/lib64/libgcc_s-4.8.5-20150702.so.1 usr/lib64/libgcc_s-4.8.5-20150702.so.1
+docker cp 6d37aa8a73c9:/lib64/libgio-2.0.so.0.4200.2 usr/lib64/libgio-2.0.so.0.4200.2
+docker cp 6d37aa8a73c9:/lib64/libglib-2.0.so.0.4200.2 usr/lib64/libglib-2.0.so.0.4200.2
+docker cp 6d37aa8a73c9:/lib64/libgmodule-2.0.so.0.4200.2 usr/lib64/libgmodule-2.0.so.0.4200.2
+docker cp 6d37aa8a73c9:/lib64/libgobject-2.0.so.0.4200.2 usr/lib64/libgobject-2.0.so.0.4200.2
+docker cp 6d37aa8a73c9:/lib64/libgthread-2.0.so.0.4200.2 usr/lib64/libgthread-2.0.so.0.4200.2
+docker cp 6d37aa8a73c9:/lib64/liblzma.so.5.0.99 usr/lib64/liblzma.so.5.0.99
+docker cp 6d37aa8a73c9:/lib64/libm-2.17.so usr/lib64/libm-2.17.so
+docker cp 6d37aa8a73c9:/lib64/libnsl-2.17.so usr/lib64/libnsl-2.17.so
+docker cp 6d37aa8a73c9:/lib64/libpcre.so.1.2.0 usr/lib64/libpcre.so.1.2.0
+docker cp 6d37aa8a73c9:/lib64/libpthread-2.17.so usr/lib64/libpthread-2.17.so
+docker cp 6d37aa8a73c9:/lib64/libresolv-2.17.so usr/lib64/libresolv-2.17.so
+docker cp 6d37aa8a73c9:/lib64/librt-2.17.so usr/lib64/librt-2.17.so
+docker cp 6d37aa8a73c9:/lib64/libstdc++.so.6.0.19 usr/lib64/libstdc++.so.6.0.19
+docker cp 6d37aa8a73c9:/lib64/libthread_db-1.0.so usr/lib64/libthread_db-1.0.so
+docker cp 6d37aa8a73c9:/lib64/libxml2.so.2.9.1 usr/lib64/libxml2.so.2.9.1
+docker cp 6d37aa8a73c9:/lib64/libz.so.1.2.7 usr/lib64/libz.so.1.2.7
+
+#+END_EXAMPLE
+
+
+说明：为什么知道拷贝这些文件？
+
+将jre拷贝到docker 容器内，然后通过ldd指令检查bin目录下java等可执行程序及lib目录
+下的动态库获得库列表。如(注意应该通过find 扫描所有文件利用正则表达式产生上述指令。
+CentOS7没有的一些库不用处理。)
+
+#+BEGIN_EXAMPLE
+# ldd java
+    linux-vdso.so.1 =>  (0x00007ffccdda9000)
+    libpthread.so.0 => /lib64/libpthread.so.0 (0x00007f42a4389000)
+    libjli.so => /usr/local/jdk1.8.0_101/jre/bin/./../lib/amd64/jli/libjli.so (0x00007f42a4172000)
+    libdl.so.2 => /lib64/libdl.so.2 (0x00007f42a3f6e000)
+    libc.so.6 => /lib64/libc.so.6 (0x00007f42a3bad000)
+    /lib64/ld-linux-x86-64.so.2 (0x000055a2ffc8c000)
+
+#+END_EXAMPLE
+
+* 4. 建立 =usr/local/jdk1.8.0_101/= 目录，并拷贝解压出来的jre目录到 =jdk1.8.0_101/= 下
+#+BEGIN_EXAMPLE
+mkdir usr/local/jdk1.8.0_101/  -p
+cp /tmp/jdk1.8.0_101/ jre usr/local/jdk1.8.0_101/ -r
+
+#+END_EXAMPLE
+
+* 5.  创建Dockerfile，内容如下：
+#+BEGIN_SRC
+# the minimal os support oracle java8 based on offical docker centos7 x64 libs
+FROM minos
+MAINTAINER YeQiang
+ADD ./ /
+ENV JAVA_HOME /usr/local/jdk1.8.0_101/jre
+ENV PATH $PATH:$JAVA_HOME/bin
+RUN rm /Dockerfile
+
+#+END_SRC
+
+* 6. 此时镜像目录文件结构如下
+#+BEGIN_EXAMPLE
+.
+./usr
+./usr/local
+./usr/local/jdk1.8.0_101
+./usr/local/jdk1.8.0_101/jre
+./usr/local/jdk1.8.0_101/jre/plugin
+./usr/local/jdk1.8.0_101/jre/plugin/desktop
+./usr/local/jdk1.8.0_101/jre/plugin/desktop/sun_java.png
+./usr/local/jdk1.8.0_101/jre/plugin/desktop/sun_java.desktop
+./usr/local/jdk1.8.0_101/jre/COPYRIGHT
+./usr/local/jdk1.8.0_101/jre/README
+./usr/local/jdk1.8.0_101/jre/LICENSE
+./usr/local/jdk1.8.0_101/jre/lib
+./usr/local/jdk1.8.0_101/jre/lib/jfr
+./usr/local/jdk1.8.0_101/jre/lib/jfr/profile.jfc
+./usr/local/jdk1.8.0_101/jre/lib/jfr/default.jfc
+./usr/local/jdk1.8.0_101/jre/lib/jexec
+./usr/local/jdk1.8.0_101/jre/lib/deploy.jar
+./usr/local/jdk1.8.0_101/jre/lib/fontconfig.Turbo.properties.src
+./usr/local/jdk1.8.0_101/jre/lib/meta-index
+./usr/local/jdk1.8.0_101/jre/lib/tzdb.dat
+./usr/local/jdk1.8.0_101/jre/lib/fontconfig.bfc
+./usr/local/jdk1.8.0_101/jre/lib/applet
+./usr/local/jdk1.8.0_101/jre/lib/javafx.properties
+./usr/local/jdk1.8.0_101/jre/lib/cmm
+./usr/local/jdk1.8.0_101/jre/lib/cmm/PYCC.pf
+./usr/local/jdk1.8.0_101/jre/lib/cmm/LINEAR_RGB.pf
+./usr/local/jdk1.8.0_101/jre/lib/cmm/GRAY.pf
+./usr/local/jdk1.8.0_101/jre/lib/cmm/CIEXYZ.pf
+./usr/local/jdk1.8.0_101/jre/lib/cmm/sRGB.pf
+./usr/local/jdk1.8.0_101/jre/lib/management
+./usr/local/jdk1.8.0_101/jre/lib/management/jmxremote.password.template
+./usr/local/jdk1.8.0_101/jre/lib/management/management.properties
+./usr/local/jdk1.8.0_101/jre/lib/management/jmxremote.access
+./usr/local/jdk1.8.0_101/jre/lib/management/snmp.acl.template
+./usr/local/jdk1.8.0_101/jre/lib/sound.properties
+./usr/local/jdk1.8.0_101/jre/lib/ext
+./usr/local/jdk1.8.0_101/jre/lib/ext/meta-index
+./usr/local/jdk1.8.0_101/jre/lib/ext/sunec.jar
+./usr/local/jdk1.8.0_101/jre/lib/ext/sunjce_provider.jar
+./usr/local/jdk1.8.0_101/jre/lib/ext/sunpkcs11.jar
+./usr/local/jdk1.8.0_101/jre/lib/ext/jfxrt.jar
+./usr/local/jdk1.8.0_101/jre/lib/ext/jaccess.jar
+./usr/local/jdk1.8.0_101/jre/lib/ext/zipfs.jar
+./usr/local/jdk1.8.0_101/jre/lib/ext/nashorn.jar
+./usr/local/jdk1.8.0_101/jre/lib/ext/cldrdata.jar
+./usr/local/jdk1.8.0_101/jre/lib/ext/dnsns.jar
+./usr/local/jdk1.8.0_101/jre/lib/ext/localedata.jar
+./usr/local/jdk1.8.0_101/jre/lib/psfontj2d.properties
+./usr/local/jdk1.8.0_101/jre/lib/currency.data
+./usr/local/jdk1.8.0_101/jre/lib/classlist
+./usr/local/jdk1.8.0_101/jre/lib/net.properties
+./usr/local/jdk1.8.0_101/jre/lib/locale
+./usr/local/jdk1.8.0_101/jre/lib/locale/sv
+./usr/local/jdk1.8.0_101/jre/lib/locale/sv/LC_MESSAGES
+./usr/local/jdk1.8.0_101/jre/lib/locale/sv/LC_MESSAGES/sunw_java_plugin.mo
+./usr/local/jdk1.8.0_101/jre/lib/locale/zh_TW
+./usr/local/jdk1.8.0_101/jre/lib/locale/zh_TW/LC_MESSAGES
+./usr/local/jdk1.8.0_101/jre/lib/locale/zh_TW/LC_MESSAGES/sunw_java_plugin.mo
+./usr/local/jdk1.8.0_101/jre/lib/locale/it
+./usr/local/jdk1.8.0_101/jre/lib/locale/it/LC_MESSAGES
+./usr/local/jdk1.8.0_101/jre/lib/locale/it/LC_MESSAGES/sunw_java_plugin.mo
+./usr/local/jdk1.8.0_101/jre/lib/locale/fr
+./usr/local/jdk1.8.0_101/jre/lib/locale/fr/LC_MESSAGES
+./usr/local/jdk1.8.0_101/jre/lib/locale/fr/LC_MESSAGES/sunw_java_plugin.mo
+./usr/local/jdk1.8.0_101/jre/lib/locale/de
+./usr/local/jdk1.8.0_101/jre/lib/locale/de/LC_MESSAGES
+./usr/local/jdk1.8.0_101/jre/lib/locale/de/LC_MESSAGES/sunw_java_plugin.mo
+./usr/local/jdk1.8.0_101/jre/lib/locale/zh_HK.BIG5HK
+./usr/local/jdk1.8.0_101/jre/lib/locale/zh_HK.BIG5HK/LC_MESSAGES
+./usr/local/jdk1.8.0_101/jre/lib/locale/zh_HK.BIG5HK/LC_MESSAGES/sunw_java_plugin.mo
+./usr/local/jdk1.8.0_101/jre/lib/locale/zh.GBK
+./usr/local/jdk1.8.0_101/jre/lib/locale/zh.GBK/LC_MESSAGES
+./usr/local/jdk1.8.0_101/jre/lib/locale/zh.GBK/LC_MESSAGES/sunw_java_plugin.mo
+./usr/local/jdk1.8.0_101/jre/lib/locale/zh_TW.BIG5
+./usr/local/jdk1.8.0_101/jre/lib/locale/zh_TW.BIG5/LC_MESSAGES
+./usr/local/jdk1.8.0_101/jre/lib/locale/zh_TW.BIG5/LC_MESSAGES/sunw_java_plugin.mo
+./usr/local/jdk1.8.0_101/jre/lib/locale/ja
+./usr/local/jdk1.8.0_101/jre/lib/locale/ja/LC_MESSAGES
+./usr/local/jdk1.8.0_101/jre/lib/locale/ja/LC_MESSAGES/sunw_java_plugin.mo
+./usr/local/jdk1.8.0_101/jre/lib/locale/ko.UTF-8
+./usr/local/jdk1.8.0_101/jre/lib/locale/ko.UTF-8/LC_MESSAGES
+./usr/local/jdk1.8.0_101/jre/lib/locale/ko.UTF-8/LC_MESSAGES/sunw_java_plugin.mo
+./usr/local/jdk1.8.0_101/jre/lib/locale/es
+./usr/local/jdk1.8.0_101/jre/lib/locale/es/LC_MESSAGES
+./usr/local/jdk1.8.0_101/jre/lib/locale/es/LC_MESSAGES/sunw_java_plugin.mo
+./usr/local/jdk1.8.0_101/jre/lib/locale/zh
+./usr/local/jdk1.8.0_101/jre/lib/locale/zh/LC_MESSAGES
+./usr/local/jdk1.8.0_101/jre/lib/locale/zh/LC_MESSAGES/sunw_java_plugin.mo
+./usr/local/jdk1.8.0_101/jre/lib/locale/ko
+./usr/local/jdk1.8.0_101/jre/lib/locale/ko/LC_MESSAGES
+./usr/local/jdk1.8.0_101/jre/lib/locale/ko/LC_MESSAGES/sunw_java_plugin.mo
+./usr/local/jdk1.8.0_101/jre/lib/locale/pt_BR
+./usr/local/jdk1.8.0_101/jre/lib/locale/pt_BR/LC_MESSAGES
+./usr/local/jdk1.8.0_101/jre/lib/locale/pt_BR/LC_MESSAGES/sunw_java_plugin.mo
+./usr/local/jdk1.8.0_101/jre/lib/fontconfig.RedHat.5.properties.src
+./usr/local/jdk1.8.0_101/jre/lib/jvm.hprof.txt
+./usr/local/jdk1.8.0_101/jre/lib/charsets.jar
+./usr/local/jdk1.8.0_101/jre/lib/jfxswt.jar
+./usr/local/jdk1.8.0_101/jre/lib/flavormap.properties
+./usr/local/jdk1.8.0_101/jre/lib/hijrah-config-umalqura.properties
+./usr/local/jdk1.8.0_101/jre/lib/fontconfig.SuSE.11.bfc
+./usr/local/jdk1.8.0_101/jre/lib/fontconfig.SuSE.10.properties.src
+./usr/local/jdk1.8.0_101/jre/lib/amd64
+./usr/local/jdk1.8.0_101/jre/lib/amd64/libzip.so
+./usr/local/jdk1.8.0_101/jre/lib/amd64/libnpjp2.so
+./usr/local/jdk1.8.0_101/jre/lib/amd64/libhprof.so
+./usr/local/jdk1.8.0_101/jre/lib/amd64/libjpeg.so
+./usr/local/jdk1.8.0_101/jre/lib/amd64/libavplugin-54.so
+./usr/local/jdk1.8.0_101/jre/lib/amd64/libprism_common.so
+./usr/local/jdk1.8.0_101/jre/lib/amd64/libfxplugins.so
+./usr/local/jdk1.8.0_101/jre/lib/amd64/libunpack.so
+./usr/local/jdk1.8.0_101/jre/lib/amd64/libjavafx_iio.so
+./usr/local/jdk1.8.0_101/jre/lib/amd64/libverify.so
+./usr/local/jdk1.8.0_101/jre/lib/amd64/libfontmanager.so
+./usr/local/jdk1.8.0_101/jre/lib/amd64/libmanagement.so
+./usr/local/jdk1.8.0_101/jre/lib/amd64/libbci.so
+./usr/local/jdk1.8.0_101/jre/lib/amd64/libjsoundalsa.so
+./usr/local/jdk1.8.0_101/jre/lib/amd64/libjaas_unix.so
+./usr/local/jdk1.8.0_101/jre/lib/amd64/libsctp.so
+./usr/local/jdk1.8.0_101/jre/lib/amd64/libawt_headless.so
+./usr/local/jdk1.8.0_101/jre/lib/amd64/libattach.so
+./usr/local/jdk1.8.0_101/jre/lib/amd64/libjfxmedia.so
+./usr/local/jdk1.8.0_101/jre/lib/amd64/libjsig.so
+./usr/local/jdk1.8.0_101/jre/lib/amd64/libdcpr.so
+./usr/local/jdk1.8.0_101/jre/lib/amd64/server
+./usr/local/jdk1.8.0_101/jre/lib/amd64/server/libjsig.so
+./usr/local/jdk1.8.0_101/jre/lib/amd64/server/libjvm.so
+./usr/local/jdk1.8.0_101/jre/lib/amd64/server/Xusage.txt
+./usr/local/jdk1.8.0_101/jre/lib/amd64/libdeploy.so
+./usr/local/jdk1.8.0_101/jre/lib/amd64/libjawt.so
+./usr/local/jdk1.8.0_101/jre/lib/amd64/libglass.so
+./usr/local/jdk1.8.0_101/jre/lib/amd64/libjfr.so
+./usr/local/jdk1.8.0_101/jre/lib/amd64/libresource.so
+./usr/local/jdk1.8.0_101/jre/lib/amd64/libprism_sw.so
+./usr/local/jdk1.8.0_101/jre/lib/amd64/libjsdt.so
+./usr/local/jdk1.8.0_101/jre/lib/amd64/libprism_es2.so
+./usr/local/jdk1.8.0_101/jre/lib/amd64/libawt_xawt.so
+./usr/local/jdk1.8.0_101/jre/lib/amd64/libjavafx_font_freetype.so
+./usr/local/jdk1.8.0_101/jre/lib/amd64/libsplashscreen.so
+./usr/local/jdk1.8.0_101/jre/lib/amd64/libmlib_image.so
+./usr/local/jdk1.8.0_101/jre/lib/amd64/libt2k.so
+./usr/local/jdk1.8.0_101/jre/lib/amd64/libjavafx_font_pango.so
+./usr/local/jdk1.8.0_101/jre/lib/amd64/libjava.so
+./usr/local/jdk1.8.0_101/jre/lib/amd64/libnpt.so
+./usr/local/jdk1.8.0_101/jre/lib/amd64/libjavafx_font.so
+./usr/local/jdk1.8.0_101/jre/lib/amd64/libjavafx_font_t2k.so
+./usr/local/jdk1.8.0_101/jre/lib/amd64/libnet.so
+./usr/local/jdk1.8.0_101/jre/lib/amd64/libdt_socket.so
+./usr/local/jdk1.8.0_101/jre/lib/amd64/libj2pcsc.so
+./usr/local/jdk1.8.0_101/jre/lib/amd64/libgstreamer-lite.so
+./usr/local/jdk1.8.0_101/jre/lib/amd64/libnio.so
+./usr/local/jdk1.8.0_101/jre/lib/amd64/libj2gss.so
+./usr/local/jdk1.8.0_101/jre/lib/amd64/libsunec.so
+./usr/local/jdk1.8.0_101/jre/lib/amd64/libj2pkcs11.so
+./usr/local/jdk1.8.0_101/jre/lib/amd64/libavplugin-53.so
+./usr/local/jdk1.8.0_101/jre/lib/amd64/libjsound.so
+./usr/local/jdk1.8.0_101/jre/lib/amd64/libsaproc.so
+./usr/local/jdk1.8.0_101/jre/lib/amd64/libjfxwebkit.so
+./usr/local/jdk1.8.0_101/jre/lib/amd64/libawt.so
+./usr/local/jdk1.8.0_101/jre/lib/amd64/libdecora_sse.so
+./usr/local/jdk1.8.0_101/jre/lib/amd64/libinstrument.so
+./usr/local/jdk1.8.0_101/jre/lib/amd64/libjdwp.so
+./usr/local/jdk1.8.0_101/jre/lib/amd64/libkcms.so
+./usr/local/jdk1.8.0_101/jre/lib/amd64/libjava_crw_demo.so
+./usr/local/jdk1.8.0_101/jre/lib/amd64/liblcms.so
+./usr/local/jdk1.8.0_101/jre/lib/amd64/jli
+./usr/local/jdk1.8.0_101/jre/lib/amd64/jli/libjli.so
+./usr/local/jdk1.8.0_101/jre/lib/amd64/jvm.cfg
+./usr/local/jdk1.8.0_101/jre/lib/rt.jar
+./usr/local/jdk1.8.0_101/jre/lib/fontconfig.SuSE.10.bfc
+./usr/local/jdk1.8.0_101/jre/lib/plugin.jar
+./usr/local/jdk1.8.0_101/jre/lib/jce.jar
+./usr/local/jdk1.8.0_101/jre/lib/resources.jar
+./usr/local/jdk1.8.0_101/jre/lib/security
+./usr/local/jdk1.8.0_101/jre/lib/security/java.security
+./usr/local/jdk1.8.0_101/jre/lib/security/trusted.libraries
+./usr/local/jdk1.8.0_101/jre/lib/security/javaws.policy
+./usr/local/jdk1.8.0_101/jre/lib/security/java.policy
+./usr/local/jdk1.8.0_101/jre/lib/security/blacklist
+./usr/local/jdk1.8.0_101/jre/lib/security/US_export_policy.jar
+./usr/local/jdk1.8.0_101/jre/lib/security/blacklisted.certs
+./usr/local/jdk1.8.0_101/jre/lib/security/local_policy.jar
+./usr/local/jdk1.8.0_101/jre/lib/security/cacerts
+./usr/local/jdk1.8.0_101/jre/lib/security/US_export_policy.jar.bak
+./usr/local/jdk1.8.0_101/jre/lib/security/local_policy.jar.bak
+./usr/local/jdk1.8.0_101/jre/lib/fontconfig.SuSE.11.properties.src
+./usr/local/jdk1.8.0_101/jre/lib/fontconfig.properties.src
+./usr/local/jdk1.8.0_101/jre/lib/fontconfig.RedHat.6.bfc
+./usr/local/jdk1.8.0_101/jre/lib/fontconfig.RedHat.5.bfc
+./usr/local/jdk1.8.0_101/jre/lib/calendars.properties
+./usr/local/jdk1.8.0_101/jre/lib/javaws.jar
+./usr/local/jdk1.8.0_101/jre/lib/psfont.properties.ja
+./usr/local/jdk1.8.0_101/jre/lib/jsse.jar
+./usr/local/jdk1.8.0_101/jre/lib/images
+./usr/local/jdk1.8.0_101/jre/lib/images/cursors
+./usr/local/jdk1.8.0_101/jre/lib/images/cursors/motif_LinkDrop32x32.gif
+./usr/local/jdk1.8.0_101/jre/lib/images/cursors/motif_LinkNoDrop32x32.gif
+./usr/local/jdk1.8.0_101/jre/lib/images/cursors/invalid32x32.gif
+./usr/local/jdk1.8.0_101/jre/lib/images/cursors/cursors.properties
+./usr/local/jdk1.8.0_101/jre/lib/images/cursors/motif_CopyNoDrop32x32.gif
+./usr/local/jdk1.8.0_101/jre/lib/images/cursors/motif_MoveDrop32x32.gif
+./usr/local/jdk1.8.0_101/jre/lib/images/cursors/motif_CopyDrop32x32.gif
+./usr/local/jdk1.8.0_101/jre/lib/images/cursors/motif_MoveNoDrop32x32.gif
+./usr/local/jdk1.8.0_101/jre/lib/images/icons
+./usr/local/jdk1.8.0_101/jre/lib/images/icons/sun-java_HighContrastInverse.png
+./usr/local/jdk1.8.0_101/jre/lib/images/icons/sun-java_LowContrast.png
+./usr/local/jdk1.8.0_101/jre/lib/images/icons/sun-java_HighContrast.png
+./usr/local/jdk1.8.0_101/jre/lib/images/icons/sun-java.png
+./usr/local/jdk1.8.0_101/jre/lib/jfr.jar
+./usr/local/jdk1.8.0_101/jre/lib/oblique-fonts
+./usr/local/jdk1.8.0_101/jre/lib/oblique-fonts/LucidaSansOblique.ttf
+./usr/local/jdk1.8.0_101/jre/lib/oblique-fonts/fonts.dir
+./usr/local/jdk1.8.0_101/jre/lib/oblique-fonts/LucidaTypewriterOblique.ttf
+./usr/local/jdk1.8.0_101/jre/lib/oblique-fonts/LucidaTypewriterBoldOblique.ttf
+./usr/local/jdk1.8.0_101/jre/lib/oblique-fonts/LucidaSansDemiOblique.ttf
+./usr/local/jdk1.8.0_101/jre/lib/fontconfig.RedHat.6.properties.src
+./usr/local/jdk1.8.0_101/jre/lib/logging.properties
+./usr/local/jdk1.8.0_101/jre/lib/deploy
+./usr/local/jdk1.8.0_101/jre/lib/deploy/messages_ja.properties
+./usr/local/jdk1.8.0_101/jre/lib/deploy/messages.properties
+./usr/local/jdk1.8.0_101/jre/lib/deploy/mixcode_s.png
+./usr/local/jdk1.8.0_101/jre/lib/deploy/messages_pt_BR.properties
+./usr/local/jdk1.8.0_101/jre/lib/deploy/MixedCodeMainDialog.ui
+./usr/local/jdk1.8.0_101/jre/lib/deploy/splash@2x.gif
+./usr/local/jdk1.8.0_101/jre/lib/deploy/messages_de.properties
+./usr/local/jdk1.8.0_101/jre/lib/deploy/messages_it.properties
+./usr/local/jdk1.8.0_101/jre/lib/deploy/ffjcext.zip
+./usr/local/jdk1.8.0_101/jre/lib/deploy/cautionshield.icns
+./usr/local/jdk1.8.0_101/jre/lib/deploy/splash_11@2x-lic.gif
+./usr/local/jdk1.8.0_101/jre/lib/deploy/messages_sv.properties
+./usr/local/jdk1.8.0_101/jre/lib/deploy/splash.gif
+./usr/local/jdk1.8.0_101/jre/lib/deploy/messages_zh_HK.properties
+./usr/local/jdk1.8.0_101/jre/lib/deploy/java-icon.ico
+./usr/local/jdk1.8.0_101/jre/lib/deploy/messages_ko.properties
+./usr/local/jdk1.8.0_101/jre/lib/deploy/MixedCodeMainDialogJs.ui
+./usr/local/jdk1.8.0_101/jre/lib/deploy/messages_fr.properties
+./usr/local/jdk1.8.0_101/jre/lib/deploy/splash_11-lic.gif
+./usr/local/jdk1.8.0_101/jre/lib/deploy/messages_zh_TW.properties
+./usr/local/jdk1.8.0_101/jre/lib/deploy/messages_es.properties
+./usr/local/jdk1.8.0_101/jre/lib/deploy/messages_zh_CN.properties
+./usr/local/jdk1.8.0_101/jre/lib/management-agent.jar
+./usr/local/jdk1.8.0_101/jre/lib/content-types.properties
+./usr/local/jdk1.8.0_101/jre/lib/fontconfig.Turbo.bfc
+./usr/local/jdk1.8.0_101/jre/lib/fonts
+./usr/local/jdk1.8.0_101/jre/lib/fonts/fonts.dir
+./usr/local/jdk1.8.0_101/jre/lib/fonts/LucidaTypewriterBold.ttf
+./usr/local/jdk1.8.0_101/jre/lib/fonts/LucidaBrightRegular.ttf
+./usr/local/jdk1.8.0_101/jre/lib/fonts/LucidaSansRegular.ttf
+./usr/local/jdk1.8.0_101/jre/lib/fonts/LucidaSansDemiBold.ttf
+./usr/local/jdk1.8.0_101/jre/lib/fonts/LucidaBrightItalic.ttf
+./usr/local/jdk1.8.0_101/jre/lib/fonts/LucidaTypewriterRegular.ttf
+./usr/local/jdk1.8.0_101/jre/lib/fonts/LucidaBrightDemiItalic.ttf
+./usr/local/jdk1.8.0_101/jre/lib/fonts/LucidaBrightDemiBold.ttf
+./usr/local/jdk1.8.0_101/jre/lib/desktop
+./usr/local/jdk1.8.0_101/jre/lib/desktop/mime
+./usr/local/jdk1.8.0_101/jre/lib/desktop/mime/packages
+./usr/local/jdk1.8.0_101/jre/lib/desktop/mime/packages/x-java-archive.xml
+./usr/local/jdk1.8.0_101/jre/lib/desktop/mime/packages/x-java-jnlp-file.xml
+./usr/local/jdk1.8.0_101/jre/lib/desktop/applications
+./usr/local/jdk1.8.0_101/jre/lib/desktop/applications/sun-java.desktop
+./usr/local/jdk1.8.0_101/jre/lib/desktop/applications/sun_java.desktop
+./usr/local/jdk1.8.0_101/jre/lib/desktop/applications/sun-javaws.desktop
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/HighContrastInverse
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/HighContrastInverse/16x16
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/HighContrastInverse/16x16/mimetypes
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/HighContrastInverse/16x16/mimetypes/gnome-mime-application-x-java-archive.png
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/HighContrastInverse/16x16/mimetypes/gnome-mime-text-x-java.png
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/HighContrastInverse/16x16/mimetypes/gnome-mime-application-x-java-jnlp-file.png
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/HighContrastInverse/16x16/apps
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/HighContrastInverse/16x16/apps/sun-jcontrol.png
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/HighContrastInverse/16x16/apps/sun-javaws.png
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/HighContrastInverse/16x16/apps/sun-java.png
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/HighContrastInverse/48x48
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/HighContrastInverse/48x48/mimetypes
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/HighContrastInverse/48x48/mimetypes/gnome-mime-application-x-java-archive.png
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/HighContrastInverse/48x48/mimetypes/gnome-mime-text-x-java.png
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/HighContrastInverse/48x48/mimetypes/gnome-mime-application-x-java-jnlp-file.png
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/HighContrastInverse/48x48/apps
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/HighContrastInverse/48x48/apps/sun-jcontrol.png
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/HighContrastInverse/48x48/apps/sun-javaws.png
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/HighContrastInverse/48x48/apps/sun-java.png
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/hicolor
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/hicolor/16x16
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/hicolor/16x16/mimetypes
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/hicolor/16x16/mimetypes/gnome-mime-application-x-java-archive.png
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/hicolor/16x16/mimetypes/gnome-mime-text-x-java.png
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/hicolor/16x16/mimetypes/gnome-mime-application-x-java-jnlp-file.png
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/hicolor/16x16/apps
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/hicolor/16x16/apps/sun-jcontrol.png
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/hicolor/16x16/apps/sun-javaws.png
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/hicolor/16x16/apps/sun-java.png
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/hicolor/48x48
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/hicolor/48x48/mimetypes
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/hicolor/48x48/mimetypes/gnome-mime-application-x-java-archive.png
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/hicolor/48x48/mimetypes/gnome-mime-text-x-java.png
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/hicolor/48x48/mimetypes/gnome-mime-application-x-java-jnlp-file.png
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/hicolor/48x48/apps
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/hicolor/48x48/apps/sun-jcontrol.png
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/hicolor/48x48/apps/sun-javaws.png
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/hicolor/48x48/apps/sun-java.png
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/HighContrast
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/HighContrast/16x16
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/HighContrast/16x16/mimetypes
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/HighContrast/16x16/mimetypes/gnome-mime-application-x-java-archive.png
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/HighContrast/16x16/mimetypes/gnome-mime-text-x-java.png
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/HighContrast/16x16/mimetypes/gnome-mime-application-x-java-jnlp-file.png
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/HighContrast/16x16/apps
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/HighContrast/16x16/apps/sun-jcontrol.png
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/HighContrast/16x16/apps/sun-javaws.png
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/HighContrast/16x16/apps/sun-java.png
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/HighContrast/48x48
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/HighContrast/48x48/mimetypes
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/HighContrast/48x48/mimetypes/gnome-mime-application-x-java-archive.png
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/HighContrast/48x48/mimetypes/gnome-mime-text-x-java.png
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/HighContrast/48x48/mimetypes/gnome-mime-application-x-java-jnlp-file.png
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/HighContrast/48x48/apps
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/HighContrast/48x48/apps/sun-jcontrol.png
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/HighContrast/48x48/apps/sun-javaws.png
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/HighContrast/48x48/apps/sun-java.png
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/LowContrast
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/LowContrast/16x16
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/LowContrast/16x16/mimetypes
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/LowContrast/16x16/mimetypes/gnome-mime-application-x-java-archive.png
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/LowContrast/16x16/mimetypes/gnome-mime-text-x-java.png
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/LowContrast/16x16/mimetypes/gnome-mime-application-x-java-jnlp-file.png
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/LowContrast/16x16/apps
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/LowContrast/16x16/apps/sun-jcontrol.png
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/LowContrast/16x16/apps/sun-javaws.png
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/LowContrast/16x16/apps/sun-java.png
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/LowContrast/48x48
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/LowContrast/48x48/mimetypes
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/LowContrast/48x48/mimetypes/gnome-mime-application-x-java-archive.png
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/LowContrast/48x48/mimetypes/gnome-mime-text-x-java.png
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/LowContrast/48x48/mimetypes/gnome-mime-application-x-java-jnlp-file.png
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/LowContrast/48x48/apps
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/LowContrast/48x48/apps/sun-jcontrol.png
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/LowContrast/48x48/apps/sun-javaws.png
+./usr/local/jdk1.8.0_101/jre/lib/desktop/icons/LowContrast/48x48/apps/sun-java.png
+./usr/local/jdk1.8.0_101/jre/Welcome.html
+./usr/local/jdk1.8.0_101/jre/THIRDPARTYLICENSEREADME.txt
+./usr/local/jdk1.8.0_101/jre/THIRDPARTYLICENSEREADME-JAVAFX.txt
+./usr/local/jdk1.8.0_101/jre/bin
+./usr/local/jdk1.8.0_101/jre/bin/keytool
+./usr/local/jdk1.8.0_101/jre/bin/javaws
+./usr/local/jdk1.8.0_101/jre/bin/jjs
+./usr/local/jdk1.8.0_101/jre/bin/tnameserv
+./usr/local/jdk1.8.0_101/jre/bin/rmiregistry
+./usr/local/jdk1.8.0_101/jre/bin/servertool
+./usr/local/jdk1.8.0_101/jre/bin/pack200
+./usr/local/jdk1.8.0_101/jre/bin/ControlPanel
+./usr/local/jdk1.8.0_101/jre/bin/orbd
+./usr/local/jdk1.8.0_101/jre/bin/rmid
+./usr/local/jdk1.8.0_101/jre/bin/unpack200
+./usr/local/jdk1.8.0_101/jre/bin/java
+./usr/local/jdk1.8.0_101/jre/bin/jcontrol
+./usr/local/jdk1.8.0_101/jre/bin/policytool
+./usr/lib64
+./usr/lib64/libgmodule-2.0.so.0
+./usr/lib64/libnsl.so.1
+./usr/lib64/libgthread-2.0.so.0
+./usr/lib64/libglib-2.0.so.0.4200.2
+./usr/lib64/libpthread.so.0
+./usr/lib64/libglib-2.0.so.0
+./usr/lib64/libresolv.so.2
+./usr/lib64/liblzma.so.5
+./usr/lib64/libpcre.so.1
+./usr/lib64/libz.so.1
+./usr/lib64/liblzma.so.5.0.99
+./usr/lib64/libxml2.so.2
+./usr/lib64/libm.so.6
+./usr/lib64/librt.so.1
+./usr/lib64/libgobject-2.0.so.0.4200.2
+./usr/lib64/libresolv-2.17.so
+./usr/lib64/libstdc++.so.6
+./usr/lib64/libthread_db-1.0.so
+./usr/lib64/libdl.so.2
+./usr/lib64/libgobject-2.0.so.0
+./usr/lib64/libgthread-2.0.so.0.4200.2
+./usr/lib64/libstdc++.so.6.0.19
+./usr/lib64/libgio-2.0.so.0
+./usr/lib64/libselinux.so.1
+./usr/lib64/libpthread-2.17.so
+./usr/lib64/librt-2.17.so
+./usr/lib64/libpcre.so.1.2.0
+./usr/lib64/libz.so.1.2.7
+./usr/lib64/libgcc_s.so.1
+./usr/lib64/libgmodule-2.0.so.0.4200.2
+./usr/lib64/libm-2.17.so
+./usr/lib64/libgcc_s-4.8.5-20150702.so.1
+./usr/lib64/libc-2.17.so
+./usr/lib64/libc.so.6
+./usr/lib64/libdl-2.17.so
+./usr/lib64/libthread_db.so.1
+./usr/lib64/libgio-2.0.so.0.4200.2
+./usr/lib64/libffi.so.6
+./usr/lib64/libnsl-2.17.so
+./usr/lib64/ld-2.17.so
+./usr/lib64/ld-linux-x86-64.so.2
+./usr/lib64/libxml2.so.2.9.1
+./usr/lib64/libffi.so.6.0.1
+./Dockerfile
+
+#+END_EXAMPLE
+
+
+* 7. 制作镜像
+#+BEGIN_EXAMPLE
+[yeqiang@localhost minos-jre8]$ docker build -t minos-jre8 .
+Sending build context to Docker daemon 205.1 MB
+Step 1 : FROM minos
+ ---> c43240f48fba
+Step 2 : MAINTAINER YeQiang
+ ---> Using cache
+ ---> 4b2549a55f33
+Step 3 : ADD ./ /
+ ---> Using cache
+ ---> 1203a5df3aed
+Step 4 : ENV JAVA_HOME /usr/local/jdk1.8.0_101/jre
+ ---> Using cache
+ ---> ff5daf29c0e9
+Step 5 : ENV PATH $PATH:$JAVA_HOME/bin
+ ---> Using cache
+ ---> 23fcec942716
+Step 6 : RUN rm /Dockerfile
+ ---> Using cache
+ ---> baf8d9215326
+Successfully built 5508ca0bbd8f
+
+#+END_EXAMPLE
+
+
+* 8. 查看docker镜像
+#+BEGIN_EXAMPLE
+[yeqiang@localhost minos-jre8]$ docker images | grep jre8
+minos-jre8                           latest              c3d6c030f3c3        About a minute ago   205.8 MB
+
+#+END_EXAMPLE
+
+对比在CentOS系统上构建的包含完整jdk版本大小：
+: java               8                   5abc8862a3d4        3 months ago        577.4 MB
+
+* 9. 测试
+#+BEGIN_EXAMPLE
+[yeqiang@localhost minos-jre8]$ docker run --rm -it minos-jre8 java -version
+java version "1.8.0_101"
+Java(TM) SE Runtime Environment (build 1.8.0_101-b13)
+Java HotSpot(TM) 64-Bit Server VM (build 25.101-b13, mixed mode)
+
+#+END_EXAMPLE

@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>LINUX中IFCONFIG命令是否可以设置网关地址</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">LINUX中IFCONFIG命令是否可以设置网关地址</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#linux"><div class="category">linux</div></a> </div>
+<div class="char-counter">2016-05-15</div>
+        <div id="content">
+
+<div id="outline-container-org5ad060b" class="outline-2">
+<h2 id="org5ad060b">ubuntu 版本命令行设置IP</h2>
+<div class="outline-text-2" id="text-org5ad060b">
+<pre class="example">
+cat /etc/network/interfaces
+
+</pre>
+<p class="verse">
+# This file describes the network interfaces available on your system<br>
+# and how to activate them. For more information, see interfaces(5).<br>
+# The loopback network interface<br>
+auto lo<br>
+iface lo inet loopback<br>
+# The primary network interface<br>
+auto eth0<br>
+iface eth0 inet static<br>
+address 192.168.1.104<br>
+netmask 255.255.255.0<br>
+network 192.168.1.0<br>
+broadcast 192.168.1.255<br>
+gateway 192.168.1.2<br>
+# dns-* options are implemented by the resolvconf package, if installed<br>
+dns-nameservers 58.22.96.66 218.104.128.106 202.101.138.8<br>
+dns-search .COM<br>
+</p>
+
+<p>
+重启网卡:
+</p>
+<pre class="example">
+/etc/init.d/networking restatr
+
+</pre>
+</div>
+</div>
+<div id="outline-container-org214b8e1" class="outline-2">
+<h2 id="org214b8e1">redhat linux版本命令行设置IP:</h2>
+<div class="outline-text-2" id="text-org214b8e1">
+<ul class="org-ul">
+<li>即时生效:</li>
+</ul>
+<pre class="example">
+ifconfig eth0 192.168.129.45 netmask 255.255.255.0 gw 192.168.129.1
+
+</pre>
+<ul class="org-ul">
+<li>启动生效:</li>
+</ul>
+<pre class="example">
+修改/etc/sysconfig/network-scripts/ifcfg-eth0
+
+</pre>
+<ul class="org-ul">
+<li>配置文件修改后重启等不会丢失</li>
+</ul>
+<pre class="example">
+vi /etc/sysconfig/network
+GATEWAY=192.168.129.1
+
+</pre>
+<p>
+保存退出
+</p>
+<pre class="example">
+service network restart
+
+</pre>
+</div>
+</div>
+<div id="outline-container-org8c76c8a" class="outline-2">
+<h2 id="org8c76c8a">修改default gateway</h2>
+<div class="outline-text-2" id="text-org8c76c8a">
+<ul class="org-ul">
+<li>即时生效:</li>
+</ul>
+<pre class="example">
+route add default gw 192.168.0.254
+
+</pre>
+<ul class="org-ul">
+<li>启动生效:</li>
+</ul>
+<pre class="example">
+修改/etc/sysconfig/network-scripts/ifcfg-eth0
+
+</pre>
+</div>
+</div>
+<div id="outline-container-org26db491" class="outline-2">
+<h2 id="org26db491">修改host name</h2>
+<div class="outline-text-2" id="text-org26db491">
+<ul class="org-ul">
+<li>即时生效:</li>
+</ul>
+<pre class="example">
+hostname fc2
+
+</pre>
+<ul class="org-ul">
+<li><p>
+启动生效:
+修改/etc/sysconfig/network
+</p>
+<pre class="example">
+DEVICE=eth0
+BOOTPROTO=static
+IPADDR=192.168.8.85
+NETMASK=255.255.248.0
+GATEWAY=192.168.8.1
+HWADDR=00:0uu3:47:2C:D5:40
+ONBOOT=yes
+</pre></li>
+</ul>
+</div>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>Java 8 Streams API：对Stream分组和分区</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">Java 8 Streams API：对Stream分组和分区</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#java"><div class="category">java</div></a> <a href="https://bruceasu.github.io/tags.html#reprint"><div class="category">reprint</div></a> </div>
+<div class="char-counter">2016-09-17</div>
+        <div id="content">
+<nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#orgbaada1d">分组</a></li>
+<li><a href="#org8f9c4a1">分区</a></li>
+</ul>
+</div>
+</nav>
+<p>
+这篇文章展示了如何使用 Streams API 中的 Collector 及 groupingBy 和
+partitioningBy 来对流中的元素进行分组和分区。
+</p>
+
+<p>
+思考一下 Employee 对象流，每个对象对应一个名字、城市和销售数量，如下表所示：
+</p>
+
+<table>
+
+
+<colgroup>
+<col  class="org-left">
+
+<col  class="org-left">
+
+<col  class="org-right">
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">Name</th>
+<th scope="col" class="org-left">City</th>
+<th scope="col" class="org-right">Number of Sales</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">Alice</td>
+<td class="org-left">London</td>
+<td class="org-right">200</td>
+</tr>
+
+<tr>
+<td class="org-left">Bob</td>
+<td class="org-left">London</td>
+<td class="org-right">150</td>
+</tr>
+
+<tr>
+<td class="org-left">Charles</td>
+<td class="org-left">New York</td>
+<td class="org-right">160</td>
+</tr>
+
+<tr>
+<td class="org-left">Dorothy</td>
+<td class="org-left">Hong Kong</td>
+<td class="org-right">190</td>
+</tr>
+</tbody>
+</table>
+
+
+<div id="outline-container-orgbaada1d" class="outline-2">
+<h2 id="orgbaada1d">分组</h2>
+<div class="outline-text-2" id="text-orgbaada1d">
+<p>
+首先，我们利用（lambda表达式出现之前的）命令式风格Java 程序对流中的雇员按城市进
+行分组：
+</p>
+<div class="org-src-container">
+<pre class="src src-java"><span style="font-weight: bold; text-decoration: underline;">Map</span>&lt;<span style="font-weight: bold; text-decoration: underline;">String</span>, <span style="font-weight: bold; text-decoration: underline;">List</span>&lt;<span style="font-weight: bold; text-decoration: underline;">Employee</span>&gt;&gt; <span style="font-weight: bold; font-style: italic;">result</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">HashMap</span>&lt;&gt;();
+<span style="font-weight: bold;">for</span> (<span style="font-weight: bold; text-decoration: underline;">Employee</span> <span style="font-weight: bold; font-style: italic;">e</span> : employees) {
+  <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">city</span> = e.getCity();
+  <span style="font-weight: bold; text-decoration: underline;">List</span>&lt;<span style="font-weight: bold; text-decoration: underline;">Employee</span>&gt; <span style="font-weight: bold; font-style: italic;">empsInCity</span> = result.get(city);
+  <span style="font-weight: bold;">if</span> (empsInCity == <span style="font-weight: bold; text-decoration: underline;">null</span>) {
+    empsInCity = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">ArrayList</span>&lt;&gt;();
+    result.put(city, empsInCity);
+  }
+  empsInCity.add(e);
+}
+</pre>
+</div>
+
+<p>
+你可能很熟悉写这样的代码，你也看到了，一个如此简单的任务就需要这么多代码！
+</p>
+
+<p>
+而在 Java 8 中，你可以使用 groupingBy 收集器，一条语句就能完成相同的功能，像这样：
+</p>
+<div class="org-src-container">
+<pre class="src src-java"><span style="font-weight: bold; text-decoration: underline;">Map</span>&lt;<span style="font-weight: bold; text-decoration: underline;">String</span>, <span style="font-weight: bold; text-decoration: underline;">List</span>&lt;<span style="font-weight: bold; text-decoration: underline;">Employee</span>&gt;&gt; <span style="font-weight: bold; font-style: italic;">employeesByCity</span> =
+  employees.stream().collect(groupingBy(Employee::getCity));
+</pre>
+</div>
+
+<p>
+结果如下面的 map 所示：
+</p>
+<pre class="example">
+{New York=[Charles], Hong Kong=[Dorothy], London=[Alice, Bob]}
+
+</pre>
+
+<p>
+还可以计算每个城市中雇员的数量，只需传递一个计数收集器给 groupingBy 收集器。第二
+个收集器的作用是在流分类的同一个组中对每个元素进行递归操作。
+</p>
+<div class="org-src-container">
+<pre class="src src-java"><span style="font-weight: bold; text-decoration: underline;">Map</span>&lt;<span style="font-weight: bold; text-decoration: underline;">String</span>, <span style="font-weight: bold; text-decoration: underline;">Long</span>&gt; <span style="font-weight: bold; font-style: italic;">numEmployeesByCity</span> =
+  employees.stream().collect(groupingBy(Employee::getCity, counting()));
+
+</pre>
+</div>
+<p>
+结果如下面的 map 所示：
+</p>
+<pre class="example">
+{New York=1, Hong Kong=1, London=2}
+
+</pre>
+
+<p>
+顺便提一下，该功能与下面的 SQL 语句是等同的：
+</p>
+
+<pre class="example">
+select city, count(*) from Employee group by city
+
+</pre>
+
+<p>
+另一个例子是计算每个城市的平均年龄，这可以联合使用 averagingInt 和 groupingBy 收
+集器：
+</p>
+<pre class="example">
+Map&lt;String, Double&gt; avgSalesByCity =
+  employees.stream().collect(groupingBy(Employee::getCity,
+			       averagingInt(Employee::getNumSales)));
+
+</pre>
+<p>
+结果如下 map 所示：
+</p>
+<pre class="example">
+{New York=160.0, Hong Kong=190.0, London=175.0}
+
+</pre>
+</div>
+</div>
+
+
+<div id="outline-container-org8f9c4a1" class="outline-2">
+<h2 id="org8f9c4a1">分区</h2>
+<div class="outline-text-2" id="text-org8f9c4a1">
+<p>
+分区是一种特殊的分组，结果 map 至少包含两个不同的分组——一个true，一个false。例如，
+如果想找出最优秀的员工，你可以将所有雇员分为两组，一组销售量大于 N，另一组小于 N，
+使用 partitioningBy 收集器：
+</p>
+
+<div class="org-src-container">
+<pre class="src src-java"><span style="font-weight: bold; text-decoration: underline;">Map</span>&lt;<span style="font-weight: bold; text-decoration: underline;">Boolean</span>, <span style="font-weight: bold; text-decoration: underline;">List</span>&lt;<span style="font-weight: bold; text-decoration: underline;">Employee</span>&gt;&gt; <span style="font-weight: bold; font-style: italic;">partitioned</span> =
+  employees.stream().collect(partitioningBy(e -&gt; e.getNumSales() &gt; 150));
+
+</pre>
+</div>
+<p>
+输出如下结果：
+</p>
+<pre class="example">
+{false=[Bob], true=[Alice, Charles, Dorothy]}
+
+</pre>
+
+<p>
+你也可以将 groupingBy 收集器传递给 partitioningBy 收集器来将联合使用分区和分组。
+例如，你可以统计每个分区中的每个城市的雇员人数：
+</p>
+<div class="org-src-container">
+<pre class="src src-java"><span style="font-weight: bold; text-decoration: underline;">Map</span>&lt;<span style="font-weight: bold; text-decoration: underline;">Boolean</span>, <span style="font-weight: bold; text-decoration: underline;">Map</span>&lt;<span style="font-weight: bold; text-decoration: underline;">String</span>, <span style="font-weight: bold; text-decoration: underline;">Long</span>&gt;&gt; <span style="font-weight: bold; font-style: italic;">result</span> =
+  employees.stream().collect(partitioningBy(e -&gt; e.getNumSales() &gt; 150,
+                               groupingBy(Employee::getCity, counting())));
+
+</pre>
+</div>
+<p>
+这样会生成一个二级 Map:
+</p>
+<pre class="example">
+{false={London=1}, true={New York=1, Hong Kong=1, London=1}}
+
+</pre>
+<p class="verse">
+原文链接： javacodegeeks<br>
+翻译： ImportNew.com - paddx<br>
+译文链接： <a href="http://www.importnew.com/17313.html">http://www.importnew.com/17313.html</a><br>
+[ 转载请保留原文出处、译者和译文链接。]<br>
+<br>
+</p>
+</div>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

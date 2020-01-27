@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>jsp tag</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">jsp tag</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#java"><div class="category">java</div></a> </div>
+<div class="char-counter">2017-03-02</div>
+        <div id="content">
+<nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#org74684e9">1. 自定义方法标签</a></li>
+<li><a href="#org689e8b4">2. 通过jsp自定义标签</a></li>
+<li><a href="#org00a1d0b">3. 通过tld文件和java代码自定义元素标签</a></li>
+<li><a href="#org2751ac3">A、【判断标签】HasUrlPermissionTag 标签是一个判断标签，通过该标签来决定标签包裹的内容是否显示，写法如下：</a></li>
+<li><a href="#orgab1c640">在 JSP 中的使用方式：</a></li>
+<li><a href="#orgbc25cba">B、【控件标签】，这种标签直接返回一个控件，不过是通过 java 代码生成的控件内容，写法示例：</a></li>
+</ul>
+</div>
+</nav>
+<p>
+虽然技术比较旧，但是还是比较有用的。
+</p>
+
+<div id="outline-container-org74684e9" class="outline-2">
+<h2 id="org74684e9">1. 自定义方法标签</h2>
+<div class="outline-text-2" id="text-org74684e9">
+<p>
+引入方式示例： <code>&lt;%@ taglib prefix="fns" uri="/WEB-INF/tlds/fns.tld" %&gt;</code>
+写法示例：
+</p>
+<div class="org-src-container">
+<pre class="src src-xml">
+<span style="font-style: italic;">&lt;?</span><span style="font-weight: bold; font-style: italic;">xml</span><span style="font-style: italic;"> </span><span style="font-style: italic;">version="1.0" encoding="UTF-8" </span><span style="font-style: italic;">?&gt;</span>
+&lt;<span style="font-weight: bold;">taglib</span> <span style="font-weight: bold;">xmlns</span>=<span style="font-style: italic;">"http://java.sun.com/xml/ns/j2ee"</span>
+       <span style="font-weight: bold;">xmlns</span>:<span style="font-weight: bold; font-style: italic;">xsi</span>=<span style="font-style: italic;">"http://www.w3.org/2001/XMLSchema-instance"</span>
+       <span style="font-weight: bold;">xsi</span>:<span style="font-weight: bold; font-style: italic;">schemaLocation</span>=<span style="font-style: italic;">"http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-jsptaglibrary_2_0.xsd"</span>
+       <span style="font-weight: bold; font-style: italic;">version</span>=<span style="font-style: italic;">"2.0"</span>&gt;
+    &lt;<span style="font-weight: bold;">description</span>&gt;JSTL 1.1 functions library&lt;/<span style="font-weight: bold;">description</span>&gt;
+    &lt;<span style="font-weight: bold;">display-name</span>&gt;JSTL functions sys&lt;/<span style="font-weight: bold;">display-name</span>&gt;
+    &lt;<span style="font-weight: bold;">tlib-version</span>&gt;1.1&lt;/<span style="font-weight: bold;">tlib-version</span>&gt;
+    &lt;<span style="font-weight: bold;">short-name</span>&gt;fns&lt;/<span style="font-weight: bold;">short-name</span>&gt;
+    &lt;<span style="font-weight: bold;">uri</span>&gt;http://java.sun.com/jsp/jstl/functionss&lt;;/uri&gt;
+    <span style="font-weight: bold; font-style: italic;">&lt;!-- </span><span style="font-weight: bold; font-style: italic;">DictUtils </span><span style="font-weight: bold; font-style: italic;">--&gt;</span>
+    &lt;<span style="font-weight: bold;">function</span>&gt;
+        &lt;<span style="font-weight: bold;">description</span>&gt;&#33719;&#21462;&#23383;&#20856;&#23545;&#35937;&#21015;&#34920;&lt;/<span style="font-weight: bold;">description</span>&gt;
+        &lt;<span style="font-weight: bold;">name</span>&gt;getDictList&lt;/<span style="font-weight: bold;">name</span>&gt;
+        &lt;<span style="font-weight: bold;">function-class</span>&gt;com.sdyy.base.sys.utils.DictUtils&lt;/<span style="font-weight: bold;">function-class</span>&gt;
+        &lt;<span style="font-weight: bold;">function-signature</span>&gt;java.util.List getDictList(java.lang.String)&lt;/<span style="font-weight: bold;">function-signature</span>&gt;
+    &lt;<span style="font-weight: bold;">example</span>&gt;${fns:getDictList(typeCode)}&lt;/<span style="font-weight: bold;">example</span>&gt;
+    &lt;/<span style="font-weight: bold;">function</span>&gt;
+    &lt;<span style="font-weight: bold;">function</span>&gt;
+        &lt;<span style="font-weight: bold;">description</span>&gt;&#33719;&#21462;&#23383;&#20856;&#23545;&#35937;&#21015;&#34920;&lt;/<span style="font-weight: bold;">description</span>&gt;
+        &lt;<span style="font-weight: bold;">name</span>&gt;getDictListJson&lt;/<span style="font-weight: bold;">name</span>&gt;
+        &lt;<span style="font-weight: bold;">function-class</span>&gt;com.sdyy.base.sys.utils.DictUtils&lt;/<span style="font-weight: bold;">function-class</span>&gt;
+        &lt;<span style="font-weight: bold;">function-signature</span>&gt;java.lang.String getDictListJson(java.lang.String)&lt;/<span style="font-weight: bold;">function-signature</span>&gt;
+        &lt;<span style="font-weight: bold;">example</span>&gt;${fns:getDictListJson(typeCode)}&lt;/<span style="font-weight: bold;">example</span>&gt;
+    &lt;/<span style="font-weight: bold;">function</span>&gt;
+    &lt;<span style="font-weight: bold;">function</span>&gt;
+        &lt;<span style="font-weight: bold;">description</span>&gt;&#23545;&#35937;&#21464;json&lt;/<span style="font-weight: bold;">description</span>&gt;
+        &lt;<span style="font-weight: bold;">name</span>&gt;toJSONString&lt;/<span style="font-weight: bold;">name</span>&gt;
+        &lt;<span style="font-weight: bold;">function-class</span>&gt;com.alibaba.fastjson.JSON&lt;/<span style="font-weight: bold;">function-class</span>&gt;
+        &lt;<span style="font-weight: bold;">function-signature</span>&gt;java.lang.String toJSONString(java.lang.Object)&lt;/<span style="font-weight: bold;">function-signature</span>&gt;
+    &lt;/<span style="font-weight: bold;">function</span>&gt;
+&lt;/<span style="font-weight: bold;">taglib</span>&gt;
+</pre>
+</div>
+<p>
+<code>function-class</code> 就是该方法的实体所在类路径，
+<code>function-signature</code> 就是该方法的方法名，值得一提的是，这个方法必须是个`static`方法。
+<code>example</code> 就是使用方法示例
+</p>
+</div>
+</div>
+
+<div id="outline-container-org689e8b4" class="outline-2">
+<h2 id="org689e8b4">2. 通过jsp自定义标签</h2>
+<div class="outline-text-2" id="text-org689e8b4">
+<p>
+<code>&lt;%@ taglib prefix="sys" tagdir="/WEB-INF/tags/sys" %&gt;</code>
+如此 tags 目录下的 sys 目录下的**jsp**形式的tag就会自动被加载(<b>文件命名xx.tag</b>)，标签 jsp 写法示例：
+</p>
+<div class="org-src-container">
+<pre class="src src-xml">
+&lt;%@ tag language=<span style="font-style: italic;">"java"</span> pageEncoding=<span style="font-style: italic;">"UTF-8"</span>%&gt;
+&lt;%@ taglib uri=<span style="font-style: italic;">"http://java.sun.com/jsp/jstl/core"</span> prefix=<span style="font-style: italic;">"c"</span>%&gt;
+&lt;%@ taglib prefix=<span style="font-style: italic;">"fns"</span> uri=<span style="font-style: italic;">"/WEB-INF/tlds/fns.tld"</span> %&gt;
+&lt;%@ attribute name=<span style="font-style: italic;">"typeCode"</span> type=<span style="font-style: italic;">"java.lang.String"</span> required=<span style="font-style: italic;">"true"</span> description=<span style="font-style: italic;">"&#23383;&#20856;code"</span>%&gt;
+&lt;%@ attribute name=<span style="font-style: italic;">"defaultValue"</span> type=<span style="font-style: italic;">"java.lang.String"</span> description=<span style="font-style: italic;">"&#40664;&#35748;&#36873;&#20013;"</span>%&gt;
+&lt;%@ attribute name=<span style="font-style: italic;">"style"</span> type=<span style="font-style: italic;">"java.lang.String"</span> description=<span style="font-style: italic;">"&#40664;&#35748;&#36873;&#20013;"</span>%&gt;
+&lt;%@ attribute name=<span style="font-style: italic;">"cls"</span> type=<span style="font-style: italic;">"java.lang.String"</span> description=<span style="font-style: italic;">"&#40664;&#35748;&#36873;&#20013;"</span>%&gt;
+&lt;%@ attribute name=<span style="font-style: italic;">"name"</span> type=<span style="font-style: italic;">"java.lang.String"</span> description=<span style="font-style: italic;">"&#40664;&#35748;&#36873;&#20013;"</span>%&gt;
+&lt;<span style="font-weight: bold;">select</span> <span style="font-weight: bold; font-style: italic;">style</span>=<span style="font-style: italic;">"${style}"</span> <span style="font-weight: bold; font-style: italic;">class</span>=<span style="font-style: italic;">"${cls}"</span> <span style="font-weight: bold; font-style: italic;">name</span>=<span style="font-style: italic;">"${name}"</span> <span style="font-weight: bold; font-style: italic;">id</span>=<span style="font-style: italic;">"${name}"</span> &gt;
+    &lt;<span style="font-weight: bold;">option</span> <span style="font-weight: bold; font-style: italic;">value</span>=<span style="font-style: italic;">""</span> &gt;&#35831;&#36873;&#25321;...     &lt;/<span style="font-weight: bold;">option</span>&gt;
+    &lt;<span style="font-weight: bold;">c</span>:<span style="font-weight: bold;">if</span> <span style="font-weight: bold; font-style: italic;">test</span>=<span style="font-style: italic;">"${not empty typeCode}"</span>&gt;
+        &lt;<span style="font-weight: bold;">c</span>:<span style="font-weight: bold;">forEach</span> <span style="font-weight: bold; font-style: italic;">items</span>=<span style="font-style: italic;">"${fns:getDictList(typeCode)}"</span> <span style="font-weight: bold; font-style: italic;">var</span>='dict'&gt;
+            &lt;<span style="font-weight: bold;">option</span> <span style="font-weight: bold; font-style: italic;">value</span>='${dict.VALUE}' ${<span style="font-weight: bold; font-style: italic;">defaultValue</span>==dict.VALUE?'selected':''}&gt;${dict.TEXT}&lt;/<span style="font-weight: bold;">option</span>&gt;
+        &lt;/<span style="font-weight: bold;">c</span>:<span style="font-weight: bold;">forEach</span>&gt;
+    &lt;/<span style="font-weight: bold;">c</span>:<span style="font-weight: bold;">if</span>&gt;
+&lt;/<span style="font-weight: bold;">select</span>&gt;
+</pre>
+</div>
+<p>
+如此，jsp 名就是标签名，例如这个 jsp 叫 <code>select.jsp</code> ，那么它的用法就是
+<code>&lt;sys:select cls="formselect" name="MODULE_TYPE" typeCode="HOME_MODULE_TYPE" defaultValue="${record.MODULE_TYPE }" /&gt;</code>
+</p>
+</div>
+</div>
+
+<div id="outline-container-org00a1d0b" class="outline-2">
+<h2 id="org00a1d0b">3. 通过tld文件和java代码自定义元素标签</h2>
+<div class="outline-text-2" id="text-org00a1d0b">
+<p>
+引入方式和1相同，写法示例如下：
+</p>
+<div class="org-src-container">
+<pre class="src src-xml"><span style="font-style: italic;">&lt;?</span><span style="font-weight: bold; font-style: italic;">xml</span><span style="font-style: italic;"> </span><span style="font-style: italic;">version="1.0" encoding="UTF-8"</span><span style="font-style: italic;">?&gt;</span>
+<span style="font-style: italic;">&lt;!</span><span style="font-style: italic;">DOCTYPE taglib PUBLIC "-//Sun Microsystems, Inc.//DTD JSP Tag Library 1.2//EN"</span>
+<span style="font-style: italic;">        "http://java.sun.com/dtd/web-jsptaglibrary_1_2.dtd"&gt;</span>
+&lt;<span style="font-weight: bold;">taglib</span>&gt;
+   &lt;<span style="font-weight: bold;">tlib-version</span>&gt;1.0&lt;/<span style="font-weight: bold;">tlib-version</span>&gt;
+   &lt;<span style="font-weight: bold;">jsp-version</span>&gt;2.0&lt;/<span style="font-weight: bold;">jsp-version</span>&gt;
+   &lt;<span style="font-weight: bold;">short-name</span>&gt;bgt&lt;/<span style="font-weight: bold;">short-name</span>&gt;
+   <span style="font-weight: bold; font-style: italic;">&lt;!-- </span><span style="font-weight: bold; font-style: italic;">backGroundTag </span><span style="font-weight: bold; font-style: italic;">--&gt;</span>
+   &lt;<span style="font-weight: bold;">uri</span>&gt;http://www.sdyy.tag&lt;;/uri&gt;
+   &lt;<span style="font-weight: bold;">tag</span>&gt;
+       &lt;<span style="font-weight: bold;">name</span>&gt;hasUrlPerm&lt;/<span style="font-weight: bold;">name</span>&gt;
+       &lt;<span style="font-weight: bold;">tag-class</span>&gt;com.sdyy.common.tags.HasUrlPermissionTag&lt;/<span style="font-weight: bold;">tag-class</span>&gt;
+           &lt;<span style="font-weight: bold;">attribute</span>&gt;
+                &lt;<span style="font-weight: bold;">name</span>&gt;link&lt;/<span style="font-weight: bold;">name</span>&gt;
+                &lt;<span style="font-weight: bold;">required</span>&gt;false&lt;/<span style="font-weight: bold;">required</span>&gt;
+                &lt;<span style="font-weight: bold;">rtexprvalue</span>&gt;true&lt;/<span style="font-weight: bold;">rtexprvalue</span>&gt;<span style="font-weight: bold; font-style: italic;">&lt;!-- </span><span style="font-weight: bold; font-style: italic;">&#26159;&#21542;&#25903;&#25345;&#24694;&#21155;&#34920;&#36798;&#24335; </span><span style="font-weight: bold; font-style: italic;">--&gt;</span>
+                &lt;<span style="font-weight: bold;">type</span>&gt;java.lang.String&lt;/<span style="font-weight: bold;">type</span>&gt;
+                &lt;<span style="font-weight: bold;">description</span>&gt;&#31034;&#20363;&#65306;acApplication/forMain.do&lt;/<span style="font-weight: bold;">description</span>&gt;
+            &lt;/<span style="font-weight: bold;">attribute</span>&gt;
+    &lt;/<span style="font-weight: bold;">tag</span>&gt;
+&lt;/<span style="font-weight: bold;">taglib</span>&gt;
+</pre>
+</div>
+</div>
+</div>
+
+
+<div id="outline-container-org2751ac3" class="outline-2">
+<h2 id="org2751ac3">A、【判断标签】HasUrlPermissionTag 标签是一个判断标签，通过该标签来决定标签包裹的内容是否显示，写法如下：</h2>
+<div class="outline-text-2" id="text-org2751ac3">
+<div class="org-src-container">
+<pre class="src src-java">
+<span style="font-weight: bold;">package</span> com.sdyy.common.<span style="font-weight: bold; text-decoration: underline;">tags</span>;
+<span style="font-weight: bold;">import</span> <span style="font-weight: bold; text-decoration: underline;">javax</span>.<span style="font-weight: bold; text-decoration: underline;">servlet</span>.<span style="font-weight: bold; text-decoration: underline;">http</span>.<span style="font-weight: bold; text-decoration: underline;">HttpServletRequest</span>;
+<span style="font-weight: bold;">import</span> <span style="font-weight: bold; text-decoration: underline;">javax</span>.<span style="font-weight: bold; text-decoration: underline;">servlet</span>.<span style="font-weight: bold; text-decoration: underline;">jsp</span>.<span style="font-weight: bold; text-decoration: underline;">JspException</span>;
+<span style="font-weight: bold;">import</span> <span style="font-weight: bold; text-decoration: underline;">javax</span>.<span style="font-weight: bold; text-decoration: underline;">servlet</span>.<span style="font-weight: bold; text-decoration: underline;">jsp</span>.<span style="font-weight: bold; text-decoration: underline;">tagext</span>.<span style="font-weight: bold; text-decoration: underline;">BodyTagSupport</span>;
+<span style="font-weight: bold;">import</span> <span style="font-weight: bold; text-decoration: underline;">com</span>.<span style="font-weight: bold; text-decoration: underline;">sdyy</span>.<span style="font-weight: bold; text-decoration: underline;">common</span>.<span style="font-weight: bold; text-decoration: underline;">spring</span>.<span style="font-weight: bold; text-decoration: underline;">interceptor</span>.<span style="font-weight: bold; text-decoration: underline;">PermissionInterceptor</span>;
+
+<span style="font-style: italic;">/**</span>
+<span style="font-style: italic;"> *</span>
+<span style="font-style: italic;"> * @ClassName: HasUrlPermissionTag</span>
+<span style="font-style: italic;"> * @Description: &#26681;&#25454;url&#21028;&#26029;&#26435;&#38480;&#26631;&#31614;</span>
+<span style="font-style: italic;"> * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@author</span><span style="font-style: italic;">: liuyx</span>
+<span style="font-style: italic;"> * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@date</span><span style="font-style: italic;">: 2015&#24180;12&#26376;21&#26085;&#19978;&#21320;11:15:32</span>
+<span style="font-style: italic;"> */</span>
+<span style="font-weight: bold;">public</span> <span style="font-weight: bold;">class</span> <span style="font-weight: bold; text-decoration: underline;">HasUrlPermissionTag</span> <span style="font-weight: bold;">extends</span> <span style="font-weight: bold; text-decoration: underline;">BodyTagSupport</span> {
+
+    <span style="font-weight: bold;">private</span> <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">link</span>; <span style="font-weight: bold; font-style: italic;">//  </span><span style="font-weight: bold; font-style: italic;">acApplication/forMain.do</span>
+
+    <span style="font-weight: bold; text-decoration: underline;">@Override</span>
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold;">doStartTag</span>() <span style="font-weight: bold;">throws</span> <span style="font-weight: bold; text-decoration: underline;">JspException</span> { <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#22312;&#26631;&#31614;&#24320;&#22987;&#22788;&#20986;&#21457;&#35813;&#26041;&#27861;</span>
+        <span style="font-weight: bold; text-decoration: underline;">HttpServletRequest</span> <span style="font-weight: bold; font-style: italic;">request</span>=(<span style="font-weight: bold; text-decoration: underline;">HttpServletRequest</span>) pageContext.getRequest();
+        <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#33719;&#21462;session&#20013;&#23384;&#25918;&#30340;&#26435;&#38480;</span>
+        <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#21028;&#26029;&#26159;&#21542;&#26377;&#26435;&#38480;&#35775;&#38382;</span>
+        <span style="font-weight: bold;">if</span> (PermissionInterceptor.isOperCanAccess(request, link)) {
+            <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#20801;&#35768;&#35775;&#38382;&#26631;&#31614;body</span>
+            <span style="font-weight: bold;">return</span> <span style="font-weight: bold; text-decoration: underline;">BodyTagSupport</span>.EVAL_BODY_INCLUDE;<span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#36820;&#22238;&#27492;&#21017;&#25191;&#34892;&#26631;&#31614;body&#20013;&#20869;&#23481;&#65292;SKIP_BODY&#21017;&#19981;&#25191;&#34892;</span>
+        } <span style="font-weight: bold;">else</span> {
+            <span style="font-weight: bold;">return</span> <span style="font-weight: bold; text-decoration: underline;">BodyTagSupport</span>.SKIP_BODY;
+        }
+    }
+
+    <span style="font-weight: bold; text-decoration: underline;">@Override</span>
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold;">doEndTag</span>() <span style="font-weight: bold;">throws</span> <span style="font-weight: bold; text-decoration: underline;">JspException</span> {
+        <span style="font-weight: bold;">return</span> <span style="font-weight: bold; text-decoration: underline;">BodyTagSupport</span>.EVAL_BODY_INCLUDE;
+    }
+
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold;">getLink</span>() {
+        <span style="font-weight: bold;">return</span> link;
+    }
+
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">setLink</span>(<span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">link</span>) {
+        <span style="font-weight: bold;">this</span>.link = link;
+    }
+
+}
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgab1c640" class="outline-2">
+<h2 id="orgab1c640">在 JSP 中的使用方式：</h2>
+<div class="outline-text-2" id="text-orgab1c640">
+<div class="org-src-container">
+<pre class="src src-jsp">&lt;bgt:hasUrlPerm link="abc.do"&gt;
+    &lt;div&gt;tttttttttttttttttest&lt;/div&gt;
+&lt;/bgt:hasUrlPerm&gt;
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgbc25cba" class="outline-2">
+<h2 id="orgbc25cba">B、【控件标签】，这种标签直接返回一个控件，不过是通过 java 代码生成的控件内容，写法示例：</h2>
+<div class="outline-text-2" id="text-orgbc25cba">
+<div class="org-src-container">
+<pre class="src src-java"><span style="font-weight: bold;">package</span> com.sdyy.common.<span style="font-weight: bold; text-decoration: underline;">tags</span>;
+<span style="font-weight: bold;">import</span> <span style="font-weight: bold; text-decoration: underline;">javax</span>.<span style="font-weight: bold; text-decoration: underline;">servlet</span>.<span style="font-weight: bold; text-decoration: underline;">http</span>.<span style="font-weight: bold; text-decoration: underline;">HttpServletRequest</span>;
+<span style="font-weight: bold;">import</span> <span style="font-weight: bold; text-decoration: underline;">javax</span>.<span style="font-weight: bold; text-decoration: underline;">servlet</span>.<span style="font-weight: bold; text-decoration: underline;">jsp</span>.<span style="font-weight: bold; text-decoration: underline;">JspException</span>;
+<span style="font-weight: bold;">import</span> <span style="font-weight: bold; text-decoration: underline;">javax</span>.<span style="font-weight: bold; text-decoration: underline;">servlet</span>.<span style="font-weight: bold; text-decoration: underline;">jsp</span>.<span style="font-weight: bold; text-decoration: underline;">tagext</span>.<span style="font-weight: bold; text-decoration: underline;">BodyTagSupport</span>;
+<span style="font-weight: bold;">import</span> <span style="font-weight: bold; text-decoration: underline;">com</span>.<span style="font-weight: bold; text-decoration: underline;">sdyy</span>.<span style="font-weight: bold; text-decoration: underline;">common</span>.<span style="font-weight: bold; text-decoration: underline;">spring</span>.<span style="font-weight: bold; text-decoration: underline;">interceptor</span>.<span style="font-weight: bold; text-decoration: underline;">PermissionInterceptor</span>;
+
+<span style="font-style: italic;">/**</span>
+<span style="font-style: italic;"> *</span>
+<span style="font-style: italic;"> * @ClassName: HasUrlPermissionTag</span>
+<span style="font-style: italic;"> * @Description: &#26681;&#25454;url&#21028;&#26029;&#26435;&#38480;&#26631;&#31614;</span>
+<span style="font-style: italic;"> * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@author</span><span style="font-style: italic;">: liuyx</span>
+<span style="font-style: italic;"> * </span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">@date</span><span style="font-style: italic;">: 2015&#24180;12&#26376;21&#26085;&#19978;&#21320;11:15:32</span>
+<span style="font-style: italic;"> */</span>
+<span style="font-weight: bold;">public</span> <span style="font-weight: bold;">class</span> <span style="font-weight: bold; text-decoration: underline;">ButtonUrlTag</span> <span style="font-weight: bold;">extends</span> <span style="font-weight: bold; text-decoration: underline;">BodyTagSupport</span> {
+    <span style="font-weight: bold;">private</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold;">final</span> <span style="font-weight: bold; text-decoration: underline;">long</span> <span style="font-weight: bold; font-style: italic;">serialVersionUID</span> = -7811902545513255473L;
+    <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#26631;&#31614;&#23646;&#24615;&#29992;&#25143;&#21517;</span>
+    <span style="font-weight: bold;">private</span> <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">user</span> = <span style="font-weight: bold; text-decoration: underline;">null</span>;
+    <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#26631;&#31614;&#23646;&#24615;&#25805;&#20316;url</span>
+    <span style="font-weight: bold;">private</span> <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">url</span> = <span style="font-weight: bold; text-decoration: underline;">null</span>;
+    <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#26631;&#31614;&#23646;&#24615; js&#26041;&#27861;</span>
+    <span style="font-weight: bold;">private</span> <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">jsmethod</span> = <span style="font-weight: bold; text-decoration: underline;">null</span>;
+    <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#26631;&#31614;&#23646;&#24615;image &#25353;&#38062;&#22270;&#29255;</span>
+    <span style="font-weight: bold;">private</span> <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">image</span> = <span style="font-weight: bold; text-decoration: underline;">null</span>;
+    <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#26631;&#31614;&#23646;&#24615; alt &#25552;&#31034;</span>
+    <span style="font-weight: bold;">private</span> <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">alt</span> = <span style="font-weight: bold; text-decoration: underline;">null</span>;
+    <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#26631;&#31614;&#23646;&#24615;&#25805;&#20316;value &#25353;&#38062;&#25991;&#26412;</span>
+    <span style="font-weight: bold;">private</span> <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">value</span>  = <span style="font-weight: bold; text-decoration: underline;">null</span>;
+
+    <span style="font-weight: bold; font-style: italic;">/* </span><span style="font-weight: bold; font-style: italic;">&#26631;&#31614;&#21021;&#22987;&#26041;&#27861; */</span>
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold;">doStartTag</span>() <span style="font-weight: bold;">throws</span> <span style="font-weight: bold; text-decoration: underline;">JspTagException</span>{
+        <span style="font-weight: bold;">return</span> <span style="font-weight: bold;">super</span>.EVAL_BODY_INCLUDE;
+    }
+
+    <span style="font-weight: bold; font-style: italic;">/* </span><span style="font-weight: bold; font-style: italic;">&#26631;&#31614;&#32467;&#26463;&#26041;&#27861; */</span>
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold;">doEndTag</span>() <span style="font-weight: bold;">throws</span> <span style="font-weight: bold; text-decoration: underline;">JspTagException</span>{
+        pageContext.getSession();
+        <span style="font-weight: bold; text-decoration: underline;">Boolean</span> <span style="font-weight: bold; font-style: italic;">b</span> = <span style="font-weight: bold; text-decoration: underline;">false</span>;
+        <span style="font-weight: bold; text-decoration: underline;">List</span> <span style="font-weight: bold; font-style: italic;">list</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">ArrayList</span>();
+        <span style="font-weight: bold; font-style: italic;">/*</span><span style="font-weight: bold; font-style: italic;">AcPermission p = new AcPermission();*/</span>
+        <span style="font-weight: bold; font-style: italic;">/*</span><span style="font-weight: bold; font-style: italic;">JDBCHibernate jdbca = new JDBCHibernate();*/</span>
+        <span style="font-weight: bold;">try</span> {
+            <span style="font-weight: bold; font-style: italic;">/*</span><span style="font-weight: bold; font-style: italic;">list = jdbca.getHaveURLByUsernameList(user);*/</span>
+        } <span style="font-weight: bold;">catch</span> (<span style="font-weight: bold; text-decoration: underline;">Exception</span> <span style="font-weight: bold; font-style: italic;">e1</span>) {
+            <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">TODO Auto-generated catch block</span>
+            e1.printStackTrace();
+        }
+
+        <span style="font-weight: bold;">for</span>(<span style="font-weight: bold; text-decoration: underline;">int</span> <span style="font-weight: bold; font-style: italic;">i</span> = 0;i &lt; list.<span style="font-weight: bold; text-decoration: underline;">size</span>(); i++){
+            <span style="font-weight: bold; font-style: italic;">/*</span><span style="font-weight: bold; font-style: italic;">p = (AcPermission) list.get(i);*/</span>
+            <span style="font-weight: bold;">if</span>(1==1) {<span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">p.getUrl().trim().equals(url.trim())){</span>
+                b = <span style="font-weight: bold; text-decoration: underline;">true</span>;
+                <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#22914;&#26524;jsmethod&#23646;&#24615;&#19981;&#20026;null &#21017;&#25226;&#36229;&#38142;&#25509;href&#25913;&#20026;&#35843;&#29992;js</span>
+                <span style="font-weight: bold;">if</span>(jsmethod!=<span style="font-weight: bold; text-decoration: underline;">null</span>){
+                    url = jsmethod;
+                }
+            }
+        }
+
+        <span style="font-weight: bold; text-decoration: underline;">JspWriter</span> <span style="font-weight: bold; font-style: italic;">out</span> = pageContext.getOut();
+        <span style="font-weight: bold;">if</span>(b){
+            <span style="font-weight: bold;">try</span> {
+                <span style="font-weight: bold; font-style: italic;">//</span><span style="font-weight: bold; font-style: italic;">&#26377;&#26435;&#38480; &#26174;&#31034;&#25805;&#20316;&#25353;&#38062;</span>
+                out.println(<span style="font-style: italic;">"&lt;a href='"</span> +url+ <span style="font-style: italic;">"' class='regular'&gt;&lt;img src='"</span> + image + <span style="font-style: italic;">"' alt='"</span> + alt +<span style="font-style: italic;">"' /&gt;"</span> + value + <span style="font-style: italic;">"&lt;/a&gt;"</span>);
+            } <span style="font-weight: bold;">catch</span> (<span style="font-weight: bold; text-decoration: underline;">IOException</span> <span style="font-weight: bold; font-style: italic;">e</span>) {
+                e.printStackTrace();
+            }
+        }
+        <span style="font-weight: bold;">return</span> <span style="font-weight: bold;">super</span>.SKIP_BODY;
+    }
+
+    <span style="font-weight: bold; font-style: italic;">/* </span><span style="font-weight: bold; font-style: italic;">&#37322;&#25918;&#36164;&#28304; */</span>
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">release</span>(){
+        <span style="font-weight: bold;">super</span>.release();
+    }
+
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold;">getUser</span>() {
+        <span style="font-weight: bold;">return</span> user;
+    }
+
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">setUser</span>(<span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">user</span>) {
+        <span style="font-weight: bold;">this</span>.user = user;
+    }
+
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold;">getUrl</span>() {
+        <span style="font-weight: bold;">return</span> url;
+    }
+
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">setUrl</span>(<span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">url</span>) {
+        <span style="font-weight: bold;">this</span>.url = url;
+    }
+
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold;">getImage</span>() {
+        <span style="font-weight: bold;">return</span> image;
+    }
+
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">setImage</span>(<span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">image</span>) {
+        <span style="font-weight: bold;">this</span>.image = image;
+    }
+
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold;">getAlt</span>() {
+        <span style="font-weight: bold;">return</span> alt;
+    }
+
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">setAlt</span>(<span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">alt</span>) {
+        <span style="font-weight: bold;">this</span>.alt = alt;
+    }
+
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold;">getValue</span>() {
+        <span style="font-weight: bold;">return</span> value;
+    }
+
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">setValue</span>(<span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">value</span>) {
+        <span style="font-weight: bold;">this</span>.value = value;
+    }
+
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold;">getJsmethod</span>() {
+        <span style="font-weight: bold;">return</span> jsmethod;
+    }
+
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">setJsmethod</span>(<span style="font-weight: bold; text-decoration: underline;">String</span> <span style="font-weight: bold; font-style: italic;">jsmethod</span>) {
+        <span style="font-weight: bold;">this</span>.jsmethod = jsmethod;
+    }
+}
+</pre>
+</div>
+</div>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

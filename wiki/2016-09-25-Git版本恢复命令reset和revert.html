@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>Git版本恢复命令reset和revert</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">Git版本恢复命令reset和revert</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#git"><div class="category">git</div></a> <a href="https://bruceasu.github.io/tags.html#reprint"><div class="category">reprint</div></a> </div>
+<div class="char-counter">2016-09-25</div>
+        <div id="content">
+<nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#org78f9ce3">一. 本地commit错误没有push到远程仓库</a></li>
+<li><a href="#org1586110">二.  如果我们某次修改了某些内容，已经commit到本地仓库，而且已经push到远程仓库了</a></li>
+<li><a href="#org8a6650b">三. git revert</a></li>
+</ul>
+</div>
+</nav>
+<p>
+Git版本恢复命令reset和revert
+</p>
+
+<p>
+放弃本地某个文件的修改：git checkout 文件名
+</p>
+
+<div id="outline-container-org78f9ce3" class="outline-2">
+<h2 id="org78f9ce3">一. 本地commit错误没有push到远程仓库</h2>
+<div class="outline-text-2" id="text-org78f9ce3">
+<p>
+reset命令有3种方式：
+</p>
+
+<ul class="org-ul">
+<li><code>git reset –mixed</code> ：此为默认方式，不带任何参数的git reset，即时这种方式，它回退
+到某个版本，只保留源码，回退commit和index信息</li>
+<li><code>git reset –soft</code> ：回退到某个版本，只回退了commit的信息，不会恢复到index file一
+级。如果还要提交，直接commit即可</li>
+<li><code>git reset –hard</code> ：彻底回退到某个版本，本地的源码也会变为上一个版本的内容</li>
+</ul>
+
+<p>
+以下是一些reset的示例：
+</p>
+<blockquote>
+<p>
+回退所有内容到上一个版本(HEAD回退add的版本)：
+</p>
+<pre class="example">
+git reset HEAD^
+
+</pre>
+<p>
+回退a.py这个文件的版本到上一个版本：
+</p>
+<pre class="example">
+git reset HEAD^ a.py
+
+</pre>
+<p>
+向前回退到第3个版本：
+</p>
+<pre class="example">
+git reset –soft HEAD~3
+
+</pre>
+<p>
+将本地的状态回退到和远程的一样 ：
+</p>
+<pre class="example">
+git reset –hard origin/master
+
+</pre>
+<p>
+回退到某个版本（&#x2013;hard回退commit的版本） ，使用 <code>git log</code> 查询提交日志
+</p>
+<ol class="org-ol">
+<li>git reset 057d</li>
+<li>git reset &#x2013;hard 057d</li>
+</ol>
+<p>
+回退到上一次提交的状态，按照某一次的commit完全反向的进行一次commit：
+</p>
+<pre class="example">
+git revert HEAD
+
+</pre>
+</blockquote>
+</div>
+</div>
+
+<div id="outline-container-org1586110" class="outline-2">
+<h2 id="org1586110">二.  如果我们某次修改了某些内容，已经commit到本地仓库，而且已经push到远程仓库了</h2>
+<div class="outline-text-2" id="text-org1586110">
+<p>
+这种情况下，我们想把本地和远程仓库都回退到某个版本，该怎么做呢？
+</p>
+
+<p>
+前面讲到的 <code>git reset</code> 只是在本地仓库中回退版本，而远程仓库的版本不会变化
+</p>
+
+<p>
+这样，即时本地 <code>reset</code> 了，但如果再 <code>git pull</code> ， 那么，远程仓库的内容又会和本地之前版本的内容进行merge
+</p>
+
+<p>
+这并不是我们想要的东西，这时可以有2种办法来解决这个问题：
+</p>
+
+<p>
+直接在远程server的仓库目录下，执行
+</p>
+<pre class="example">
+git reset –soft 10efa
+
+</pre>
+
+<p>
+来回退。注意：在远程不能使用mixed或hard参数
+</p>
+
+<p>
+在本地直接把远程的master分支给删除，然后再把reset后的分支内容给push上去，如下：
+</p>
+<blockquote>
+<p>
+
+</p>
+
+<p>
+新建old_master分支做备份：
+</p>
+<pre class="example">
+git branch old_master
+
+</pre>
+<p>
+push到远程：
+</p>
+<pre class="example">
+git push origin old_master:old_master
+
+</pre>
+<p>
+本地仓库回退到某个版本：
+</p>
+<pre class="example">
+git reset –hard bae168
+
+</pre>
+<p>
+删除远程的master分支：
+</p>
+<pre class="example">
+git push origin :master
+
+</pre>
+<p>
+重新创建master分支：
+</p>
+<pre class="example">
+git push origin master
+
+</pre>
+<p>
+在删除远程master分支时，可能会有问题，见下：
+</p>
+<p class="verse">
+$ git push origin :master<br>
+<br>
+error: By default, deleting the current branch is denied, because the next<br>
+error: 'git clone' won't result in any file checked out, causing confusion.<br>
+error:<br>
+error: You can set 'receive.denyDeleteCurrent' configuration variable to<br>
+error: 'warn' or 'ignore' in the remote repository to allow deleting the<br>
+error: current branch, with or without a warning message.<br>
+error:<br>
+error: To squelch this message, you can set it to 'refuse'.<br>
+error: refusing to delete the current branch: refs/heads/master<br>
+To git@xx.sohu.com:gitosis_test<br>
+&#xa0;! [remote rejected] master (deletion of the current branch prohibited)<br>
+error: failed to push some refs to 'git@xx.sohu.com:gitosis_test'<br>
+这时需要在远程仓库目录下，设置git的receive.denyDeleteCurrent参数<br>
+<br>
+git receive.denyDeleteCurrent warn<br>
+<br>
+</p>
+</blockquote>
+
+<p>
+然后，就可以删除远程的master分支了
+</p>
+
+<p>
+虽然说有以上2种方法可以回退远程分支的版本，但这2种方式，都挺危险的，需要谨慎操作……
+</p>
+</div>
+</div>
+
+<div id="outline-container-org8a6650b" class="outline-2">
+<h2 id="org8a6650b">三. git revert</h2>
+<div class="outline-text-2" id="text-org8a6650b">
+<p>
+对于已经把代码push到远程仓库,你回退本地代码其实也想同时回退线上代码,回滚到某个指
+定的版本,线上,线下代码保持一致.你要用到下面的命令
+</p>
+
+<p>
+<b>revert</b>
+</p>
+
+<p>
+<code>git revert</code> 用于反转提交,执行revert命令时要求工作树必须是干净的.
+</p>
+
+<p>
+<code>git revert</code> 用一个新提交来消除一个历史提交所做的任何修改.
+</p>
+
+<p>
+<code>revert</code> 之后你的本地代码会回滚到指定的历史版本,这时你再 <code>git push</code> 既可以把线上的代
+码更新.(这里不会像reset造成冲突的问题)
+</p>
+
+<p>
+<code>revert</code> 使用,需要先找到你想回滚版本唯一的 <code>commit</code> 标识代码,可以用 <code>git log</code> 或者在
+adgit搭建的web环境历史提交记录里查看.
+</p>
+<pre class="example">
+git revert c011eb3c20ba6fb38cc94fe5a8dda366a3990c61
+
+</pre>
+<p>
+通常,前几位即可
+</p>
+<pre class="example">
+git revert c011eb3
+
+</pre>
+
+<p>
+<code>git revert</code> 是用一次新的commit来回滚之前的 <code>commit</code> ，
+<code>git reset</code> 是直接删除指定的 <code>commit</code>
+</p>
+
+<p>
+看似达到的效果是一样的,其实完全不同.
+</p>
+<ul class="org-ul">
+<li>第一: 上面我们说的如果你已经push到线上代码库, reset 删除指定commit以后,你git
+push可能导致一大堆冲突.但是revert 并不会.</li>
+<li>第二: 如果在日后现有分支和历史分支需要合并的时候,reset 恢复部分的代码依然会出
+现在历史分支里.但是revert 方向提交的commit 并不会出现在历史分支里.</li>
+<li>第三: reset 是在正常的commit历史中,删除了指定的commit,这时 HEAD 是向后移动了,
+而 revert 是在正常的commit历史中再commit一次,只不过是反向提交,他的 HEAD 是一直
+向前的.</li>
+</ul>
+</div>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

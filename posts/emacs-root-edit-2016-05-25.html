@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>在emacs中以root權限編輯檔案</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">在emacs中以root權限編輯檔案</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#emacs"><div class="category">emacs</div></a> </div>
+<div class="char-counter">2016-05-25</div>
+        <div id="content">
+<nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#org9925ea2">前言</a></li>
+<li><a href="#org6c1cb03">Tramp</a></li>
+<li><a href="#orgf2ccb2b">emacs sudo编辑远端文件</a></li>
+</ul>
+</div>
+</nav>
+
+
+<div id="outline-container-org9925ea2" class="outline-2">
+<h2 id="org9925ea2">前言</h2>
+<div class="outline-text-2" id="text-org9925ea2">
+<p>
+通常初使用emacs的人都會發現，拿emacs來編輯系統檔案，似乎相對麻煩：使用sudo的時候，
+是以root的身份執行emacs，套用的設定也非自己所撰寫的init.el。不過其實，有很多方法
+可以讓emacs遙身一變成為最適合編輯系統檔案的文字處理器。
+</p>
+
+<p>
+另外，雖然ido是一個強大方便的自動提示，不過可能有人討厭他那種自以為是的檔名記憶
+而沒有使用，只要把elisp函數中ido-這個prefix去掉即可。
+</p>
+
+<ul class="org-ul">
+<li><p>
+方法一：重開buffer代碼：
+</p>
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(<span style="font-weight: bold;">defun</span> <span style="font-weight: bold;">sudo-edit</span> (<span style="font-weight: bold; text-decoration: underline;">&amp;optional</span> arg)
+  (<span style="font-weight: bold;">interactive</span> <span style="font-style: italic;">"P"</span>)
+  (<span style="font-weight: bold;">if</span> (<span style="font-weight: bold;">or</span> arg (not buffer-file-name))
+      (find-file (concat <span style="font-style: italic;">"/sudo:root@localhost:"</span>
+                         (ido-read-file-name <span style="font-style: italic;">"Find file(as root): "</span>)))
+    (find-alternate-file (concat <span style="font-style: italic;">"/sudo:root@localhost:"</span> buffer-file-name))))
+
+</pre>
+</div>
+
+<p>
+這段代碼的目的是：假如你正在看某個檔案，就以root的身份連接到這個檔案。若不是在
+看一個檔案，則問你要以root身份開啟什麼檔案。
+</p></li>
+
+<li><p>
+方法二：讓emacs判斷是否擁有編輯權限代碼：
+</p>
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">((<span style="font-weight: bold;">defun</span> <span style="font-weight: bold;">fun</span> (args)
+   <span style="font-style: italic;">"docstring"</span>
+   (<span style="font-weight: bold;">interactive</span> <span style="font-style: italic;">"P"</span>)
+   )<span style="font-weight: bold;">advice ido-find-file (after find-file-sudo activate)</span>
+  <span style="font-style: italic;">"Find file as root if necessary."</span>
+  (<span style="font-weight: bold;">unless</span> (<span style="font-weight: bold;">and</span> buffer-file-name
+               (file-writable-p buffer-file-name))
+    (find-alternate-file (concat <span style="font-style: italic;">"/sudo:root@localhost:"</span> buffer-file-name))))
+
+</pre>
+</div>
+
+<p>
+這段代碼的目的是，讓電腦自動判斷是否擁有檔案編輯的權限，若無，則以root身份開啟
+之，若有，則以user的身份打開(emacs可以判斷檔案是read only還是
+writable的) ido-find-file的改造！
+</p></li>
+
+<li><p>
+方法三：alias+emacsclient
+在.bashrc/.zshrc添加如下命令
+</p>
+<pre class="example">
+alias sudeemacs="SUDO_EDITOR=\"emacsclient -t -a emacs\" sudoedit"
+
+</pre>
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(<span style="font-weight: bold;">defun</span> <span style="font-weight: bold;">sudo-find-file</span> (file-name)
+    <span style="font-style: italic;">"Like find file, but opens the file as root."</span>
+    (<span style="font-weight: bold;">interactive</span> <span style="font-style: italic;">"FSudo Find File: "</span>)
+    (<span style="font-weight: bold;">let</span> ((tramp-file-name (concat <span style="font-style: italic;">"/sudo::"</span> (expand-file-name file-name))))
+      (find-file tramp-file-name)))
+
+
+  (<span style="font-weight: bold;">defun</span> <span style="font-weight: bold;">eshell/sudoedit</span> (file)
+    (<span style="font-weight: bold;">if</span> (string-equal <span style="font-style: italic;">"/"</span> (substring file 0 1))
+        (find-file (concat <span style="font-style: italic;">"/sudo:root@localhost:"</span> file))
+      (find-file (concat <span style="font-style: italic;">"/sudo:root@localhost:"</span> default-directory file))))
+
+
+  (<span style="font-weight: bold;">defun</span> <span style="font-weight: bold;">wenshan-edit-current-file-as-root</span> ()
+      <span style="font-style: italic;">"Edit the file that is associated with current buffer as root"</span>
+      (<span style="font-weight: bold;">interactive</span>)
+      (<span style="font-weight: bold;">if</span> (buffer-file-name)
+          (<span style="font-weight: bold;">progn</span>
+                  (<span style="font-weight: bold;">setq</span> file (concat <span style="font-style: italic;">"/sudo:root@localhost:"</span> (buffer-file-name)))
+                  (find-file file)
+          )
+          (message <span style="font-style: italic;">"Current buffer does not have an associated file."</span>)
+      )
+  )
+
+  (<span style="font-weight: bold;">defun</span> <span style="font-weight: bold;">sudo-save</span> ()
+      (<span style="font-weight: bold;">interactive</span>)
+      (<span style="font-weight: bold;">if</span> (not buffer-file-name)
+          (write-file (concat <span style="font-style: italic;">"/sudo:root@localhost:"</span> (ido-read-file-name <span style="font-style: italic;">"File:"</span>)))
+          (write-file (concat <span style="font-style: italic;">"/sudo:root@localhost:"</span> buffer-file-name))
+      )
+  )
+
+</pre>
+</div></li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-org6c1cb03" class="outline-2">
+<h2 id="org6c1cb03">Tramp</h2>
+<div class="outline-text-2" id="text-org6c1cb03">
+<p>
+现在最常用的编辑器还是emacs，但是有的时候还是离不开vi，主要还是因为有时要编辑一
+些用户权限外的东西的关系。用vi的话可以使用sudo，而emacs虽然也能sudo，但我想大部
+分人是不愿意的，因为这样就无法享受到emacs daemon的便利而不得不在root名下专门开启
+一个emacs进程。
+</p>
+
+<p>
+不过emacs有Tramp（Transparent Remote (file) Access, Multiple Protocol），所以可
+以以C-x C-f /root@localhost:&lt;filepath&gt;来作为root ssh到本机进行编辑。但这终究不是
+啥方便的办法，一是不得不使用root登录，二是在其他buffer上想再继续sudo编辑其他文件
+的时候还得再次输入这串连接字符串，因为ido并不会自动完成。所以一直以来，编辑/etc
+下的文件我还是使用vi来完成。
+</p>
+
+<p>
+不过最近发现了Tramp的另外一项功能：sudo。使用C-x C-f /sudo:root@localhost来打开
+文件就可以了。比起上述方法最为便利的是连接字符串可以自动完成，而且使用的是sudo的
+方法，所以连接是使用的是当前sudoer的密码。目前用下来没有什么大问题，基本就能抛开
+vi了。
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-orgf2ccb2b" class="outline-2">
+<h2 id="orgf2ccb2b">emacs sudo编辑远端文件</h2>
+<div class="outline-text-2" id="text-orgf2ccb2b">
+<p>
+由 jay 发表于 on 六月 20日, 2011
+</p>
+
+<p>
+我在之前的一篇文章里提到过在Emacs下使用sudo的方法。这个解决了我很多本地编辑的问
+题。但是我还是抛不开vi，因为一直没有解决服务器上需要sudo才有权限的文件编辑问题。
+</p>
+
+<p>
+现实中这是一个很普遍的现象，就是在服务器上关闭了root或者其他用户的ssh登陆权限，
+是通过一般用户登陆以后通过sudo等方式获得权限后才能进行进一步的文件编辑。而如果直
+接使用sudo，用比如/sudo:user@host:filepath的方式来打开文件，Emacs会报错说这是一
+个远端文件，不能使用sudo来进行操作。就因为这提示，导致我一直以来对于这样的情况只
+能乖乖地开个shell跑到服务器上面去用vi编辑，编辑过程中的各种不爽在此不表……
+</p>
+
+<p>
+不过当最终忍受不住这种只能用vi的寂寞后，终于下定决心看一下tramp的手册，结果很好，
+发现了这么一章内容――Connecting to a remote host using multiple hops，原来tramp是
+可以通过设置代理的方式来编辑那些无法直接访问到的文件的。代理可以是各种Inline
+method，也可以是Gateway method。所以通过ssh做跳板再sudo是完全可行的。
+</p>
+
+<p>
+设置的格式是(host user proxy)，其中proxy可以使用%u和%h来通配输入的用户名和主机名。
+详细情况感兴趣的童鞋可以细看手册，这儿就只贴出满足我的需求的代码了:
+</p>
+<div class="org-src-container">
+<pre class="src src-emacs-lisp"><span style="font-weight: bold; font-style: italic;">;; </span><span style="font-weight: bold; font-style: italic;">&#36339;&#26495;&#65306;localhost -&gt; machine1.abc.def.edu -&gt; machine2.abc.def.edu</span>
+    (add-to-list 'tramp-default-proxies-alist
+                 '(nil <span style="font-style: italic;">"\\`</span><span style="font-weight: bold; font-style: italic; text-decoration: underline;">user\\</span><span style="font-style: italic;">'"</span> <span style="font-style: italic;">"/ssh:%h:"</span>))
+    (add-to-list 'tramp-default-proxies-alist
+                 '(<span style="font-style: italic;">"machine2.abc.def.edu"</span> nil <span style="font-style: italic;">"/ssh:myname@machine1.abc.def.edu:"</span>))
+</pre>
+</div>
+
+<p>
+经过这样的设置，就可以直接使用/sudo:user@host:filepath来编辑那些远端需要sudo的文
+件了。所以，泡杯茶，扔掉vi吧 : )
+</p>
+<div class="org-src-container">
+<pre class="src src-sh"><span style="font-weight: bold; font-style: italic;"># </span><span style="font-weight: bold; font-style: italic;">edit file with root privs</span>
+  <span style="font-weight: bold;">function</span> <span style="font-weight: bold;">E</span>() {
+           emacsclient -c -a emacs <span style="font-style: italic;">"/sudo:root@localhost:$1"</span>
+}
+<span style="font-weight: bold;">alias</span> <span style="font-weight: bold; font-style: italic;">E</span>=<span style="font-style: italic;">"SUDO_EDITOR=\"emacsclient -c -a emacs\" sudoedit"</span>
+</pre>
+</div>
+</div>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

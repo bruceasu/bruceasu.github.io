@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>查看java内存情况命令</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">查看java内存情况命令</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#java"><div class="category">java</div></a> </div>
+<div class="char-counter">2016-07-09</div>
+        <div id="content">
+<nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#orgac2e5b0">工具</a>
+<ul>
+<li><a href="#org011685c">jinfo:</a></li>
+<li><a href="#org34189a1">jps:</a></li>
+<li><a href="#org9618dab">jstat:</a></li>
+<li><a href="#orgca27fcb">jmap:</a></li>
+<li><a href="#orgd22b6f5">jconsole:</a></li>
+</ul>
+</li>
+<li><a href="#org657f8d9">详细使用</a>
+<ul>
+<li><a href="#org8deaf9f">jstat</a></li>
+<li><a href="#org822cc6a">jmap</a></li>
+<li><a href="#org99c325e">jinfo</a></li>
+<li><a href="#org50a8433">jconsole</a></li>
+<li><a href="#orgbc3875c">jstack</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</nav>
+
+
+<div id="outline-container-orgac2e5b0" class="outline-2">
+<h2 id="orgac2e5b0">工具</h2>
+<div class="outline-text-2" id="text-orgac2e5b0">
+</div>
+<div id="outline-container-org011685c" class="outline-3">
+<h3 id="org011685c">jinfo:</h3>
+<div class="outline-text-3" id="text-org011685c">
+<p>
+可以输出并修改运行时的java 进程的opts。
+</p>
+</div>
+</div>
+<div id="outline-container-org34189a1" class="outline-3">
+<h3 id="org34189a1">jps:</h3>
+<div class="outline-text-3" id="text-org34189a1">
+<p>
+与unix上的ps类似，用来显示本地的java进程，可以查看本地运行着几个java程序，并显示
+他们的进程号。
+</p>
+</div>
+</div>
+<div id="outline-container-org9618dab" class="outline-3">
+<h3 id="org9618dab">jstat:</h3>
+<div class="outline-text-3" id="text-org9618dab">
+<p>
+一个极强的监视VM内存工具。可以用来监视VM内存内的各种堆和非堆的大小及其内存使用量。
+</p>
+</div>
+</div>
+<div id="outline-container-orgca27fcb" class="outline-3">
+<h3 id="orgca27fcb">jmap:</h3>
+<div class="outline-text-3" id="text-orgca27fcb">
+<p>
+打印出某个java进程（使用pid）内存内的所有'对象'的情况（如：产生那些对象，及其数
+量）。
+</p>
+</div>
+</div>
+<div id="outline-container-orgd22b6f5" class="outline-3">
+<h3 id="orgd22b6f5">jconsole:</h3>
+<div class="outline-text-3" id="text-orgd22b6f5">
+<p>
+一个java GUI监视工具，可以以图表化的形式显示各种数据。并可通过远程连接监视远程的
+服务器VM。
+</p>
+</div>
+</div>
+</div>
+<div id="outline-container-org657f8d9" class="outline-2">
+<h2 id="org657f8d9">详细使用</h2>
+<div class="outline-text-2" id="text-org657f8d9">
+<p>
+在使用这些工具前，先用JPS命令获取当前的每个JVM进程号，然后选择要查看的JVM。
+</p>
+</div>
+<div id="outline-container-org8deaf9f" class="outline-3">
+<h3 id="org8deaf9f">jstat</h3>
+<div class="outline-text-3" id="text-org8deaf9f">
+<p>
+jstat工具特别强大，有众多的可选项，详细查看堆内各个部分的使用量，以及加载类的数
+量。使用时，需加上查看进程的进程id，和所选参数。以下详细介绍各个参数的意义。
+</p>
+<ul class="org-ul">
+<li>jstat -class pid:显示加载class的数量，及所占空间等信息。</li>
+<li>jstat -compiler pid:显示VM实时编译的数量等信息。</li>
+<li>jstat -gc pid:可以显示gc的信息，查看gc的次数，及时间。其中最后五项，分别是
+young gc的次数，young gc的时间，full gc的次数，full gc的时间，gc的总时间。</li>
+<li>jstat -gccapacity:可以显示，VM内存中三代（young,old,perm）对象的使用和占用大小，
+如：PGCMN显示的是最小perm的内存使用量，PGCMX显示的是perm的内存最大使用量，PGC
+是当前新生成的perm内存占用量，PC是但前perm内存占用量。其他的可以根据这个类推，
+OC是old内纯的占用量。</li>
+<li>jstat -gcnew pid:new对象的信息。</li>
+<li>jstat -gcnewcapacity pid:new对象的信息及其占用量。</li>
+<li>jstat -gcold pid:old对象的信息。</li>
+<li>jstat -gcoldcapacity pid:old对象的信息及其占用量。</li>
+<li>jstat -gcpermcapacity pid: perm对象的信息及其占用量。</li>
+<li>jstat -util pid:统计gc信息统计。</li>
+<li>jstat -printcompilation pid:当前VM执行的信息。</li>
+</ul>
+
+<p>
+除了以上一个参数外，还可以同时加上 两个数字，如：jstat -printcompilation 3024
+250 6是每250毫秒打印一次，一共打印6次，还可以加上-h3每三行显示一下标题。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org822cc6a" class="outline-3">
+<h3 id="org822cc6a">jmap</h3>
+<div class="outline-text-3" id="text-org822cc6a">
+<p>
+jmap是一个可以输出所有内存中对象的工具，甚至可以将VM 中的heap，以二进制输出成文
+本。
+</p>
+<p class="verse">
+命令：jmap -dump:format=b,file=heap.bin &lt;pid&gt;<br>
+file：保存路径及文件名<br>
+pid：进程编号<br>
+<br>
+jmap -histo:live  pid| less :堆中活动的对象以及大小<br>
+jmap -heap pid : 查看堆的使用状况信息<br>
+<br>
+<br>
+</p>
+</div>
+</div>
+<div id="outline-container-org99c325e" class="outline-3">
+<h3 id="org99c325e">jinfo</h3>
+<div class="outline-text-3" id="text-org99c325e">
+<p>
+jinfo:的用处比较简单，就是能输出并修改运行时的java进程的运行参数。用法是jinfo
+-opt pid 如：查看2788的MaxPerm大小可以用 jinfo -flag MaxPermSize 2788。
+</p>
+</div>
+</div>
+<div id="outline-container-org50a8433" class="outline-3">
+<h3 id="org50a8433">jconsole</h3>
+<div class="outline-text-3" id="text-org50a8433">
+<p>
+jconsole是一个用java写的GUI程序，用来监控VM，并可监控远程的VM，非常易用，而且功
+能非常强。使用方法：命令行里打 jconsole，选则进程就可以了。  JConsole中关于内存
+分区的说明。
+</p>
+<ul class="org-ul">
+<li>Eden Space (heap)： 内存最初从这个线程池分配给大部分对象。</li>
+<li>Survivor Space (heap)：用于保存在eden space内存池中经过垃圾回收后没有被回收的
+对象。</li>
+<li>Tenured Generation (heap)：用于保持已经在 survivor space内存池中存在了一段时间
+的对象。</li>
+<li>Permanent Generation (non-heap): 保存虚拟机自己的静态(refective)数据，例如类
+（class）和方法（method）对象。Java虚拟机共享这些类数据。这个区域被分割为只读
+的和只写的，</li>
+<li>Code Cache (non-heap):HotSpot Java虚拟机包括一个用于编译和保存本地代码（native
+code）的内存，叫做“代码缓存区”（code cache）</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-orgbc3875c" class="outline-3">
+<h3 id="orgbc3875c">jstack</h3>
+<div class="outline-text-3" id="text-orgbc3875c">
+<p>
+jstack ( 查看jvm线程运行状态，是否有死锁现象等等信息) : jstack pid : thread
+dump
+</p>
+<pre class="example">
+jstat -gcutil pid 1000 100 : 1000ms统计一次gc情况统计100次；
+
+</pre>
+
+<p>
+另外推荐一款查看jmap dump 的内存对象工具 MemoryAnalyzer
+</p>
+
+<p>
+网址：<a href="http://www.eclipse.org/mat/%EF%BC%8C%E5%8F%AF%E4%BB%A5%E6%9F%A5%E7%9C%8Bdump%E6%97%B6%E5%AF%B9%E8%B1%A1%E6%95%B0%E9%87%8F%EF%BC%8C%E5%86%85%E5%AD%98%E5%8D%A0%E7%94%A8%EF%BC%8C%E7%BA%BF%E7%A8%8B%E6%83%85%E5%86%B5%E7%AD%89">http://www.eclipse.org/mat/，可以查看dump时对象数量，内存占用，线程情况等</a>。
+</p>
+</div>
+</div>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

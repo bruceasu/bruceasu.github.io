@@ -1,0 +1,33 @@
+# -*- coding: utf-8-unix; -*-
+#+TITLE:       spring boot 断点调试
+#+AUTHOR:      Bruce Asu
+#+EMAIL:       bruceasu@163.com
+#+DATE:        <2016-05-02 20:00>
+#+filetags:    java spring
+#+LANGUAGE:    en
+#+OPTIONS:     H:7 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:nil
+
+* pom.xml 设置
+#+BEGIN_EXAMPLE
+<build>
+    <plugins>
+        <plugin>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-maven-plugin</artifactId>
+            <configuration>
+                <jvmArguments>
+                    -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005
+                </jvmArguments>
+            </configuration>
+        </plugin>
+    </plugins>
+</build>
+#+END_EXAMPLE
+
+* 用maven进行build
+maven的启动命令：
+: mvn clean package -Ptest -X spring-boot:run`
+
+-X表示强制执行，不依赖于任何公共配置的spring boot项目可独立执行（即启动按钮）。
+
+* 启动远程调试

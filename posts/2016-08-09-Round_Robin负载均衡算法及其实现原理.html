@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>Round-Robin负载均衡算法及其实现原理</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">Round-Robin负载均衡算法及其实现原理</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#knowledge"><div class="category">knowledge</div></a> </div>
+<div class="char-counter">2016-08-09</div>
+        <div id="content">
+<nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#orgba87da7">Round-Robin负载均衡算法及其实现原理</a>
+<ul>
+<li><a href="#org3a9220c">轮询调度算法(Round-Robin Scheduling)</a></li>
+<li><a href="#orga4da5df">权重轮询调度算法(Weighted Round-Robin Scheduling)</a></li>
+</ul>
+</li>
+<li><a href="#orgce540eb">总结</a></li>
+</ul>
+</div>
+</nav>
+
+<div id="outline-container-orgba87da7" class="outline-2">
+<h2 id="orgba87da7">Round-Robin负载均衡算法及其实现原理</h2>
+<div class="outline-text-2" id="text-orgba87da7">
+</div>
+<div id="outline-container-org3a9220c" class="outline-3">
+<h3 id="org3a9220c">轮询调度算法(Round-Robin Scheduling)</h3>
+<div class="outline-text-3" id="text-org3a9220c">
+<blockquote>
+<p>
+轮询调度算法的原理是每一次把来自用户的请求轮流分配给内部中的服务器，从1开始，直
+到N(内部服务器个数)，然后重新开始循环。算法的优点是其简洁性，它无需记录当前所有
+连接的状态，所以它是一种无状态调度。
+</p>
+</blockquote>
+
+<p>
+轮询调度算法流程
+</p>
+
+<p>
+假设有一组服务器N台，S = {S1, S2, …, Sn}，一个指示变量i表示上一次选择的服务器ID。
+变量i被初始化为N-1。其算法如下：
+</p>
+<div class="org-src-container">
+<pre class="src src-C">j = i;
+<span style="font-weight: bold;">do</span>
+{
+j = (j + 1) <span style="font-weight: bold; text-decoration: underline;">mod</span> <span style="font-weight: bold; font-style: italic;">n</span>;
+i = j;
+<span style="font-weight: bold;">return</span> Si;
+} <span style="font-weight: bold;">while</span> (j != i);
+<span style="font-weight: bold;">return</span> <span style="font-weight: bold; text-decoration: underline;">NULL</span>;
+
+</pre>
+</div>
+
+
+<p>
+轮询调度算法假设所有服务器的处理性能都相同，不关心每台服务器的当前连接数和响应速
+度。当请求服务间隔时间变化比较大时，轮询调度算法容易导致服务器间的负载不平衡。所
+以此种均衡算法适合于服务器组中的所有服务器都有相同的软硬件配置并且平均服务请求相
+对均衡的情况。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orga4da5df" class="outline-3">
+<h3 id="orga4da5df">权重轮询调度算法(Weighted Round-Robin Scheduling)</h3>
+<div class="outline-text-3" id="text-orga4da5df">
+<blockquote>
+<p>
+上面所讲的轮询调度算法并没有考虑每台服务器的处理能力，在实际情况中，可能并不
+是这种情况。由于每台服务器的配置、安装的业务应用等不同，其处理能力会不一样。所以，
+我们根据服务器的不同处理能力，给每个服务器分配不同的权值，使其能够接受相应权值数
+的服务请求。
+</p>
+</blockquote>
+
+<p>
+权重轮询调度算法流程
+</p>
+
+<p>
+假设有一组服务器S = {S0, S1, …, Sn-1}，W(Si)表示服务器Si的权值，一个指示变量i表
+示上一次选择的服务器，指示变量cw表示当前调度的权值，max(S)表示集合S中所有服务器
+的最大权值，gcd(S)表示集合S中所有服务器权值的最大公约数。变量i初始化为-1，cw初始
+化为零。其算法如下：
+</p>
+<div class="org-src-container">
+<pre class="src src-C"><span style="font-weight: bold;">while</span> (<span style="font-weight: bold; text-decoration: underline;">true</span>) {
+  i = (i + 1) <span style="font-weight: bold; text-decoration: underline;">mod</span> <span style="font-weight: bold; font-style: italic;">n</span>;
+  <span style="font-weight: bold;">if</span> (i == 0) {
+     cw = cw - gcd(S);
+     <span style="font-weight: bold;">if</span> (cw &lt;= 0) {
+       cw = max(S);
+       <span style="font-weight: bold;">if</span> (cw == 0)
+         <span style="font-weight: bold;">return</span> <span style="font-weight: bold; text-decoration: underline;">NULL</span>;
+     }
+  }
+  <span style="font-weight: bold;">if</span> (W(Si) &gt;= cw)
+    <span style="font-weight: bold;">return</span> Si;
+}
+</pre>
+</div>
+
+<p>
+由于权重轮询调度算法考虑到了不同服务器的处理能力，所以这种均衡算法能确保高性能的
+服务器得到更多的使用率，避免低性能的服务器负载过重。所以，在实际应用中比较常见。
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgce540eb" class="outline-2">
+<h2 id="orgce540eb">总结</h2>
+<div class="outline-text-2" id="text-orgce540eb">
+<p>
+轮询调度算法以及权重轮询调度算法的特点是实现起来比较简洁，并且实用。目前几乎所有
+的负载均衡设备均提供这种功能。
+</p>
+</div>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

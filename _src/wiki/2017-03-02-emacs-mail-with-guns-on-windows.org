@@ -1,0 +1,107 @@
+# -*- coding: utf-8-unix; -*-
+#+TITLE:       Mail with Gnus on Windows(Sacha Chua)
+#+AUTHOR:      Bruce Asu
+#+EMAIL:       bruceasu@163.com
+#+DATE:        <2017-03-02 20:00>
+#+filetags:    emacs
+
+#+LANGUAGE:    en
+#+OPTIONS:     H:7 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:nil
+
+#+BEGIN_RIGHT
+Posted on
+November 20th, 2015
+by Sacha Chua
+
+#+END_RIGHT
+
+Update 2015-11-26: fixed link to my config. Thanks, Thomas!
+
+I use Gmail for my mail because it:
+
+- synchronizes with my phone, which is handy for notifications and quick replies
+- filters most of the spam for me
+- works with a few interesting extensions such as Boomerang for Gmail
+
+However, I like the way the Gnus mail/news client in Emacs gives me a much more
+keyboard-friendly way to manage lots of mail, and I can even write code to
+partially automate some of my common operations.
+
+I used to have my config in in ~/.gnus, but people might find it handy, so I’ve
+added it to my public Emacs configuration.
+
+I like using Gmane to read mailing lists, and I use IMAP to read my Gmail.
+#+BEGIN_SRC emacs-lisp
+(setq gnus-select-method '(nnnil ""))
+(setq gnus-secondary-select-methods
+      '((nntp "news.gmane.org")
+        (nnimap "imap.gmail.com"
+                (nnimap-address "imap.gmail.com")
+                (nnimap-server-port 993)
+                (nnimap-stream ssl)
+                (nnimap-authenticator login))))
+#+END_SRC
+
+I have two-factor authentication enabled for Gmail, so I set up an app-specific
+password for Gnus. I have an ~/.authinfo file set up with something like:
+#+BEGIN_EXAMPLE
+> machine imap.gmail.com login sacha@sachachua.com password mysecretapppassword
+> machine imap.gmail.com login sacha@sachachua.com password mysecretapppassword port 993
+> machine smtp.gmail.com login sacha@sachachua.com password mysecretapppassword port 587
+#+END_EXAMPLE
+
+(I should probably get around to using GPG to automatically encrypt and decrypt
+this file.)
+
+Sending e-mail on Windows was a bit of a pain. Fortunately, I eventually found
+something that works. I’ve configured emailrelay to accept the mail and forward
+it to Gmail. The server starts with this batch file:
+
+: start "emailrelay" "C:\Program Files (x86)\emailrelay\emailrelay.exe" --as-proxy smtp.gmail.com:25 --client-auth "C:/sacha/.emailrelay" --client-tls --log --pid-file "C:\Program Files (x86)\emailrelay\emailrelay.pid" --spool-dir C:\sacha\tmp\emailrelay
+
+Sending queued mail works with this batch file:
+: "c:\Program Files (x86)\emailrelay\emailrelay.exe" --as-client smtp.gmail.com:587 --client-auth c:\sacha\.emailrelay --client-tls --spool-dir c:\sacha\tmp\emailrelay
+
+I should probably get around to using --as-proxy properly, since it still seems
+to hold mail until I explicitly send it.
+
+Some more config. Not sure how much of this is needed.
+#+BEGIN_SRC emacs-lisp
+(setq message-send-mail-function 'smtpmail-send-it
+      smtpmail-starttls-credentials '(("localhost" 25 "sacha@local.sachachua.com" nil))
+      smtpmail-auth-credentials '(("localhost" 25 "sacha@local.sachachua.com" nil))
+      smtpmail-default-smtp-server "localhost"
+      smtpmail-smtp-server "localhost"
+      smtpmail-smtp-service 25
+      smtpmail-local-domain "local.sachachua.com")
+(setq send-mail-function 'smtpmail-send-it)
+(setq smtpmail-smtp-server "127.0.0.1")
+(setq smtpmail-smtp-service 25)
+(setq user-mail-address "sacha@sachachua.com")
+
+#+END_SRC
+
+Hide HTML mail. I need to fiddle with this some more, since Gnus still tries to
+display them. Sometimes my Gnus crashes when it tries to display HTML mail.
+#+BEGIN_SRC emacs-lisp
+(setq mm-discouraged-alternatives
+      '("text/html" "text/richtext")
+      mm-automatic-display
+      (-difference mm-automatic-display '("text/html" "text/enriched" "text/richtext")))
+#+END_SRC
+
+Hide quoted text.
+: (setq gnus-treat-hide-citation t)
+
+Get smarter about filtering depending on what I reed or mark. I use ! (tick) for
+marking threads as something that interests me.
+
+#+BEGIN_SRC emacs-lisp
+(setq gnus-use-adaptive-scoring t)
+(setq gnus-default-adaptive-score-alist
+     '((gnus-unread-mark)
+       (gnus-ticked-mark (subject 10))
+       (gnus-killed-mark (subject -5))
+       (gnus-catchup-mark (subject -1))))
+
+#+END_SRC

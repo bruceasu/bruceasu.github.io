@@ -1,0 +1,22 @@
+# -*- coding: utf-8-unix; -*-
+#+TITLE:       XHOST的作用
+#+AUTHOR:      Bruce Asu
+#+EMAIL:       bruceasu@163.com
+#+DATE:        <2016-05-20 20:48>
+#+filetags:    linux
+#+DESCRIPTION: xhost 是用来控制X server访问权限的。
+
+#+LANGUAGE:    en
+#+OPTIONS:     H:7 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:nil
+
+xhost 是用来控制X server访问权限的。
+
+通常当你从hostA登陆到hostB上运行hostB上的应用程序时，做为应用程序来说，hostA是
+client,但是作为图形来说，是在hostA上显示的，需要使用hostA的Xserver,所以hostA是
+server.因此在登陆到hostB前，需要在hostA上运行xhost +来使其它用户能够访问hostA的
+Xserver.
+
+- xhost + 是使所有用户都能访问Xserver.
+- xhost + ip使ip上的用户能够访问Xserver.
+- xhost + nis:user@domain使domain上的nis用户user能够访问
+- xhost + inet:user@domain使domain上的inet用户能够访问。

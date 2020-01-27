@@ -1,0 +1,271 @@
+# -*- coding: utf-8-unix; -*-
+#+TITLE:       jdk webservice
+#+AUTHOR:      Bruce Asu
+#+EMAIL:       bruceasu@163.com
+#+DATE:        <2016-06-17 20:48>
+#+filetags:    java
+#+DESCRIPTION: jdk 本身支持的 webservice 实现
+#+LANGUAGE:    en
+#+OPTIONS:     H:7 num:nil toc:t \n:nil ::t |:t ^:nil -:nil f:t *:t <:nil
+
+* 开发过程如下：
+
+1. 保证使用的是jdk6。
+2. 编写开放出来的接口并实现，如下
+   #+BEGIN_SRC java
+   public interface UserService {
+       public String saveUser(String username,String password);
+   }
+
+   import javax.jws.WebService;
+   import javax.jws.soap.SOAPBinding;
+   import javax.sql.DataSource;
+
+   import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
+
+   @WebService(name = "UserService", serviceName = "UserService", targetNamespace = "http://cas.webservice.user/client")
+   @SOAPBinding(style = SOAPBinding.Style.RPC)
+   public class UserServiceImpl implements UserService {
+
+       private DataSource dataSource;
+
+       private SimpleJdbcTemplate jdbcTemplate;
+
+       private UserServiceImpl() {
+
+       }
+
+       private UserServiceImpl(DataSource dataSource) {
+           this.dataSource = dataSource;
+           this.jdbcTemplate = new SimpleJdbcTemplate(dataSource);
+       }
+
+       public String saveUser(String username, String password) {
+           int count = jdbcTemplate.update(
+               "insert  userinfo(userName,password) values(?,?)", username,
+               password);
+
+           return username + " : " + password;
+       }
+
+   }
+    #+END_SRC
+
+
+* 发布webservice。如下
+: Endpoint.publish("http://127.0.0.1:9527/UserService",  ctx.getBean("wsUserService"));
+注：这里假如不用spring的话 直接new UserServiceImpl()。
+
+* 在你的客户端位置键入命令：
+: wsimport -keep http://127.0.0.1:9527/UserService?wsdl
+
+此时会在此目录生成 cas/webservice/user/client/ 此文件夹，里面生成了你需要的客户
+端调用类 UserService, UserService_Service。
+
+* 调用方式如下：
+#+BEGIN_EXAMPLE
+UserService_Service userService=new UserService_Service();
+UserService user=userService.getUserServicePort();
+System.out.println(user.saveUser("afei2","yes ido"));
+
+#+END_EXAMPLE
+
+* 注意的地方：
+1. 在发布的类(userServiceImpl)中假如带有接口属性，并且有其getter/setter，那么发
+   布会失败。
+2. 发布的ip假如是127.0.0.1的话localhost是不能访问的，是多少就是多少，不过实际项
+   目也不会这样的。
+3. 有的客户端调用的时候也会报错，比如Provider com.sun.xml.ws.spi.ProviderImpl
+   not found这个异常，我跟踪代码进去，发觉报错的那个jdk版本的Provider和我成功的
+   jdk版本是不一样的，在网上搜无答案，直说缺包，我感觉是个小bug。其他的没什么问
+   题。
+4. 因为这里没用任何webservice框架，没有把它嵌入tomcat（假如你需要在tomcat环境中），
+   所以端口另开，不能是8080。
+
+
+
+* 资料 JDK1.6 中自带了 webservice 的功能
+因为集成了JAX-WS，这非常方便，不用再用第三方包来开发了。
+
+* 下面我们开始构建：
+1. 先用Eclipse建立一个动态网站，注意需要生成web.xml，建工程的时候不要忘记勾选；
+2. 建立类实现Web Services接口，下面是一个简单定义Web Services接口的实现类：
+
+* 代码
+#+BEGIN_SRC java
+package javaWebServiceTest;
+
+import javax.jws.WebMethod;
+import javax.jws.WebParam;
+import javax.jws.WebResult;
+import javax.jws.WebService;
+import javax.jws.WebParam.Mode;
+import javax.jws.soap.SOAPBinding;
+import javax.jws.soap.SOAPBinding.Style;
+import javax.jws.soap.SOAPBinding.Use;
+import webServiceInterface.Person;
+
+@WebService(name="SayHello", portName="SayHellowServicePort", serviceName="SayHelloServiceName", targetNamespace="http://www.webservice.com")
+@SOAPBinding(style = Style.RPC,use = Use.LITERAL)
+public class ChService {
+
+    @WebMethod(action="sayHello", operationName="saySomeWord")
+    @WebResult(name="Person", partName="PersonName")
+    public Person sayHelloWord(@WebParam(name="paramA", partName="p1", mode = Mode.IN)String name){
+        Person persons = new Person();
+        persons.setName("My name is " +name);
+        return persons;
+    }
+
+}
+
+//    Person类
+package webServiceInterface;
+
+
+public class Person
+{
+    String name;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+}
+
+#+END_SRC
+
+这样，我们基本上就实现了 webservice 的构建，是不是感觉不是很难，跟写普通的java方
+法一样，其实 jdk 自带的 webservice 是通过注释注入方法实现的。所以上面那些以"@"符
+号开头的都是非常重要的，也是必须的。
+
+下面我们来配置我们写的WebService到Apache中：
+
+上面第一步，我们生成了一个 web.xml 类，我们向 <web-app> 节点里面加入以下内容：
+#+BEGIN_SRC xml
+ <listener>
+        <listener-class>
+                com.sun.xml.ws.transport.http.servlet.WSServletContextListener
+        </listener-class>
+    </listener>
+
+    <servlet>
+        <servlet-name>TestService</servlet-name>
+        <servlet-class>
+            com.sun.xml.ws.transport.http.servlet.WSServlet
+        </servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>TestService</servlet-name>
+        <url-pattern>/jdkService</url-pattern>
+    </servlet-mapping>
+#+END_SRC
+
+
+在 web.xml 的目录中再建立一个 sun-jaxws.xml 来配置 endpoint 的相关内容。
+#+BEGIN_SRC xml
+ <?xml version="1.0" encoding="UTF-8"?>
+    <endpoints xmlns='http://java.sun.com/xml/ns/jax-ws/ri/runtime' version='2.0'>
+        <endpoint
+        name='TestService'
+        implementation='javaWebServiceTest.ChService'
+        binding="http://java.sun.com/xml/ns/jaxws/2003/05/soap/bindings/HTTP/"
+        url-pattern='/jdkService'/>
+    </endpoints>
+
+#+END_SRC
+
+
+好了，配置完了。把我们建立的项目加入到apache7.0中，然后启动。
+
+在浏览器输入:<http://localhost:8080/TestWebService/jdkService?wsdl,便可>
+以访问到。
+
+如图：
+
+现在我们来说说那些以"@"符号开头的内容。
+
+1. @WebService(name="SayHello", portName="SayHellowServicePort",  serviceName="SayHelloServiceName", targetNamespace="<http://www.possystem.com>")
+   #+BEGIN_VERSE
+    name: SayHello
+    用户实例化用,例：
+    private WinService.SayHelloClient win = new winformService.WinService.SayHelloClient();
+    WSDL中：<portType name="SayHello">
+
+    serviceName: SayHelloServiceName
+    指定Web Service的名称 ，
+    WSDL中：<service name="SayHelloServiceName">
+
+    portName: SayHellowServicePort
+    WSDL中：<port name="SayHellowServicePort" binding="tns:SayHellowServicePortBinding">
+
+    wsdlLocation：wsdlLocation 是引用预先存在的 WSDL 文件的 URL（相对或绝对）。
+    targetNamespace：wsdl命名空间
+
+
+    #+END_VERSE
+
+2. @SOAPBinding(style = Style.RPC,use = Use.LITERAL)
+   #+BEGIN_VERSE
+    style: 定义发送到 Web Service 的消息和从 Web Service 发送的消息的编码样式。
+    Document和RPC两种形式
+    默认值： javax.jws.soap.SOAPBinding.Style.DOCUMENT
+
+    use: 定义发送到 Web Service 的消息和从 Web Service 发送的消息的格式样式。
+    ENCODED和 LITERAL两种形式
+    默认值： javax.jws.soap.SOAPBinding.Use.LITERAL
+
+#+END_VERSE
+
+3. @WebMethod(action="sayHello", operationName="saySomeWord")
+   #+BEGIN_VERSE
+    action: sayHello
+    此操作的动作。 对于 SOAP 绑定，此方法可确定 soap 动作的值。
+    WSDL中： <soap12:operation soapAction="sayHello" />
+
+    operationName： sayHelloWord1
+    与此方法匹配的 wsdl:operation 的名称。
+    此名称也用于客户端调用的方法的名称。
+
+    exclude: 将某一方法标记为不作为一个 web 方法公开。
+
+#+END_VERSE
+
+4. @WebResult(name="Person", partName="PersonName")
+   #+BEGIN_VERSE
+    name: Person
+    返回值的名称。 如果操作是 rpc 样式，并且partName尚未指定, 表示此返回值的 wsdl:part 的名称
+    WSDL中：<part name="Person" type="tns:person" />
+
+    partName： PersonName
+    表示此返回值的 wsdl:part 的名称。
+    此名称只在操作是 rpc 样式，或者操作是文档样式且参数样式为 BARE 时使用。
+    WSDL中：<part name="PersonName" type="tns:person" />
+
+#+END_VERSE
+
+5. public Person sayHelloWord(@WebParam(name="paramA", partName="p1", mode = Mode.IN)String name){……}
+   #+BEGIN_VERSE
+    name: paramA
+    如果该操作是 rpc 样式的，并且尚未指定 @WebParam.partName，则此名称是表示参数的 wsdl:part 的名称。
+    如果该操作是文档样式的，或者参数映射到某一个头，则此名称是表示参数的 XML 元素的本地名称。
+    如果操作是文档样式的，参数样式为 BARE 并且模式为 OUT 或 INOUT，则必须指定一个名称。
+    客户端调用时参数名称显示该值。
+
+    partName： p1
+    表示此参数的 wsdl:part 的名称。
+    此名称仅在操作是 rpc 样式，或者操作是文档样式且参数样式为 BARE 时使用。
+    WSDL中：
+    <message name="sayHelloWord1">
+      <part name="p1" type="xsd:string" />
+    </message>
+    客户端调用时参数名称显示该值。
+    这个主要是根据样式来。
+
+    mode：参数的流向（IN、OUT 或 INOUT 之一）。
+
+#+END_VERSE

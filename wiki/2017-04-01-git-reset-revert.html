@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>Git版本恢复命令reset和revert</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">Git版本恢复命令reset和revert</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#git"><div class="category">git</div></a> </div>
+<div class="char-counter">2017-04-01</div>
+        <div id="content">
+<nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#org7affca6">一、放弃本地某个文件的修改：git checkout 文件名</a></li>
+<li><a href="#orge6fe41b">二、 本地commit错误没有push到远程仓库</a>
+<ul>
+<li><a href="#orgbdfe837">reset命令有3种方式：</a></li>
+<li><a href="#org40e839b">以下是一些reset的示例：</a></li>
+</ul>
+</li>
+<li><a href="#orge3bf31c">三、如果我们某次修改了某些内容，已经commit到本地仓库，而且已经push到远程仓库了</a></li>
+<li><a href="#org05b046a">四、git revert</a>
+<ul>
+<li><a href="#orge961ddf">revert</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</nav>
+<p>
+<b>Git版本恢复命令reset和revert</b>
+</p>
+
+<div id="outline-container-org7affca6" class="outline-2">
+<h2 id="org7affca6">一、放弃本地某个文件的修改：git checkout 文件名</h2>
+</div>
+<div id="outline-container-orge6fe41b" class="outline-2">
+<h2 id="orge6fe41b">二、 本地commit错误没有push到远程仓库</h2>
+<div class="outline-text-2" id="text-orge6fe41b">
+</div>
+<div id="outline-container-orgbdfe837" class="outline-3">
+<h3 id="orgbdfe837">reset命令有3种方式：</h3>
+<div class="outline-text-3" id="text-orgbdfe837">
+<div class="org-src-container">
+<pre class="src src-sh">git reset --mixed <span style="font-weight: bold; font-style: italic;"># </span><span style="font-weight: bold; font-style: italic;">&#27492;&#20026;&#40664;&#35748;&#26041;&#24335;&#65292;&#19981;&#24102;&#20219;&#20309;&#21442;&#25968;&#30340;git reset&#65292;&#21363;&#26102;&#36825;&#31181;&#26041;&#24335;&#65292;&#23427;&#22238;&#36864;&#21040;&#26576;&#20010;&#29256;&#26412;&#65292;&#21482;&#20445;&#30041;&#28304;&#30721;&#65292;&#22238;&#36864;commit&#21644;index&#20449;&#24687;</span>
+git reset --soft  <span style="font-weight: bold; font-style: italic;"># </span><span style="font-weight: bold; font-style: italic;">&#22238;&#36864;&#21040;&#26576;&#20010;&#29256;&#26412;&#65292;&#21482;&#22238;&#36864;&#20102;commit&#30340;&#20449;&#24687;&#65292;&#19981;&#20250;&#24674;&#22797;&#21040;index file&#19968;&#32423;&#12290;&#22914;&#26524;&#36824;&#35201;&#25552;&#20132;&#65292;&#30452;&#25509;commit&#21363;&#21487;</span>
+git reset --hard  <span style="font-weight: bold; font-style: italic;"># </span><span style="font-weight: bold; font-style: italic;">&#24443;&#24213;&#22238;&#36864;&#21040;&#26576;&#20010;&#29256;&#26412;&#65292;&#26412;&#22320;&#30340;&#28304;&#30721;&#20063;&#20250;&#21464;&#20026;&#19978;&#19968;&#20010;&#29256;&#26412;&#30340;&#20869;&#23481;</span>
+
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org40e839b" class="outline-3">
+<h3 id="org40e839b">以下是一些reset的示例：</h3>
+<div class="outline-text-3" id="text-org40e839b">
+<div class="org-src-container">
+<pre class="src src-sh"><span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">&#22238;&#36864;&#25152;&#26377;&#20869;&#23481;&#21040;&#19978;&#19968;&#20010;&#29256;&#26412;(HEAD&#22238;&#36864;add&#30340;&#29256;&#26412;)&#65306;</span>
+git reset HEAD^
+<span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">&#22238;&#36864;a.py&#36825;&#20010;&#25991;&#20214;&#30340;&#29256;&#26412;&#21040;&#19978;&#19968;&#20010;&#29256;&#26412;&#65306;</span>
+git reset HEAD^ a.py
+<span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">&#21521;&#21069;&#22238;&#36864;&#21040;&#31532;3&#20010;&#29256;&#26412;&#65306;</span>
+git reset --soft HEAD~3
+<span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">&#23558;&#26412;&#22320;&#30340;&#29366;&#24577;&#22238;&#36864;&#21040;&#21644;&#36828;&#31243;&#30340;&#19968;&#26679; &#65306;</span>
+git reset --hard origin/master
+<span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">&#22238;&#36864;&#21040;&#26576;&#20010;&#29256;&#26412;&#65288;--hard&#22238;&#36864;commit&#30340;&#29256;&#26412;&#65289; &#65292;&#20351;&#29992;git log&#26597;&#35810;&#25552;&#20132;&#26085;&#24535;</span>
+git reset 057d
+git reset --hard 057d
+<span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">&#22238;&#36864;&#21040;&#19978;&#19968;&#27425;&#25552;&#20132;&#30340;&#29366;&#24577;&#65292;&#25353;&#29031;&#26576;&#19968;&#27425;&#30340;commit&#23436;&#20840;&#21453;&#21521;&#30340;&#36827;&#34892;&#19968;&#27425;commit&#65306;</span>
+git revert HEAD
+
+</pre>
+</div>
+</div>
+</div>
+</div>
+
+
+<div id="outline-container-orge3bf31c" class="outline-2">
+<h2 id="orge3bf31c">三、如果我们某次修改了某些内容，已经commit到本地仓库，而且已经push到远程仓库了</h2>
+<div class="outline-text-2" id="text-orge3bf31c">
+<p>
+这种情况下，我们想把本地和远程仓库都回退到某个版本，该怎么做呢？前面讲到的
+<code>git reset</code> 只是在本地仓库中回退版本，而远程仓库的版本不会变化这样，
+即时本地 <code>reset</code> 了，但如果再 <code>git pull</code> ，那么，远程仓库的内容又会和本地之前版本
+的内容进行 <code>merge</code> 这并不是我们想要的东西，这时可以有2种办法来解决这个问题：
+直接在远程server的仓库目录下，执行 <code>git reset --soft 10efa</code> 来回退。
+注意：在远程不能使用mixed或hard参数，在本地直接把远程的 master 分支给删除，
+然后再把reset后的分支内容给push上去，如下：
+</p>
+
+<div class="org-src-container">
+<pre class="src src-sh"><span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">&#26032;&#24314;old_master&#20998;&#25903;&#20570;&#22791;&#20221;&#65306;</span>
+git branch old_master
+<span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">push&#21040;&#36828;&#31243;&#65306;</span>
+git push origin old_master:old_master
+<span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">&#26412;&#22320;&#20179;&#24211;&#22238;&#36864;&#21040;&#26576;&#20010;&#29256;&#26412;&#65306;</span>
+git reset --hard bae168
+<span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">&#21024;&#38500;&#36828;&#31243;&#30340;master&#20998;&#25903;&#65306;</span>
+git push origin :master
+<span style="font-weight: bold; font-style: italic;">#</span><span style="font-weight: bold; font-style: italic;">&#37325;&#26032;&#21019;&#24314;master&#20998;&#25903;&#65306;</span>
+git push origin master
+
+</pre>
+</div>
+
+<p>
+在删除远程 master 分支时，可能会有问题，见下：
+</p>
+<pre class="example">
+$ git push origin :master
+
+</pre>
+<p class="verse">
+error: By default, deleting the current branch is denied, because the next<br>
+error: 'git clone' won't result in any file checked out, causing confusion.<br>
+error:<br>
+error: You can set 'receive.denyDeleteCurrent' configuration variable to<br>
+error: 'warn' or 'ignore' in the remote repository to allow deleting the<br>
+error: current branch, with or without a warning message.<br>
+error:<br>
+error: To squelch this message, you can set it to 'refuse'.<br>
+error: refusing to delete the current branch: refs/heads/master<br>
+To git@xx.sohu.com:gitosis_test<br>
+! [remote rejected] master (deletion of the current branch prohibited)<br>
+error: failed to push some refs to 'git@xx.sohu.com:gitosis_test'<br>
+<br>
+</p>
+
+<p>
+这时需要在远程仓库目录下，设置 git 的 receive.denyDeleteCurrent 参数
+</p>
+<pre class="example">
+git receive.denyDeleteCurrent warn
+
+</pre>
+<p>
+然后，就可以删除远程的master分支了
+</p>
+
+<p>
+虽然说有以上2种方法可以回退远程分支的版本，但这2种方式，都挺危险的，需要谨慎操作……
+</p>
+</div>
+</div>
+
+<div id="outline-container-org05b046a" class="outline-2">
+<h2 id="org05b046a">四、git revert</h2>
+<div class="outline-text-2" id="text-org05b046a">
+<p>
+对于已经把代码push到远程仓库,你回退本地代码其实也想同时回退线上代码,回滚到某个指
+定的版本,线上,线下代码保持一致.你要用到下面的命令
+</p>
+</div>
+<div id="outline-container-orge961ddf" class="outline-3">
+<h3 id="orge961ddf">revert</h3>
+<div class="outline-text-3" id="text-orge961ddf">
+<p>
+用于反转提交,执行 <i>revert</i> 命令时要求工作树必须是干净的.
+<code>git revert</code>
+用一个新提交来消除一个历史提交所做的任何修改.
+<code>git revert</code>
+</p>
+
+<p>
+revert 之后你的本地代码会回滚到指定的历史版本，这时你再 <code>git push</code> 既可以把线上的
+代码更新。(这里不会像 reset 造成冲突的问题) <code>revert</code> 使用，需要先找到你想回滚版本
+唯一的 commit 标识代码,可以用 <code>git log</code> 或者在 adgit 搭建的 web 环境历史提交记录里
+查看。
+</p>
+<pre class="example">
+git revert c011eb3c20ba6fb38cc94fe5a8dda366a3990c61
+
+</pre>
+
+<p>
+通常,前几位即可
+</p>
+<pre class="example">
+git revert c011eb3
+
+</pre>
+
+<p>
+<code>git revert</code> 是用一次新的 commit 来回滚之前的 commit， <code>git reset</code> 是直接删除指定的
+commit看似达到的效果是一样的，其实完全不同。
+</p>
+
+<ol class="org-ol">
+<li>上面我们说的如果你已经 push 到线上代码库, <code>reset</code> 删除指定 commit 以后，
+你 <code>git push</code> 可能导致一大堆冲突.但是 revert 并不会。</li>
+<li>如果在日后现有分支和历史分支需要合并的时候， <code>reset</code> 恢复部分的代码依然会出现在历
+史分支里。但是 <code>revert</code> 方向提交的 commit 并不会出现在历史分支里。</li>
+<li><code>reset</code> 是在正常的 commit 历史中，删除了指定的 commit, 这时 HEAD 是向后移动了,
+而 <code>revert</code> 是在正常的 commit 历史中再 commit 一次，只不过是反向提交，他的 HEAD
+是一直向前的.</li>
+</ol>
+</div>
+</div>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

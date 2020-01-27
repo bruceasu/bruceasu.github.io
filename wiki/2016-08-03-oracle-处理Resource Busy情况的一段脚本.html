@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>处理Resource Busy情况的一段脚本(转)</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">处理Resource Busy情况的一段脚本(转)</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#oracle"><div class="category">oracle</div></a> <a href="https://bruceasu.github.io/tags.html#reprint"><div class="category">reprint</div></a> </div>
+<div class="char-counter">2016-08-03</div>
+        <div id="content">
+<p>
+对于一些建在更新比较频繁的列上的索引, 或者是有大量记录被删除表上的索引, 需要定期
+进行Rebuild, 对于比较大表上的索引一般会考虑用一定的并行度去建, 以让索引在更短的
+时间内建好. 但不要忘了将索引的并行度重新设置为1(禁用并行), 否则很容易让所有的SQL
+都用并行方式来执行, 从而引起主机崩溃. 在很忙的OLTP系统中, 可能常会遇到Resource
+Busy的错误, 如何确保修改能最后成功呢? 就需要一段脚本来处理一下这个错误, 下面是我
+常用的一段脚本:
+</p>
+<div class="org-src-container">
+<pre class="src src-sql"><span style="font-weight: bold;">alter</span> index &#8230;&#8230; rebuild &#8230; parallel &#8230; ONLINE;
+
+ <span style="font-weight: bold;">declare</span>
+   resource_busy <span style="font-weight: bold;">exception</span>;
+   pragma exception_init (resource_busy,-54);
+ <span style="font-weight: bold;">begin</span>
+ loop
+    <span style="font-weight: bold;">begin</span>
+      <span style="font-weight: bold;">execute</span> <span style="font-weight: bold;">immediate</span> &#8216;<span style="font-weight: bold;">alter</span> index &#8230;&#8230; noparallel&#8217;;
+      exit;
+    <span style="font-weight: bold;">exception</span>
+     <span style="font-weight: bold;">when</span> resource_busy <span style="font-weight: bold;">then</span>
+      dbms_lock.sleep(1);
+    <span style="font-weight: bold;">end</span>;
+ <span style="font-weight: bold;">end</span> loop;
+ <span style="font-weight: bold;">end</span>;
+ /
+</pre>
+</div>
+
+<p>
+这个脚本也可以用在其他的地方, 或者改一下错误号(-54)来处理其他的错误, 怎么用就看
+你的了!
+</p>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>Java socket tcp ip options</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">Java socket tcp ip options</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#java"><div class="category">java</div></a> <a href="https://bruceasu.github.io/tags.html#socket"><div class="category">socket</div></a> </div>
+<div class="char-counter">2016-06-18</div>
+        <div id="content">
+<nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#orgfa2f21c">前言</a></li>
+<li><a href="#org18e104a">TCP_NODELAY</a></li>
+<li><a href="#orgd71daa2">SO_REUSEADDR</a></li>
+<li><a href="#org1daa20f">SO_LINGER</a></li>
+<li><a href="#orgcc194aa">SO_TIMEOUT</a></li>
+<li><a href="#org9d9987c">SO_SNDBUF</a></li>
+<li><a href="#org1216455">SO_RCVBUF</a></li>
+<li><a href="#org7faa74b">SO_KEEPALIVE</a></li>
+<li><a href="#org721d2a2">SO_OOBINLINE</a></li>
+</ul>
+</div>
+</nav>
+
+
+<div id="outline-container-orgfa2f21c" class="outline-2">
+<h2 id="orgfa2f21c">前言</h2>
+<div class="outline-text-2" id="text-orgfa2f21c">
+<p>
+Socket选择可以指定Socket类发送和接受数据的方式。在JDK1.4中共有8个Socket选择可以
+设置。这8个选项都定义在java.net.SocketOptions接口中。
+</p>
+
+<p>
+定义如下：
+</p>
+<pre class="example">
+public final static int TCP_NODELAY = 0x0001;
+public final static int SO_REUSEADDR = 0x04;
+public final static int SO_LINGER = 0x0080;
+public final static int SO_TIMEOUT = 0x1006;
+public final static int SO_SNDBUF = 0x1001;
+public final static int SO_RCVBUF = 0x1002;
+public final static int SO_KEEPALIVE = 0x0008;
+public final static int SO_OOBINLINE = 0x1003;
+
+</pre>
+
+<p>
+有趣的是，这8个选项除了第一个没在SO前缀外，其他7个选项都以SO作为前缀。其实这个SO
+就是Socket Option的缩写；因此，在Java中约定所有以SO为前缀的常量都表示Socket选项；
+当然，也有例外，如TCP_NODELAY.在Socket类中为每一个选项提供了一对get和set方法，
+分别用来获得和设置这些选项。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org18e104a" class="outline-2">
+<h2 id="org18e104a">TCP_NODELAY</h2>
+<div class="outline-text-2" id="text-org18e104a">
+<pre class="example">
+public boolean getTcpNoDelay() throws SocketException
+public void setTcpNoDelay(boolean on) throws SocketException
+
+</pre>
+
+<p>
+在默认情况下，客户端向服务器发送数据时，会根据数据包的大小决定是否立即发送。当数
+据包中的数据很少时，如只有1个字节，而数据包的头却有几十个字节（IP头+TCP头）时，
+系统会在发送之前先将较小的包合并到软大的包后，一起将数据发送出去。在发送下一个数
+据包时，系统会等待服务器对前一个数据包的响应，当收到服务器的响应后，再发送下一个
+数据包，这就是所谓的Nagle算法；在默认情况下，Nagle算法是开启的。
+</p>
+
+<p>
+这种算法虽然可以有效地改善网络传输的效率，但对于网络速度比较慢，而且对实现性的要
+求比较高的情况下（如游戏、Telnet等），使用这种方式传输数据会使得客户端有明显的停
+顿现象。因此，最好的解决方案就是需要Nagle算法时就使用它，不需要时就关闭它。而使
+用setTcpToDelay正好可以满 足这个需求。当使用setTcpNoDelay（true）将Nagle算法关闭
+后，客户端每发送一次数据，无论数据包的大小都会将这些数据发送出去。
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-orgd71daa2" class="outline-2">
+<h2 id="orgd71daa2">SO_REUSEADDR</h2>
+<div class="outline-text-2" id="text-orgd71daa2">
+<pre class="example">
+public boolean getReuseAddress() throws SocketException
+public void setReuseAddress(boolean on) throws SocketException
+
+</pre>
+<ul class="org-ul">
+<li>错误的说法：通过这个选项，可以使多个Socket对象绑定在同一个端口上。</li>
+<li>正确的说明是：如果端口忙，但TCP状态位于 TIME_WAIT ，可以重用端口。如果端口忙，
+而TCP状态位于其他状态，重用端口时依旧得到一个错误信息，抛出“Address already in
+use： JVM_Bind”。如果你的服务程序停止后想立即重启，不等60秒，而新套接字依旧使
+用同一端口，此时 SO_REUSEADDR 选项非常有用。必须意识到，此时任何非期望数据到
+达，都可能导致服务程序反应混乱，不过这只是一种可能，事实上很不可能。</li>
+</ul>
+
+<p>
+这个参数在 Windows 平台与 Linux 平台表现的特点不一样。在 Windows 平台表现的特点是不正
+确的， 在 Linux 平台表现的特点是正确的。
+</p>
+
+<p>
+在 Windows 平台，多个 Socket 新建立对象可以绑定在同一个端口上，这些新连接是非
+TIME_WAIT 状态的。这样做并没有多大意义。
+</p>
+
+<p>
+在 Linux 平台，只有 TCP 状态位于 TIME_WAIT ，才可以重用端口。这才是正确的行为。
+</p>
+<div class="org-src-container">
+<pre class="src src-java"><span style="font-weight: bold;">public</span> <span style="font-weight: bold;">class</span> <span style="font-weight: bold; text-decoration: underline;">Test</span> {
+  <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">main</span>(<span style="font-weight: bold; text-decoration: underline;">String</span>[] <span style="font-weight: bold; font-style: italic;">args</span>) {
+    <span style="font-weight: bold;">try</span> {
+      <span style="font-weight: bold; text-decoration: underline;">ServerSocket</span> <span style="font-weight: bold; font-style: italic;">socket1</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">ServerSocket</span>();
+      <span style="font-weight: bold; text-decoration: underline;">ServerSocket</span> <span style="font-weight: bold; font-style: italic;">socket2</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">ServerSocket</span>();
+      socket1.setReuseAddress(<span style="font-weight: bold; text-decoration: underline;">true</span>);
+      socket1.bind(<span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">InetSocketAddress</span>(<span style="font-style: italic;">"127.0.0.1"</span>, 8899));
+      System.out.println(<span style="font-style: italic;">"socket1.getReuseAddress():"</span> + socket1.getReuseAddress());
+      socket2.setReuseAddress(<span style="font-weight: bold; text-decoration: underline;">true</span>);
+      socket2.bind(<span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">InetSocketAddress</span>(<span style="font-style: italic;">"127.0.0.1"</span>, 8899));
+      System.out.println(<span style="font-style: italic;">"socket2.getReuseAddress():"</span> + socket1.getReuseAddress());
+    } <span style="font-weight: bold;">catch</span> (<span style="font-weight: bold; text-decoration: underline;">Exception</span> <span style="font-weight: bold; font-style: italic;">e</span>) {
+      e.printStackTrace();
+    }
+  }
+}
+
+</pre>
+</div>
+
+<p>
+使用 SO_REUSEADDR 选项时有两点需要注意：
+</p>
+
+<ol class="org-ol">
+<li>必须在调用 bind 方法之前使用 setReuseAddress 方法来打开SO_REUSEADDR选项。因此，
+要想使用 SO_REUSEADDR 选项，就不能通过 Socket 类的构造方法来绑定端口。</li>
+<li>必须将绑定同一个端口的所有的 Socket 对象的 SO_REUSEADDR 选项都打开才能起作用。
+如在例程4-12中，socket1 和 socket2 都使用了 setReuseAddress 方法打开了各自的
+SO_REUSEADDR 选项。</li>
+</ol>
+
+<p>
+在 Windows 操作系统上运行上面的代码的运行结果如下：
+这种结果是不正确的。
+</p>
+<pre class="example">
+socket1.getReuseAddress():true
+socket2.getReuseAddress():true
+
+</pre>
+
+<p>
+在 Linux 操作系统上运行上面的代码的运行结果如下：
+</p>
+
+<p>
+这种结果是正确的。因为第一个连接不是 TIME_WAIT 状态的，第二个连接就不能使用 8899
+端口；只有第一个连接是 TIME_WAIT 状态的，第二个连接就才能使用8899 端口；
+</p>
+<div class="org-src-container">
+<pre class="src src-java">socket1.<span style="font-weight: bold; text-decoration: underline;">getReuseAddress</span>():<span style="font-weight: bold; text-decoration: underline;">true</span>
+  <span style="font-weight: bold; text-decoration: underline;">java</span>.<span style="font-weight: bold; text-decoration: underline;">net</span>.BindException: Address already in use
+         at <span style="font-weight: bold; text-decoration: underline;">java</span>.<span style="font-weight: bold; text-decoration: underline;">net</span>.PlainSocketImpl.socketBind(<span style="font-weight: bold; text-decoration: underline;">Native</span> <span style="font-weight: bold; font-style: italic;">Method</span>)
+         at <span style="font-weight: bold; text-decoration: underline;">java</span>.<span style="font-weight: bold; text-decoration: underline;">net</span>.PlainSocketImpl.bind(PlainSocketImpl.java:383)
+         at <span style="font-weight: bold; text-decoration: underline;">java</span>.<span style="font-weight: bold; text-decoration: underline;">net</span>.ServerSocket.bind(ServerSocket.java:328)
+         at <span style="font-weight: bold; text-decoration: underline;">java</span>.<span style="font-weight: bold; text-decoration: underline;">net</span>.ServerSocket.bind(ServerSocket.java:286)
+         at <span style="font-weight: bold; text-decoration: underline;">com</span>.Test.main(Test.java:15)
+</pre>
+</div>
+</div>
+</div>
+
+
+<div id="outline-container-org1daa20f" class="outline-2">
+<h2 id="org1daa20f">SO_LINGER</h2>
+<div class="outline-text-2" id="text-org1daa20f">
+<pre class="example">
+public int getSoLinger() throws SocketException
+public void setSoLinger(boolean on, int linger) throws SocketException
+
+</pre>
+
+<p>
+这个 Socket 选项可以影响 close 方法的行为。在默认情况下，当调用 close 方法后，将
+立即返回；如果这时仍然有未被送出的数据包，那么这些数据包将被丢弃。如果将 linger
+参数设为一个正整数 n 时（ n 的值最大是 65535），在调用 close 方法后，将最多被阻
+塞 n 秒。在这 n 秒内，系统将尽量将未送出的数据包发送出去；如果超过了 n 秒，如果
+还有未发送的数据包，这些数据包将全部被丢弃；而 close 方法会立即返回。如果将
+linger 设为 0，和关闭 SO_LINGER 选项的作用是一样的。
+</p>
+
+<p>
+如果底层的 Socket 实现不支持 SO_LINGER 都会抛出 SocketException 例外。当给linger
+参数传递负数值时，setSoLinger 还会抛出一个IllegalArgumentException 例外。可以通
+过 getSoLinger 方法得到延迟关闭的时间，如果返回 -1，则表明 SO_LINGER 是关闭的。
+例如，下面的代码将延迟关闭的时间设为1分钟：
+</p>
+<pre class="example">
+if(socket.getSoLinger() == -1) socket.setSoLinger(true, 60);
+
+</pre>
+</div>
+</div>
+
+<div id="outline-container-orgcc194aa" class="outline-2">
+<h2 id="orgcc194aa">SO_TIMEOUT</h2>
+<div class="outline-text-2" id="text-orgcc194aa">
+<pre class="example">
+public int getSoTimeout() throws SocketException
+public void setSoTimeout(int timeout) throws SocketException
+
+</pre>
+
+<p>
+这个 Socket 选项在前面已经讨论过。可以通过这个选项来设置读取数据超时。当输入流的
+read 方法被阻塞时，如果设置 timeout（timeout 的单位是毫秒），那么系统在等待了
+timeout 毫秒后会抛出一个 InterruptedIOException 例外。在抛出例外后，输入流并未关
+闭，你可以继续通过 read 方法读取数据。
+</p>
+
+<p>
+如果将 timeout 设为 0，就意味着 read 将会无限等待下去，直到服务端程序关闭这个
+Socket. 这也是 timeout 的默认值。如下面的语句将读取数据超时设为 30 秒：
+</p>
+<pre class="example">
+socket1.setSoTimeout(30 * 1000);
+
+</pre>
+
+<p>
+当底层的 Socket 实现不支持 SO_TIMEOUT 选项时，这两个方法将抛出SocketException 例
+外。不能将 timeout 设为负数，否则 setSoTimeout 方法将抛出
+IllegalArgumentException 例外。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org9d9987c" class="outline-2">
+<h2 id="org9d9987c">SO_SNDBUF</h2>
+<div class="outline-text-2" id="text-org9d9987c">
+<pre class="example">
+public int getSendBufferSize() throws SocketException
+public void setSendBufferSize(int size) throws SocketException
+
+</pre>
+
+<p>
+在默认情况下，输出流的发送缓冲区是 8096 个字节（8K）。这个值是Java所建议的输出缓
+冲区的大小。如果这个默认值不能满足要求，可以用setSendBufferSize 方法来重新设置缓
+冲区的大小。但最好不要将输出缓冲区设得太小，否则会导致传输数据过于频繁，从而降低
+网络传输的效率。如果底层的Socket 实现不支持 SO_SENDBUF 选项，这两个方法将会抛出
+SocketException 例外。必须将 size 设为正整数，否则 setSendBufferedSize 方法将抛
+出IllegalArgumentException 例外。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org1216455" class="outline-2">
+<h2 id="org1216455">SO_RCVBUF</h2>
+<div class="outline-text-2" id="text-org1216455">
+<pre class="example">
+public int getReceiveBufferSize() throws SocketException
+public void setReceiveBufferSize(int size) throws SocketException
+
+</pre>
+
+<p>
+在默认情况下，输入流的接收缓冲区是 8096 个字节（8K）。这个值是 Java 所建议的输入
+缓冲区的大小。如果这个默认值不能满足要求，可以用 setReceiveBufferSize 方法来重新
+设置缓冲区的大小。但最好不要将输入缓冲区设得太小，否则会导致传输数据过于频繁，从
+而降低网络传输 的效率。如果底层的 Socket 实现不支持 SO_RCVBUF 选项，这两个方法将
+会抛出 SocketException 例外。必须将 size 设为正整数，否则 setReceiveBufferSize
+方法将抛出 IllegalArgumentException 例外。
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-org7faa74b" class="outline-2">
+<h2 id="org7faa74b">SO_KEEPALIVE</h2>
+<div class="outline-text-2" id="text-org7faa74b">
+<pre class="example">
+public boolean getKeepAlive() throws SocketException
+public void setKeepAlive(boolean on) throws SocketException
+
+</pre>
+
+<p>
+如果将这个 Socket 选项打开，客户端 Socket 每隔段的时间（大约两个小时）就会利用空
+闲的连接向服务器发送一个数据包。这个数据包并没有其它的作 用，只是为了检测一下服
+务器是否仍处于活动状态。如果服务器未响应这个数据包，在大约 11 分钟后，客户端
+Socket 再发送一个数据包，如果在 12 分钟 内，服务器还没响应，那么客户端 Socket 将
+关闭。如果将Socket 选项关闭，客户端Socket在服务器无效的情况下可能会长时间不会关
+闭。 SO_KEEPALIVE 选项在默认情况下是关闭的，可以使用如下的语句将这个
+SO_KEEPALIVE 选项打开：
+</p>
+<pre class="example">
+socket1.setKeepAlive(true);
+
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org721d2a2" class="outline-2">
+<h2 id="org721d2a2">SO_OOBINLINE</h2>
+<div class="outline-text-2" id="text-org721d2a2">
+<pre class="example">
+public boolean getOOBInline() throws SocketException
+public void setOOBInline(boolean on) throws SocketException
+
+</pre>
+
+<p>
+如果这个 Socket 选项打开，可以通过 Socket 类的 sendUrgentData 方法向服务器发送一
+个单字节的数据。这个单字节数据并不经过输出缓 冲区，而是立即发出。虽然在客户端并
+不是使用 OutputStream 向服务器发送数据，但在服务端程序中这个单字节的数据是和其它
+的普通数据混在一起 的。因此，在服务端程序中并不知道由客户端发过来的数据是由
+OutputStream 还是由 sendUrgentData 发过来的。下面是 sendUrgentData方法的声明：
+</p>
+
+<pre class="example">
+public void sendUrgentData(int data) throws IOException
+
+</pre>
+
+<p>
+虽然 sendUrgentData 的参数 data 是 int 类型，但只有这个 int 类型的低字节被发送，
+其它的三个字节被忽略。下面的代码演示了如何使用 SO_OOBINLINE 选项来发送单字节数据。
+</p>
+<div class="org-src-container">
+<pre class="src src-java"><span style="font-weight: bold;">package</span> <span style="font-weight: bold; text-decoration: underline;">mynet</span>;
+
+<span style="font-weight: bold;">import</span> <span style="font-weight: bold; text-decoration: underline;">java</span>.<span style="font-weight: bold; text-decoration: underline;">net</span>.*;
+<span style="font-weight: bold;">import</span> <span style="font-weight: bold; text-decoration: underline;">java</span>.<span style="font-weight: bold; text-decoration: underline;">io</span>.*;
+
+<span style="font-weight: bold;">class</span> <span style="font-weight: bold; text-decoration: underline;">Server</span>
+{
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">main</span>(<span style="font-weight: bold; text-decoration: underline;">String</span>[] <span style="font-weight: bold; font-style: italic;">args</span>) <span style="font-weight: bold;">throws</span> <span style="font-weight: bold; text-decoration: underline;">Exception</span>
+    {
+        <span style="font-weight: bold; text-decoration: underline;">ServerSocket</span> <span style="font-weight: bold; font-style: italic;">serverSocket</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">ServerSocket</span>(1234);
+        System.out.println(<span style="font-style: italic;">"&#26381;&#21153;&#22120;&#24050;&#32463;&#21551;&#21160;&#65292;&#31471;&#21475;&#21495;&#65306;1234"</span>);
+        <span style="font-weight: bold;">while</span> (<span style="font-weight: bold; text-decoration: underline;">true</span>)
+        {
+            <span style="font-weight: bold; text-decoration: underline;">Socket</span> <span style="font-weight: bold; font-style: italic;">socket</span> = serverSocket.accept();
+            socket.setOOBInline(<span style="font-weight: bold; text-decoration: underline;">true</span>);
+            <span style="font-weight: bold; text-decoration: underline;">InputStream</span> <span style="font-weight: bold; font-style: italic;">in</span> = socket.getInputStream();
+            <span style="font-weight: bold; text-decoration: underline;">InputStreamReader</span> <span style="font-weight: bold; font-style: italic;">inReader</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">InputStreamReader</span>(in);
+            <span style="font-weight: bold; text-decoration: underline;">BufferedReader</span> <span style="font-weight: bold; font-style: italic;">bReader</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">BufferedReader</span>(inReader);
+            System.out.println(bReader.readLine());
+            System.out.println(bReader.readLine());
+            socket.close();
+        }
+    }
+}
+<span style="font-weight: bold;">public</span> <span style="font-weight: bold;">class</span> <span style="font-weight: bold; text-decoration: underline;">Client</span>
+{
+    <span style="font-weight: bold;">public</span> <span style="font-weight: bold;">static</span> <span style="font-weight: bold; text-decoration: underline;">void</span> <span style="font-weight: bold;">main</span>(<span style="font-weight: bold; text-decoration: underline;">String</span>[] <span style="font-weight: bold; font-style: italic;">args</span>) <span style="font-weight: bold;">throws</span> <span style="font-weight: bold; text-decoration: underline;">Exception</span>
+    {
+        <span style="font-weight: bold; text-decoration: underline;">Socket</span> <span style="font-weight: bold; font-style: italic;">socket</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">Socket</span>(<span style="font-style: italic;">"127.0.0.1"</span>, 1234);
+        socket.setOOBInline(<span style="font-weight: bold; text-decoration: underline;">true</span>);
+        <span style="font-weight: bold; text-decoration: underline;">OutputStream</span> <span style="font-weight: bold; font-style: italic;">out</span> = socket.getOutputStream();
+        <span style="font-weight: bold; text-decoration: underline;">OutputStreamWriter</span> <span style="font-weight: bold; font-style: italic;">outWriter</span> = <span style="font-weight: bold;">new</span> <span style="font-weight: bold; text-decoration: underline;">OutputStreamWriter</span>(out);
+        outWriter.write(67);              <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#21521;&#26381;&#21153;&#22120;&#21457;&#36865;&#23383;&#31526;"C"</span>
+        outWriter.write(<span style="font-style: italic;">"hello world\r\n"</span>);
+        socket.sendUrgentData(65);        <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#21521;&#26381;&#21153;&#22120;&#21457;&#36865;&#23383;&#31526;"A"</span>
+        socket.sendUrgentData(322);        <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#21521;&#26381;&#21153;&#22120;&#21457;&#36865;&#23383;&#31526;"B"</span>
+        outWriter.flush();
+        socket.sendUrgentData(214);       <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#21521;&#26381;&#21153;&#22120;&#21457;&#36865;&#27721;&#23383;&#8221;&#20013;&#8221;</span>
+        socket.sendUrgentData(208);
+        socket.sendUrgentData(185);       <span style="font-weight: bold; font-style: italic;">// </span><span style="font-weight: bold; font-style: italic;">&#21521;&#26381;&#21153;&#22120;&#21457;&#36865;&#27721;&#23383;&#8221;&#22269;&#8221;</span>
+        socket.sendUrgentData(250);
+        socket.close();
+    }
+}
+
+</pre>
+</div>
+
+<p>
+由于运行上面的代码需要一个服务器类，因此，在加了一个类名为 Server 的服务器类，关
+于服务端套接字的使用方法将会在后面的文章中详细讨论。在类 Server 类中只使用了
+ServerSocket 类的 accept 方法接收客户端的请求。并从客户端传来的数据中读取两行字
+符串，并显示在控制台上。
+</p>
+
+<p>
+测试
+</p>
+
+<p>
+由于本例使用了 127.0.0.1，因 Server 和 Client 类必须在同一台机器上运行。
+</p>
+
+<ul class="org-ul">
+<li>运行Server: <code>java mynet.Server</code></li>
+<li>运行Client: <code>java mynet.Client</code></li>
+<li>在服务端控制台的输出结果</li>
+</ul>
+<p class="verse">
+服务器已经启动，端口号：1234<br>
+ABChello world<br>
+中国<br>
+<br>
+</p>
+
+<p>
+在 ClienT 类中使用了 sendUrgentData 方法向服务器发送了字符'A'（65）和'B'（66）。
+但发送'B'时实际发送的是 322，由于 sendUrgentData 只发送整型数的低字节。因此，实
+际发送的是 66.十进制整型 322 的二进制形式如图1所示。
+</p>
+
+<p>
+图1  十进制整型 322 的二进制形式
+</p>
+
+<p>
+从图1可以看出，虽然 322 分布在了两个字节上，但它的低字节仍然是66.
+</p>
+
+<p>
+在 Client 类中使用 flush 将缓冲区中的数据发送到服务器。我们可以从输出结果发现一
+个问题，在 Client 类中先后向服务器发送了 'C'、"hello world"r"n"、'A'、'B'.而在服
+务端程序的控制台上显示的却是 ABChello world. 这种现象说明使用 sendUrgentData 方法发
+送数据后，系统会立即将这些数据发送出去；而使用 write 发送数据，必须要使用 flush 方
+法才会真正发送数据。
+</p>
+
+<p>
+在 Client 类中向服务器发送"中国"字符串。由于"中"是由 214 和 208 两个字节组成
+的；而"国"是由 185 和 250 两个字节组成的；因此，可分别发送这四个字节来传送
+"中国"字符串。
+</p>
+
+<p>
+注意：在使用 setOOBInline 方法打开 SO_OOBINLINE 选项时要注意是必须在客户端和服务
+端程序同时使用 setOOBInline 方法打开这个选项，否则无法命名用sendUrgentData 来发
+送数据。
+</p>
+</div>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

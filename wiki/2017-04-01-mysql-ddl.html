@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>mysql 添加字段、删除字段、调整字段顺序</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">mysql 添加字段、删除字段、调整字段顺序</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#mysql"><div class="category">mysql</div></a> <a href="https://bruceasu.github.io/tags.html#database"><div class="category">database</div></a> </div>
+<div class="char-counter">2017-04-01</div>
+        <div id="content">
+
+<div id="outline-container-orgbeb8a61" class="outline-2">
+<h2 id="orgbeb8a61">ALTER TABLE — 更改表属性</h2>
+<div class="outline-text-2" id="text-orgbeb8a61">
+</div>
+<div id="outline-container-org4e7a5ac" class="outline-3">
+<h3 id="org4e7a5ac">添加字段：</h3>
+<div class="outline-text-3" id="text-org4e7a5ac">
+<pre class="example">
+alter table `user_movement_log` Add column GatewayId int  not null default 0 AFTER `Regionid` (在哪个字段后面添加)
+
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org3e3f482" class="outline-3">
+<h3 id="org3e3f482">删除字段：</h3>
+<div class="outline-text-3" id="text-org3e3f482">
+<pre class="example">
+alter table `user_movement_log` drop column Gatewayid
+
+</pre>
+</div>
+</div>
+
+<div id="outline-container-orgaff29d6" class="outline-3">
+<h3 id="orgaff29d6">调整字段顺序：</h3>
+<div class="outline-text-3" id="text-orgaff29d6">
+<pre class="example">
+ALTER TABLE `user_movement_log`  CHANGE `GatewayId` `GatewayId` int not null default 0  AFTER RegionID
+
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org9a9cab2" class="outline-2">
+<h2 id="org9a9cab2">mysql alter 语句用法,添加、修改、删除字段等</h2>
+<div class="outline-text-2" id="text-org9a9cab2">
+</div>
+<div id="outline-container-org935f28f" class="outline-3">
+<h3 id="org935f28f">主键</h3>
+<div class="outline-text-3" id="text-org935f28f">
+<pre class="example">
+alter table tabelname add new_field_id int(5) unsigned default 0 not null auto_increment ,add primary key (new_field_id);`
+
+</pre>
+</div>
+</div>
+
+<div id="outline-container-orgcbc6dd7" class="outline-3">
+<h3 id="orgcbc6dd7">增加一个新列</h3>
+<div class="outline-text-3" id="text-orgcbc6dd7">
+<pre class="example">
+alter table t2 add d timestamp;
+alter table infos add ex tinyint not null default '0';
+
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org69c4751" class="outline-3">
+<h3 id="org69c4751">删除列</h3>
+<div class="outline-text-3" id="text-org69c4751">
+<pre class="example">
+alter table t2 drop column c;
+
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org46c93d3" class="outline-3">
+<h3 id="org46c93d3">重命名列</h3>
+<div class="outline-text-3" id="text-org46c93d3">
+<pre class="example">
+alter table t1 change a b integer;
+
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org00eabe1" class="outline-3">
+<h3 id="org00eabe1">改变列的类型</h3>
+<div class="outline-text-3" id="text-org00eabe1">
+<pre class="example">
+alter table t1 change b b bigint not null;
+alter table infos change list list tinyint not null default '0';
+
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org9955cd9" class="outline-3">
+<h3 id="org9955cd9">重命名表</h3>
+<div class="outline-text-3" id="text-org9955cd9">
+<pre class="example">
+alter table t1 rename t2;
+
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org57de6e1" class="outline-3">
+<h3 id="org57de6e1">加索引</h3>
+<div class="outline-text-3" id="text-org57de6e1">
+<pre class="example">
+mysql&gt; alter table tablename change depno depno int(5) not null;
+mysql&gt; alter table tablename add index 索引名 (字段名1[，字段名2 …]);
+mysql&gt; alter table tablename add index emp_name (name);
+
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org5d44104" class="outline-3">
+<h3 id="org5d44104">加主关键字的索引</h3>
+<div class="outline-text-3" id="text-org5d44104">
+<pre class="example">
+mysql&gt; alter table tablename add primary key(id);
+
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org728992f" class="outline-3">
+<h3 id="org728992f">加唯一限制条件的索引</h3>
+<div class="outline-text-3" id="text-org728992f">
+<p>
+:: mysql&gt; alter table tablename add unique emp_name2(cardnumber);
+</p>
+</div>
+</div>
+
+<div id="outline-container-org87420c1" class="outline-3">
+<h3 id="org87420c1">删除某个索引</h3>
+<div class="outline-text-3" id="text-org87420c1">
+<pre class="example">
+mysql&gt; alter table tablename drop index emp_name;
+
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org96b6038" class="outline-3">
+<h3 id="org96b6038">增加字段：</h3>
+<div class="outline-text-3" id="text-org96b6038">
+<pre class="example">
+mysql&gt; ALTER TABLE table_name ADD field_name field_type;
+
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org3966b7b" class="outline-3">
+<h3 id="org3966b7b">修改原字段名称及类型：</h3>
+<div class="outline-text-3" id="text-org3966b7b">
+<pre class="example">
+mysql&gt; ALTER TABLE table_name CHANGE old_field_name new_field_name field_type;
+
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org69215a8" class="outline-3">
+<h3 id="org69215a8">删除字段：</h3>
+<div class="outline-text-3" id="text-org69215a8">
+<pre class="example">
+mysql&gt; ALTER TABLE table_name DROP field_name;
+
+</pre>
+</div>
+</div>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

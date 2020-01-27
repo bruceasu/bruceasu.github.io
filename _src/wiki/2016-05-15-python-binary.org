@@ -1,0 +1,259 @@
+# -*- coding: utf-8-unix; -*-
+#+TITLE:       python binary struct
+#+AUTHOR:      Bruce Asu
+#+EMAIL:       bruceasu@163.com
+#+DATE:        <2016-06-15 20:00>
+#+filetags:    python
+#+DESCRIPTION: 有的时候需要用 python 处理二进制数据，比如，存取文件，socket 操作时.这时候，可以使用 python 的 struct 模块来完成。
+
+#+LANGUAGE:    en
+#+OPTIONS:     H:7 num:nil toc:t \n:nil ::t |:t ^:nil -:nil f:t *:t <:nil
+
+
+有的时候需要用 python 处理二进制数据，比如，存取文件，socket 操作时.这时候，可以使
+用 python 的 struct 模块来完成。可以用 struct 来处理 c 语言中的结构体。
+
+struct模块中最重要的三个函数是 =pack()= , =unpack()= , =calcsize()=
+- pack(fmt, v1, v2, &#x2026;) 按照给定的格式(fmt)，把数据封装成字符串(实际上是类
+  似于c结构体的字节流)
+- unpack(fmt, string) 按照给定的格式(fmt)解析字节流string，返回解析出来的tuple
+- calcsize(fmt) 计算给定的格式(fmt)占用多少字节的内存
+
+struct中支持的格式如下表：
+
+#+BEGIN_EXPORT html
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+  <colgroup>
+    <col  class="org-left" />
+
+    <col  class="org-left" />
+
+    <col  class="org-left" />
+  </colgroup>
+  <thead>
+    <tr>
+      <th scope="col" class="org-left">> 格式</th>
+      <th scope="col" class="org-left">c类型</th>
+      <th scope="col" class="org-left">python类型</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td class="org-left">>x</td>
+      <td class="org-left">char</td>
+      <td class="org-left">无(表示填充字节)</td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">>c</td>
+      <td class="org-left">char</td>
+      <td class="org-left">长度为1的字符串</td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">>b</td>
+      <td class="org-left">signed char</td>
+      <td class="org-left">integer</td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">>B</td>
+      <td class="org-left">unsigned char</td>
+      <td class="org-left">integer</td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">>h</td>
+      <td class="org-left">short</td>
+      <td class="org-left">integer</td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">>H</td>
+      <td class="org-left">unsigned short</td>
+      <td class="org-left">integer</td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">>i</td>
+      <td class="org-left">int</td>
+      <td class="org-left">integer</td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">>I</td>
+      <td class="org-left">unsigned int</td>
+      <td class="org-left">long</td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">>l</td>
+      <td class="org-left">long</td>
+      <td class="org-left">integer</td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">>L</td>
+      <td class="org-left">unsigned long</td>
+      <td class="org-left">long</td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">>q</td>
+      <td class="org-left">long long</td>
+      <td class="org-left">long</td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">>Q</td>
+      <td class="org-left">unsigned long long</td>
+      <td class="org-left">long</td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">>f</td>
+      <td class="org-left">float</td>
+      <td class="org-left">float</td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">>d</td>
+      <td class="org-left">double</td>
+      <td class="org-left">float</td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">>s</td>
+      <td class="org-left">char[]</td>
+      <td class="org-left">string</td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">>p</td>
+      <td class="org-left">char[]</td>
+      <td class="org-left">string</td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">>P</td>
+      <td class="org-left">void\*</td>
+      <td class="org-left">integer</td>
+    </tr>
+  </tbody>
+</table>
+
+<p class="verse">
+  注1. q和Q只在机器支持64位操作时有意思<br />
+  注2. 每个格式前可以有一个数字，表示个数<br />
+  注3. s格式表示一定长度的字符串，4s表示长度为4的字符串，但是p表示的是pascal字符串<br />
+  注4. P用来转换一个指针，其长度和机器字长相关<br />
+</p>
+
+#+END_EXPORT
+
+默认情况下struct根据本地机器字节顺序转换.不过可以用格式中的第一个字符来改变对齐
+方式.定义如下：
+#+BEGIN_EXPORT html
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+  <colgroup>
+    <col  class="org-left" />
+
+    <col  class="org-left" />
+
+    <col  class="org-left" />
+  </colgroup>
+  <tbody>
+    <tr>
+      <td class="org-left">>字符</td>
+      <td class="org-left">字节顺序</td>
+      <td class="org-left">长度和对齐方式</td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">>@</td>
+      <td class="org-left">native</td>
+      <td class="org-left">native</td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">>=</td>
+      <td class="org-left">native</td>
+      <td class="org-left">standard</td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">><</td>
+                              <td class="org-left">little-endian</td>
+      <td class="org-left">standard</td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">>></td>
+      <td class="org-left">big-endian</td>
+      <td class="org-left">standard</td>
+    </tr>
+
+
+    <tr>
+      <td class="org-left">>!</td>
+      <td class="org-left">network (= big-endian)</td>
+      <td class="org-left">standard</td>
+    </tr>
+  </tbody>
+</table>
+
+#+END_EXPORT
+
+有了struct，我们就可以很容易操作二进制数据了.
+比如有一个结构体:
+#+BEGIN_SRC c
+    struct Header
+    {
+        unsigned short id;
+        char[4] tag;
+        unsigned int version;
+        unsigned int count;
+    }
+
+#+END_SRC
+
+通过 socket.recv 接收到了一个上面的结构体数据，存在字符串s中，现在需要把它解析出
+来，可以使用 unpack() 函数.
+#+BEGIN_SRC python
+    import struct
+    id, tag, version, count = struct.unpack("!H4s2I", s)
+#+END_SRC
+
+上面的格式字符串中，!表示我们要使用网络字节顺序解析，因为我们的数据是从网络中接
+收到的，在网络上传送的时候它是网络字节顺序的.后面的H表示一个unsigned short的
+id,4s表示4字节长的字符串，2I表示有两个unsigned int类型的数据.
+
+就通过一个unpack，现在id, tag, version, count里已经保存好我们的信息了.
+
+同样，也可以很方便的把本地数据再pack成struct格式.
+: ss = struct.pack("!H4s2I", id, tag, version, count);
+
+pack函数就把id, tag, version, count按照指定的格式转换成了结构体Header，ss现在是
+一个字符串(实际上是类似于c结构体的字节流)，可以通过socket.send(ss)把这个字符串发
+送出去.
