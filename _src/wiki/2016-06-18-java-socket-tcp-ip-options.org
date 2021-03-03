@@ -2,7 +2,7 @@
 #+TITLE:       Java socket tcp ip options
 #+AUTHOR:      Bruce Asu
 #+EMAIL:       bruceasu@163.com
-#+DATE:        <20116-06-18 20:48>
+#+DATE:        <2016-06-18 20:48>
 #+filetags:    java socket
 
 #+LANGUAGE:    en

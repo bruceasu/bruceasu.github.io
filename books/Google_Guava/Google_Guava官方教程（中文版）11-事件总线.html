@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+<title>Free World - Google_Guava官方教程（中文版）11-事件总线</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "https://bruceasu.github.io/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="https://bruceasu.github.io/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="https://bruceasu.github.io/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="https://bruceasu.github.io/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="https://bruceasu.github.io/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="https://bruceasu.github.io/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="https://bruceasu.github.io/theme/highlight.css">
+
+    <style>
+        /*生成博客目录的CSS*/
+        #sideBar {
+            font-size: 12px;
+            font-family: Arial, Helvetica, sans-serif;
+            text-align: left;
+            position: fixed; /*将div的位置固定到距离top:50px，right:0px的位置，这样div就会处在最右边的位置，距离顶部50px*/
+            top: 100px;
+            right: 0px;
+            min-height: 108px;
+            width: auto;
+            height: auto;
+        }
+
+        #sideBarTab {
+            float: left;
+            width: 30px;
+            border: 1px solid #e5e5e5;
+            border-right: none;
+            text-align: center;
+            background: #ffffff;
+        }
+
+        #sideBarTab * {
+            margin-top: 10px;
+        }
+
+        #sideBarContents {
+            float: left;
+            overflow: auto;
+            overflow-x: hidden;
+        !important;
+            width: 200px;
+            min-height: 128px;
+            max-height: 460px;
+            border: 1px solid #e5e5e5;
+            border-right: none;
+            background: #ffffff;
+        }
+
+        #sideBarContents ul {
+            margin: 0;
+            padding: 0;
+        }
+
+        #sideBarContents li {
+            margin-top: 5px;
+            margin-left: 5px;
+        }
+
+        #sideBarContents li {
+            cursor: pointer;
+        }
+
+        #sideBarContents li:hover {
+            color: #A7995A;
+        }
+
+
+    </style>
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="https://bruceasu.github.io/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="https://bruceasu.github.io/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="https://bruceasu.github.io/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="https://bruceasu.github.io/wiki/index.html">Wiki</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="https://bruceasu.github.io/books/index.html">Books</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="https://bruceasu.github.io/archive.html">Archives</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="https://bruceasu.github.io/about.html">About</a>
+    </div>
+</div>
+
+
+<div class="content-area">
+    <div class="title">Google_Guava官方教程（中文版）11-事件总线</div>
+    
+    <a href="https://bruceasu.github.io/tags.html#reprint">
+        <div class="category">reprint</div>
+    </a>
+    
+    <div class="char-counter"> Fri Oct 01 20:48:00 CST 2010</div>
+    <div id="content">
+        <p>事件总线</p>
+<p>传统上，Java的进程内事件分发都是通过发布者和订阅者之间的显式注册实现的。设计 EventBus就是为了取代这种显示注册方式，使组件间有了更好的解耦。EventBus不是通用型 的发布-订阅实现，不适用于进程间通信。</p>
+<h1 id="范例">范例</h1>
+<p>// Class is typically registered by the container. class EventBusChangeRecorder {     @Subscribe public void recordCustomerChange(ChangeEvent e) {         recordChange(e.getChange());     } } // somewhere during initialization eventBus.register(new EventBusChangeRecorder()); // much later public void changeCustomer() {     ChangeEvent event = getChangeEvent();     eventBus.post(event); }</p>
+<h1 id="一分钟指南">一分钟指南</h1>
+<p>把已有的进程内事件分发系统迁移到EventBus非常简单。</p>
+<h2 id="事件监听者listeners">事件监听者[Listeners]</h2>
+<ul>
+<li>监听特定事件（如，CustomerChangeEvent）：
+<ul>
+<li>传统实现：定义相应的事件监听者类，如CustomerChangeEventListener；</li>
+<li>EventBus实现：以CustomerChangeEvent为唯一参数创建方法，并用Subscribe注解标记。</li>
+</ul></li>
+<li>把事件监听者注册到事件生产者：
+<ul>
+<li>传统实现：调用事件生产者的registerCustomerChangeEventListener方法；这些方法 很少定义在公共接口中，因此开发者必须知道所有事件生产者的类型，才能正确地注册 监听者；</li>
+<li>EventBus实现：在EventBus实例上调用EventBus.register(Object)方法；请保证事件 生产者和监听者共享相同的EventBus实例。</li>
+</ul></li>
+<li>按事件超类监听（如，EventObject甚至Object）：
+<ul>
+<li>传统实现：很困难，需要开发者自己去实现匹配逻辑；</li>
+<li>EventBus实现：EventBus自动把事件分发给事件超类的监听者，并且允许监听者声明监 听接口类型和泛型的通配符类型（wildcard，如 ? super XXX）。</li>
+</ul></li>
+<li>检测没有监听者的事件：
+<ul>
+<li>传统实现：在每个事件分发方法中添加逻辑代码（也可能适用AOP）；</li>
+<li>EventBus实现：监听DeadEvent；EventBus会把所有发布后没有监听者处理的事件包装 为DeadEvent（对调试很便利）。</li>
+</ul></li>
+</ul>
+<h2 id="事件生产者producers">事件生产者[Producers]</h2>
+<ul>
+<li>管理和追踪监听者：
+<ul>
+<li>传统实现：用列表管理监听者，还要考虑线程同步；或者使用工具类，如EventListenerList；</li>
+<li>EventBus实现：EventBus内部已经实现了监听者管理。</li>
+</ul></li>
+<li>向监听者分发事件：
+<ul>
+<li>传统实现：开发者自己写代码，包括事件类型匹配、异常处理、异步分发；</li>
+<li>EventBus实现：把事件传递给 EventBus.post(Object)方法。异步分发可以直接用EventBus的子类AsyncEventBus。</li>
+</ul></li>
+</ul>
+<h1 id="术语表">术语表</h1>
+<p>事件总线系统使用以下术语描述事件分发：</p>
+<table>
+<tbody>
+<tr class="odd">
+<td>事件</td>
+<td>可以向事件总线发布的对象</td>
+</tr>
+<tr class="even">
+<td>订阅</td>
+<td>向事件总线注册监听者以接受事件的行为</td>
+</tr>
+<tr class="odd">
+<td>监听者</td>
+<td>提供一个处理方法，希望接受和处理事件的对象</td>
+</tr>
+<tr class="even">
+<td>处理方法</td>
+<td>监听者提供的公共方法，事件总线使用该方法向监听者发送事件；该方法应该用Subscribe注解</td>
+</tr>
+<tr class="odd">
+<td>发布消息</td>
+<td>通过事件总线向所有匹配的监听者提供事件</td>
+</tr>
+</tbody>
+</table>
+<h1 id="常见问题解答faq">常见问题解答[FAQ]</h1>
+<ul>
+<li><p>为什么一定要创建EventBus实例，而不是使用单例模式？ EventBus不想给定开发者怎么使用；你可以在应用程序中按照不同的组件、上下文或业务 主题分别使用不同的事件总线。这样的话，在测试过程中开启和关闭某个部分的事件总线， 也会变得更简单，影响范围更小。当然，如果你想在进程范围内使用唯一的事件总线，你 也可以自己这么做。比如在容器中声明EventBus为全局单例，或者用一个静态字段存放 EventBus，如果你喜欢的话。简而言之，EventBus不是单例模式，是因为我们不想为你做 这个决定。你喜欢怎么用就怎么用吧。</p></li>
+<li><p>可以从事件总线中注册监听者吗？ 当然可以，使用EventBus.unregister(Object)方法，但我们发现这种需求很少：</p>
+<ul>
+<li>大多数监听者都是在启动或者模块懒加载时注册的，并且在应用程序的整个生命周期都存在；</li>
+<li>可以使用特定作用域的事件总线来处理临时事件，而不是注册/注销监听者；比如在请求作用域[request-scoped]的对象间分发消息，就可以同样适用请求作用域的事件总线；</li>
+<li>销毁和重建事件总线的成本很低，有时候可以通过销毁和重建事件总线来更改分发规则。</li>
+</ul></li>
+<li><p>为什么使用注解标记处理方法，而不是要求监听者实现接口？ 我们觉得注解和实现接口一样传达了明确的语义，甚至可能更好。同时，使用注解也允许 你把处理方法放到任何地方，和使用业务意图清晰的方法命名。传统的Java实现中，监听 者使用方法很少的接口——通常只有一个方法。这样做有一些缺点:</p>
+<ul>
+<li>监听者类对给定事件类型，只能有单一处理逻辑；</li>
+<li>监听者接口方法可能冲突；</li>
+<li>方法命名只和事件相关（handleChangeEvent），不能表达意图（recordChangeInJournal）；</li>
+<li>事件通常有自己的接口，而没有按类型定义的公共父接口（如所有的UI事件接口）。</li>
+</ul>
+<p>接口实现监听者的方式很难做到简洁，这甚至引出了一个模式，尤其是在Swing应用中， 那就是用匿名类实现事件监听者的接口。比较以下两种实现：</p></li>
+</ul>
+<pre class="example"><code>class ChangeRecorder {
+
+    void setCustomer(Customer cust) {
+
+        cust.addChangeListener(new ChangeListener() {
+
+            public void customerChanged(ChangeEvent e) {
+
+                recordChange(e.getChange());
+
+            }
+
+        };
+
+    }
+
+}
+
+//这个监听者类通常由容器注册给事件总线
+
+class EventBusChangeRecorder {
+
+    @Subscribe public void recordCustomerChange(ChangeEvent e) {
+
+        recordChange(e.getChange());
+
+    }
+
+}
+
+</code></pre>
+<p>第二种实现的业务意图明显更加清晰：没有多余的代码，并且处理方法的名字是清晰和有意 义的。</p>
+<ul>
+<li><p>通用的监听者接口Handler&lt;T&gt;怎么样？ 有些人已经建议过用泛型定义一个通用的监听者接口Handler&lt;T&gt;。这有点牵扯到Java类型 擦除的问题，假设我们有如下这个接口：</p>
+<pre class="example"><code>interface Handler&lt;T&gt; {
+   void handleEvent(T event);
+}
+</code></pre></li>
+</ul>
+<p>因为类型擦除，Java禁止一个类使用不同的类型参数多次实现同一个泛型接口（即不可能出 现MultiHandler implements Handler&lt;Type1&gt;, Handler&lt;Type2&gt;）。这比起传统的Java事件 机制也是巨大的退步，至少传统的Java Swing监听者接口使用了不同的方法把不同的事件区 分开。</p>
+<ul>
+<li><p>EventBus不是破坏了静态类型，排斥了自动重构支持吗？ 有些人被EventBus的register(Object) 和post(Object)方法直接使用Object做参数吓坏 了。这里使用Object参数有一个很好的理由：EventBus对事件监听者类型和事件本身的类 型都不作任何限制。另一方面，处理方法必须要明确地声明参数类型——期望的事件类型 （或事件的父类型）。因此，搜索一个事件的类型引用，可以马上找到针对该事件的处理 方法，对事件类型的重命名也会在IDE中自动更新所有的处理方法。在EventBus的架构下， 你可以任意重命名@Subscribe注解的处理方法，并且这类重命名不会被传播（即不会引起 其他类的修改），因为对 EventBus来说，处理方法的名字是无关紧要的。如果测试代码 中直接调用了处理方法，那么当然，重命名处理方法会引起测试代码的变动，但使用 EventBus触发处理方法的代码就不会发生变更。我们认为这是EventBus的特性，而不是漏 洞：能够任意重命名处理方法，可以让你的处理方法命名 更清晰。</p></li>
+<li><p>如果我注册了一个没有任何处理方法的监听者，会发生什么？ 什么也不会发生。 EventBus旨在与容器和模块系统整合，Guice就是个典型的例子。在这种情况下，可以方 便地让容器/工厂/运行环境传递任意创建好的对象给EventBus的register(Object)方法。 这样，任何容器/工厂/运行环境创建的对象都可以简便地通过暴露处理方法挂载到系统的 事件模块。</p></li>
+<li><p>编译时能检测到EventBus的哪些问题？ Java类型系统可以明白地检测到的任何问题。比如，为一个不存在的事件类型定义处理方法。</p></li>
+<li><p>运行时往EventBus注册监听者，可以立即检测到哪些问题？ 一旦调用了register(Object) 方法，EventBus就会检查监听者中的处理方法是否结构正 确的[well-formedness]。具体来说，就是每个用@Subscribe注解的方法都只能有一个参 数。 违反这条规则将引起IllegalArgumentException（这条规则检测也可以用APT在编译时完 成，不过我们还在研究中）。</p></li>
+<li><p>哪些问题只能在之后事件传播的运行时才会被检测到？ 如果组件传播了一个事件，但找不到相应的处理方法，EventBus可能会指出一个错误（通 常是指出@Subscribe注解的缺失，或没有加载监听者组件）。请注意这个指示并不一定表 示应用有问题。一个应用中可能有好多场景会故意忽略某个事件，尤其当事件来源于不可 控代码时你可以注册一个处理方法专门处理DeadEvent类型的事件。每当EventBus收到没 有对应处理方法的事件，它都会将其转化为DeadEvent，并且传递给你注册的DeadEvent处 理方法——你可以选择记录或修复该事件。</p></li>
+<li><p>怎么测试监听者和它们的处理方法？ 因为监听者的处理方法都是普通方法，你可以简便地在测试代码中模拟EventBus调用这些 方法。</p></li>
+<li><p>为什么我不能在EventBus上使用&lt;泛型魔法&gt;？ EventBus旨在很好地处理一大类用例。我们更喜欢针对大多数用例直击要害，而不是在所 有用例上都保持体面。此外，泛型也让EventBus的可扩展性——让它有益、高效地扩展，同 时我们对EventBus的增补不会和你们的扩展相冲突——成为一个非常棘手的问题。如果你真 的很想用泛型，EventBus目前还不能提供，你可以提交一个问题并且设计自己的替代方案。</p></li>
+</ul>
+
+    </div>
+</div>
+<div id="postamble" class="status">
+    <div id="archive" style="padding-top: 3em; padding-bottom: 2em;">
+        <a href="https://bruceasu.github.io/archive.html">其它文章</a>
+    </div>
+</div>
+<script src="https://bruceasu.github.io/js/av-min-1.5.0.js"></script>
+<script type="application/javascript">
+    var BlogDirectory = {
+        /*
+            获取元素位置，距浏览器左边界的距离（left）和距浏览器上边界的距离（top）
+        */
+        getElementPosition: function (ele) {
+            var topPosition = 0;
+            var leftPosition = 0;
+            while (ele) {
+                topPosition += ele.offsetTop;
+                leftPosition += ele.offsetLeft;
+                ele = ele.offsetParent;
+            }
+            return {top: topPosition, left: leftPosition};
+        },
+
+        /*
+        获取滚动条当前位置
+        */
+        getScrollBarPosition: function () {
+            var scrollBarPosition = document.body.scrollTop || document.documentElement.scrollTop;
+            return scrollBarPosition;
+        },
+
+        /*
+        移动滚动条，finalPos 为目的位置，internal 为移动速度
+        */
+        moveScrollBar: function (finalpos, interval) {
+
+            //若不支持此方法，则退出
+            if (!window.scrollTo) {
+                return false;
+            }
+
+            //窗体滚动时，禁用鼠标滚轮
+            window.onmousewheel = function () {
+                return false;
+            };
+
+            //清除计时
+            if (document.body.movement) {
+                clearTimeout(document.body.movement);
+            }
+
+            var currentpos = BlogDirectory.getScrollBarPosition();//获取滚动条当前位置
+
+            var dist = 0;
+            if (currentpos == finalpos) {//到达预定位置，则解禁鼠标滚轮，并退出
+                window.onmousewheel = function () {
+                    return true;
+                }
+                return true;
+            }
+            if (currentpos < finalpos) {//未到达，则计算下一步所要移动的距离
+                dist = Math.ceil((finalpos - currentpos) / 10);
+                currentpos += dist;
+            }
+            if (currentpos > finalpos) {
+                dist = Math.ceil((currentpos - finalpos) / 10);
+                currentpos -= dist;
+            }
+
+            var scrTop = BlogDirectory.getScrollBarPosition();//获取滚动条当前位置
+            window.scrollTo(0, currentpos);//移动窗口
+            if (BlogDirectory.getScrollBarPosition() == scrTop)//若已到底部，则解禁鼠标滚轮，并退出
+            {
+                window.onmousewheel = function () {
+                    return true;
+                }
+                return true;
+            }
+
+            //进行下一步移动
+            var repeat = "BlogDirectory.moveScrollBar(" + finalpos + "," + interval + ")";
+            document.body.movement = setTimeout(repeat, interval);
+        },
+
+        htmlDecode: function (text) {
+            var temp = document.createElement("div");
+            temp.innerHTML = text;
+            var output = temp.innerText || temp.textContent;
+            temp = null;
+            return output;
+        },
+
+        /*
+        创建博客目录，
+        id表示包含博文正文的 div 容器的 id，
+        mt 和 st 分别表示主标题和次级标题的标签名称（如 H2、H3，大写或小写都可以！），
+        interval 表示移动的速度
+        */
+        createBlogDirectory: function (id, mt, st, interval) {
+            //获取博文正文div容器
+            var elem = document.getElementById(id);
+            if (!elem) {
+                return false;
+            }
+            //获取div中所有元素结点
+            var nodes = elem.getElementsByTagName("*");
+            //创建博客目录的div容器
+            var divSideBar = document.createElement('DIV');
+            divSideBar.className = 'sideBar';
+            divSideBar.setAttribute('id', 'sideBar');
+            var divSideBarTab = document.createElement('DIV');
+            divSideBarTab.setAttribute('id', 'sideBarTab');
+            divSideBar.appendChild(divSideBarTab);
+            var h2 = document.createElement('H2');
+            divSideBarTab.appendChild(h2);
+            var txt = document.createTextNode('目录导航');
+            h2.appendChild(txt);
+            var divSideBarContents = document.createElement('DIV');
+            divSideBarContents.style.display = 'none';
+            divSideBarContents.setAttribute('id', 'sideBarContents');
+            divSideBar.appendChild(divSideBarContents);
+            //创建自定义列表
+            var dlist = document.createElement("ul");
+            divSideBarContents.appendChild(dlist);
+            var num = 0;//统计找到的mt和st
+            mt = mt.toUpperCase();//转化成大写
+            st = st.toUpperCase();//转化成大写
+            var lastTagName = "h1";
+            var currentList = dlist;
+            var lastList = dlist;
+
+            //遍历所有元素结点
+            var p = /h\d/i
+            for (var i = 0; i < nodes.length; i++) {
+                //if(nodes[i].nodeName == mt|| nodes[i].nodeName == st)
+                console.log("test " + nodes[i].nodeName, p.test(nodes[i].nodeName))
+                if (p.test(nodes[i].nodeName)) {
+                    //获取标题文本
+                    var nodetext = nodes[i].innerHTML.replace(/<\/?[^>]+>/g, "");//innerHTML里面的内容可能有HTML标签，所以用正则表达式去除HTML的标签
+                    nodetext = nodetext.replace(/ /ig, "");//替换掉所有的 
+                    nodetext = BlogDirectory.htmlDecode(nodetext);
+                    //插入锚
+                    nodes[i].setAttribute("id", "blogTitle" + num);
+                    var item;
+                    if (nodes[i].nodeName > lastTagName) {
+                        // open new
+                        lastList = currentList;
+                        currentList = document.createElement("ul");
+                        lastList.appendChild(currentList);
+                        lastTagName = nodes[i].nodeName
+                    } else if (nodes[i].nodeName < lastTagName) {
+                        // close
+                        currentList = lastList;
+                        lastTagName = nodes[i].nodeName
+                    } else {
+
+                    }
+                    item = document.createElement("li");
+                    //创建锚链接
+                    var itemtext = document.createTextNode(nodetext);
+                    item.appendChild(itemtext);
+                    item.setAttribute("name", num);
+                    item.onclick = function () {        //添加鼠标点击触发函数
+                        var pos = BlogDirectory.getElementPosition(
+                            document.getElementById("blogTitle" + this.getAttribute("name")));
+                        if (!BlogDirectory.moveScrollBar(pos.top, interval)) {
+                            return false;
+                        }
+                    };
+
+                    //将自定义表项加入自定义列表中
+                    //dlist.appendChild(item);
+                    currentList.appendChild(item);
+                    num++;
+                }
+            }
+
+            if (num == 0) {
+                return false;
+            }
+            /*鼠标进入时的事件处理*/
+            divSideBarTab.onmouseenter = function () {
+                divSideBarContents.style.display = 'block';
+            }
+            /*鼠标离开时的事件处理*/
+            divSideBar.onmouseleave = function () {
+                divSideBarContents.style.display = 'none';
+            }
+
+            document.body.appendChild(divSideBar);
+        }
+
+    };
+
+    window.onload = function () {
+        BlogDirectory.createBlogDirectory("content", "h1", "h2", 20);
+    }
+</script>
+</body>
+</html>

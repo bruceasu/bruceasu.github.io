@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+<title>Free World - Google_Guava官方教程（中文版）6-字符串处理：分割，连接，填充</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "https://bruceasu.github.io/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="https://bruceasu.github.io/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="https://bruceasu.github.io/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="https://bruceasu.github.io/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="https://bruceasu.github.io/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="https://bruceasu.github.io/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="https://bruceasu.github.io/theme/highlight.css">
+
+    <style>
+        /*生成博客目录的CSS*/
+        #sideBar {
+            font-size: 12px;
+            font-family: Arial, Helvetica, sans-serif;
+            text-align: left;
+            position: fixed; /*将div的位置固定到距离top:50px，right:0px的位置，这样div就会处在最右边的位置，距离顶部50px*/
+            top: 100px;
+            right: 0px;
+            min-height: 108px;
+            width: auto;
+            height: auto;
+        }
+
+        #sideBarTab {
+            float: left;
+            width: 30px;
+            border: 1px solid #e5e5e5;
+            border-right: none;
+            text-align: center;
+            background: #ffffff;
+        }
+
+        #sideBarTab * {
+            margin-top: 10px;
+        }
+
+        #sideBarContents {
+            float: left;
+            overflow: auto;
+            overflow-x: hidden;
+        !important;
+            width: 200px;
+            min-height: 128px;
+            max-height: 460px;
+            border: 1px solid #e5e5e5;
+            border-right: none;
+            background: #ffffff;
+        }
+
+        #sideBarContents ul {
+            margin: 0;
+            padding: 0;
+        }
+
+        #sideBarContents li {
+            margin-top: 5px;
+            margin-left: 5px;
+        }
+
+        #sideBarContents li {
+            cursor: pointer;
+        }
+
+        #sideBarContents li:hover {
+            color: #A7995A;
+        }
+
+
+    </style>
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="https://bruceasu.github.io/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="https://bruceasu.github.io/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="https://bruceasu.github.io/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="https://bruceasu.github.io/wiki/index.html">Wiki</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="https://bruceasu.github.io/books/index.html">Books</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="https://bruceasu.github.io/archive.html">Archives</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="https://bruceasu.github.io/about.html">About</a>
+    </div>
+</div>
+
+
+<div class="content-area">
+    <div class="title">Google_Guava官方教程（中文版）6-字符串处理：分割，连接，填充</div>
+    
+    <a href="https://bruceasu.github.io/tags.html#reprint">
+        <div class="category">reprint</div>
+    </a>
+    
+    <div class="char-counter"> Fri Oct 01 20:48:00 CST 2010</div>
+    <div id="content">
+        <p>字符串处理：分割，连接，填充</p>
+<h1 id="连接器joiner">连接器[Joiner]</h1>
+<p>用分隔符把字符串序列连接起来也可能会遇上不必要的麻烦。如果字符串序列中含有null， 那连接操作会更难。Fluent风格的Joiner让连接字符串更简单。</p>
+<pre class="example"><code>Joiner joiner = Joiner.on(&quot;; &quot;).skipNulls();
+return joiner.join(&quot;Harry&quot;, null, &quot;Ron&quot;, &quot;Hermione&quot;);
+
+</code></pre>
+<p>上述代码返回”Harry; Ron; Hermione”。另外，useForNull(String)方法可以给定某个字符 串来替换null，而不像skipNulls()方法是直接忽略 null。 Joiner也可以用来连接对象类 型，在这种情况下，它会把对象的toString()值连接起来。</p>
+<pre class="example"><code> Joiner.on(&quot;,&quot;).join(Arrays.asList(1, 5, 7)); // returns &quot;1,5,7&quot;
+</code></pre>
+<p>警告：joiner实例总是不可变的。用来定义joiner目标语义的配置方法总会返回一个新的 joiner实例。这使得joiner实例都是线程安全的，你可以将其定义为static final常量。</p>
+<h1 id="拆分器splitter">拆分器[Splitter]</h1>
+<p>JDK内建的字符串拆分工具有一些古怪的特性。比如，String.split悄悄丢弃了尾部的分隔 符。</p>
+<h2 id="问题ab.split返回">问题：”,a,,b,”.split(“,”)返回？</h2>
+<div class="line-block">1. “”, “a”, “”, “b”, “”<br />
+2. null, “a”, null, “b”, null<br />
+3. “a”, null, “b”<br />
+4. “a”, “b”<br />
+5. 以上都不对<br />
+</div>
+<p>正确答案是5：””, “a”, “”, “b”。只有尾部的空字符串被忽略了。 Splitter使用令人放心 的、直白的流畅API模式对这些混乱的特性作了完全的掌控。</p>
+<pre class="example"><code>Splitter.on(&#39;,&#39;)
+        .trimResults()
+        .omitEmptyStrings()
+        .split(&quot;foo,bar,,   qux&quot;);
+
+</code></pre>
+<p>上述代码返回Iterable&lt;String&gt;，其中包含”foo”、”bar”和”qux”。Splitter可以被设置为 按照任何模式、字符、字符串或字符匹配器拆分。</p>
+<h2 id="拆分器工厂">拆分器工厂</h2>
+<table>
+<thead>
+<tr class="header">
+<th>方法</th>
+<th>描述</th>
+<th>范例</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Splitter.on(char)</td>
+<td>按单个字符拆分</td>
+<td>Splitter.on(‘;’)</td>
+</tr>
+<tr class="even">
+<td>Splitter.on(CharMatcher)</td>
+<td>按字符匹配器拆分</td>
+<td>Splitter.on(CharMatcher.BREAKING<sub>WHITESPACE</sub>)</td>
+</tr>
+<tr class="odd">
+<td>Splitter.on(String)</td>
+<td>按字符串拆分</td>
+<td>Splitter.on(“,   “)</td>
+</tr>
+<tr class="even">
+<td>Splitter.on(Pattern) Splitter.onPattern(String)</td>
+<td>按正则表达式拆分</td>
+<td>Splitter.onPattern(“?̊”)</td>
+</tr>
+<tr class="odd">
+<td>Splitter.fixedLength(int)</td>
+<td>按固定长度拆分；最后一段可能比给定长度短，但不会为空。</td>
+<td>Splitter.fixedLength(3)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="拆分器修饰符">拆分器修饰符</h2>
+<table>
+<thead>
+<tr class="header">
+<th>方法</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>omitEmptyStrings()</td>
+<td>从结果中自动忽略空字符串</td>
+</tr>
+<tr class="even">
+<td>trimResults()</td>
+<td>移除结果字符串的前导空白和尾部空白</td>
+</tr>
+<tr class="odd">
+<td>trimResults(CharMatcher)</td>
+<td>给定匹配器，移除结果字符串的前导匹配字符和尾部匹配字符</td>
+</tr>
+<tr class="even">
+<td>limit(int)</td>
+<td>限制拆分出的字符串数量</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>如果你想要拆分器返回List，只要使用Lists.newArrayList(splitter.split(string))或类 似方法。 警告：splitter实例总是不可变的。用来定义splitter目标语义的配置方法总会 返回一个新的splitter实例。这使得splitter实例都是线程安全的，你可以将其定义为 static final常量。</p>
+<h1 id="字符匹配器charmatcher">字符匹配器[CharMatcher]</h1>
+<p>在以前的Guava版本中，StringUtil类疯狂地膨胀，其拥有很多处理字符串的方法： allAscii、collapse、 collapseControlChars、collapseWhitespace、indexOfChars、 lastIndexNotOf、 numSharedChars、removeChars、removeCrLf、replaceChars、 retainAllChars、strip、 stripAndCollapse、stripNonDigits。 所有这些方法指向两个 概念上的问题：</p>
+<ol>
+<li>怎么才算匹配字符？</li>
+<li>如何处理这些匹配字符？</li>
+</ol>
+<p>为了收拾这个泥潭，我们开发了CharMatcher。</p>
+<p>直观上，你可以认为一个CharMatcher实例代表着某一类字符，如数字或空白字符。事实上 来说，CharMatcher实例就是对字符的布尔判断——CharMatcher确实也实现了 Predicate&lt;Character&gt;——但类似”所有空白字符”或”所有小写字母”的需求太普遍了，Guava 因此创建了这一API。</p>
+<p>然而使用CharMatcher的好处更在于它提供了一系列方法，让你对字符作特定类型的操作： 修剪[trim]、折叠[collapse]、移除 [remove]、保留[retain]等等。CharMatcher实例首先 代表概念1：怎么才算匹配字符？然后它还提供了很多操作概念2：如何处理这 些匹配字符？ 这样的设计使得API复杂度的线性增加可以带来灵活性和功能两方面的增长。</p>
+<pre class="example"><code>String noControl = CharMatcher.JAVA_ISO_CONTROL.removeFrom(string); //移除control字符
+String theDigits = CharMatcher.DIGIT.retainFrom(string); //只保留数字字符
+String spaced = CharMatcher.WHITESPACE.trimAndCollapseFrom(string, &#39; &#39;);
+//去除两端的空格，并把中间的连续空格替换成单个空格
+String noDigits = CharMatcher.JAVA_DIGIT.replaceFrom(string, &quot;*&quot;); //用*号替换所有数字
+String lowerAndDigit = CharMatcher.JAVA_DIGIT.or(CharMatcher.JAVA_LOWER_CASE).retainFrom(string);
+// 只保留数字和小写字母
+
+</code></pre>
+<p>注：CharMatcher只处理char类型代表的字符；它不能理解0x10000到0x10FFFF的Unicode 增 补字符。这些逻辑字符以代理对[surrogate pairs]的形式编码进字符串，而CharMatcher只 能将这种逻辑字符看待成两个独立的字符。</p>
+<h2 id="获取字符匹配器">获取字符匹配器</h2>
+<p>CharMatcher中的常量可以满足大多数字符匹配需求：</p>
+<table>
+<tbody>
+<tr class="odd">
+<td>ANY</td>
+<td>NONE</td>
+<td>WHITESPACE</td>
+<td>BREAKING<sub>WHITESPACE</sub></td>
+</tr>
+<tr class="even">
+<td>INVISIBLE</td>
+<td>DIGIT</td>
+<td>JAVA<sub>LETTER</sub></td>
+<td>JAVA<sub>DIGIT</sub></td>
+</tr>
+<tr class="odd">
+<td>JAVA<sub>LETTERORDIGIT</sub></td>
+<td>JAVA<sub>ISOCONTROL</sub></td>
+<td>JAVA<sub>LOWERCASE</sub></td>
+<td>JAVA<sub>UPPERCASE</sub></td>
+</tr>
+<tr class="even">
+<td>ASCII</td>
+<td>SINGLE<sub>WIDTH</sub></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h2 id="其他获取字符匹配器的常见方法包括">其他获取字符匹配器的常见方法包括：</h2>
+<table>
+<thead>
+<tr class="header">
+<th>方法</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>anyOf(CharSequence)</td>
+<td>枚举匹配字符。如CharMatcher.anyOf(“aeiou”)匹配小写英语元音</td>
+</tr>
+<tr class="even">
+<td>is(char)</td>
+<td>给定单一字符匹配。</td>
+</tr>
+<tr class="odd">
+<td>inRange(char, char)</td>
+<td>给定字符范围匹配，如CharMatcher.inRange(‘a’, ‘z’)</td>
+</tr>
+</tbody>
+</table>
+<p>此外，CharMatcher还有negate()、and(CharMatcher)和or(CharMatcher)方法。</p>
+<h2 id="使用字符匹配器">使用字符匹配器</h2>
+<p>CharMatcher提供了多种多样的方法操作CharSequence中的特定字符。其中最常用的罗列如 下：</p>
+<table>
+<thead>
+<tr class="header">
+<th>方法</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>collapseFrom(CharSequence,   char)</td>
+<td>把每组连续的匹配字符替换为特定字符。如WHITESPACE.collapseFrom(string, ‘ ‘)把字符串中的连续空白字符替换为单个空格。</td>
+</tr>
+<tr class="even">
+<td>matchesAllOf(CharSequence)</td>
+<td>测试是否字符序列中的所有字符都匹配。</td>
+</tr>
+<tr class="odd">
+<td>removeFrom(CharSequence)</td>
+<td>从字符序列中移除所有匹配字符。</td>
+</tr>
+<tr class="even">
+<td>retainFrom(CharSequence)</td>
+<td>在字符序列中保留匹配字符，移除其他字符。</td>
+</tr>
+<tr class="odd">
+<td>trimFrom(CharSequence)</td>
+<td>移除字符序列的前导匹配字符和尾部匹配字符。</td>
+</tr>
+<tr class="even">
+<td>replaceFrom(CharSequence,   CharSequence)</td>
+<td>用特定字符序列替代匹配字符。</td>
+</tr>
+</tbody>
+</table>
+<p>所有这些方法返回String，除了matchesAllOf返回的是boolean。</p>
+<h1 id="字符集charsets">字符集[Charsets]</h1>
+<p>不要这样做字符集处理：</p>
+<pre class="example"><code>try {
+    bytes = string.getBytes(&quot;UTF-8&quot;);
+} catch (UnsupportedEncodingException e) {
+    // how can this possibly happen?
+    throw new AssertionError(e);
+}
+
+</code></pre>
+<p>试试这样写：</p>
+<pre class="example"><code>bytes = string.getBytes(Charsets.UTF_8);
+</code></pre>
+<p>Charsets针对所有Java平台都要保证支持的六种字符集提供了常量引用。尝试使用这些常量， 而不是通过名称获取字符集实例。</p>
+<h1 id="大小写格式caseformat">大小写格式[CaseFormat]</h1>
+<p>CaseFormat被用来方便地在各种ASCII大小写规范间转换字符串——比如，编程语言的命名规 范。CaseFormat支持的格式如下：</p>
+<table>
+<thead>
+<tr class="header">
+<th>格式</th>
+<th>范例</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>LOWER<sub>CAMEL</sub></td>
+<td>lowerCamel</td>
+</tr>
+<tr class="even">
+<td>LOWER<sub>HYPHEN</sub></td>
+<td>lower-hyphen</td>
+</tr>
+<tr class="odd">
+<td>LOWER<sub>UNDERSCORE</sub></td>
+<td>lower<sub>underscore</sub></td>
+</tr>
+<tr class="even">
+<td>UPPER<sub>CAMEL</sub></td>
+<td>UpperCamel</td>
+</tr>
+<tr class="odd">
+<td>UPPER<sub>UNDERSCORE</sub></td>
+<td>UPPER<sub>UNDERSCORE</sub></td>
+</tr>
+<tr class="even">
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h2 id="caseformat的用法很直接">CaseFormat的用法很直接：</h2>
+<pre class="example"><code>CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, &quot;CONSTANT_NAME&quot;)); // returns &quot;constantName&quot;
+</code></pre>
+<p>我们CaseFormat在某些时候尤其有用，比如编写代码生成器的时候。</p>
+
+    </div>
+</div>
+<div id="postamble" class="status">
+    <div id="archive" style="padding-top: 3em; padding-bottom: 2em;">
+        <a href="https://bruceasu.github.io/archive.html">其它文章</a>
+    </div>
+</div>
+<script src="https://bruceasu.github.io/js/av-min-1.5.0.js"></script>
+<script type="application/javascript">
+    var BlogDirectory = {
+        /*
+            获取元素位置，距浏览器左边界的距离（left）和距浏览器上边界的距离（top）
+        */
+        getElementPosition: function (ele) {
+            var topPosition = 0;
+            var leftPosition = 0;
+            while (ele) {
+                topPosition += ele.offsetTop;
+                leftPosition += ele.offsetLeft;
+                ele = ele.offsetParent;
+            }
+            return {top: topPosition, left: leftPosition};
+        },
+
+        /*
+        获取滚动条当前位置
+        */
+        getScrollBarPosition: function () {
+            var scrollBarPosition = document.body.scrollTop || document.documentElement.scrollTop;
+            return scrollBarPosition;
+        },
+
+        /*
+        移动滚动条，finalPos 为目的位置，internal 为移动速度
+        */
+        moveScrollBar: function (finalpos, interval) {
+
+            //若不支持此方法，则退出
+            if (!window.scrollTo) {
+                return false;
+            }
+
+            //窗体滚动时，禁用鼠标滚轮
+            window.onmousewheel = function () {
+                return false;
+            };
+
+            //清除计时
+            if (document.body.movement) {
+                clearTimeout(document.body.movement);
+            }
+
+            var currentpos = BlogDirectory.getScrollBarPosition();//获取滚动条当前位置
+
+            var dist = 0;
+            if (currentpos == finalpos) {//到达预定位置，则解禁鼠标滚轮，并退出
+                window.onmousewheel = function () {
+                    return true;
+                }
+                return true;
+            }
+            if (currentpos < finalpos) {//未到达，则计算下一步所要移动的距离
+                dist = Math.ceil((finalpos - currentpos) / 10);
+                currentpos += dist;
+            }
+            if (currentpos > finalpos) {
+                dist = Math.ceil((currentpos - finalpos) / 10);
+                currentpos -= dist;
+            }
+
+            var scrTop = BlogDirectory.getScrollBarPosition();//获取滚动条当前位置
+            window.scrollTo(0, currentpos);//移动窗口
+            if (BlogDirectory.getScrollBarPosition() == scrTop)//若已到底部，则解禁鼠标滚轮，并退出
+            {
+                window.onmousewheel = function () {
+                    return true;
+                }
+                return true;
+            }
+
+            //进行下一步移动
+            var repeat = "BlogDirectory.moveScrollBar(" + finalpos + "," + interval + ")";
+            document.body.movement = setTimeout(repeat, interval);
+        },
+
+        htmlDecode: function (text) {
+            var temp = document.createElement("div");
+            temp.innerHTML = text;
+            var output = temp.innerText || temp.textContent;
+            temp = null;
+            return output;
+        },
+
+        /*
+        创建博客目录，
+        id表示包含博文正文的 div 容器的 id，
+        mt 和 st 分别表示主标题和次级标题的标签名称（如 H2、H3，大写或小写都可以！），
+        interval 表示移动的速度
+        */
+        createBlogDirectory: function (id, mt, st, interval) {
+            //获取博文正文div容器
+            var elem = document.getElementById(id);
+            if (!elem) {
+                return false;
+            }
+            //获取div中所有元素结点
+            var nodes = elem.getElementsByTagName("*");
+            //创建博客目录的div容器
+            var divSideBar = document.createElement('DIV');
+            divSideBar.className = 'sideBar';
+            divSideBar.setAttribute('id', 'sideBar');
+            var divSideBarTab = document.createElement('DIV');
+            divSideBarTab.setAttribute('id', 'sideBarTab');
+            divSideBar.appendChild(divSideBarTab);
+            var h2 = document.createElement('H2');
+            divSideBarTab.appendChild(h2);
+            var txt = document.createTextNode('目录导航');
+            h2.appendChild(txt);
+            var divSideBarContents = document.createElement('DIV');
+            divSideBarContents.style.display = 'none';
+            divSideBarContents.setAttribute('id', 'sideBarContents');
+            divSideBar.appendChild(divSideBarContents);
+            //创建自定义列表
+            var dlist = document.createElement("ul");
+            divSideBarContents.appendChild(dlist);
+            var num = 0;//统计找到的mt和st
+            mt = mt.toUpperCase();//转化成大写
+            st = st.toUpperCase();//转化成大写
+            var lastTagName = "h1";
+            var currentList = dlist;
+            var lastList = dlist;
+
+            //遍历所有元素结点
+            var p = /h\d/i
+            for (var i = 0; i < nodes.length; i++) {
+                //if(nodes[i].nodeName == mt|| nodes[i].nodeName == st)
+                console.log("test " + nodes[i].nodeName, p.test(nodes[i].nodeName))
+                if (p.test(nodes[i].nodeName)) {
+                    //获取标题文本
+                    var nodetext = nodes[i].innerHTML.replace(/<\/?[^>]+>/g, "");//innerHTML里面的内容可能有HTML标签，所以用正则表达式去除HTML的标签
+                    nodetext = nodetext.replace(/ /ig, "");//替换掉所有的 
+                    nodetext = BlogDirectory.htmlDecode(nodetext);
+                    //插入锚
+                    nodes[i].setAttribute("id", "blogTitle" + num);
+                    var item;
+                    if (nodes[i].nodeName > lastTagName) {
+                        // open new
+                        lastList = currentList;
+                        currentList = document.createElement("ul");
+                        lastList.appendChild(currentList);
+                        lastTagName = nodes[i].nodeName
+                    } else if (nodes[i].nodeName < lastTagName) {
+                        // close
+                        currentList = lastList;
+                        lastTagName = nodes[i].nodeName
+                    } else {
+
+                    }
+                    item = document.createElement("li");
+                    //创建锚链接
+                    var itemtext = document.createTextNode(nodetext);
+                    item.appendChild(itemtext);
+                    item.setAttribute("name", num);
+                    item.onclick = function () {        //添加鼠标点击触发函数
+                        var pos = BlogDirectory.getElementPosition(
+                            document.getElementById("blogTitle" + this.getAttribute("name")));
+                        if (!BlogDirectory.moveScrollBar(pos.top, interval)) {
+                            return false;
+                        }
+                    };
+
+                    //将自定义表项加入自定义列表中
+                    //dlist.appendChild(item);
+                    currentList.appendChild(item);
+                    num++;
+                }
+            }
+
+            if (num == 0) {
+                return false;
+            }
+            /*鼠标进入时的事件处理*/
+            divSideBarTab.onmouseenter = function () {
+                divSideBarContents.style.display = 'block';
+            }
+            /*鼠标离开时的事件处理*/
+            divSideBar.onmouseleave = function () {
+                divSideBarContents.style.display = 'none';
+            }
+
+            document.body.appendChild(divSideBar);
+        }
+
+    };
+
+    window.onload = function () {
+        BlogDirectory.createBlogDirectory("content", "h1", "h2", 20);
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+<title>Free World - Google_Guava官方教程（中文版）4-函数式编程</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "https://bruceasu.github.io/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="https://bruceasu.github.io/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="https://bruceasu.github.io/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="https://bruceasu.github.io/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="https://bruceasu.github.io/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="https://bruceasu.github.io/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="https://bruceasu.github.io/theme/highlight.css">
+
+    <style>
+        /*生成博客目录的CSS*/
+        #sideBar {
+            font-size: 12px;
+            font-family: Arial, Helvetica, sans-serif;
+            text-align: left;
+            position: fixed; /*将div的位置固定到距离top:50px，right:0px的位置，这样div就会处在最右边的位置，距离顶部50px*/
+            top: 100px;
+            right: 0px;
+            min-height: 108px;
+            width: auto;
+            height: auto;
+        }
+
+        #sideBarTab {
+            float: left;
+            width: 30px;
+            border: 1px solid #e5e5e5;
+            border-right: none;
+            text-align: center;
+            background: #ffffff;
+        }
+
+        #sideBarTab * {
+            margin-top: 10px;
+        }
+
+        #sideBarContents {
+            float: left;
+            overflow: auto;
+            overflow-x: hidden;
+        !important;
+            width: 200px;
+            min-height: 128px;
+            max-height: 460px;
+            border: 1px solid #e5e5e5;
+            border-right: none;
+            background: #ffffff;
+        }
+
+        #sideBarContents ul {
+            margin: 0;
+            padding: 0;
+        }
+
+        #sideBarContents li {
+            margin-top: 5px;
+            margin-left: 5px;
+        }
+
+        #sideBarContents li {
+            cursor: pointer;
+        }
+
+        #sideBarContents li:hover {
+            color: #A7995A;
+        }
+
+
+    </style>
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="https://bruceasu.github.io/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="https://bruceasu.github.io/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="https://bruceasu.github.io/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="https://bruceasu.github.io/wiki/index.html">Wiki</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="https://bruceasu.github.io/books/index.html">Books</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="https://bruceasu.github.io/archive.html">Archives</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="https://bruceasu.github.io/about.html">About</a>
+    </div>
+</div>
+
+
+<div class="content-area">
+    <div class="title">Google_Guava官方教程（中文版）4-函数式编程</div>
+    
+    <a href="https://bruceasu.github.io/tags.html#reprint">
+        <div class="category">reprint</div>
+    </a>
+    
+    <div class="char-counter"> Fri Oct 01 20:48:00 CST 2010</div>
+    <div id="content">
+        <p>函数式编程</p>
+<h1 id="注意事项">注意事项</h1>
+<p>截至JDK7，Java中也只能通过笨拙冗长的匿名类来达到近似函数式编程的效果。预计JDK8中 会有所改变，但Guava现在就想给JDK5以上用户提供这类支持。</p>
+<p>过度使用Guava函数式编程会导致冗长、混乱、可读性差而且低效的代码。这是迄今为止最 容易（也是最经常）被滥用的部分，如果你想通过函数式风格达成一行代码，致使这行代码 长到荒唐，Guava团队会泪流满面。</p>
+<p>比较如下代码：</p>
+<pre class="example"><code>Function&lt;String, Integer&gt; lengthFunction = new Function&lt;String, Integer&gt;() {
+    public Integer apply(String string) {
+        return string.length();
+    }
+};
+Predicate&lt;String&gt; allCaps = new Predicate&lt;String&gt;() {
+    public boolean apply(String string) {
+        return CharMatcher.JAVA_UPPER_CASE.matchesAllOf(string);
+    }
+};
+
+Multiset&lt;Integer&gt; lengths = HashMultiset.create(
+      Iterables.transform(Iterables.filter(strings, allCaps), lengthFunction));
+
+// 或FluentIterable的版本
+Multiset&lt;Integer&gt; lengths = HashMultiset.create(
+    FluentIterable.from(strings)
+        .filter(new Predicate&lt;String&gt;() {
+            public boolean apply(String string) {
+                return CharMatcher.JAVA_UPPER_CASE.matchesAllOf(string);
+             }
+        })
+        .transform(new Function&lt;String, Integer&gt;() {
+            public Integer apply(String string) {
+                return string.length();
+            }
+        }));
+
+// 还有
+Multiset&lt;Integer&gt; lengths = HashMultiset.create();
+ for (String string : strings) {
+     if (CharMatcher.JAVA_UPPER_CASE.matchesAllOf(string)) {
+         lengths.add(string.length());
+     }
+ }
+
+</code></pre>
+<p>即使用了静态导入，甚至把Function和Predicate的声明放到别的文件，第一种代码实现仍 然不简洁，可读性差并且效率较低。</p>
+<p>截至JDK7，命令式代码仍应是默认和第一选择。不应该随便使用函数式风格，除非你绝对确 定以下两点之一：</p>
+<ul>
+<li>使用函数式风格以后，整个工程的代码行会净减少。在上面的例子中，函数式版本用了11 行， 命令式代码用了6行，把函数的定义放到另一个文件或常量中，并不能帮助减少总代 码行。</li>
+<li>为了提高效率，转换集合的结果需要懒视图，而不是明确计算过的集合。此外，确保你已 经阅读和重读了Effective Java的第55条，并且除了阅读本章后面的说明，你还真正做了 性能测试并且有测试数据来证明函数式版本更快。</li>
+</ul>
+<p>请务必确保，当使用Guava函数式的时候，用传统的命令式做同样的事情不会更具可读性。 尝试把代码写下来，看看它是不是真的那么糟糕？会不会比你想尝试的极其笨拙的函数式 更具可读性。</p>
+<h1 id="functions函数和predicates断言">Functions[函数]和Predicates[断言]</h1>
+<p>本节只讨论直接与Function和Predicate打交道的Guava功能。一些其他工具类也和”函数式 风格”相关，例如Iterables.concat(Iterable&lt;Iterable&gt;)，和其他用常量时间返回视图的 方法。尝试看看2.3节的集合工具类。</p>
+<p>Guava提供两个基本的函数式接口：</p>
+<ul>
+<li>Function&lt;A, B&gt;，它声明了单个方法B apply(A input)。Function对象通常被预期为引用 透明的——没有副作用——并且引用透明性中的”相等”语义与equals一致，如a.equals(b)意 味着function.apply(a).equals(function.apply(b))。</li>
+<li>Predicate&lt;T&gt;，它声明了单个方法boolean apply(T input)。Predicate对象通常也被预 期为无副作用函数，并且”相等”语义与equals一致。</li>
+</ul>
+<h2 id="特殊的断言">特殊的断言</h2>
+<p>字符类型有自己特定版本的Predicate——CharMatcher，它通常更高效，并且在某些需求方面 更有用。CharMatcher实现了Predicate&lt;Character&gt;，可以当作Predicate一样使用，要把 Predicate转成CharMatcher，可以使用CharMatcher.forPredicate。更多细节请参考第6章- 字符串处理。</p>
+<p>此外，对可比较类型和基于比较逻辑的Predicate，Range类可以满足大多数需求——它表示一 个不可变区间。Range类实现了 Predicate，用以判断值是否在区间内。例如， Range.atMost(2)就是个完全合法的 Predicate&lt;Integer&gt;。更多使用Range的细节请参照第8 章。</p>
+<h2 id="操作functions和predicates">操作Functions和Predicates</h2>
+<p>Functions提供简便的Function构造和操作方法，包括：</p>
+<table>
+<tbody>
+<tr class="odd">
+<td>forMap(Map&lt;A, B&gt;)</td>
+<td>compose(Function&lt;B, C&gt;, Function&lt;A, B&gt;)</td>
+<td>constant(T)</td>
+</tr>
+<tr class="even">
+<td>identity()</td>
+<td>toStringFunction()</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>细节请参考Javadoc。 相应地，Predicates提供了更多构造和处理Predicate的方法，下面是一些例子：</p>
+<table>
+<tbody>
+<tr class="odd">
+<td>instanceOf(Class)</td>
+<td>assignableFrom(Class)</td>
+<td>contains(Pattern)</td>
+</tr>
+<tr class="even">
+<td>in(Collection)</td>
+<td>isNull()</td>
+<td>alwaysFalse()</td>
+</tr>
+<tr class="odd">
+<td>alwaysTrue()</td>
+<td>equalTo(Object)</td>
+<td>compose(Predicate, Function)</td>
+</tr>
+<tr class="even">
+<td>and(Predicate…)</td>
+<td>or(Predicate…)</td>
+<td>not(Predicate)</td>
+</tr>
+</tbody>
+</table>
+<p>细节请参考Javadoc。</p>
+<h2 id="使用函数式编程">使用函数式编程</h2>
+<p>Guava提供了很多工具方法，以便用Function或Predicate操作集合。这些方法通常可以在集 合工具类找到，如Iterables，Lists，Sets，Maps，Multimaps等。</p>
+<h2 id="断言">断言</h2>
+<p>断言的最基本应用就是过滤集合。所有Guava过滤方法都返回”视图”——译者注：即并非用一 个新的集合表示过滤，而只是基于原集合的视图。</p>
+<table>
+<thead>
+<tr class="header">
+<th>集合类型</th>
+<th>过滤方法</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Iterable</td>
+<td>Iterables.filter(Iterable, Predicate)</td>
+</tr>
+<tr class="even">
+<td></td>
+<td>FluentIterable.filter(Predicate)</td>
+</tr>
+<tr class="odd">
+<td>Iterator</td>
+<td>Iterators.filter(Iterator, Predicate)</td>
+</tr>
+<tr class="even">
+<td>Collection</td>
+<td>Collections2.filter(Collection, Predicate)</td>
+</tr>
+<tr class="odd">
+<td>Set</td>
+<td>Sets.filter(Set, Predicate)</td>
+</tr>
+<tr class="even">
+<td>SortedSet</td>
+<td>Sets.filter(SortedSet, Predicate)</td>
+</tr>
+<tr class="odd">
+<td>Map</td>
+<td>Maps.filterKeys(Map, Predicate)</td>
+</tr>
+<tr class="even">
+<td></td>
+<td>Maps.filterValues(Map, Predicate)</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>Maps.filterEntries(Map, Predicate)</td>
+</tr>
+<tr class="even">
+<td>SortedMap</td>
+<td>Maps.filterKeys(SortedMap, Predicate)</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>Maps.filterValues(SortedMap, Predicate)</td>
+</tr>
+<tr class="even">
+<td></td>
+<td>Maps.filterEntries(SortedMap, Predicate)</td>
+</tr>
+<tr class="odd">
+<td>Multimap</td>
+<td>Multimaps.filterKeys(Multimap, Predicate)</td>
+</tr>
+<tr class="even">
+<td></td>
+<td>Multimaps.filterValues(Multimap, Predicate)</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>Multimaps.filterEntries(Multimap, Predicate)</td>
+</tr>
+</tbody>
+</table>
+<p>*List的过滤视图被省略了，因为不能有效地支持类似get(int)的操作。请改用 Lists.newArrayList(Collections2.filter(list, predicate))做拷贝过滤。</p>
+<p>除了简单过滤，Guava另外提供了若干用Predicate处理Iterable的工具——通常在Iterables 工具类中，或者是FluentIterable的”fluent”（链式调用）方法。</p>
+<table>
+<tbody>
+<tr class="odd">
+<td>Iterables方法签名</td>
+<td>说明</td>
+<td>另请参见</td>
+</tr>
+<tr class="even">
+<td>boolean all(Iterable, Predicate)</td>
+<td>是否所有元素满足断言？懒实现：如果发现有元素不满足，不会继续迭代</td>
+<td>Iterators.all(Iterator, Predicate)FluentIterable.allMatch(Predicate)</td>
+</tr>
+<tr class="odd">
+<td>boolean any(Iterable, Predicate)</td>
+<td>是否有任意元素满足元素满足断言？懒实现：只会迭代到发现满足的元素</td>
+<td>Iterators.any(Iterator, Predicate)FluentIterable.anyMatch(Predicate)</td>
+</tr>
+<tr class="even">
+<td>T find(Iterable, Predicate)</td>
+<td>循环并返回一个满足元素满足断言的元素，如果没有则抛出NoSuchElementException</td>
+<td>Iterators.find(Iterator, Predicate)</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td></td>
+<td>Iterables.find(Iterable, Predicate, T default)</td>
+</tr>
+<tr class="even">
+<td></td>
+<td></td>
+<td>Iterators.find(Iterator, Predicate, T default)</td>
+</tr>
+<tr class="odd">
+<td>Optional&lt;T&gt; tryFind(Iterable, Predicate)</td>
+<td>返回一个满足元素满足断言的元素，若没有则返回Optional.absent()</td>
+<td>Iterators.find(Iterator, Predicate)</td>
+</tr>
+<tr class="even">
+<td></td>
+<td></td>
+<td>Iterables.find(Iterable, Predicate, T default)</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td></td>
+<td>Iterators.find(Iterator, Predicate, T default)</td>
+</tr>
+<tr class="even">
+<td>indexOf(Iterable, Predicate)</td>
+<td>返回第一个满足元素满足断言的元素索引值，若没有返回-1</td>
+<td>Iterators.indexOf(Iterator, Predicate)</td>
+</tr>
+<tr class="odd">
+<td>removeIf(Iterable, Predicate)</td>
+<td>移除所有满足元素满足断言的元素，实际调用Iterator.remove()方法</td>
+<td>Iterators.removeIf(Iterator, Predicate)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="函数">函数</h2>
+<p>到目前为止，函数最常见的用途为转换集合。同样，所有的Guava转换方法也返回原集合的 视图。</p>
+<table>
+<thead>
+<tr class="header">
+<th>集合类型</th>
+<th>转换方法</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Iterable</td>
+<td>Iterables.transform(Iterable, Function)</td>
+</tr>
+<tr class="even">
+<td></td>
+<td>FluentIterable.transform(Function)</td>
+</tr>
+<tr class="odd">
+<td>Iterator</td>
+<td>Iterators.transform(Iterator, Function)</td>
+</tr>
+<tr class="even">
+<td>Collection</td>
+<td>Collections2.transform(Collection, Function)</td>
+</tr>
+<tr class="odd">
+<td>List</td>
+<td>Lists.transform(List, Function)</td>
+</tr>
+<tr class="even">
+<td>Map*</td>
+<td>Maps.transformValues(Map, Function)</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>Maps.transformEntries(Map, EntryTransformer)</td>
+</tr>
+<tr class="even">
+<td>SortedMap*</td>
+<td>Maps.transformValues(SortedMap, Function)</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>Maps.transformEntries(SortedMap, EntryTransformer)</td>
+</tr>
+<tr class="even">
+<td>Multimap*</td>
+<td>Multimaps.transformValues(Multimap, Function)</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>Multimaps.transformEntries(Multimap, EntryTransformer)</td>
+</tr>
+<tr class="even">
+<td>ListMultimap*</td>
+<td>Multimaps.transformValues(ListMultimap, Function)</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>Multimaps.transformEntries(ListMultimap, EntryTransformer)</td>
+</tr>
+<tr class="even">
+<td>Table</td>
+<td>Tables.transformValues(Table, Function)</td>
+</tr>
+</tbody>
+</table>
+<p>*Map和Multimap有特殊的方法，其中有个EntryTransformer&lt;K, V1, V2&gt;参数，它可以使用 旧的键值来计算，并且用计算结果替换旧值。</p>
+<p>*对Set的转换操作被省略了，因为不能有效支持contains(Object)操作——译者注：懒视图实 际上不会全部计算转换后的Set元素，因此不能高效地支持contains(Object)。请改用 Sets.newHashSet(Collections2.transform(set, function))进行拷贝转换。</p>
+<pre class="example"><code>List&lt;String&gt; names;
+Map&lt;String, Person&gt; personWithName;
+List&lt;Person&gt; people = Lists.transform(names, Functions.forMap(personWithName));
+ListMultimap&lt;String, String&gt; firstNameToLastNames;
+// maps first names to all last names of people with that first name
+ListMultimap&lt;String, String&gt; firstNameToName = Multimaps.transformEntries(firstNameToLastNames,
+    new EntryTransformer&lt;String, String, String&gt; () {
+        public String transformEntry(String firstName, String lastName) {
+            return firstName + &quot; &quot; + lastName;
+        }
+    });
+</code></pre>
+<p>可以组合Function使用的类包括：</p>
+<table>
+<tbody>
+<tr class="odd">
+<td>Ordering</td>
+<td>Ordering.onResultOf(Function)</td>
+</tr>
+<tr class="even">
+<td>Predicate</td>
+<td>Predicates.compose(Predicate, Function)</td>
+</tr>
+<tr class="odd">
+<td>Equivalence</td>
+<td>Equivalence.onResultOf(Function)</td>
+</tr>
+<tr class="even">
+<td>Supplier</td>
+<td>Suppliers.compose(Function, Supplier)</td>
+</tr>
+<tr class="odd">
+<td>Function</td>
+<td>Functions.compose(Function, Function)</td>
+</tr>
+</tbody>
+</table>
+<p>此外，ListenableFuture API支持转换ListenableFuture。Futures也提供了接受 AsyncFunction参数的方法。AsyncFunction是Function的变种，它允许异步计算值。</p>
+<pre class="example"><code>Futures.transform(ListenableFuture, Function)
+Futures.transform(ListenableFuture, Function, Executor)
+Futures.transform(ListenableFuture, AsyncFunction)
+Futures.transform(ListenableFuture, AsyncFunction, Executor)
+</code></pre>
+
+    </div>
+</div>
+<div id="postamble" class="status">
+    <div id="archive" style="padding-top: 3em; padding-bottom: 2em;">
+        <a href="https://bruceasu.github.io/archive.html">其它文章</a>
+    </div>
+</div>
+<script src="https://bruceasu.github.io/js/av-min-1.5.0.js"></script>
+<script type="application/javascript">
+    var BlogDirectory = {
+        /*
+            获取元素位置，距浏览器左边界的距离（left）和距浏览器上边界的距离（top）
+        */
+        getElementPosition: function (ele) {
+            var topPosition = 0;
+            var leftPosition = 0;
+            while (ele) {
+                topPosition += ele.offsetTop;
+                leftPosition += ele.offsetLeft;
+                ele = ele.offsetParent;
+            }
+            return {top: topPosition, left: leftPosition};
+        },
+
+        /*
+        获取滚动条当前位置
+        */
+        getScrollBarPosition: function () {
+            var scrollBarPosition = document.body.scrollTop || document.documentElement.scrollTop;
+            return scrollBarPosition;
+        },
+
+        /*
+        移动滚动条，finalPos 为目的位置，internal 为移动速度
+        */
+        moveScrollBar: function (finalpos, interval) {
+
+            //若不支持此方法，则退出
+            if (!window.scrollTo) {
+                return false;
+            }
+
+            //窗体滚动时，禁用鼠标滚轮
+            window.onmousewheel = function () {
+                return false;
+            };
+
+            //清除计时
+            if (document.body.movement) {
+                clearTimeout(document.body.movement);
+            }
+
+            var currentpos = BlogDirectory.getScrollBarPosition();//获取滚动条当前位置
+
+            var dist = 0;
+            if (currentpos == finalpos) {//到达预定位置，则解禁鼠标滚轮，并退出
+                window.onmousewheel = function () {
+                    return true;
+                }
+                return true;
+            }
+            if (currentpos < finalpos) {//未到达，则计算下一步所要移动的距离
+                dist = Math.ceil((finalpos - currentpos) / 10);
+                currentpos += dist;
+            }
+            if (currentpos > finalpos) {
+                dist = Math.ceil((currentpos - finalpos) / 10);
+                currentpos -= dist;
+            }
+
+            var scrTop = BlogDirectory.getScrollBarPosition();//获取滚动条当前位置
+            window.scrollTo(0, currentpos);//移动窗口
+            if (BlogDirectory.getScrollBarPosition() == scrTop)//若已到底部，则解禁鼠标滚轮，并退出
+            {
+                window.onmousewheel = function () {
+                    return true;
+                }
+                return true;
+            }
+
+            //进行下一步移动
+            var repeat = "BlogDirectory.moveScrollBar(" + finalpos + "," + interval + ")";
+            document.body.movement = setTimeout(repeat, interval);
+        },
+
+        htmlDecode: function (text) {
+            var temp = document.createElement("div");
+            temp.innerHTML = text;
+            var output = temp.innerText || temp.textContent;
+            temp = null;
+            return output;
+        },
+
+        /*
+        创建博客目录，
+        id表示包含博文正文的 div 容器的 id，
+        mt 和 st 分别表示主标题和次级标题的标签名称（如 H2、H3，大写或小写都可以！），
+        interval 表示移动的速度
+        */
+        createBlogDirectory: function (id, mt, st, interval) {
+            //获取博文正文div容器
+            var elem = document.getElementById(id);
+            if (!elem) {
+                return false;
+            }
+            //获取div中所有元素结点
+            var nodes = elem.getElementsByTagName("*");
+            //创建博客目录的div容器
+            var divSideBar = document.createElement('DIV');
+            divSideBar.className = 'sideBar';
+            divSideBar.setAttribute('id', 'sideBar');
+            var divSideBarTab = document.createElement('DIV');
+            divSideBarTab.setAttribute('id', 'sideBarTab');
+            divSideBar.appendChild(divSideBarTab);
+            var h2 = document.createElement('H2');
+            divSideBarTab.appendChild(h2);
+            var txt = document.createTextNode('目录导航');
+            h2.appendChild(txt);
+            var divSideBarContents = document.createElement('DIV');
+            divSideBarContents.style.display = 'none';
+            divSideBarContents.setAttribute('id', 'sideBarContents');
+            divSideBar.appendChild(divSideBarContents);
+            //创建自定义列表
+            var dlist = document.createElement("ul");
+            divSideBarContents.appendChild(dlist);
+            var num = 0;//统计找到的mt和st
+            mt = mt.toUpperCase();//转化成大写
+            st = st.toUpperCase();//转化成大写
+            var lastTagName = "h1";
+            var currentList = dlist;
+            var lastList = dlist;
+
+            //遍历所有元素结点
+            var p = /h\d/i
+            for (var i = 0; i < nodes.length; i++) {
+                //if(nodes[i].nodeName == mt|| nodes[i].nodeName == st)
+                console.log("test " + nodes[i].nodeName, p.test(nodes[i].nodeName))
+                if (p.test(nodes[i].nodeName)) {
+                    //获取标题文本
+                    var nodetext = nodes[i].innerHTML.replace(/<\/?[^>]+>/g, "");//innerHTML里面的内容可能有HTML标签，所以用正则表达式去除HTML的标签
+                    nodetext = nodetext.replace(/ /ig, "");//替换掉所有的 
+                    nodetext = BlogDirectory.htmlDecode(nodetext);
+                    //插入锚
+                    nodes[i].setAttribute("id", "blogTitle" + num);
+                    var item;
+                    if (nodes[i].nodeName > lastTagName) {
+                        // open new
+                        lastList = currentList;
+                        currentList = document.createElement("ul");
+                        lastList.appendChild(currentList);
+                        lastTagName = nodes[i].nodeName
+                    } else if (nodes[i].nodeName < lastTagName) {
+                        // close
+                        currentList = lastList;
+                        lastTagName = nodes[i].nodeName
+                    } else {
+
+                    }
+                    item = document.createElement("li");
+                    //创建锚链接
+                    var itemtext = document.createTextNode(nodetext);
+                    item.appendChild(itemtext);
+                    item.setAttribute("name", num);
+                    item.onclick = function () {        //添加鼠标点击触发函数
+                        var pos = BlogDirectory.getElementPosition(
+                            document.getElementById("blogTitle" + this.getAttribute("name")));
+                        if (!BlogDirectory.moveScrollBar(pos.top, interval)) {
+                            return false;
+                        }
+                    };
+
+                    //将自定义表项加入自定义列表中
+                    //dlist.appendChild(item);
+                    currentList.appendChild(item);
+                    num++;
+                }
+            }
+
+            if (num == 0) {
+                return false;
+            }
+            /*鼠标进入时的事件处理*/
+            divSideBarTab.onmouseenter = function () {
+                divSideBarContents.style.display = 'block';
+            }
+            /*鼠标离开时的事件处理*/
+            divSideBar.onmouseleave = function () {
+                divSideBarContents.style.display = 'none';
+            }
+
+            document.body.appendChild(divSideBar);
+        }
+
+    };
+
+    window.onload = function () {
+        BlogDirectory.createBlogDirectory("content", "h1", "h2", 20);
+    }
+</script>
+</body>
+</html>

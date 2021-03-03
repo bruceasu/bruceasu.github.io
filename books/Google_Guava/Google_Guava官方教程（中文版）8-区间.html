@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+<title>Free World - Google_Guava官方教程（中文版）8-区间</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "https://bruceasu.github.io/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="https://bruceasu.github.io/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="https://bruceasu.github.io/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="https://bruceasu.github.io/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="https://bruceasu.github.io/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="https://bruceasu.github.io/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="https://bruceasu.github.io/theme/highlight.css">
+
+    <style>
+        /*生成博客目录的CSS*/
+        #sideBar {
+            font-size: 12px;
+            font-family: Arial, Helvetica, sans-serif;
+            text-align: left;
+            position: fixed; /*将div的位置固定到距离top:50px，right:0px的位置，这样div就会处在最右边的位置，距离顶部50px*/
+            top: 100px;
+            right: 0px;
+            min-height: 108px;
+            width: auto;
+            height: auto;
+        }
+
+        #sideBarTab {
+            float: left;
+            width: 30px;
+            border: 1px solid #e5e5e5;
+            border-right: none;
+            text-align: center;
+            background: #ffffff;
+        }
+
+        #sideBarTab * {
+            margin-top: 10px;
+        }
+
+        #sideBarContents {
+            float: left;
+            overflow: auto;
+            overflow-x: hidden;
+        !important;
+            width: 200px;
+            min-height: 128px;
+            max-height: 460px;
+            border: 1px solid #e5e5e5;
+            border-right: none;
+            background: #ffffff;
+        }
+
+        #sideBarContents ul {
+            margin: 0;
+            padding: 0;
+        }
+
+        #sideBarContents li {
+            margin-top: 5px;
+            margin-left: 5px;
+        }
+
+        #sideBarContents li {
+            cursor: pointer;
+        }
+
+        #sideBarContents li:hover {
+            color: #A7995A;
+        }
+
+
+    </style>
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="https://bruceasu.github.io/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="https://bruceasu.github.io/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="https://bruceasu.github.io/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="https://bruceasu.github.io/wiki/index.html">Wiki</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="https://bruceasu.github.io/books/index.html">Books</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="https://bruceasu.github.io/archive.html">Archives</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="https://bruceasu.github.io/about.html">About</a>
+    </div>
+</div>
+
+
+<div class="content-area">
+    <div class="title">Google_Guava官方教程（中文版）8-区间</div>
+    
+    <a href="https://bruceasu.github.io/tags.html#reprint">
+        <div class="category">reprint</div>
+    </a>
+    
+    <div class="char-counter"> Fri Oct 01 20:48:00 CST 2010</div>
+    <div id="content">
+        <p>区间</p>
+<h1 id="范例">范例</h1>
+<pre class="example"><code>List scores;
+Iterable belowMedian =Iterables.filter(scores,Range.lessThan(median));
+...
+Range validGrades = Range.closed(1, 12);
+for(int grade : ContiguousSet.create(validGrades, DiscreteDomain.integers())) {
+    ...
+}
+</code></pre>
+<h1 id="简介">简介</h1>
+<p>区间，有时也称为范围，是特定域中的凸性（非正式说法为连续的或不中断的）部分。在形 式上，凸性表示对a&lt;=b&lt;=c, range.contains(a)且range.contains(c)意味着 range.contains(b)。</p>
+<p>区间可以延伸至无限——例如，范围”x&gt;3″包括任意大于3的值——也可以被限制为有限，如” 2&lt;=x&lt;5″。Guava用更紧凑的方法表示范围，有数学背景的程序员对此是耳熟能详的：</p>
+<ul>
+<li>(a..b) = {x | a &lt; x &lt; b}</li>
+<li>[a..b] = {x | a &lt;= x &lt;= b}</li>
+<li>[a..b) = {x | a &lt;= x &lt; b}</li>
+<li>(a..b] = {x | a &lt; x &lt;= b}</li>
+<li>(a..+∞) = {x | x &gt; a}</li>
+<li>[a..+∞) = {x | x &gt;= a}</li>
+<li>(-∞..b) = {x | x &lt; b}</li>
+<li>(-∞..b] = {x | x &lt;= b}</li>
+<li>(-∞..+∞) = 所有值</li>
+</ul>
+<p>上面的a、b称为端点 。为了提高一致性，Guava中的Range要求上端点不能小于下端点。上 下端点有可能是相等的，但要求区间是闭区间或半开半闭区间（至少有一个端点是包含在区 间中的）：</p>
+<ul>
+<li>[a..a]：单元素区间</li>
+<li>[a..a); (a..a]：空区间，但它们是有效的</li>
+<li>(a..a)：无效区间</li>
+</ul>
+<p>Guava用类型Range&lt;C&gt;表示区间。所有区间实现都是不可变类型。</p>
+<h1 id="构建区间">构建区间</h1>
+<p>区间实例可以由Range类的静态方法获取：</p>
+<table>
+<tbody>
+<tr class="odd">
+<td>(a..b)</td>
+<td>open(C, C)</td>
+</tr>
+<tr class="even">
+<td>[a..b]</td>
+<td>closed(C, C)</td>
+</tr>
+<tr class="odd">
+<td>[a..b)</td>
+<td>closedOpen(C, C)</td>
+</tr>
+<tr class="even">
+<td>(a..b]</td>
+<td>openClosed(C, C)</td>
+</tr>
+<tr class="odd">
+<td>(a..+∞)</td>
+<td>greaterThan(C)</td>
+</tr>
+<tr class="even">
+<td>[a..+∞)</td>
+<td>atLeast(C)</td>
+</tr>
+<tr class="odd">
+<td>(-∞..b)</td>
+<td>lessThan(C)</td>
+</tr>
+<tr class="even">
+<td>(-∞..b]</td>
+<td>atMost(C)</td>
+</tr>
+<tr class="odd">
+<td>(-∞..+∞)</td>
+<td>all()</td>
+</tr>
+</tbody>
+</table>
+<pre class="example"><code>Range.closed(&quot;left&quot;, &quot;right&quot;); //字典序在&quot;left&quot;和&quot;right&quot;之间的字符串，闭区间
+Range.lessThan(4.0); //严格小于4.0的double值
+</code></pre>
+<p>此外，也可以明确地指定边界类型来构造区间：</p>
+<table>
+<tbody>
+<tr class="odd">
+<td>有界区间</td>
+<td>range(C, BoundType, C,   BoundType)</td>
+</tr>
+<tr class="even">
+<td>无上界区间：((a..+∞) 或[a..+∞))</td>
+<td>downTo(C, BoundType)</td>
+</tr>
+<tr class="odd">
+<td>无下界区间：((-∞..b) 或(-∞..b])</td>
+<td>upTo(C, BoundType)</td>
+</tr>
+</tbody>
+</table>
+<p>这里的BoundType是一个枚举类型，包含CLOSED和OPEN两个值。</p>
+<pre class="example"><code>Range.downTo(4, boundType);// (a..+∞)或[a..+∞)，取决于boundType
+Range.range(1, CLOSED, 4, OPEN);// [1..4)，等同于Range.closedOpen(1, 4)
+</code></pre>
+<h1 id="区间运算">区间运算</h1>
+<p>Range的基本运算是它的contains(C) 方法，和你期望的一样，它用来区间判断是否包含某 个值。此外，Range实例也可以当作Predicate，并且在函数式编程中使用（译者注：见第4 章）。任何Range实例也都支持containsAll(Iterable&lt;? extends C&gt;)方法：</p>
+<pre class="example"><code>Range.closed(1, 3).contains(2);//return true
+Range.closed(1, 3).contains(4);//return false
+Range.lessThan(5).contains(5); //return false
+Range.closed(1, 4).containsAll(Ints.asList(1, 2, 3)); //return true
+</code></pre>
+<h1 id="查询运算">查询运算</h1>
+<p>Range类提供了以下方法来 查看区间的端点：</p>
+<ul>
+<li>hasLowerBound()和hasUpperBound()：判断区间是否有特定边界，或是无限的；</li>
+<li>lowerBoundType()和upperBoundType()：返回区间边界类型，CLOSED或OPEN；如果区间没 有对应的边界，抛出IllegalStateException；</li>
+<li>lowerEndpoint()和upperEndpoint()：返回区间的端点值；如果区间没有对应的边界，抛 出IllegalStateException；</li>
+<li>isEmpty()：判断是否为空区间。</li>
+</ul>
+<pre class="example"><code>Range.closedOpen(4, 4).isEmpty(); // returns true
+Range.openClosed(4, 4).isEmpty(); // returns true
+Range.closed(4, 4).isEmpty(); // returns false
+Range.open(4, 4).isEmpty(); // Range.open throws IllegalArgumentException
+Range.closed(3, 10).lowerEndpoint(); // returns 3
+Range.open(3, 10).lowerEndpoint(); // returns 3
+Range.closed(3, 10).lowerBoundType(); // returns CLOSED
+Range.open(3, 10).upperBoundType(); // returns OPEN
+
+</code></pre>
+<h1 id="关系运算">关系运算</h1>
+<h2 id="包含enclose">包含[enclose]</h2>
+<p>区间之间的最基本关系就是包含[encloses(Range)]：如果内区间的边界没有超出外区间的 边界，则外区间包含内区间。包含判断的结果完全取决于区间端点的比较！</p>
+<ul>
+<li>[3..6] 包含[4..5] ；</li>
+<li>(3..6) 包含(3..6) ；</li>
+<li>[3..6] 包含[4..4)，虽然后者是空区间；</li>
+<li>(3..6]不 包含[3..6] ；</li>
+<li>[4..5]不 包含(3..6)，虽然前者包含了后者的所有值，离散域[discrete domains]可以 解决这个问题（见8.5节）；</li>
+<li>[3..6]不 包含(1..1]，虽然前者包含了后者的所有值。</li>
+</ul>
+<p>包含是一种偏序关系[partial ordering]。基于包含关系的概念，Range还提供了以下运算方法。</p>
+<h2 id="相连isconnected">相连[isConnected]</h2>
+<p>Range.isConnected(Range)判断区间是否是相连的。具体来说，isConnected测试是否有区 间同时包含于这两个区间，这等同于数学上的定义”两个区间的并集是连续集合的形式”（空 区间的特殊情况除外）。相连是一种自反的[reflexive]、对称的[symmetric]关系。</p>
+<pre class="example"><code>Range.closed(3, 5).isConnected(Range.open(5, 10)); // returns true
+Range.closed(0, 9).isConnected(Range.closed(3, 4)); // returns true
+Range.closed(0, 5).isConnected(Range.closed(3, 9)); // returns true
+Range.open(3, 5).isConnected(Range.open(5, 10)); // returns false
+Range.closed(1, 5).isConnected(Range.closed(6, 10)); // returns false
+</code></pre>
+<h2 id="交集intersection">交集[intersection]</h2>
+<p>Range.intersection(Range)返回两个区间的交集：既包含于第一个区间，又包含于另一个 区间的最大区间。当且仅当两个区间是相连的，它们才有交集。如果两个区间没有交集，该 方法将抛出IllegalArgumentException。交集是可互换的[commutative] 、关联的 [associative] 运算[operation]。</p>
+<pre class="example"><code>Range.closed(3, 5).intersection(Range.open(5, 10)); // returns (5, 5]
+Range.closed(0, 9).intersection(Range.closed(3, 4)); // returns [3, 4]
+Range.closed(0, 5).intersection(Range.closed(3, 9)); // returns [3, 5]
+Range.open(3, 5).intersection(Range.open(5, 10)); // throws IAE
+Range.closed(1, 5).intersection(Range.closed(6, 10)); // throws IAE
+</code></pre>
+<h2 id="跨区间span">跨区间[span]</h2>
+<p>Range.span(Range)返回”同时包括两个区间的最小区间”，如果两个区间相连，那就是它们 的并集。span是可互换的[commutative] 、关联的[associative] 、闭合的[closed]运算 [operation]。</p>
+<pre class="example"><code>Range.closed(3, 5).span(Range.open(5, 10)); // returns [3, 10)
+Range.closed(0, 9).span(Range.closed(3, 4)); // returns [0, 9]
+Range.closed(0, 5).span(Range.closed(3, 9)); // returns [0, 9]
+Range.open(3, 5).span(Range.open(5, 10)); // returns (3, 10)
+Range.closed(1, 5).span(Range.closed(6, 10)); // returns [1, 10]
+</code></pre>
+<h1 id="离散域">离散域</h1>
+<p>部分（但不是全部）可比较类型是离散的，即区间的上下边界都是可枚举的。</p>
+<p>在Guava中，用DiscreteDomain&lt;C&gt;实现类型C的离散形式操作。一个离散域总是代表某种类 型值的全集；它不能代表类似”素数”、”长度为5的字符串”或”午夜的时间戳”这样的局部域。</p>
+<p>DiscreteDomain提供的离散域实例包括：</p>
+<table>
+<tbody>
+<tr class="odd">
+<td>类型</td>
+<td>离散域</td>
+</tr>
+<tr class="even">
+<td>Integer</td>
+<td>integers()</td>
+</tr>
+<tr class="odd">
+<td>Long</td>
+<td>longs()</td>
+</tr>
+</tbody>
+</table>
+<p>一旦获取了DiscreteDomain实例，你就可以使用下面的Range运算方法：</p>
+<ul>
+<li>ContiguousSet.create(range, domain)：用ImmutableSortedSet&lt;C&gt;形式表示Range&lt;C&gt;中 符合离散域定义的元素，并增加一些额外操作——译者注：实际返回ImmutableSortedSet的 子类ContiguousSet。（对无限区间不起作用，除非类型C本身是有限的，比如int就是可 枚举的）</li>
+<li>canonical(domain)：把离散域转为区间的”规范形式”。如果ContiguousSet.create(a, domain).equals(ContiguousSet.create(b, domain))并且!a.isEmpty()，则有 a.canonical(domain).equals(b.canonical(domain))。（这并不意味着a.equals(b)）</li>
+</ul>
+<pre class="example"><code>ImmutableSortedSet set = ContigousSet.create(Range.open(1, 5), iscreteDomain.integers());
+//set包含[2, 3, 4]
+ContiguousSet.create(Range.greaterThan(0), DiscreteDomain.integers());
+//set包含[1, 2, ..., Integer.MAX_VALUE]
+</code></pre>
+<p>注意，ContiguousSet.create并没有真的构造了整个集合，而是返回了set形式的区间视图。</p>
+<h1 id="你自己的离散域">你自己的离散域</h1>
+<p>你可以创建自己的离散域，但必须记住DiscreteDomain契约的几个重要方面。</p>
+<ul>
+<li>一个离散域总是代表某种类型值的全集；它不能代表类似”素数”或”长度为5的字符串”这 样的局部域。所以举例来说，你无法构造一个DiscreteDomain以表示精确到秒的JODA DateTime日期集合：因为那将无法包含JODA DateTime的所有值。</li>
+<li>DiscreteDomain可能是无限的——比如BigInteger DiscreteDomain。这种情况下，你应当 用minValue()和maxValue()的默认实现，它们会抛出NoSuchElementException。但Guava 禁止把无限区间传入ContiguousSet.create——译者注：那明显得不到一个可枚举的集合。</li>
+</ul>
+<p>如果我需要一个Comparator呢？</p>
+<p>我们想要在Range的可用性与API复杂性之间找到特定的平衡，这部分导致了我们没有提供基 于Comparator的接口：我们不需要操心区间是怎样基于不同Comparator互动的；所有API签 名都是简单明确的；这样更好。另一方面，如果你需要任意Comparator，可以按下列其中一 项来做：</p>
+<ul>
+<li>使用通用的Predicate接口，而不是Range类。（Range实现了Predicate接口，因此可以用 Predicates.compose(range, function)获取Predicate实例）</li>
+<li>使用包装类以定义期望的排序。</li>
+</ul>
+<p>译者注：实际上Range规定元素类型必须是Comparable，这已经满足了大多数需求。如果需 要自定义特殊的比较逻辑，可以用Predicates.compose(range, function)组合比较的 function。</p>
+
+    </div>
+</div>
+<div id="postamble" class="status">
+    <div id="archive" style="padding-top: 3em; padding-bottom: 2em;">
+        <a href="https://bruceasu.github.io/archive.html">其它文章</a>
+    </div>
+</div>
+<script src="https://bruceasu.github.io/js/av-min-1.5.0.js"></script>
+<script type="application/javascript">
+    var BlogDirectory = {
+        /*
+            获取元素位置，距浏览器左边界的距离（left）和距浏览器上边界的距离（top）
+        */
+        getElementPosition: function (ele) {
+            var topPosition = 0;
+            var leftPosition = 0;
+            while (ele) {
+                topPosition += ele.offsetTop;
+                leftPosition += ele.offsetLeft;
+                ele = ele.offsetParent;
+            }
+            return {top: topPosition, left: leftPosition};
+        },
+
+        /*
+        获取滚动条当前位置
+        */
+        getScrollBarPosition: function () {
+            var scrollBarPosition = document.body.scrollTop || document.documentElement.scrollTop;
+            return scrollBarPosition;
+        },
+
+        /*
+        移动滚动条，finalPos 为目的位置，internal 为移动速度
+        */
+        moveScrollBar: function (finalpos, interval) {
+
+            //若不支持此方法，则退出
+            if (!window.scrollTo) {
+                return false;
+            }
+
+            //窗体滚动时，禁用鼠标滚轮
+            window.onmousewheel = function () {
+                return false;
+            };
+
+            //清除计时
+            if (document.body.movement) {
+                clearTimeout(document.body.movement);
+            }
+
+            var currentpos = BlogDirectory.getScrollBarPosition();//获取滚动条当前位置
+
+            var dist = 0;
+            if (currentpos == finalpos) {//到达预定位置，则解禁鼠标滚轮，并退出
+                window.onmousewheel = function () {
+                    return true;
+                }
+                return true;
+            }
+            if (currentpos < finalpos) {//未到达，则计算下一步所要移动的距离
+                dist = Math.ceil((finalpos - currentpos) / 10);
+                currentpos += dist;
+            }
+            if (currentpos > finalpos) {
+                dist = Math.ceil((currentpos - finalpos) / 10);
+                currentpos -= dist;
+            }
+
+            var scrTop = BlogDirectory.getScrollBarPosition();//获取滚动条当前位置
+            window.scrollTo(0, currentpos);//移动窗口
+            if (BlogDirectory.getScrollBarPosition() == scrTop)//若已到底部，则解禁鼠标滚轮，并退出
+            {
+                window.onmousewheel = function () {
+                    return true;
+                }
+                return true;
+            }
+
+            //进行下一步移动
+            var repeat = "BlogDirectory.moveScrollBar(" + finalpos + "," + interval + ")";
+            document.body.movement = setTimeout(repeat, interval);
+        },
+
+        htmlDecode: function (text) {
+            var temp = document.createElement("div");
+            temp.innerHTML = text;
+            var output = temp.innerText || temp.textContent;
+            temp = null;
+            return output;
+        },
+
+        /*
+        创建博客目录，
+        id表示包含博文正文的 div 容器的 id，
+        mt 和 st 分别表示主标题和次级标题的标签名称（如 H2、H3，大写或小写都可以！），
+        interval 表示移动的速度
+        */
+        createBlogDirectory: function (id, mt, st, interval) {
+            //获取博文正文div容器
+            var elem = document.getElementById(id);
+            if (!elem) {
+                return false;
+            }
+            //获取div中所有元素结点
+            var nodes = elem.getElementsByTagName("*");
+            //创建博客目录的div容器
+            var divSideBar = document.createElement('DIV');
+            divSideBar.className = 'sideBar';
+            divSideBar.setAttribute('id', 'sideBar');
+            var divSideBarTab = document.createElement('DIV');
+            divSideBarTab.setAttribute('id', 'sideBarTab');
+            divSideBar.appendChild(divSideBarTab);
+            var h2 = document.createElement('H2');
+            divSideBarTab.appendChild(h2);
+            var txt = document.createTextNode('目录导航');
+            h2.appendChild(txt);
+            var divSideBarContents = document.createElement('DIV');
+            divSideBarContents.style.display = 'none';
+            divSideBarContents.setAttribute('id', 'sideBarContents');
+            divSideBar.appendChild(divSideBarContents);
+            //创建自定义列表
+            var dlist = document.createElement("ul");
+            divSideBarContents.appendChild(dlist);
+            var num = 0;//统计找到的mt和st
+            mt = mt.toUpperCase();//转化成大写
+            st = st.toUpperCase();//转化成大写
+            var lastTagName = "h1";
+            var currentList = dlist;
+            var lastList = dlist;
+
+            //遍历所有元素结点
+            var p = /h\d/i
+            for (var i = 0; i < nodes.length; i++) {
+                //if(nodes[i].nodeName == mt|| nodes[i].nodeName == st)
+                console.log("test " + nodes[i].nodeName, p.test(nodes[i].nodeName))
+                if (p.test(nodes[i].nodeName)) {
+                    //获取标题文本
+                    var nodetext = nodes[i].innerHTML.replace(/<\/?[^>]+>/g, "");//innerHTML里面的内容可能有HTML标签，所以用正则表达式去除HTML的标签
+                    nodetext = nodetext.replace(/ /ig, "");//替换掉所有的 
+                    nodetext = BlogDirectory.htmlDecode(nodetext);
+                    //插入锚
+                    nodes[i].setAttribute("id", "blogTitle" + num);
+                    var item;
+                    if (nodes[i].nodeName > lastTagName) {
+                        // open new
+                        lastList = currentList;
+                        currentList = document.createElement("ul");
+                        lastList.appendChild(currentList);
+                        lastTagName = nodes[i].nodeName
+                    } else if (nodes[i].nodeName < lastTagName) {
+                        // close
+                        currentList = lastList;
+                        lastTagName = nodes[i].nodeName
+                    } else {
+
+                    }
+                    item = document.createElement("li");
+                    //创建锚链接
+                    var itemtext = document.createTextNode(nodetext);
+                    item.appendChild(itemtext);
+                    item.setAttribute("name", num);
+                    item.onclick = function () {        //添加鼠标点击触发函数
+                        var pos = BlogDirectory.getElementPosition(
+                            document.getElementById("blogTitle" + this.getAttribute("name")));
+                        if (!BlogDirectory.moveScrollBar(pos.top, interval)) {
+                            return false;
+                        }
+                    };
+
+                    //将自定义表项加入自定义列表中
+                    //dlist.appendChild(item);
+                    currentList.appendChild(item);
+                    num++;
+                }
+            }
+
+            if (num == 0) {
+                return false;
+            }
+            /*鼠标进入时的事件处理*/
+            divSideBarTab.onmouseenter = function () {
+                divSideBarContents.style.display = 'block';
+            }
+            /*鼠标离开时的事件处理*/
+            divSideBar.onmouseleave = function () {
+                divSideBarContents.style.display = 'none';
+            }
+
+            document.body.appendChild(divSideBar);
+        }
+
+    };
+
+    window.onload = function () {
+        BlogDirectory.createBlogDirectory("content", "h1", "h2", 20);
+    }
+</script>
+</body>
+</html>

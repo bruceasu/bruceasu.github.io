@@ -4,7 +4,7 @@
 #+EMAIL:       bruceasu@163.com
 #+DATE:        <2010-10-04 10:24>
 #+filetags: knowledge
-#+DESCRIPTION: 曾仕强教授易经
+#+DESCRIPTION: 出师表 粤语翻译
 
 #+LANGUAGE:    en
 #+OPTIONS:     H:7 num:nil toc:t \n:nil ::t |:t ^:nil -:nil f:t *:t <:nil
