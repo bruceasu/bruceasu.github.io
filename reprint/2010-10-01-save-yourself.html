@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>人在江湖：如何用代码保护好自己</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">人在江湖：如何用代码保护好自己</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#knowledge"><div class="category">knowledge</div></a> </div>
+<div class="char-counter">2010-10-01</div>
+        <div id="content">
+<TABLE>
+  <THEAD>
+    <TR>
+      <TH class=topic_title colspan="2">
+        <DIV class=wrapper>人在江湖：如何用代码保护好自己</DIV>
+        <P>作者： sunnylocus</P>
+        <P>&nbsp;</P>
+      </TH>
+    </TR>
+    <TR>
+      <TD>
+        <P>模的系统，特别是金融行业的系统，业务规则复杂，一般是将系统分割成较小
+        的子模块，每个人开发一个或几个模块，模块开发完成后做成一个jar包，供其它
+        的模块调用，待所有模块开发完成后再集成在一起。对于充值系统而言则更为复杂，
+        除了要将系统分解成子模块外，还要与众多外围系统交互，如收单服务商、充值中
+        心、银行等。程序员就是其中一个或几个模块的开发者。</P>
+      </TD>
+    </TR>
+    <TR>
+      <TD>
+        <DIV class="postbody clearfix">
+          <P>&nbsp;</P>
+          <P>本文的讨论的要点是：在系统出现问题时，如何有理有据的保护好自己。</P>
+          <P>&nbsp;</P>
+          <P>&nbsp;&nbsp;&nbsp;&nbsp;对于软件开发者来说，我们在公司里一般处于弱
+          势群体，每当系统出现问题造成事故的时候，运营人员一般都会将矛头指向研发
+          人员。他们这么做一般是将责任撇清，以防引火上身。当出现事故给公司造成了
+          实际损失，那么公司老板肯定会介入进来，总有人要背这个黑锅的，这个责任会
+          从上级一级一级的压下来，直到推到某个模块具体编码的程序员身上，这时候我
+          们开发者唯一进行反击的武器就是日志，如果日志没有清楚的记录什么时间调用
+          了什么代码，什么时间调用的代码出现异常，异常的原因是什么等详细信息，那
+          么负责编码的程序员也将是一头雾水莫口难辩，屎盆子全都扣到你头上，最后的
+          结果就是背了黑锅走人。</P>
+          <P>&nbsp;</P>
+          <P>&nbsp;&nbsp;&nbsp;&nbsp; 这种情况在我上一家公司已经发生了很多次，在
+            入职的那段时间里Team leader经常提醒我们，编码一定要小心小心再小心，
+            千万不要出错，出事故了我要挨老板的骂，你们有人就得被辞退。在部门svn
+            服务器的文件夹里有专门存放事故的总结报告，一个事故，一个word文档。差
+            不多有11个文档，直接造成经济损失的A级事故也有３个左右，这几个同仁被
+            辞退的时候心情肯定是极其郁闷。前段时间得到上一家公司同事的消息，公司
+            有个技术大牛写的程序和另外一家公司的系统进行业务交互，结果充值报文被
+            人给修改了，金额被修改成了200 万，结果这个大牛写的代码不严谨，没有考
+            虑周全，收到响应报文时没有做金额校验就做了转账操作，听说这一下公司就
+            损失了200万，老板娘在公司发飙，把笔记本重重的摔在他办公桌上。最后也
+            是被辞退，无论技术多么牛的人还是小心些好，常言道：小心驶得万年船。
+            </P>
+          <P>&nbsp;</P>
+          <P>&nbsp;</P>
+      </TD>
+    </TR>
+    <TR>
+      <TD>
+          <P>现在我用做过的一个充值系统的交互图来说明我的观点，如何调用黑洞代码
+          （所谓黑洞代码就是说你将要调用的这个法，对你而言就是一个黑盒子，你不知
+          道这个方法做了哪些操作，你不知道它会出现什么错误）</P>
+          <P>&nbsp;</P>
+          <P>如图：</P>
+          <P>&nbsp;</P>
+          <P><IMG class=magplus title=点击查看原始大小图片 alt=""
+                  src="images/2010-10-01-save-yourself/b9f5aec3_cc19_32d9_bd5a_f2510ad67a1e[1].jpg"
+                  width=760 height=309></P>
+          <P>这是一个银联卡充值系统，这个系统的功能是：只要你将可以能够在网上进
+          行支付的银行卡（哪个银行的都可以）和自己的手机号绑定，就可以随时用手机
+          拨打自动语音充值电话给自己的手机号或着他人的手机号充值，这个系统的参与
+          者有IVR语音服务商、收单服务商、电信充值中心。整个系统可划分为IVR语音模
+          块、收单模块、电信指令交互模块、报文加解密模块、支付模块。</P>
+          <P>&nbsp;</P>
+          <P><STRONG>模块开发明细表：</STRONG></P>
+          <P>&nbsp;</P>
+          <TABLE style="BACKGROUND-COLOR: #66ffff; " border=1><TBODY>
+              <TR>
+                <TD>模块名称</TD>
+                <TD>开发者</TD>
+                <TD>调用模块编号</TD>
+                <TD>序号</TD></TR>
+              <TR>
+                <TD>IVR语音交互模块</TD>
+                <TD>张三</TD>
+                <TD>2</TD>
+                <TD>1</TD></TR>
+              <TR>
+                <TD>收单模块</TD>
+                <TD>李四</TD>
+                <TD>5、3</TD>
+                <TD>2</TD></TR>
+              <TR>
+                <TD>电信指令交互模块</TD>
+                <TD>王五</TD>
+                <TD>4</TD>
+                <TD>3</TD></TR>
+              <TR>
+                <TD>报文加解密模块</TD>
+                <TD>那六</TD>
+                <TD>&nbsp;</TD>
+                <TD>4</TD></TR>
+              <TR>
+                <TD>支付模块</TD>
+                <TD>小七</TD>
+                <TD>&nbsp;</TD>
+                <TD>5</TD></TR></TBODY></TABLE>
+          <P>　</P>
+          <P>系统上线时非常的不稳定，充值失败率很高，平均每五笔就有一笔充值失败。
+          问题定位在2和3这两个模块上，两位开发者各就执一词，争的面红耳赤。我们看
+          看李四的代码，李四的代码去调用了王五的代码。</P>
+          <P>&nbsp;</P>
+          <P>李四的代码截图：</P>
+          <P>&nbsp;</P>
+          <P>&nbsp;</P>
+          <P>&nbsp;<IMG alt=""
+                        src="images/2010-10-01-save-yourself/bcc5d792_5450_3974_a841_c9f3fd029e8f[1].png"
+                        width=626 height=443></P>
+          <P>用红色框圈起来的代码是王五的代码，王五的代码打成jar包供李四去调用，
+          李四将王五的业务实现用Spring注入进来，然后直接去调用doCharge方法，并将
+          结果返回，看起来没有问题。只不过只是表面看起来没有问题。</P>
+          <P>&nbsp;</P>
+          <P>打问号的代码你敢大胆的这样用吗？</P>
+          <P>&nbsp;</P>
+          <P><SPAN style="COLOR: #ff0000">风险一：</SPAN></P>
+          <P>&nbsp;</P>
+          <P>doCharge方法对李四来说就是一个黑洞代码，不知道这个方法作了哪些操作，
+          会不会有错误发生，因为doCharge方法未声明该方法可能要抛出的异常，李四以
+          为这个doCharge方法是安全的，所以没有加try{}catch()代码捕获异常。什么事
+          都怕万一，万一这个doCharge出现了异常怎么办？</P>
+          <P>&nbsp;</P>
+          <P><SPAN style="COLOR: #ff0000">风险二：</SPAN></P>
+          <P>如果doCharge方法因为某种原因产生了死锁，那么你的调用结程死在里面了，
+          永远不返回调用结果，这种情况怎么办？</P>
+          <P>&nbsp;</P>
+          <P>&nbsp;</P>
+          <P><SPAN style="COLOR: #0000ff">风险一的应对措施：</SPAN></P>
+          <P>　　对于要调用的关键方法，无论它有没有声明要抛出的异常，我们都要对
+          它保持怀疑的态度，加try{}catch捕获，并将捕获到异常，记录日志后，包装下
+          继续抛给上层调用者。让上层调用者知道出错了，异常抛出了你就尽到了通知的
+          义务，系统出问题与你没有关系，不然出了问题问你：你为什么不捕获异常？为
+          什么不抛异常？虽然有很多种理由可以向质问者解释，但还是多一事不如少一事，
+          别偷懒加个try{}catch()捕获可能出现的异常。</P>
+          <P><IMG alt=""
+                  src="images/2010-10-01-save-yourself/14b66f0e_bdbb_3433_ad40_0c815b098f5f[1].png"></P>
+          <P>&nbsp;</P>
+          <P><SPAN style="COLOR: #0000ff">风险二的应对措施：</SPAN></P>
+          <P>&nbsp;</P>
+          <P>打个比喻：你是猎人，你要在山洞里抓一只狼崽出来，但是你不确定这个山
+          洞里有什么危险，聪明的猎人会放猎狗进去抓狼崽，如果猎狗进去一段时间没有
+          出来，说明里面有危险，猎人再想其它办法。如果猎人自己进去是有风险的，谁
+          知道这个洞里面是狼还是虎。这个比喻想说的是，如果你要调用一个你认为不太
+          安全的方法，不要用主线程调用（猎人），创建一个调用线程（一只猎狗）去调
+          用，这样做的好处是能够监控调用是否成功，还可以设置调用的超时时间。</P>
+          <P>&nbsp;</P>
+          <P>用这个比喻我们创建一个猎狗工具类，调用黑洞方法时，自动生成调用线程，
+          如果调用时间超时，抛出TimeoutException</P>
+          <P><IMG alt=""
+                  src="images/2010-10-01-save-yourself/f55f01f8_11e6_3242_b978_f1b69f4e8cd2[1].png"></P>
+          <P>采用猎狗模式修改后的代码：</P>
+          <P><IMG alt=""
+                  src="images/2010-10-01-save-yourself/770945c1_19d5_3c0d_bacc_2d8410cb6142[1].png"></P>
+          <P>&nbsp;</P>
+          <P>&nbsp;</P>
+          <P>事后终于找到了bug了，问题出在王五的电信指令交互模块上，发送给电信的
+          报文长度必须符合协议，否则电信那端收到非法包后会将Socket连接断开，协议
+          规定充值金额必须是４位数字，不足４位的，左补0,比如说客户要充值10,补全
+          的就是0010</P>
+          <P>充值100,就是0100.如果客户充值少于10元，要在左侧补３个０，这个bug出
+          现在王五在处理个位充值时，少补了一个０，结果是客户充值２位数金额的话费
+          就成功，一充值个位数的话费Socket连接就断开，李四的调用线程一直堵塞在这
+          里。</P>
+          <P>&nbsp;</P>
+          <P>如果一开始李四采用猎狗模式的话，出现问题一看日志便知道问题出在哪里，
+          有理有据的指出问题所在，也不用背这个黑锅了。</P>
+          <P>&nbsp;</P>
+          <P>上面的代码适合Jdk1.5以上使用，如果想在jdk1.4使用，请自己改造下。</P></DIV>
+      </TD>
+    </TR>
+  </TBODY>
+</TABLE>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>

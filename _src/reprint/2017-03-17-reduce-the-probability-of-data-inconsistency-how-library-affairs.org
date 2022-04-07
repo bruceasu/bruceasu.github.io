@@ -1,0 +1,285 @@
+#+title: 多库多事务降低数据不一致概率
+#+date: <2017-03-17 20:48>
+#+filetags: reprint
+
+* 一、案例缘起
+
+我们经常使用事务来保证数据库层面数据的ACID特性。
+
+举个栗子，用户下了一个订单，需要修改余额表，订单表，流水表，于是会有类似的伪代码：
+
+#+BEGIN_EXAMPLE
+    start transaction;
+
+             CURDtable t_account;  any Exception rollback;
+
+             CURDtable t_order;       any Exceptionrollback;
+
+             CURDtable t_flow;         any Exceptionrollback;
+
+    commit;
+#+END_EXAMPLE
+
+如果对余额表，订单表，流水表的SQL操作全部成功，则全部提交，如果任何一个出现问
+题，则全部回滚，以保证数据的一致性。
+
+互联网的业务特点，数据量较大，并发量较大，经常使用拆库的方式提升系统的性能。
+如果进行了拆库，余额、订单、流水可能分布在不同的数据库上，甚至不同的数据库
+实例上，此时就不能用事务来保证数据的一致性了。这种情况下如何保证数据的一致性，
+是今天要讨论的话题。
+
+* 二、补偿事务
+
+补偿事务是一种在业务端实施业务逆向操作事务，来保证业务数据一致性的方式。
+
+举个栗子，修改余额表事务为
+
+#+BEGIN_EXAMPLE
+    int Do_AccountT(uid, money){
+
+    start transaction;
+
+             //余额改变money这么多
+
+             CURDtable t_account with money;       anyException rollback return NO;
+
+    commit;
+
+    return YES;
+
+    }
+#+END_EXAMPLE
+
+那么补偿事务可以是：
+
+#+BEGIN_EXAMPLE
+    int Compensate_AccountT(uid, money){
+
+             //做一个money的反向操作
+
+             returnDo_AccountT(uid, -1*money){
+
+    }
+#+END_EXAMPLE
+
+同理，订单表操作为
+
+Do\_OrderT，新增一个订单
+
+Compensate\_OrderT，删除一个订单
+
+要保重余额与订单的一致性，可能要写这样的代码：
+
+#+BEGIN_EXAMPLE
+    // 执行第一个事务
+
+    int flag = Do_AccountT();
+
+    if(flag=YES){
+
+             //第一个事务成功，则执行第二个事务
+
+             flag= Do_OrderT();
+
+             if(flag=YES){
+
+                      // 第二个事务成功，则成功
+
+                       returnYES;
+
+    }
+
+    else{
+
+             // 第二个事务失败，执行第一个事务的补偿事务
+
+             Compensate_AccountT();
+
+    }
+
+    }
+#+END_EXAMPLE
+
+该方案的不足是： - （1）不同的业务要写不同的补偿事务，不具备通用性 -
+（2）没有考虑补偿事务的失败 -
+（3）如果业务流程很复杂，if/else会嵌套非常多层
+
+例如，如果上面的例子加上流水表的修改，加上Do\_FlowT和Compensate\_FlowT，可能会
+变成一个这样的if/else：
+
+#+BEGIN_EXAMPLE
+    // 执行第一个事务
+
+    int flag = Do_AccountT();
+
+    if(flag=YES){
+
+             //第一个事务成功，则执行第二个事务
+
+             flag= Do_OrderT();
+
+             if(flag=YES){
+
+                      // 第二个事务成功，则执行第三个事务
+
+                       flag= Do_FlowT();
+
+                       if(flag=YES){
+
+                                //第三个事务成功，则成功
+
+                                returnYES;
+
+    }
+
+    else{
+
+             // 第三个事务失败，则执行第二、第一个事务的补偿事务
+
+             flag =Compensate_OrderT();
+
+             if … else … // 补偿事务执行失败？
+
+                      flag= Compensate_AccountT();
+
+                       if … else … // 补偿事务执行失败？
+
+    }
+
+    }
+
+    else{
+
+             // 第二个事务失败，执行第一个事务的补偿事务
+
+             Compensate_AccountT();
+
+             if … else … // 补偿事务执行失败？
+
+    }
+
+    }
+#+END_EXAMPLE
+
+* 三、事务拆分分析与后置提交优化
+
+单库是用这样一个大事务保证一致性：
+
+#+BEGIN_EXAMPLE
+    start transaction;
+
+             CURDtable t_account;  any Exception rollback;
+
+             CURDtable t_order;       any Exceptionrollback;
+
+             CURDtable t_flow;         any Exceptionrollback;
+
+    commit;
+#+END_EXAMPLE
+
+拆分成了多个库，大事务会变成三个小事务：
+
+#+BEGIN_EXAMPLE
+    start transaction1;
+
+             //第一个库事务执行
+
+             CURDtable t_account;  any Exception rollback;
+
+             …
+
+    // 第一个库事务提交
+
+    commit1;
+
+    start transaction2;
+
+             //第二个库事务执行
+
+             CURDtable t_order;       any Exceptionrollback;
+
+             …
+
+    // 第二个库事务提交
+
+    commit2;
+
+    start transaction3;
+
+             //第三个库事务执行
+
+             CURDtable t_flow;         any Exceptionrollback;
+
+             …
+
+    // 第三个库事务提交
+
+    commit3;
+#+END_EXAMPLE
+
+一个事务，分成执行与提交两个阶段，执行的时间其实是很长的，而commit的执行其实
+是很快的，于是整个执行过程的时间轴如下： [[./images/2017-03-17-reduce-the-probability-of-data-inconsistency-how-library-affairs/1.webp]]
+第一个事务执行200ms，提交1ms； 第二个事务执行120ms，提交1ms；
+第三个事务执行80ms，提交1ms；
+
+那在什么时候系统出现问题，会出现不一致呢？
+
+回答：第一个事务成功提交之后，最后一个事务成功提交之前，如果出现问题（例如服
+务器重启，数据库异常等），都可能导致数据不一致。 [[./images/2017-03-17-reduce-the-probability-of-data-inconsistency-how-library-affairs/2.webp]]
+
+如果改变事务执行与提交的时序，变成事务先执行，最后一起提交，情况会变成什么样呢：
+[[./images/2017-03-17-reduce-the-probability-of-data-inconsistency-how-library-affairs/3.webp]]
+
+第一个事务执行200ms； 第二个事务执行120ms； 第三个事务执行80ms；
+第一个事务执行1ms； 第二个事务执行1ms； 第三个事务执行1ms；
+
+那在什么时候系统出现问题，会出现不一致呢？
+
+问题的答案与之前相同：第一个事务成功提交之后，最后一个事务成功提交之前，如果出现问题（例如服务器重启，数据库异常等），都可能导致数据不一致。
+
+[[./images/2017-03-17-reduce-the-probability-of-data-inconsistency-how-library-affairs/4.webp]]
+这个变化的意义是什么呢？
+
+方案一总执行时间是303ms，最后202ms内出现异常都可能导致不一致；
+
+方案二总执行时间也是303ms，但最后2ms内出现异常才会导致不一致；
+
+虽然没有彻底解决数据的一致性问题，但不一致出现的概率大大降低了！
+
+事务提交后置降低了数据不一致的出现概率，会带来什么副作用呢？
+
+回答：事务提交时会释放数据库的连接，第一种方案，第一个库事务提交，数据库连接就释放了，后置事务提交的方案，所有库的连接，要等到所有事务执行完才释放。这就意味着，数据库连接占用的时间增长了，系统整体的吞吐量降低了。
+
+* 四、总结
+
+trx1.exec();
+
+trx1.commit();
+
+trx2.exec();
+
+trx2.commit();
+
+trx3.exec();
+
+trx3.commit();
+
+优化为：
+
+trx1.exec();
+
+trx2.exec();
+
+trx3.exec();
+
+trx1.commit();
+
+trx2.commit();
+
+trx3.commit();
+
+这个小小的改动（改动成本极低），不能彻底解决多库分布式事务数据一致性问题，但能大大降低数据不一致的概率，带来的副作用是数据库连接占用时间会增长，吞吐量会降低。对于一致性与吞吐量的折衷，还需要业务架构师谨慎权衡折衷。
+
+如果有收获，帮忙随手转发哟。
+
+==【完】==

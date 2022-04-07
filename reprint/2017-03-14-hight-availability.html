@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://bruceasu.github.io/rss.xml"
+      title="RSS feed for https://bruceasu.github.io/"/>
+<title>究竟啥才是互联网架构“高可用”</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="/theme/highlight.css">
+
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="/rss.xml">Feeds</a>
+    </div>
+    <div class="navigatebar-button navigatebar-about">
+        <a href="/about.html">About</a>
+    </div>
+</div>
+
+      <div class="content-area">
+<div class="title">究竟啥才是互联网架构“高可用”</div>
+<div class="category-area"><a href="https://bruceasu.github.io/tags.html#reprint"><div class="category">reprint</div></a> </div>
+<div class="char-counter">2017-03-14</div>
+        <div id="content">
+<nav id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#orge1f59ea">一、什么是高可用</a></li>
+<li><a href="#org854db93">二、如何保障系统的高可用</a></li>
+<li><a href="#orgccd4fa9">三、常见的互联网分层架构</a></li>
+<li><a href="#orgb12ef96">四、分层高可用架构实践</a>
+<ul>
+<li><a href="#org5cd2552">【站点层-&gt;服务层】的高可用</a></li>
+<li><a href="#org21bc7d2">【服务层&gt;缓存层】的高可用</a></li>
+<li><a href="#org6710990">【服务层&gt;数据库层】的高可用</a>
+<ul>
+<li><a href="#org07138fb">【服务层&gt;数据库层“写”】的高可用</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#orgd34c6c8">五、总结</a></li>
+</ul>
+</div>
+</nav>
+
+
+<div id="outline-container-orge1f59ea" class="outline-2">
+<h2 id="orge1f59ea">一、什么是高可用</h2>
+<div class="outline-text-2" id="text-orge1f59ea">
+<p>
+高可用HA（High
+Availability）是分布式系统架构设计中必须考虑的因素之一，它通常是指，
+通过设计减少系统不能提供服务的时间。
+</p>
+
+<p>
+假设系统一直能够提供服务，我们说系统的可用性是100%。
+</p>
+
+<p>
+如果系统每运行100个时间单位，会有1个时间单位无法提供服务，我们说系统的可用性是99%。
+</p>
+
+<p>
+很多公司的高可用目标是4个9，也就是99.99%，这就意味着，系统的年停机时间为8.76个小时。
+</p>
+
+<p>
+百度的搜索首页，是业内公认高可用保障非常出色的系统，甚至人们会通过www.baidu.com
+能不能访问来判断“网络的连通性”，百度高可用的服务让人留下啦“网络通畅
+，百度就能访问”，“百度打不开，应该是网络连不上”的印象，这其实是对百度HA最高的
+褒奖。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org854db93" class="outline-2">
+<h2 id="org854db93">二、如何保障系统的高可用</h2>
+<div class="outline-text-2" id="text-org854db93">
+<p>
+我们都知道，单点是系统高可用的大敌，单点往往是系统高可用最大的风险和敌人，
+应该尽量在系统设计的过程中避免单点。方法论上，高可用保证的原则是“集群化”，
+或者叫“冗余”：只有一个单点，挂了服务会受影响；如果有冗余备份，
+挂了还有其他 back up 能够顶上。
+</p>
+
+<p>
+保证系统高可用，架构设计的核心准则是：冗余。
+</p>
+
+<p>
+有了冗余之后，还不够，每次出现故障需要人工介入恢复势必会增加系统的不可服务
+实践。所以，又往往是通过“自动故障转移”来实现系统的高可用。
+</p>
+
+<p>
+接下来我们看下典型互联网架构中，如何通过冗余+自动故障转移来保证系统的高可用特性。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgccd4fa9" class="outline-2">
+<h2 id="orgccd4fa9">三、常见的互联网分层架构</h2>
+<div class="outline-text-2" id="text-orgccd4fa9">
+<p>
+<a href="./images/2017-03-14-high-availability/1.webp">./images/2017-03-14-high-availability/1.webp</a>
+常见互联网分布式架构如上，分为： -
+（1）客户端层：典型调用方是浏览器browser或者手机应用APP -
+（2）反向代理层：系统入口，反向代理 -
+（3）站点应用层：实现核心应用逻辑，返回html或者json -
+（4）服务层：如果实现了服务化，就有这一层 -
+（5）数据-缓存层：缓存加速访问存储 -
+（6）数据-数据库层：数据库固化数据存储
+</p>
+
+<p>
+整个系统的高可用，又是通过每一层的冗余+自动故障转移来综合实现的。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgb12ef96" class="outline-2">
+<h2 id="orgb12ef96">四、分层高可用架构实践</h2>
+<div class="outline-text-2" id="text-orgb12ef96">
+<p>
+【客户端层-&gt;反向代理层】的高可用
+</p>
+
+<p>
+【客户端层】到【反向代理层】的高可用，是通过反向代理层的冗余来实现的。
+以 nginx 为例：有两台
+nginx，一台对线上提供服务，另一台冗余以保证高可用， 常见的实践是
+keepalived 存活探测，相同 virtual IP 提供服务。
+</p>
+
+<p>
+自动故障转移：当 nginx 挂了的时候，keepalived
+能够探测到，会自动的进行故障 转移，将流量自动迁移到
+shadow-nginx，由于使用的是相同的 virtual IP，
+这个切换过程对调用方是透明的。
+</p>
+
+<p>
+## 【反向代理层-&gt;站点层】的高可用
+</p>
+
+<p>
+【反向代理层】到【站点层】的高可用，是通过站点层的冗余来实现的。
+假设反向代理层是 nginx，nginx.conf 里能够配置多个 web 后端， 并且 nginx
+能够探测到多个后端的存活性。
+</p>
+
+<p>
+自动故障转移：当 web-server 挂了的时候，nginx
+能够探测到，会自动的进行故障转移， 将流量自动迁移到其他的
+web-server，整个过程由 nginx 自动完成，对调用方是透明的。
+</p>
+</div>
+
+<div id="outline-container-org5cd2552" class="outline-3">
+<h3 id="org5cd2552">【站点层-&gt;服务层】的高可用</h3>
+<div class="outline-text-3" id="text-org5cd2552">
+<p>
+【站点层】到【服务层】的高可用，是通过服务层的冗余来实现的。“服务连接池”会
+建立与下游服务多个连接，每次请求会“随机”选取连接来访问下游服务。
+</p>
+
+<p>
+自动故障转移：当 service 挂了的时候，service-connection-pool
+能够探测到， 会自动的进行故障转移，将流量自动迁移到其他的
+service，整个过程由连接池自动完成， 对调用方是透明的（所以说 RPC-client
+中的服务连接池是很重要的基础组件）。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org21bc7d2" class="outline-3">
+<h3 id="org21bc7d2">【服务层&gt;缓存层】的高可用</h3>
+<div class="outline-text-3" id="text-org21bc7d2">
+<p>
+【服务层】到【缓存层】的高可用，是通过缓存数据的冗余来实现的。
+</p>
+
+<p>
+缓存层的数据冗余又有几种方式：第一种是利用客户端的封装，service 对 cache
+进行 双读或者双写。
+</p>
+
+<p>
+缓存层也可以通过支持主从同步的缓存集群来解决缓存层的高可用问题。
+</p>
+
+<p>
+以 redis 为例，redis 天然支持主从同步，redis 官方也有 sentinel
+哨兵机制， 来做 redis 的存活性检测。
+</p>
+
+<p>
+自动故障转移：当 redis 主挂了的时候， sentinel
+能够探测到，会通知调用方访问 新的 redis，整个过程由sentinel 和 redis
+集群配合完成，对调用方是透明的。
+</p>
+
+<p>
+说完缓存的高可用，这里要多说一句，业务对缓存并不一定有“高可用”要求，更多的对
+缓存的使用场景，是用来“加速数据访问”：把一部分数据放到缓存里，如果缓存挂了或
+者缓存没有命中，是可以去后端的数据库中再取数据的。
+</p>
+
+<p>
+这类允许“cache miss”的业务场景，缓存架构的建议是：
+</p>
+
+<p>
+将kv缓存封装成服务集群，上游设置一个代理（代理可以用集群冗余的方式保证高可用），
+代理的后端根据缓存访问的 key
+水平切分成若干个实例，每个实例的访问并不做高可用。
+</p>
+
+<p>
+缓存实例挂了屏蔽：当有水平切分的实例挂掉时，代理层直接返回 cache
+miss，此时缓存
+挂掉对调用方也是透明的。key水平切分实例减少，不建议做re-hash，这样容易引
+发缓存数据的不一致。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org6710990" class="outline-3">
+<h3 id="org6710990">【服务层&gt;数据库层】的高可用</h3>
+<div class="outline-text-3" id="text-org6710990">
+<p>
+大部分互联网技术，数据库层都用了“主从同步，读写分离”架构，所以数据库层的高可
+用，又分为“读库高可用”与“写库高可用”两类。
+</p>
+
+<p>
+### 【服务层&gt;数据库层“读”】的高可用
+</p>
+
+<p>
+【服务层】到【数据库读】的高可用，是通过读库的冗余来实现的。
+</p>
+
+<p>
+既然冗余了读库，一般来说就至少有2个从库，“数据库连接池”会建立与读库多个连接，
+每次请求会路由到这些读库。
+</p>
+
+<p>
+自动故障转移：当读库挂了的时候，db-connection-pool
+能够探测到，会自动的进行故障
+转移，将流量自动迁移到其他的读库，整个过程由连接池自动完成，对调用方是透明的
+（所以说 DAO中 的数据库连接池是很重要的基础组件）。
+</p>
+</div>
+
+<div id="outline-container-org07138fb" class="outline-4">
+<h4 id="org07138fb">【服务层&gt;数据库层“写”】的高可用</h4>
+<div class="outline-text-4" id="text-org07138fb">
+<p>
+【服务层】到【数据库写】的高可用，是通过写库的冗余来实现的。
+</p>
+
+<p>
+以 mysql 为例，可以设置两个 mysql
+双主同步，一台对线上提供服务，另一台冗余以 保证高可用，常见的实践是
+keepalived 存活探测，相同 virtual IP 提供服务。
+</p>
+
+<p>
+自动故障转移：当写库挂了的时候，keepalived
+能够探测到，会自动的进行故障转移， 将流量自动迁移到
+shadow-db-master，由于使用的是相同的 virtual IP，这个切换
+过程对调用方是透明的。
+</p>
+</div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgd34c6c8" class="outline-2">
+<h2 id="orgd34c6c8">五、总结</h2>
+<div class="outline-text-2" id="text-orgd34c6c8">
+<p>
+高可用HA（High Availability）是分布式系统架构设计中必须考虑的因素之一，
+它通常是指，通过设计减少系统不能提供服务的时间。
+</p>
+
+<p>
+方法论上，高可用是通过冗余+自动故障转移来实现的。
+</p>
+
+<p>
+整个互联网分层系统架构的高可用，又是通过每一层的冗余+自动故障转移来综合实
+现的，具体的： -
+（1）【客户端层】到【反向代理层】的高可用，是通过反向代理层的冗余实现的，
+常见实践是keepalived + virtual IP自动故障转移 -
+（2）【反向代理层】到【站点层】的高可用，是通过站点层的冗余实现的，常见实践
+是nginx与web-server之间的存活性探测与自动故障转移 -
+（3）【站点层】到【服务层】的高可用，是通过服务层的冗余实现的，常见实践是通
+过service-connection-pool来保证自动故障转移 -
+（4）【服务层】到【缓存层】的高可用，是通过缓存数据的冗余实现的，常见实践是
+缓存客户端双读双写，或者利用缓存集群的主从数据同步与sentinel保活与自动故障
+转移；更多的业务场景，对缓存没有高可用要求，可以使用缓存服务化来对调用方屏蔽
+底层复杂性 -
+（5）【服务层】到【数据库“读”】的高可用，是通过读库的冗余实现的，常见实践是
+通过db-connection-pool来保证自动故障转移 -
+（6）【服务层】到【数据库“写”】的高可用，是通过写库的冗余实现的，常见实践是
+keepalived + virtual IP自动故障转移
+</p>
+
+<p>
+末了，希望文章的思路是清晰的，希望大家对高可用的概念和实践有个系统的认识，
+感谢大家。
+</p>
+
+<p>
+<code>=【完】=</code>
+</p>
+</div>
+</div>
+
+        </div>    </div>
+    <div id="postamble" class="status"><div id="archive" style="padding-top: 3em; padding-bottom: 2em;"><a href="/archive.html">其它文章</a></div><script src="/js/av-min-1.5.0.js"></script>    </div>
+</body>
+</html>
