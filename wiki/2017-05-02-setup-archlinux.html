@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+<title>Free World - 安装 archlinux</title>
+<meta name="author" content="Bruce">
+<meta name="referrer" content="no-referrer">
+<link href= "https://bruceasu.github.io/styles/org-manual.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="https://bruceasu.github.io/styles/font.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="https://bruceasu.github.io/styles/post.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="https://bruceasu.github.io/styles/post_mobile.css">
+<link rel="stylesheet" media="screen and (min-width: 600px)" href="https://bruceasu.github.io/styles/navigatebar.css">
+<link rel="stylesheet" media="screen and (max-width: 600px)" href="https://bruceasu.github.io/styles/navigatebar_mobile.css">
+<link rel="stylesheet" href="https://bruceasu.github.io/theme/highlight.css">
+
+    <style>
+        /*生成博客目录的CSS*/
+        #sideBar {
+            font-size: 12px;
+            font-family: Arial, Helvetica, sans-serif;
+            text-align: left;
+            position: fixed; /*将div的位置固定到距离top:50px，right:0px的位置，这样div就会处在最右边的位置，距离顶部50px*/
+            top: 100px;
+            right: 0px;
+            min-height: 108px;
+            width: auto;
+            height: auto;
+        }
+
+        #sideBarTab {
+            float: left;
+            width: 30px;
+            border: 1px solid #e5e5e5;
+            border-right: none;
+            text-align: center;
+            background: #ffffff;
+        }
+
+        #sideBarTab * {
+            margin-top: 10px;
+        }
+
+        #sideBarContents {
+            float: left;
+            overflow: auto;
+            overflow-x: hidden;
+        !important;
+            width: 200px;
+            min-height: 128px;
+            max-height: 460px;
+            border: 1px solid #e5e5e5;
+            border-right: none;
+            background: #ffffff;
+        }
+
+        #sideBarContents ul {
+            margin: 0;
+            padding: 0;
+        }
+
+        #sideBarContents li {
+            margin-top: 5px;
+            margin-left: 5px;
+        }
+
+        #sideBarContents li {
+            cursor: pointer;
+        }
+
+        #sideBarContents li:hover {
+            color: #A7995A;
+        }
+
+
+    </style>
+</head>
+<body>
+<div class="navigatebar">
+    <div class="navigatebar-button navigatebar-mine">
+        <a href="https://bruceasu.github.io/index.html">Free World</a>
+    </div>
+    <div class="navigatebar-slogan">
+        「生活可以更简单, 欢迎来到我的开源世界」
+    </div>
+    <div class="navigatebar-button">
+        <a href="https://bruceasu.github.io/index.html">Home</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="https://bruceasu.github.io/tags.html">Tags</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="https://bruceasu.github.io/wiki/index.html">Wiki</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="https://bruceasu.github.io/books/index.html">Books</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="https://bruceasu.github.io/reprint/index.html">Reprint</a>
+    </div>
+    <div class="navigatebar-button">
+        <a href="https://bruceasu.github.io/archive.html">Archives</a>
+    </div>
+
+    <div class="navigatebar-button navigatebar-about">
+        <a href="https://bruceasu.github.io/about.html">About</a>
+    </div>
+</div>
+
+
+<div class="content-area">
+    <div class="title">安装 archlinux</div>
+    
+    <a href="https://bruceasu.github.io/tags.html#linux">
+        <div class="category">linux</div>
+    </a>
+    
+    <div class="char-counter"> Tue May 02 20:48:00 JST 2017</div>
+    <div id="content">
+        <h1 id="网络">网络</h1>
+<h2 id="有线">有线</h2>
+<pre class="example"><code>dhcpcd
+</code></pre>
+<h2 id="无线">无线</h2>
+<pre class="example"><code>wifi-menu
+</code></pre>
+<h2 id="检查">检查</h2>
+<p>ping www.baidu.com</p>
+<h1 id="分区-bios启动和uefi启动分区不同">分区： bios启动和uefi启动分区不同。</h1>
+<ul>
+<li>对于bios启动，必要分区/根,swap，也可添加home,usr，run等分区。</li>
+<li>对于uefi启动，多加一个efi分区挂载到/boot/efi下,如果是双系统就将已存在的efi分区 （无论是windows的还是linux的）</li>
+</ul>
+<h1 id="格式化">格式化：</h1>
+<ol>
+<li>除了swap分区格式化为swap，</li>
+<li>efi分区格式化为vfat（如果没有的话）,</li>
+<li>其他分区都格式化为ext4</li>
+</ol>
+<h1 id="挂载">挂载：</h1>
+<div class="line-block">mount 根分区 /mnt<br />
+mount efi分区 /mnt/boot/efi<br />
+mount home分区 /mnt/home</div>
+<h1 id="更改软件源">更改软件源：</h1>
+<p>将/etc/pacman.d/mirrorlist文件添加清华源，阿里云，西安交大，中科大等软件源 以下是常用的软件源：</p>
+<pre class="example"><code>Server = https://mirrors.tuna.tsinghua.edu.cn/archlinux/$repo/os/$arch
+Server = http://mirrors.ustc.edu.cn/archlinux/$repo/os/$arch
+Server = https://mirrors.aliyun.com/archlinux/$repo/os/$arch
+Server = http://mirrors.163.com/archlinux/$repo/os/$arch
+Server = http://mirrors.xjtu.edu.cn/archlinux/$repo/os/$arch
+
+</code></pre>
+<h1 id="下载安装系统">下载安装系统：</h1>
+<pre class="example"><code>pacstrap  /mnt base base-devel
+</code></pre>
+<h1 id="生成系统自动挂载文件">生成系统自动挂载文件：</h1>
+<pre class="example"><code>genfstab -U /mnt &gt;&gt; /mnt/etc/fstab
+</code></pre>
+<h1 id="进入安装好的arch系统">进入安装好的arch系统：</h1>
+<pre class="example"><code>arch-chroot /mnt
+</code></pre>
+<h1 id="设置时区">设置时区：</h1>
+<p>进行菜单选择</p>
+<pre class="example"><code>zselect
+</code></pre>
+<p>或者</p>
+<div class="line-block">systemdatedtl set-timezone Asia/Shanghai<br />
+timedatectl set-ntp true(时区自动对时)<br />
+</div>
+<p>ps：安装时无法使用，安装完成后可以通过该命令调整时区</p>
+<h1 id="设置支持语言">设置支持语言：</h1>
+<p>在 <code>/etc/locale-gen</code> 删去</p>
+<div class="line-block">en_US.UTF-8<br />
+zh_CN.UTF-8<br />
+</div>
+<p>前的注释 然后执行命令：</p>
+<pre class="example"><code>locale-gen
+</code></pre>
+<h1 id="安装grub">安装grub：</h1>
+<p>bios启动和uefi启动安装grub不同：</p>
+<h2 id="对于bios安装">对于bios安装：</h2>
+<pre class="example"><code>pacman -S grub
+pacman -S os-prober(双系统必备)
+grub-install /dev/sda(启动盘)
+grub-mkconfig -o /boot/grub/grub.cfg
+
+</code></pre>
+<h2 id="对于uefi安装">对于uefi安装：</h2>
+<pre class="example"><code>pacman -S grub-efi-x86_64
+pacman -S efibootmgr
+pacman -S os-prober
+grub-install --efi-directory=/boot/efi --bootloader-id=grub
+grub-mkconfig -o /boot/grub/grub.cfg
+</code></pre>
+<p>对于双系统，可能检测不到其他系统，可以安装结束重启进入系统以后再进行 grub-mkconfig 命令就可以检测到了。如果仍旧不行，可以考虑 windows 是否处于休眠状态，禁掉休眠再次尝试</p>
+<h1 id="添加根用户密码">添加根用户密码：</h1>
+<pre class="example"><code>passwd
+</code></pre>
+<p>然后输入密码</p>
+<h1 id="添加用户">添加用户：</h1>
+<pre class="example"><code>useradd -m -G wheel -s /bin/bash 用户名
+</code></pre>
+<p>-G和-s可不加,如果安装桌面，必须加上-m</p>
+<pre class="example"><code>passwd 用户名
+</code></pre>
+<p>然后输入密码</p>
+<h1 id="设置用户特殊执行权限">设置用户特殊执行权限：</h1>
+<pre class="example"><code>pacman -S sudo
+visudo
+</code></pre>
+<p>visudo用来安全更改/etc/sudoer配置文件 在其中添加一行语句： <code>你的用户名 ALL=（ALL） NOPASSWD：ALL (不添加NOPASSWD：则每次都需要输入密码)，如：</code></p>
+<pre class="example"><code>deng ALL=(ALL) NOPASSWD:ALL
+</code></pre>
+<h1 id="安装显卡驱动">安装显卡驱动：</h1>
+<p>其实显卡驱动也可以不装，在安装x-org的时候，安装vesa显卡驱动。</p>
+<table>
+<thead>
+<tr class="header">
+<th>Brand</th>
+<th>Type</th>
+<th>Driver</th>
+<th>OpenGL</th>
+<th>OpenGL(Multilib)</th>
+<th>Documentation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>AMD/ATI</td>
+<td>open source</td>
+<td>xf86-video-amdgpu</td>
+<td>mesa</td>
+<td>lib32-mesa</td>
+<td>AMDGPU</td>
+</tr>
+<tr class="even">
+<td></td>
+<td></td>
+<td>xf86-video-ati</td>
+<td></td>
+<td></td>
+<td>ATI</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td>proprietary</td>
+<td>catalyst(aur)</td>
+<td>catalyst-ligbl(aur)</td>
+<td>lib32-catalyst-libgl(aur)</td>
+<td>AMD catalys</td>
+</tr>
+<tr class="even">
+<td>Intel</td>
+<td>open source</td>
+<td>xf86-video-intel</td>
+<td>mesa</td>
+<td>lib32-mesa</td>
+<td>intel graphics</td>
+</tr>
+<tr class="odd">
+<td>Nividia</td>
+<td>open ousrce</td>
+<td>xf86-video-nouvea</td>
+<td>mesa</td>
+<td>lib32-mesa</td>
+<td>Novueau</td>
+</tr>
+<tr class="even">
+<td></td>
+<td>proprietary</td>
+<td>nvidia</td>
+<td>nvidia-utils</td>
+<td>lib32-nvidia-utils</td>
+<td>nvidia</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td></td>
+<td>nvidia-340xx</td>
+<td>nvidia-340xx-utils</td>
+<td>lib32-nvidia-340xx-utils</td>
+<td></td>
+</tr>
+<tr class="even">
+<td></td>
+<td></td>
+<td>nvidia-304xx</td>
+<td>nvidia-304xx-utils</td>
+<td>lib32-nvidia-304xx-utils</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h2 id="intel显卡驱动">intel显卡驱动：</h2>
+<pre class="example"><code>pacman -S xf86-video-intel
+</code></pre>
+<h2 id="ati显卡驱动">ATI显卡驱动:</h2>
+<pre class="example"><code>pacman -S xf86-video-ati (ATI)
+</code></pre>
+<h2 id="nvidia显卡驱动">nvidia显卡驱动：</h2>
+<pre class="example"><code>pacman -S nvidia
+</code></pre>
+<h1 id="安装xorg">安装xorg</h1>
+<pre class="example"><code>pacman -S  xorg-server xorg
+</code></pre>
+<h1 id="触摸板驱动可选">触摸板驱动(可选)</h1>
+<pre class="example"><code>pacman -S xf86-input-synaptics
+</code></pre>
+<p>对于没触摸板的，这个应该没有什么太大的用处</p>
+<h1 id="安装desktop">安装DESKTOP</h1>
+<h2 id="gnome">gnome</h2>
+<pre class="example"><code>pacman -S gnome gnome-extra
+gnome-extra也可以不安装,替换为只安装gnome-tweaks,对于登录管理器gdm的安装，已经包含到gnome组里
+</code></pre>
+<p>登录</p>
+<pre class="example"><code>systemctl enable gdm
+</code></pre>
+<h2 id="kde">kde</h2>
+<pre class="example"><code>pacman -S plasma kde-applications
+</code></pre>
+<p>登录</p>
+<pre class="example"><code>pacman -s sddm sddm-kcm
+systemctl enable sddm
+</code></pre>
+<p>中文（可选）</p>
+<pre class="example"><code>pacman -S kde-l10n-zh_cn
+</code></pre>
+<h1 id="安装中文字体支持">安装中文字体支持：</h1>
+<pre class="example"><code>pacman -S ttf-dejavu wqy-zenhei wqy-microhei
+</code></pre>
+<h1 id="安装中文输入法">安装中文输入法：</h1>
+<pre class="example"><code>这个过程测试没有成功，可自行探索，我是直接下载的googlepinyin。
+</code></pre>
+<h2 id="ibus">ibus</h2>
+<pre class="example"><code>pacman -S ibus ibus-pinyun
+</code></pre>
+<p>在～/.bashrc里加入</p>
+<pre class="example"><code>export GTK_IMMODULE=ibus
+export XMODIFIERS=&quot;@im=ibus&quot;
+export QT_IM_MODULE=ibus
+
+</code></pre>
+<p>然后在设置里启用输入法</p>
+<h2 id="fcitx">fcitx</h2>
+<pre class="example"><code>pacman -S fcitx-im fcitx-configtool kcm-fcitx
+vim /home/&lt;username&gt;/.xprofile
+</code></pre>
+<pre class="example"><code>export LANG=zh_CN.UTF-8
+export LC_ALL=zh_CN.UTF-8
+export GTK_IM_MODULE=fcitx
+export QT_IM_MODULE=fcitx
+export XMODIFIERS=&quot;@im=fcitx&quot;
+
+</code></pre>
+<p>同上,文件的ibus改为fcitx即可 然后执行</p>
+<pre class="example"><code>gsettings set \
+org.gnome.settings-daemon.plugins.xsetting overrides \
+&quot;{&#39;Gtk/IMModule&#39;:&lt;&#39;fcitx&#39;&gt;}&quot;
+
+</code></pre>
+<h2 id="安装搜狗输入法">安装搜狗输入法</h2>
+<pre class="example"><code>yaourt -S fcitx-sogoupinying(要求安装yaourt)
+</code></pre>
+<h1 id="安装网络管理">安装网络管理：</h1>
+<pre class="example"><code>pacman -S networkmanager net-tools netctl
+systemctl enable NetworkManager
+systemctl enable dhcpcd
+</code></pre>
+<h1 id="安装声音">安装声音</h1>
+<pre class="example"><code>pacman -S alsa-utils pulseaudio pulseaudio-alsa
+</code></pre>
+<h1 id="支持windows文件系统">支持windows文件系统：</h1>
+<pre class="example"><code>pacman -S ntfs-3g dosfstools
+</code></pre>
+<h1 id="安装yaourt-and-yay">安装yaourt and yay</h1>
+<p>在/etc/pacman.conf下添加如下命令：</p>
+<pre class="example"><code>[archlinuxcn]
+SigLevel = Optional TrustAll
+Server = https://mirrors.ustc.edu.cn/archlinuxcn/$arch
+
+</code></pre>
+<p>然后执行</p>
+<pre class="example"><code>pacman -Syu yaourt yay
+</code></pre>
+<p>yarourt 已经很久没有更新了。</p>
+<h1 id="解压软件">解压软件：</h1>
+<pre class="example"><code>pacman -S p7zip file-roller unrar
+</code></pre>
+<h1 id="浏览器">浏览器：</h1>
+<h2 id="火狐浏览器">火狐浏览器：</h2>
+<pre class="example"><code>pacman -S firefox
+</code></pre>
+<h2 id="谷歌浏览器">谷歌浏览器：</h2>
+<pre class="example"><code>pacman -S google-chrome
+</code></pre>
+<p>谷歌如果不能pacman,就是用yaourt下载：</p>
+<pre class="example"><code>yaourt google-chrome
+</code></pre>
+<p>速度可能会比较慢</p>
+<h1 id="其他软件">其他软件</h1>
+<h2 id="支持locate命令">支持locate命令</h2>
+<pre class="example"><code>pacman -S mlocate
+</code></pre>
+
+    </div>
+</div>
+<div id="postamble" class="status">
+    <div id="archive" style="padding-top: 3em; padding-bottom: 2em;">
+        <a href="https://bruceasu.github.io/archive.html">其它文章</a>
+    </div>
+</div>
+<script src="https://bruceasu.github.io/js/av-min-1.5.0.js"></script>
+<script type="application/javascript">
+    var BlogDirectory = {
+        /*
+            获取元素位置，距浏览器左边界的距离（left）和距浏览器上边界的距离（top）
+        */
+        getElementPosition: function (ele) {
+            var topPosition = 0;
+            var leftPosition = 0;
+            while (ele) {
+                topPosition += ele.offsetTop;
+                leftPosition += ele.offsetLeft;
+                ele = ele.offsetParent;
+            }
+            return {top: topPosition, left: leftPosition};
+        },
+
+        /*
+        获取滚动条当前位置
+        */
+        getScrollBarPosition: function () {
+            var scrollBarPosition = document.body.scrollTop || document.documentElement.scrollTop;
+            return scrollBarPosition;
+        },
+
+        /*
+        移动滚动条，finalPos 为目的位置，internal 为移动速度
+        */
+        moveScrollBar: function (finalpos, interval) {
+
+            //若不支持此方法，则退出
+            if (!window.scrollTo) {
+                return false;
+            }
+
+            //窗体滚动时，禁用鼠标滚轮
+            window.onmousewheel = function () {
+                return false;
+            };
+
+            //清除计时
+            if (document.body.movement) {
+                clearTimeout(document.body.movement);
+            }
+
+            var currentpos = BlogDirectory.getScrollBarPosition();//获取滚动条当前位置
+
+            var dist = 0;
+            if (currentpos == finalpos) {//到达预定位置，则解禁鼠标滚轮，并退出
+                window.onmousewheel = function () {
+                    return true;
+                }
+                return true;
+            }
+            if (currentpos < finalpos) {//未到达，则计算下一步所要移动的距离
+                dist = Math.ceil((finalpos - currentpos) / 10);
+                currentpos += dist;
+            }
+            if (currentpos > finalpos) {
+                dist = Math.ceil((currentpos - finalpos) / 10);
+                currentpos -= dist;
+            }
+
+            var scrTop = BlogDirectory.getScrollBarPosition();//获取滚动条当前位置
+            window.scrollTo(0, currentpos);//移动窗口
+            if (BlogDirectory.getScrollBarPosition() == scrTop)//若已到底部，则解禁鼠标滚轮，并退出
+            {
+                window.onmousewheel = function () {
+                    return true;
+                }
+                return true;
+            }
+
+            //进行下一步移动
+            var repeat = "BlogDirectory.moveScrollBar(" + finalpos + "," + interval + ")";
+            document.body.movement = setTimeout(repeat, interval);
+        },
+
+        htmlDecode: function (text) {
+            var temp = document.createElement("div");
+            temp.innerHTML = text;
+            var output = temp.innerText || temp.textContent;
+            temp = null;
+            return output;
+        },
+
+        /*
+        创建博客目录，
+        id表示包含博文正文的 div 容器的 id，
+        mt 和 st 分别表示主标题和次级标题的标签名称（如 H2、H3，大写或小写都可以！），
+        interval 表示移动的速度
+        */
+        createBlogDirectory: function (id, mt, st, interval) {
+            //获取博文正文div容器
+            var elem = document.getElementById(id);
+            if (!elem) {
+                return false;
+            }
+            //获取div中所有元素结点
+            var nodes = elem.getElementsByTagName("*");
+            //创建博客目录的div容器
+            var divSideBar = document.createElement('DIV');
+            divSideBar.className = 'sideBar';
+            divSideBar.setAttribute('id', 'sideBar');
+            var divSideBarTab = document.createElement('DIV');
+            divSideBarTab.setAttribute('id', 'sideBarTab');
+            divSideBar.appendChild(divSideBarTab);
+            var h2 = document.createElement('H2');
+            divSideBarTab.appendChild(h2);
+            var txt = document.createTextNode('目录导航');
+            h2.appendChild(txt);
+            var divSideBarContents = document.createElement('DIV');
+            divSideBarContents.style.display = 'none';
+            divSideBarContents.setAttribute('id', 'sideBarContents');
+            divSideBar.appendChild(divSideBarContents);
+            //创建自定义列表
+            var dlist = document.createElement("ul");
+            divSideBarContents.appendChild(dlist);
+            var num = 0;//统计找到的mt和st
+            mt = mt.toUpperCase();//转化成大写
+            st = st.toUpperCase();//转化成大写
+            var lastTagName = "h1";
+            var currentList = dlist;
+            var lastList = dlist;
+
+            //遍历所有元素结点
+            var p = /h\d/i
+            for (var i = 0; i < nodes.length; i++) {
+                //if(nodes[i].nodeName == mt|| nodes[i].nodeName == st)
+                console.log("test " + nodes[i].nodeName, p.test(nodes[i].nodeName))
+                if (p.test(nodes[i].nodeName)) {
+                    //获取标题文本
+                    var nodetext = nodes[i].innerHTML.replace(/<\/?[^>]+>/g, "");//innerHTML里面的内容可能有HTML标签，所以用正则表达式去除HTML的标签
+                    nodetext = nodetext.replace(/ /ig, "");//替换掉所有的 
+                    nodetext = BlogDirectory.htmlDecode(nodetext);
+                    //插入锚
+                    nodes[i].setAttribute("id", "blogTitle" + num);
+                    var item;
+                    if (nodes[i].nodeName > lastTagName) {
+                        // open new
+                        lastList = currentList;
+                        currentList = document.createElement("ul");
+                        lastList.appendChild(currentList);
+                        lastTagName = nodes[i].nodeName
+                    } else if (nodes[i].nodeName < lastTagName) {
+                        // close
+                        currentList = lastList;
+                        lastTagName = nodes[i].nodeName
+                    } else {
+
+                    }
+                    item = document.createElement("li");
+                    //创建锚链接
+                    var itemtext = document.createTextNode(nodetext);
+                    item.appendChild(itemtext);
+                    item.setAttribute("name", num);
+                    item.onclick = function () {        //添加鼠标点击触发函数
+                        var pos = BlogDirectory.getElementPosition(
+                            document.getElementById("blogTitle" + this.getAttribute("name")));
+                        if (!BlogDirectory.moveScrollBar(pos.top, interval)) {
+                            return false;
+                        }
+                    };
+
+                    //将自定义表项加入自定义列表中
+                    //dlist.appendChild(item);
+                    currentList.appendChild(item);
+                    num++;
+                }
+            }
+
+            if (num == 0) {
+                return false;
+            }
+            /*鼠标进入时的事件处理*/
+            divSideBarTab.onmouseenter = function () {
+                divSideBarContents.style.display = 'block';
+            }
+            /*鼠标离开时的事件处理*/
+            divSideBar.onmouseleave = function () {
+                divSideBarContents.style.display = 'none';
+            }
+
+            document.body.appendChild(divSideBar);
+        }
+
+    };
+
+    window.onload = function () {
+        BlogDirectory.createBlogDirectory("content", "h1", "h2", 20);
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,25 @@
+#+OPTIONS: H:7 num:nil toc:t \n:nil ::t |:t -:nil f:t *:t <:nil ^:{}
+#+TITLE: winxp, win7 远程桌面实现网络身份验证NLA(Network LEVEl Authentication)
+#+AUTHOR: Bruce Asu
+#+DATE: <2017-05-01 20:48>
+#+filetags: windows remote
+#+DESCRIPTION: winxp, win7 远程桌面已经可以实现网络身份验证NLA(Network LEVEl Authentication)了
+#+LANGUAGE: en
+
+修改注册表2个地方
+
+开始－运行－regedit
+
+: “HKEY_LOCAL_MACHINE＼SYSTEM＼CurrentControlSet＼Control＼Lsa”，
+
+双击右边的 “Security Packages”，打开“编辑多字符串”对话框，增加
+“tspkg”
+
+: “HKEY_LOCAL_MACHINE＼SYSTEM＼CurrentControlSet＼Control＼SecurityProviders”，
+
+双击右侧的“SecurityProviders”，打开“编辑字符串”对话框，增加
+“credssp.dll”，注意用拼音状态的逗号跟前面的隔开。
+
+完成上述修改之后，重新启动计算机。再次从开始菜单中打开远程桌面连
+接，现在我们可以在“关于”窗口中看到“支持网络级别的身份验证”的信息，
+是不是很有意思？　

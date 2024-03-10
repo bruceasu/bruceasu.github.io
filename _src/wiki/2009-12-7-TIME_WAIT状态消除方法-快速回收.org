@@ -1,0 +1,17 @@
+#+OPTIONS: H:7 num:nil toc:t \n:nil ::t |:t -:nil f:t *:t <:nil ^:{}
+#+TITLE: TIME_WAIT状态消除方法-快速回收
+#+AUTHOR: Dante
+#+DATE: <2009-12-7>
+#+filetags: linux
+
+这周一台新server要上线，突然想起用的是短链接，而且是client端主动断链接，于是就
+: netstat -lan
+
+看了一下，果然发现大量的TIME_WAIT(9000左右)，即系统在发现客户端断掉链接之后的等
+待状态，解决方法就是打开机器的快速回收。
+
+命令如下：
+#+BEGIN_SRC shell
+cd /proc/sys/net/ipv4
+echo 1 > tcp_tw_recycle
+#+END_SRC
